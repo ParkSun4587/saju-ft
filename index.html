@@ -196,7 +196,7 @@
             cursor: pointer;
             text-align: left;
         }
-        .concern-chip:hover { border-color: #64748b; color: #e2e8f0; }
+        .concern-chip:hover { border-color: #64748b; color: #e2e8f0; }         .concern-chip:active { transform: scale(0.96); }         
         .concern-chip.selected {
             background: rgba(245, 158, 11, 0.15);
             border-color: #fbbf24; color: #fef08a;
@@ -703,7 +703,7 @@
                                 <input type="checkbox" id="agreeRefund" class="mt-0.5 w-4 h-4 shrink-0 accent-amber-400 cursor-pointer">
                                 <span class="text-[10px] text-slate-300 leading-relaxed break-keep">
                                     (필수) 결제 즉시 열람되는 디지털 콘텐츠로, <b class="text-amber-300">열람 후 청약철회(환불) 불가</b>에 동의합니다.
-                                    <button type="button" onclick="event.preventDefault();openPolicyModal('terms')" class="underline text-slate-400 hover:text-slate-200 bg-transparent border-0 p-0 cursor-pointer">약관</button>
+                                    <button type="button" onclick="event.preventDefault(); event.stopPropagation(); openPolicyModal('terms')" class="underline text-slate-400 hover:text-slate-200 bg-transparent border-0 p-0 cursor-pointer relative z-10 p-1 -m-1">약관</button>
                                 </span>
                             </label>
 
@@ -2284,7 +2284,7 @@
             toast.id = 'customToast';
             toast.innerText = message;
             // font-size를 12px로 살짝 줄이고 white-space: nowrap을 주어 무조건 한 줄로 출력
-            toast.style.cssText = `position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(15, 23, 42, 0.95); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); padding: 12px 18px; border-radius: 16px; font-size: 12px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 99999; opacity: 0; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); text-align: center; white-space: normal; word-break: keep-all; max-width: calc(100vw - 48px); line-height: 1.5;`;
+            toast.style.cssText = `position: fixed; top: calc(env(safe-area-inset-top, 0px) + 16px); left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(15, 23, 42, 0.95); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); padding: 12px 18px; border-radius: 16px; font-size: 12px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 99999; opacity: 0; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); text-align: center; white-space: normal; word-break: keep-all; max-width: calc(100vw - 48px); line-height: 1.5;`;
             document.body.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; }, 50);
             setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, 3000);
