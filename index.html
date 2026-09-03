@@ -2806,11 +2806,7 @@
             document.getElementById('resultSection').style.display = 'none'; 
             document.getElementById('loadingSection').style.display = 'none'; 
             document.getElementById('landingSection').style.display = 'flex';
-            setTimeout(() => { 
-                const concernArea = document.getElementById('concernGrid'); 
-                if (concernArea) concernArea.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
-                else window.scrollTo({ top: 0, behavior: 'smooth' }); 
-            }, 50);
+            window.scrollTo({ top: 0 });
         }
 
         function startFreshAnalysis() {
