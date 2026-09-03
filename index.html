@@ -2186,12 +2186,11 @@
                 gtag('event', 'begin_checkout', { item_name: 'VVIP 사주 처방전', value: PAY_AMOUNT, currency: 'KRW' });
             }
 
-                        if (!currentResultData) {
+            if (!currentResultData) {
                 showToast("분석 결과를 먼저 확인해주세요.");
                 return;
             }
             
-            // 청약철회 제한 사전 동의 확인 (미동의 시 결제 진행 불가)
             const agreeEl = document.getElementById('agreeRefund');
             if (agreeEl && !agreeEl.checked) {
                 showToast("환불 규정 동의에 체크해주세요.");
@@ -2202,7 +2201,6 @@
                 return;
             }
 
-            // 결제 리다이렉트 시 유실을 막기 위해 세션스토리지와 로컬스토리지에 이중 백업
             try {
                 const dataStr = JSON.stringify(currentResultData);
                 sessionStorage.setItem('sajuft_temp_result', dataStr);
@@ -2211,20 +2209,19 @@
                 console.warn("결제 데이터 백업 실패:", e);
             }
 
-            const orderId = "SAJU_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
-            const customerName = currentResultData.name || "구매자";
+            const orderId = "SAJU_" + Date.now();
+            const customerName = (currentResultData.name || "구매자").trim();
 
-            // 현재 접속 중인 주소 기준 깔끔한 리다이렉트 URL 생성
             const baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
             const successUrl = baseUrl.replace(/\/$/, '') + "?payment=success";
             const failUrl = baseUrl.replace(/\/$/, '') + "?payment=fail";
 
-            // v1 SDK 일반결제창 호출 (카드/간편결제 통합 호출)
+            // v1 SDK 표준 필수 파라미터만 남김
             tossPayments.requestPayment('카드', {
                 amount: PAY_AMOUNT,
                 orderId: orderId,
                 orderName: '2026 하반기 VVIP 사주 처방전',
-                customerName: customerName,
+                customerName: customerName.length > 0 ? customerName : '구매자',
                 successUrl: successUrl,
                 failUrl: failUrl
             }).catch(function (error) {
@@ -2232,6 +2229,7 @@
                     showToast("결제가 취소되었습니다.");
                 } else {
                     showToast("결제 오류: " + (error.message || error.code || '알 수 없는 오류'));
+                    console.error("토스 결제 에러:", error);
                 }
             });
         }
