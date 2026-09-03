@@ -269,13 +269,7 @@
                 <span class="text-sky-400 drop-shadow-[0_0_12px_rgba(56,189,248,0.8)]">팩폭</span>이 필요해?
             </h1>
 
-            <!-- 신뢰 뱃지 (결제 전 망설임 방어) -->
-            <div class="flex flex-wrap items-center justify-center gap-1 pt-1">
-                <span class="text-[10px] font-bold text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">✓ 회원가입 없음</span>
-                <span class="text-[10px] font-bold text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">✓ 스탯·본캐 무료</span>
-                <span class="text-[10px] font-bold text-sky-300 bg-sky-950/70 border border-sky-500/30 px-2 py-0.5 rounded-full whitespace-nowrap">✓ 실제 만세력 계산</span>
-                <span class="text-[10px] font-bold text-slate-300 bg-slate-900/80 border border-slate-600/50 px-2 py-0.5 rounded-full whitespace-nowrap">✓ 결제는 토스</span>
-            </div>
+            
         </div>
 
         <div class="card-box p-3.5 sm:p-5 rounded-2xl space-y-2.5">
@@ -2196,14 +2190,7 @@
                 showToast("분석 결과를 먼저 확인해주세요.");
                 return;
             }
-
-            // [중요] 인앱 브라우저는 결제 후 결과가 유실됨 → 결제 전에 외부 브라우저로 보낸다
-            if (typeof isInAppBrowser === 'function' && isInAppBrowser()) {
-                showToast("앱 안의 브라우저에서는 결제가 막혀요. 기본 브라우저로 옮겨드릴게요.");
-                setTimeout(escapeInAppBrowser, 1000);
-                return;
-            }
-
+            
             // 청약철회 제한 사전 동의 확인 (미동의 시 결제 진행 불가)
             const agreeEl = document.getElementById('agreeRefund');
             if (agreeEl && !agreeEl.checked) {
@@ -2754,16 +2741,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-
-            // 인앱 브라우저 경고 배너 (결제 실패 및 결과 유실 방지)
-            if (isInAppBrowser()) {
-                const bar = document.createElement('div');
-                bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99998;background:#f59e0b;color:#050811;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;font-weight:800;box-shadow:0 -6px 20px rgba(0,0,0,.5);padding-bottom:calc(12px + env(safe-area-inset-bottom));';
-                bar.innerHTML = '<span style="line-height:1.4;text-align:left;">앱 내 브라우저에서는 결제가 막힐 수 있어요</span><button type="button" id="escapeInAppBtn" style="background:#050811;color:#fbbf24;border:0;padding:8px 12px;border-radius:10px;font-weight:900;font-size:12px;white-space:nowrap;">기본 브라우저로 열기</button>';
-                document.body.appendChild(bar);
-                document.getElementById('escapeInAppBtn').addEventListener('click', escapeInAppBrowser);
-            }
-
+            
             // 1. 토스페이먼츠 결제 성공 리다이렉트 처리 (서버 승인 필수)
             if (urlParams.get('payment') === 'success') {
                 handlePaymentReturn(urlParams);
