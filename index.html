@@ -568,7 +568,7 @@
                 <div class="text-center pt-2 pb-1">
                     <p class="text-[11px] sm:text-xs text-slate-400 font-medium">
                         정확한 문제 원인과 2026 하반기 대운 타이밍은<br>
-                        아래 <span class="text-amber-400 font-bold">VVIP 처방전</span>에 잠겨 있습니다.
+                        아래 <span class="text-amber-400 font-bold">시크릿 처방전</span>에 잠겨 있습니다.
                     </p>
                 </div>
             </div>
@@ -584,7 +584,7 @@
                         나만의 2026 하반기 사주 처방전
                     </h3>
                     <span id="vipBadge" class="inline-block mt-1 text-[10px] sm:text-xs bg-amber-500/10 text-amber-400 px-3 py-0.5 rounded-full font-bold border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]">
-                        🔒 VVIP 전용 비공개 문서
+                        🔒 [비공개] 시크릿 솔루션 문서
                     </span>
                 </div>
 
@@ -640,7 +640,7 @@
                             <div class="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-3 sm:p-4 text-left space-y-2 shadow-lg">
                                 <div class="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
                                     <span class="text-[11px] sm:text-xs font-bold text-amber-300 whitespace-nowrap">
-                                        🎁 2026 하반기 VVIP 심층 처방전
+                                        🎁 2026 하반기 시크릿 심층 처방전
                                     </span>
                                     <span class="text-[9px] sm:text-[10px] font-bold text-emerald-400 bg-emerald-950/90 px-2 py-0.5 rounded-full border border-emerald-500/30 whitespace-nowrap shrink-0">즉시 열람</span>
                                 </div>
@@ -2022,7 +2022,7 @@
                 paintPremiumArea();
                 if (vipBadge) {
                     vipBadge.className = "inline-block mt-1 text-[10px] sm:text-xs bg-amber-500/10 text-amber-400 px-3 py-0.5 rounded-full font-bold border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]";
-                    vipBadge.innerText = "🔒 VVIP 전용 비공개 문서";
+                    vipBadge.innerText = "🔒 [비공개] 시크릿 솔루션 문서";
                 }
                 if (reAnalyzeBox) reAnalyzeBox.style.display = 'none';
 
@@ -2197,7 +2197,7 @@
                tossPayments.requestPayment('카드', {
                     amount: 1900,
                     orderId: orderId,
-                    orderName: '2026 하반기 VVIP 사주 처방전',
+                    orderName: '2026 하반기 시크릿 사주 처방전',
                     customerName: customerName.length > 0 ? customerName : '구매자',
                     successUrl: successUrl,
                     failUrl: failUrl,
@@ -2253,7 +2253,7 @@
             }
             if (vipBadge) {
                 vipBadge.className = "inline-block mt-1 text-[10px] sm:text-xs bg-emerald-500/20 text-emerald-400 px-3 py-0.5 rounded-full font-bold border border-emerald-500/40 shadow-[0_0_10px_rgba(52,211,153,0.3)]";
-                vipBadge.innerText = "🔓 해금 완료 (VVIP)";
+                vipBadge.innerText = "🔓 해금 완료 (시크릿 열람)";
             }
             if (msg) showToast(msg);
         }
