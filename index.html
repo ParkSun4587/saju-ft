@@ -486,7 +486,7 @@
             </div>
 
             <!-- 4대 스탯 -->
-            <div class="space-y-2.5 text-left pt-1 bg-slate-900/70 p-3.5 sm:p-5 rounded-2xl border border-slate-800 mt-1">
+            <div class="space-y-2.5 text-left pt-1 bg-slate-900/70 p-3.5 sm:p-5 rounded-2xl border border-slate-800 mt-3">
                 <div class="flex justify-between items-center mb-0.5">
                     <span class="text-[11px] font-black text-slate-200 tracking-wider">타고난 4대 잠재 정밀 수치</span>
                 </div>
@@ -549,8 +549,8 @@
             </div>
 
             <!-- 무료 유저 바이럴 루프: 프로필 카드 직후 공유 유도 버튼 -->
-            <div class="pt-1">
-                <button type="button" onclick="openShareModal()" class="w-full py-2.5 px-3 bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-500 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer">
+            <div class="pt-3 pb-1">
+                <button type="button" id="mainShareBtn" onclick="openShareModal()" class="w-full py-3 px-3 bg-slate-800 border border-slate-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-98 cursor-pointer">
                     <span>📸 내 본캐 스탯 카드 저장 · 공유하기</span>
                 </button>
             </div>
@@ -1827,7 +1827,16 @@
             const sazuTitle = document.getElementById('sazuCharacterTitle');
             if (sazuTitle) {
                 sazuTitle.innerText = isT ? data.profile.title_T : data.profile.title_F;
-                sazuTitle.className = isT ? "mobile-title font-black text-center w-full px-2 mt-1 mb-1 leading-snug text-sky-400" : "mobile-title font-black text-center w-full px-2 mt-1 mb-1 leading-snug text-rose-300";
+                // [여백 개선] mt-1 mb-1 -> mt-3 mb-5 로 넓혀서 빽빽한 숨통을 틔움
+                sazuTitle.className = isT ? "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-sky-400" : "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-rose-300";
+            }
+
+            // [공유 버튼 시인성 개선] 모드(T/F)에 맞춰 테두리와 네온 효과 동적 부여 (보호색 탈피)
+            const mainShareBtn = document.getElementById('mainShareBtn');
+            if (mainShareBtn) {
+                mainShareBtn.className = isT 
+                    ? "w-full py-3 px-3 bg-sky-950/40 hover:bg-sky-900/60 border border-sky-400/60 text-sky-100 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(56,189,248,0.2)] active:scale-98 cursor-pointer"
+                    : "w-full py-3 px-3 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-400/60 text-rose-100 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.2)] active:scale-98 cursor-pointer";
             }
 
                         // [개선] 등급별 시각적 차별화 (마케팅 과시욕 극대화)
