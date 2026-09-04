@@ -951,7 +951,7 @@
             const currentMonth = now.getMonth() + 1; // 1~12
             const currentDay = now.getDate();
 
-            // 1. 2026 하반기 전용 십신 활성 오프셋 (연내 순차 완결을 위해 0~2개월로 조정)
+            // 1. 2026-27하반기 전용 십신 활성 오프셋 (연내 순차 완결을 위해 0~2개월로 조정)
             const CONCERN_MONTH_OFFSETS = {
                 mok:   { money: 1, career: 1, love: 0, path: 1, people: 2, mental: 0 },
                 hwa:   { money: 2, career: 1, love: 1, path: 0, people: 1, mental: 2 },
@@ -1987,10 +1987,9 @@
             const payBtnText = document.getElementById('payBtnActionText');
             if (payBtnText) {
                 payBtnText.innerHTML = isT 
-                    ? `2026 하반기 승부 타이밍 확인하기 →` 
+                    ? `2026-2027 승부 타이밍 확인하기 →` 
                     : `꽉 막힌 내 운이 풀리는 날 확인하기 →`;
             }
-        }
 
         function renderResultView(data) {
             document.getElementById('loadingSection').style.display = 'none';
