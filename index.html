@@ -926,6 +926,20 @@
         const SAJU_DIRS = { mok: '동쪽', hwa: '남쪽', to: '중앙/남서쪽', geum: '서쪽', su: '북쪽' };
         const SAJU_CONS = { mok: 'ㄱ, ㅋ', hwa: 'ㄴ, ㄷ, ㄹ, ㅌ', to: 'ㅇ, ㅎ', geum: 'ㅅ, ㅈ, ㅊ', su: 'ㅁ, ㅂ, ㅍ' };
         const SAJU_ITEMS = { mok: '작은 식물이나 우디향 디퓨저', hwa: '따뜻한 무드등이나 캔들', to: '도자기 소품이나 흙내음 향수', geum: '메탈 시계나 은 액세서리', su: '시원하고 맑은 아쿠아 향수' };
+        // 한글 받침 여부에 따라 알맞은 조사를 자동으로 결합하는 함수
+        function attachJosa(word, josaType = '을/를') {
+            if (!word) return '';
+            const lastChar = word.charCodeAt(word.length - 1);
+            const hasBatchim = (lastChar >= 0xAC00 && lastChar <= 0xD7A3) 
+                ? ((lastChar - 0xAC00) % 28 > 0) 
+                : false;
+
+            if (josaType === '을/를') return word + (hasBatchim ? '을' : '를');
+            if (josaType === '이/가') return word + (hasBatchim ? '이' : '가');
+            if (josaType === '은/는') return word + (hasBatchim ? '은' : '는');
+            if (josaType === '과/와') return word + (hasBatchim ? '과' : '와');
+            return word;
+        }
 
         // [핵심 1] 사주 일간(5종) × 6대 고민 십신 결합 '개별 분기' 골든타임 엔진
         function getTrueBaziTiming(dayOheng, concern, gender) {
@@ -1146,7 +1160,7 @@
                         r2: `📈 ${tMoney.r2} : [자산 퀀텀점프 & 굳히기 골든타임]`,
                         r2d: `${tMoney.r2}에는 지인과의 금전 거래나 섣부른 베팅을 철저히 차단하고 오직 내 자산의 방어벽을 높이십시오. 들어온 재물운을 안전하게 굳혀야 내 자산이 한 단계 도약합니다.`,
                         acts: [
-                            { t: `1. [오행 개운법] 금전 누수 차단 세팅`, d: `사주에 과열된 충동 기운을 식히기 위해 ${yColor}을(를) 활용하고, 금융 거래나 계약은 차분한 기운이 감도는 '${yDir}'을 향해 진행하세요.` },
+                            { t: `1. [오행 개운법] 금전 누수 차단 세팅`, d: `사주에 과열된 충동 기운을 식히기 위해 ${attachJosa(yColor, '을/를')} 활용하고, 금융 거래나 계약은 차분한 기운이 감도는 '${yDir}'을 향해 진행하세요.` },
                             { t: `2. [실전 룰] 충동 결제 & 섣부른 베팅 72시간 동결`, d: `보상 심리로 인한 결제 욕구가 들 때는 장바구니에 담아두고 72시간 뒤 재검토하세요. 이 원칙 하나만으로 불필요한 누수의 80%가 즉시 방어됩니다.` },
                             { t: `3. [인맥 필터] 하반기 귀인 vs 손절 대상 판별법`, d: `✔ <b>사주 귀인 (이름/상호 초성 '${yCons}'):</b> 말보다 확실한 데이터와 행동으로 내 실질적 이득을 챙겨주는 사람<br>✖ <b>손절:</b> "너만 알고 있어"라며 근거 없이 동업이나 투자를 권유하는 인물` }
                         ]
@@ -1398,9 +1412,6 @@
                     
             let roadmapHtml = `
             <div class="space-y-2.5">
-                <div class="p-2.5 rounded-xl bg-slate-900/70 border border-slate-700/60 text-[11px] text-slate-300 leading-relaxed break-keep text-left">
-                    ${isFemale ? '♀' : '♂'} ${genderLine}
-                </div>
                 ${formatRoadmapItem(sel.r1, sel.r1d, isT ? 'text-amber-400' : 'text-amber-300', isT ? '⚡' : '🌸')}
                 ${formatRoadmapItem(sel.r2, sel.r2d, isT ? 'text-amber-300' : 'text-rose-300', isT ? '📈' : '🌿')}
             </div>`;
