@@ -712,7 +712,7 @@
                             </div>
 
                             <button type="button" onclick="startDirectPayment()" class="w-full py-3.5 px-5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-lg rounded-2xl shadow-[0_0_25px_rgba(251,191,36,0.45)] transition-all transform active:scale-95 flex flex-col items-center justify-center gap-1 cursor-pointer border-0">
-                        <span class="text-base sm:text-lg tracking-tight">꽉 막힌 내 운이 풀리는 날 확인하기 →</span>
+                        <span id="payBtnActionText" class="text-base sm:text-lg tracking-tight">꽉 막힌 내 운이 풀리는 날 확인하기 →</span>
                         <span class="text-[11px] font-bold text-slate-900/85">1,900원 · 카카오/토스 3초 결제</span>
                     </button>
                         </div>
@@ -750,8 +750,15 @@
         <div class="w-full max-w-sm flex flex-col items-center">
             
             <div id="storyCard" class="w-full bg-[#080c16] border border-slate-700/60 rounded-3xl p-5 space-y-4 shadow-2xl text-left relative overflow-hidden">
-                <div class="text-center space-y-1.5 relative z-10">
+                                <div class="text-center space-y-1.5 relative z-10">
                     <span id="cardModeBadge" class="px-3 py-1 rounded-full text-[10px] font-black tracking-wide"></span>
+                    <div class="pt-2">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950 border border-amber-500/40">
+                            <span id="cardGradeText" class="text-sm font-black text-amber-300 font-mono">-</span>
+                            <span id="cardGradeTitle" class="text-[10px] font-bold text-slate-300 whitespace-nowrap">-</span>
+                        </span>
+                    </div>
+                    <div id="cardMbtiSubtitle" class="pt-1"></div>
                 </div>
 
                 <div class="py-2 text-center relative z-10" style="font-family: 'Pretendard', sans-serif;">
@@ -1740,10 +1747,9 @@
 
                                         if (mainStatus) {
                         if (progress < 30) mainStatus.innerText = `${name}님의 사주 8글자 십신(十神) 연산 중...`;
-                        // [전환율] 결과 도착 전에 미리 한 방 꽂아서 몰입 시작
-                        else if (progress < 55) mainStatus.innerHTML = `⚠️ [${lowest.name}] <b class="text-amber-300">${lowest.score}점</b> — 4대 스탯 중 최하위 감지`;
-                        else if (progress < 78) mainStatus.innerText = isT ? `26년 하반기 월운(月運) 팩트 폭행 장전 중...` : `26년 하반기 월운(月運) 위로 처방 조제 중...`;
-                        else if (progress < 95) mainStatus.innerText = `[${solutionTemplate.label}] 막힌 운 뚫어줄 골든타임 도출 중...`;
+                        else if (progress < 55) mainStatus.innerHTML = `⚠️ [${lowest.name}] <b class="text-amber-300">${lowest.score}점</b> — 4대 스탯 중 치명적 누수 감지`;
+                        else if (progress < 78) mainStatus.innerText = isT ? `2026-2027 세운(歲運) 팩트 폭행 장전 중...` : `2026-2027 세운(歲運) 위로 처방 조제 중...`;
+                        else if (progress < 95) mainStatus.innerText = `[${solutionTemplate.label}] 막힌 운 뚫어줄 1년 골든타임 도출 중...`;
                         else mainStatus.innerText = `[분석 완료] 완벽하게 맞춤 조제되었습니다.`;
                     }
 
@@ -1951,29 +1957,29 @@
             if (payFeatures) {
                 payFeatures.innerHTML = isT ? `
                     <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
-                        <span class="text-sky-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 1단계 [원인]</span>
-                        <span class="text-slate-300 truncate font-medium text-left">내 발목을 잡던 치명적 누수 팩트</span>
+                        <span class="text-sky-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 1단계 [원인분석]</span>
+                        <span class="text-slate-300 truncate font-medium text-left">내 발목을 잡던 치명적 누수 팩트 진단</span>
                     </div>
                     <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
-                        <span class="text-sky-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 2단계 [시기]</span>
-                        <span class="text-amber-300 truncate font-semibold text-left">2026-2027 승부 골든타임</span>
+                        <span class="text-amber-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 2단계 [1년 로드맵]</span>
+                        <span class="text-amber-300 truncate font-semibold text-left">2026-2027 터지는 정확한 시점</span>
                     </div>
                     <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
-                        <span class="text-sky-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 3단계 [해법]</span>
-                        <span class="text-emerald-300 truncate font-semibold text-left">개운 비책 & 귀인·손절 필터</span>
+                        <span class="text-emerald-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 3단계 [실전처방]</span>
+                        <span class="text-emerald-300 truncate font-semibold text-left">오행 개운법 & 귀인·손절 인맥 필터</span>
                     </div>
                 ` : `
                     <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
-                        <span class="text-rose-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 1단계 [공감]</span>
-                        <span class="text-slate-300 truncate font-medium text-left">혼자 속앓이한 악순환 치유</span>
+                        <span class="text-rose-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 1단계 [심층공감]</span>
+                        <span class="text-slate-300 truncate font-medium text-left">혼자 속앓이한 악순환의 근본 치유</span>
                     </div>
                     <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
-                        <span class="text-rose-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 2단계 [시기]</span>
-                        <span class="text-rose-300 truncate font-semibold text-left">마음의 짐 풀리는 골든타임</span>
+                        <span class="text-rose-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 2단계 [1년 로드맵]</span>
+                        <span class="text-rose-300 truncate font-semibold text-left">마음의 짐이 풀리는 반등 골든타임</span>
                     </div>
                     <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
-                        <span class="text-rose-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 3단계 [해법]</span>
-                        <span class="text-emerald-300 truncate font-semibold text-left">오행 힐링템 & 귀인·인연 처방</span>
+                        <span class="text-emerald-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 3단계 [실전처방]</span>
+                        <span class="text-emerald-300 truncate font-semibold text-left">힐링 템 & 나를 지켜줄 귀인 인연법</span>
                     </div>
                 `;
             }
@@ -2099,7 +2105,7 @@
                 modeBadge.innerHTML = isT ? `필터 없이 뼈 때리는 <span class="text-white">${data.name}</span>님의 T 팩폭 리포트` : `100% 내 편 들어주는 <span class="text-white">${data.name}</span>님의 F 힐링 리포트`;
                 modeBadge.className = isT ? "px-3 py-1 bg-sky-500/20 text-sky-300 border border-sky-400/50 rounded-full text-[10px] font-black tracking-wide" : "px-3 py-1 bg-rose-500/20 text-rose-300 border border-rose-400/50 rounded-full text-[10px] font-black tracking-wide";
             }
-            if (gradeText) gradeText.innerText = gradeInfo.grade;
+            if (gradeText) gradeText.innerText = gradeInfo.grade + '급';
             if (gradeTitle) { gradeTitle.innerText = gradeInfo.title; gradeTitle.className = "text-slate-200"; }
 
             const cardSubtitleEl = document.getElementById('cardMbtiSubtitle');
@@ -2817,7 +2823,7 @@
         }
 
         function startFreshAnalysis() {
-            localStorage.removeItem('sazu_last_unique_key');
+            // [수정] 구매 복원 키는 유지 — 결제자가 재방문 시 리포트 복구 가능하도록
             isUnlocked = false;
             premiumBuffer = null;
             const form = document.getElementById('sazuForm'); if (form) form.reset();
