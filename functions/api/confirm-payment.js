@@ -57,10 +57,18 @@ export async function onRequestPost(context) {
         // ------------------------------------------------------
         // 2) 토스페이먼츠 결제 승인
         // ------------------------------------------------------
-        if (action === "confirm") {
+                if (action === "confirm") {
             if (!paymentKey || !orderId || !amount || !userKey) {
                 return new Response(
                     JSON.stringify({ ok: false, message: "필수 값이 누락됐습니다." }),
+                    { status: 400, headers: { "Content-Type": "application/json" } }
+                );
+            }
+
+            // [보안] 클라이언트가 보낸 금액을 그대로 믿지 않는다
+            if (Number(amount) !== 1900) {
+                return new Response(
+                    JSON.stringify({ ok: false, message: "결제 금액이 올바르지 않습니다." }),
                     { status: 400, headers: { "Content-Type": "application/json" } }
                 );
             }
