@@ -698,14 +698,13 @@
 
                         <!-- CTA 버튼 모바일 최적화 (전환율 극대화 세팅) -->
                                                 <div class="space-y-2 pt-1">
-                            <!-- 법적 필수 동의: 버튼 '위'로 이동해 클릭 마찰 1회 제거 -->
-                            <label for="agreeRefund" class="flex items-start gap-2 text-left cursor-pointer bg-slate-900/70 border border-slate-700/70 rounded-xl p-2.5">
-                                <input type="checkbox" id="agreeRefund" class="mt-0.5 w-4 h-4 shrink-0 accent-amber-400 cursor-pointer">
-                                <span class="text-[10px] text-slate-300 leading-relaxed break-keep">
-                                    (필수) 결제 즉시 열람되는 디지털 콘텐츠로, <b class="text-amber-300">열람 후 청약철회(환불) 불가</b>에 동의합니다.
-                                    <button type="button" onclick="event.preventDefault(); event.stopPropagation(); openPolicyModal('terms')" class="underline text-slate-400 hover:text-slate-200 bg-transparent border-0 p-0 cursor-pointer relative z-10 p-1 -m-1">약관</button>
-                                </span>
-                            </label>
+                            <!-- 법적 고지: 체크박스 마찰 없이 버튼 클릭 시 자동 동의 -->
+                            <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl py-2 px-3 text-center">
+                                <p class="text-[10px] text-slate-400 leading-tight break-keep">
+                                    결제 진행 시 <span class="text-slate-300">디지털 콘텐츠 즉시 열람 및 환불 제한</span>에 동의하게 됩니다. 
+                                    <button type="button" onclick="openPolicyModal('terms')" class="underline text-slate-400 hover:text-slate-200 bg-transparent border-0 p-0 cursor-pointer ml-1">약관</button>
+                                </p>
+                            </div>
 
                             <button type="button" onclick="startDirectPayment()" id="payDirectBtn" class="btn-shine w-full py-4 px-2 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-slate-950 font-black text-sm sm:text-base rounded-2xl flex flex-col items-center justify-center shadow-[0_4px_20px_rgba(251,191,36,0.45)] transform active:scale-95 hover:brightness-110 transition-all border border-amber-200">
                                 <span id="payBtnActionText" class="whitespace-nowrap tracking-tight">2026 하반기 승부 타이밍 확인하기 →</span>
@@ -2191,16 +2190,6 @@
                 return;
             }
             
-            const agreeEl = document.getElementById('agreeRefund');
-            if (agreeEl && !agreeEl.checked) {
-                showToast("환불 규정 동의에 체크해주세요.");
-                agreeEl.closest('label').animate(
-                    [{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }],
-                    { duration: 300 }
-                );
-                return;
-            }
-
             try {
                 const dataStr = JSON.stringify(currentResultData);
                 sessionStorage.setItem('sajuft_temp_result', dataStr);
