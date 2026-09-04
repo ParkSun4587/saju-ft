@@ -1822,8 +1822,8 @@
             const sazuTitle = document.getElementById('sazuCharacterTitle');
             if (sazuTitle) {
                 sazuTitle.innerText = isT ? data.profile.title_T : data.profile.title_F;
-                // [여백 개선] mt-1 mb-1 -> mt-3 mb-5 로 넓혀서 빽빽한 숨통을 틔움
-                sazuTitle.className = isT ? "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-sky-400" : "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-rose-300";
+                // [컬러 개선] 촌스러운 풀 컬러를 빼고 깔끔한 화이트로 텍스트 신뢰도와 가독성 극대화
+                sazuTitle.className = "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-white drop-shadow-sm";
             }
 
             // [공유 버튼 시인성 개선] 모드(T/F)에 맞춰 테두리와 네온 효과 동적 부여 (보호색 탈피)
@@ -1862,7 +1862,10 @@
             const bigMbti = document.getElementById('resultBigMbti');
             if (bigMbti) {
                 bigMbti.innerText = data.mbtiKey || 'ISTJ';
-                bigMbti.className = isT ? "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-sky-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.4)] leading-none pt-1" : "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-rose-300 drop-shadow-[0_0_15px_rgba(253,164,175,0.4)] leading-none pt-1";
+                // [컬러 개선] 단색에서 고급스러운 그라데이션 텍스트로 변경하여 시선 강탈
+                bigMbti.className = isT 
+                    ? "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-transparent bg-clip-text bg-gradient-to-b from-sky-200 to-sky-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.5)] leading-none pt-1" 
+                    : "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-transparent bg-clip-text bg-gradient-to-b from-rose-200 to-rose-400 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)] leading-none pt-1";
             }
 
             const firstSecTitle = document.getElementById('firstSectionTitle');
