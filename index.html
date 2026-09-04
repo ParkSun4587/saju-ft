@@ -968,7 +968,9 @@
             const step1 = Math.max(minStep, (rawOffset + genderShift) % 3);
 
             const idx1 = baseIdx + step1;
-            const idx2 = idx1 + 2; // 2차는 항상 1차보다 2개월 뒤
+            // 2차 골든타임을 3~4개월 뒤로 확장하여 2027년 상반기까지 도달하도록 계산
+            const gap = (rawOffset % 2 === 0) ? 3 : 4;
+            const idx2 = idx1 + gap;
 
             const r1Year = Math.floor(idx1 / 12);
             const r1Month = (idx1 % 12) + 1;
