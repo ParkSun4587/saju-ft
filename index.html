@@ -2203,13 +2203,15 @@
                 const clientKey = "test_ck_LlDJaYngro2leKPaObPxVezGdRpX"; 
                 const tossPayments = TossPayments(clientKey);
 
-                tossPayments.requestPayment('카드', {
+               tossPayments.requestPayment('카드', {
                     amount: 1900,
                     orderId: orderId,
                     orderName: '2026 하반기 VVIP 사주 처방전',
                     customerName: customerName.length > 0 ? customerName : '구매자',
                     successUrl: successUrl,
-                    failUrl: failUrl
+                    failUrl: failUrl,
+                    flowMode: 'DEFAULT',
+                    easyPay: 'TOSSPAY'
                 }).catch(function (error) {
                     if (error.code === 'USER_CANCEL') {
                         showToast("결제가 취소되었습니다.");
