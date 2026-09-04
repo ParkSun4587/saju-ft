@@ -251,7 +251,7 @@
         .card-stat-bar-t { background: linear-gradient(90deg, #38bdf8 0%, #30c5f7 100%); }
     </style>
 </head>
-<body class="min-h-[100dvh] flex flex-col justify-between items-center px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
+<body class="min-h-[100dvh] flex flex-col justify-between items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
     <!-- 1. 랜딩 페이지 (모바일 1화면 완벽 핏) -->
     <main id="landingSection" class="max-w-lg w-full flex flex-col justify-center min-h-[100dvh] py-2 sm:py-4 space-y-2 sm:space-y-3">
@@ -577,7 +577,7 @@
 
         <!-- 카드 3: 핵심 심층 솔루션 (결제 유도 및 잠금 마스크 적용) -->
         <div class="card-box p-1 sm:p-1.5 rounded-3xl relative overflow-hidden bg-gradient-to-b from-amber-500/20 to-slate-900 shadow-[0_0_40px_rgba(245,158,11,0.2)] border border-amber-500/30">
-            <div class="bg-slate-950/95 p-4 sm:p-6 rounded-[22px] h-full relative">
+            <div class="bg-slate-950/95 p-3 sm:p-5 rounded-[22px] h-full relative">
                 
                 <div class="flex flex-col justify-center items-center text-center border-b border-slate-800/80 pb-4 mb-4 gap-1.5">
                     <span class="text-2xl anim-float">👑</span>
@@ -714,36 +714,24 @@
                     </div>
                 </div>
 
-                <!-- 재분석 & 공유 액션 버튼 영역 -->
-                                <div id="reAnalyzeBox" style="display: none;" class="pt-6 space-y-3 text-center relative z-20">
-
-                    <!-- 만족도 최고점(결제 직후)에서 공유 유도 -->
-                    <button type="button" onclick="openShareModal()" class="w-full p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/15 to-sky-500/15 border border-emerald-400/40 text-left flex items-center gap-3 active:scale-[0.98] transition-all cursor-pointer">
-                        <span class="text-2xl shrink-0">📤</span>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-xs font-black text-emerald-300 break-keep">친구한테 내 본캐 카드 보내보기</div>
-                            <div class="text-[10px] text-slate-400 font-medium mt-0.5 break-keep">친구 결과랑 비교하면 훨씬 웃깁니다</div>
-                        </div>
-                        <span class="text-emerald-400 shrink-0">→</span>
-                    </button>
-
-                    <!-- 1. 내 다른 고민 풀기 (보고 있는 고민 자동 배제 동적 버튼) -->
-                    <button type="button" onclick="restartAnalysisWithOtherConcern()" class="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-500/20 hover:from-amber-500/30 hover:to-amber-500/30 active:scale-[0.98] border border-amber-400/40 text-amber-200 rounded-2xl text-xs sm:text-sm font-black transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+                <!-- 재분석 & 공유 액션 버튼 영역 (CPO 권장 2단 위계) -->
+                <div id="reAnalyzeBox" style="display: none;" class="pt-5 space-y-2.5 text-center relative z-20">
+                    <!-- 1순위 (추가 매출): 다른 고민 풀기 단독 풀너비 버튼 -->
+                    <button type="button" onclick="restartAnalysisWithOtherConcern()" class="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500/25 via-amber-500/15 to-amber-500/25 hover:from-amber-500/35 hover:to-amber-500/35 active:scale-[0.98] border border-amber-400/50 text-amber-200 rounded-2xl text-xs sm:text-sm font-black transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer shadow-[0_0_20px_rgba(245,158,11,0.2)]">
                         <div class="flex items-center gap-1.5">
                             <span id="reAnalyzeDynamicText">내 사주로 다른 고민도 풀어보기</span>
                             <span class="text-amber-400">→</span>
                         </div>
-                        <span class="text-[10px] text-amber-300/70 font-medium">기존 사주 데이터 유지 · 추가 처방전 1,900원 즉시 확인</span>
+                        <span class="text-[10px] text-amber-300/80 font-medium">기존 사주 데이터 유지 · 추가 처방전 1,900원 즉시 확인</span>
                     </button>
 
-                    <div class="grid grid-cols-2 gap-2 pt-1">
-                        <!-- 2. 인스타 카드 공유하기 -->
-                        <button type="button" onclick="openShareModal()" class="py-2.5 px-3 bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1">
-                            <span>📸 본캐 카드 저장</span>
+                    <!-- 2순위 (바이럴 공유 & 신규 유치): 1:1 반반 그리드 -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="openShareModal()" class="py-3 px-2 bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
+                            <span>📸 본캐 카드 공유</span>
                         </button>
-                        <!-- 3. 친구 사주 봐주기 -->
-                        <button type="button" onclick="startFreshAnalysis()" class="py-2.5 px-3 bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1">
-                            <span>👥 친구 사주 봐주기</span>
+                        <button type="button" onclick="startFreshAnalysis()" class="py-3 px-2 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
+                            <span>👥 친구 사주 보기</span>
                         </button>
                     </div>
                 </div>
