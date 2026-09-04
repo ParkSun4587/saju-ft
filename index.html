@@ -1824,12 +1824,30 @@
                 sazuTitle.className = isT ? "mobile-title font-black text-center w-full px-2 mt-1 mb-1 leading-snug text-sky-400" : "mobile-title font-black text-center w-full px-2 mt-1 mb-1 leading-snug text-rose-300";
             }
 
-                        // 만들어놓고 화면에 안 뜨던 등급 기능 복구
+                        // [개선] 등급별 시각적 차별화 (마케팅 과시욕 극대화)
             const myGrade = calculateSazuGrade(data.elements || {}, data.stats);
             const gradeTxtEl = document.getElementById('resultGradeText');
             const gradeTtlEl = document.getElementById('resultGradeTitle');
+            const gradeBoxEl = gradeTxtEl ? gradeTxtEl.closest('.badge-rainbow-glow, div') : null;
+
             if (gradeTxtEl) gradeTxtEl.innerText = myGrade.grade + '급';
             if (gradeTtlEl) gradeTtlEl.innerText = myGrade.title;
+
+            if (gradeBoxEl && gradeTxtEl) {
+                if (myGrade.grade === 'S+') {
+                    gradeBoxEl.className = "badge-rainbow-glow inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950 border border-amber-400/80 mb-1";
+                    gradeTxtEl.className = "text-sm font-black text-amber-300 font-mono drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]";
+                } else if (myGrade.grade === 'S') {
+                    gradeBoxEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950 border border-emerald-400/80 shadow-[0_0_15px_rgba(52,211,153,0.4)] mb-1";
+                    gradeTxtEl.className = "text-sm font-black text-emerald-300 font-mono";
+                } else if (myGrade.grade === 'A') {
+                    gradeBoxEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950 border border-sky-400/70 shadow-[0_0_12px_rgba(56,189,248,0.3)] mb-1";
+                    gradeTxtEl.className = "text-sm font-black text-sky-300 font-mono";
+                } else { // 포텐 / 히든
+                    gradeBoxEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950 border border-purple-400/80 shadow-[0_0_12px_rgba(192,132,252,0.4)] mb-1";
+                    gradeTxtEl.className = "text-sm font-black text-purple-300 font-mono";
+                }
+            }
 
             const bigMbti = document.getElementById('resultBigMbti');
             if (bigMbti) {
