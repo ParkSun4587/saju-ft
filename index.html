@@ -647,7 +647,7 @@
                             <div class="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-3 sm:p-4 text-left space-y-2 shadow-lg">
                                 <div class="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
                                     <span class="text-[11px] sm:text-xs font-bold text-amber-300 whitespace-nowrap">
-                                        🎁 2026 하반기 시크릿 심층 처방전
+                                        🎁 2026-2027 시크릿 심층 처방전
                                     </span>
                                     <span class="text-[9px] sm:text-[10px] font-bold text-emerald-400 bg-emerald-950/90 px-2 py-0.5 rounded-full border border-emerald-500/30 whitespace-nowrap shrink-0">즉시 열람</span>
                                 </div>
@@ -915,7 +915,7 @@
             'ESFP': { title_T: '신나면 자기가 쏜다며 지갑 열고 다음 날 잔고 보고 우는 분위기메이커', title_F: '존재 자체로 주변 사람들에게 웃음과 생기를 주는 햇살', F_tags: ['#분위기밝힘', '#혼자있을때공허', '#퍼주다가내실속빔'], T_tags: ['#골든벨그만울려', '#기분파돈지랄', '#잔고보고눈물'] }
         };
 
-        const SAJU_COLORS = { mok: '그린/포레스트 톤', hwa: '레드/코랄 톤', to: '베이지/브라운 톤', geum: '화이트/실버 톤', su: '블랙/네이비 톤' };
+        const SAJU_COLORS = { mok: '그린/포레스트', hwa: '레드/코랄', to: '베이지/브라운', geum: '화이트/실버', su: '블랙/네이비' };
         const SAJU_DIRS = { mok: '동쪽', hwa: '남쪽', to: '중앙/남서쪽', geum: '서쪽', su: '북쪽' };
         const SAJU_CONS = { mok: 'ㄱ, ㅋ', hwa: 'ㄴ, ㄷ, ㄹ, ㅌ', to: 'ㅇ, ㅎ', geum: 'ㅅ, ㅈ, ㅊ', su: 'ㅁ, ㅂ, ㅍ' };
         const SAJU_ITEMS = { mok: '작은 식물이나 우디향 디퓨저', hwa: '따뜻한 무드등이나 캔들', to: '도자기 소품이나 흙내음 향수', geum: '메탈 시계나 은 액세서리', su: '시원하고 맑은 아쿠아 향수' };
@@ -1203,7 +1203,7 @@
                         r2: `🌿 ${tCareer.r2} : [마음의 짐을 내려놓고 정착하는 안식처]`,
                         r2d: `${tCareer.r2}에는 떠나는 것에 대해 주위에 미안해하지 마세요. 내 가치를 온전히 인정해주고 마음이 편안해지는 새로운 환경으로 발걸음을 옮겨도 좋습니다.`,
                         acts: [
-                            { t: `1. [오행 개운법] 마음 안정 힐링 세팅`, d: `출근길 긴장을 풀기 위해 '${yItem}'을(를) 가까이 두고, 차분한 ${yColor} 소품으로 내면을 다독이세요.` },
+                            { t: `1. [오행 개운법] 마음 안정 힐링 세팅`, d: `출근길 긴장을 풀기 위해 ${attachJosa(yItem, '을/를')} 가까이 두고 차분한 ${yColor} 소품으로 내면을 다독이세요.` },
                             { t: `2. [안식 룰] 탈락과 거절에 자책하지 않기`, d: `결과를 내 존재 가치와 결부 짓지 말고 '단지 타이밍과 결이 맞지 않았을 뿐'으로 가볍게 털어내세요.` },
                             { t: `3. [관계 처방] 진가를 알아줄 멘토 vs 기죽이는 동료`, d: `✔ <b>사주 귀인 (이름 초성 '${yCons}'):</b> 내 성실함과 잠재력을 진심으로 알아보고 따뜻한 조언을 건네는 멘토<br>✖ <b>피할 인연:</b> 사소한 실수를 부풀려 사람을 위축시키고 자존감을 깎는 인물` }
                         ]
