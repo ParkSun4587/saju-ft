@@ -2181,7 +2181,7 @@
             } catch (e) { return 'error'; }
         }
 
-        function startDirectPayment() {
+      async function startDirectPayment() {
             if (typeof gtag === 'function') {
                 gtag('event', 'begin_checkout', { item_name: 'VVIP 사주 처방전', value: PAY_AMOUNT, currency: 'KRW' });
             }
