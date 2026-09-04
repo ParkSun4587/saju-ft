@@ -699,10 +699,9 @@
                                                 <div class="space-y-2 pt-1">
                             <!-- 법적 고지: 체크박스 마찰 없이 버튼 클릭 시 자동 동의 -->
                             <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl py-2 px-3 text-center">
-                                <p class="text-[10px] text-slate-400 leading-tight break-keep">
-    결제 진행 시 디지털 콘텐츠 즉시 제공 및 환불 제한에 동의하게 됩니다. 
-    <button type="button" onclick="openPolicyModal('terms')" class="underline text-slate-400 hover:text-slate-200 bg-transparent border-0 p-0 cursor-pointer ml-1">[약관]</button>
-</p>
+                            <p class="text-[10px] text-slate-400 whitespace-nowrap text-center">
+                                    콘텐츠 특성상 열람 후 환불 불가 동의 <button type="button" onclick="openPolicyModal('terms')" class="underline text-slate-300 hover:text-white bg-transparent border-0 p-0 cursor-pointer ml-0.5">[약관]</button>
+                                </p>
                             </div>
 
                             <button type="button" onclick="startDirectPayment()" class="w-full py-3.5 px-5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-lg rounded-2xl shadow-[0_0_25px_rgba(251,191,36,0.45)] transition-all transform active:scale-95 flex flex-col items-center justify-center gap-1 cursor-pointer border-0">
@@ -1924,30 +1923,30 @@
             const payFeatures = document.getElementById('payBoxFeatures');
             if (payFeatures) {
                 payFeatures.innerHTML = isT ? `
-                    <div class="flex items-center justify-between text-[11px] text-slate-200 py-0.5">
-                        <span class="text-sky-400 font-bold whitespace-nowrap">🔓 1단계 [원인]</span>
-                        <span class="text-slate-300 whitespace-nowrap font-medium">내 발목을 잡던 치명적 누수 팩트</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-sky-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 1단계 [원인]</span>
+                        <span class="text-slate-300 truncate font-medium text-left">내 발목을 잡던 치명적 누수 팩트</span>
                     </div>
-                    <div class="flex items-center justify-between text-[11px] text-slate-200 py-0.5">
-                        <span class="text-sky-400 font-bold whitespace-nowrap">🔓 2단계 [시기]</span>
-                        <span class="text-amber-300 whitespace-nowrap font-semibold">2026 하반기 승부 골든타임</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-sky-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 2단계 [시기]</span>
+                        <span class="text-amber-300 truncate font-semibold text-left">2026 하반기 승부 골든타임</span>
                     </div>
-                    <div class="flex items-center justify-between text-[11px] text-slate-200 py-0.5">
-                        <span class="text-sky-400 font-bold whitespace-nowrap">🔓 3단계 [해법]</span>
-                        <span class="text-emerald-300 whitespace-nowrap font-semibold">개운 비책 & 귀인·손절 필터</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-sky-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 3단계 [해법]</span>
+                        <span class="text-emerald-300 truncate font-semibold text-left">개운 비책 & 귀인·손절 필터</span>
                     </div>
                 ` : `
-                    <div class="flex items-center justify-between text-[11px] text-slate-200 py-0.5">
-                        <span class="text-rose-400 font-bold whitespace-nowrap">🌸 1단계 [공감]</span>
-                        <span class="text-slate-300 whitespace-nowrap font-medium">혼자 속앓이한 악순환 치유</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-rose-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 1단계 [공감]</span>
+                        <span class="text-slate-300 truncate font-medium text-left">혼자 속앓이한 악순환 치유</span>
                     </div>
-                    <div class="flex items-center justify-between text-[11px] text-slate-200 py-0.5">
-                        <span class="text-rose-400 font-bold whitespace-nowrap">🌸 2단계 [시기]</span>
-                        <span class="text-rose-300 whitespace-nowrap font-semibold">마음의 짐 풀리는 골든타임</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-rose-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 2단계 [시기]</span>
+                        <span class="text-rose-300 truncate font-semibold text-left">마음의 짐 풀리는 골든타임</span>
                     </div>
-                    <div class="flex items-center justify-between text-[11px] text-slate-200 py-0.5">
-                        <span class="text-rose-400 font-bold whitespace-nowrap">🌸 3단계 [해법]</span>
-                        <span class="text-emerald-300 whitespace-nowrap font-semibold">오행 힐링템 & 귀인·인연 처방</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-rose-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 3단계 [해법]</span>
+                        <span class="text-emerald-300 truncate font-semibold text-left">오행 힐링템 & 귀인·인연 처방</span>
                     </div>
                 `;
             }
