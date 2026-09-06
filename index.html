@@ -1917,10 +1917,11 @@
             if (concernPreviewDesc) concernPreviewDesc.innerText = template.preview();
 
             // [보안] 유료 본문은 buffer에만 담고, 승인 완료 시에만 paintPremiumArea()로 주입한다.
+            const pColor = isT ? 'sky' : 'rose'; // 모드에 따른 컬러 동기화
             premiumBuffer = {
-                asset: `<div class="pb-1 border-b border-rose-500/15"><span class="text-rose-300/90 font-black text-[11px] tracking-wide">[무의식 패턴]</span><div class="text-slate-200 text-xs mt-1 leading-relaxed break-keep">${template.asset}</div></div>`,
-                flaw: `<div class="pb-1 border-b border-rose-500/15"><span class="text-rose-400 font-black text-[11px] tracking-wide">[고질적 악순환]</span><div class="text-slate-200 text-xs mt-1 leading-relaxed break-keep">${template.flaw}</div></div>`,
-                leak: `<div><span class="text-amber-400 font-black text-[11px] tracking-wide">[치명적 손실]</span><div class="text-slate-200 text-xs mt-1 leading-relaxed break-keep">${template.leak}</div></div>`,
+                asset: `<div class="pb-1.5 border-b border-${pColor}-500/20"><span class="text-${pColor}-300 font-black text-[11px] tracking-wide">[무의식 패턴]</span><div class="text-slate-200 text-xs mt-1 leading-relaxed break-keep">${template.asset}</div></div>`,
+                flaw: `<div class="pb-1.5 border-b border-${pColor}-500/20"><span class="text-${pColor}-400 font-black text-[11px] tracking-wide">[고질적 악순환]</span><div class="text-slate-200 text-xs mt-1 leading-relaxed break-keep">${template.flaw}</div></div>`,
+                leak: `<div class="pt-0.5"><span class="text-amber-400 font-black text-[11px] tracking-wide">[치명적 손실]</span><div class="text-slate-200 text-xs mt-1 leading-relaxed break-keep">${template.leak}</div></div>`,
                 trap: '', roadmap: '', action: ''
             };
 
@@ -1976,7 +1977,7 @@
                 // 1번은 통째로 공개 — "돈 내면 이 퀄리티가 나온다"는 증거
                 asset: premiumBuffer.asset,
                 // 2번은 앞부분만 공개하고 뒤는 가림
-                flaw: `<div class="pb-1 border-b border-rose-500/15"><span class="text-rose-400 font-black text-[11px] tracking-wide">[고질적 악순환]</span><div class="text-slate-200 text-xs mt-1 leading-relaxed break-keep">${cutTxt(template.flaw, 22)}</div><div class="mt-2">${makeDummyLines(2)}</div></div>`,
+                flaw: `<div class="pb-1.5 border-b border-${pColor}-500/20"><span class="text-${pColor}-400 font-black text-[11px] tracking-wide">[고질적 악순환]</span><div class="text-slate-200 text-xs mt-1 leading-relaxed break-keep">${cutTxt(template.flaw, 22)}</div><div class="mt-2">${makeDummyLines(2)}</div></div>`,
                 leak: '',
                 trap: '',
                 // 골든타임은 '월'까지만 공개하고 주차를 가림
