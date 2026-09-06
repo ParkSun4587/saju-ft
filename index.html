@@ -2245,7 +2245,17 @@
             const customerName = (currentResultData.name || "구매자").trim();
 
             const cleanOrigin = window.location.origin;
-            const successUrl = cleanOrigin + "/?payment=success";
+            // [방어율 100%] 인앱 웹뷰가 메모리를 날려도 URL에서 100% 복구할 수 있도록 유저 데이터를 쿼리스트링에 백업
+            const uDataParam = encodeURIComponent(JSON.stringify({
+                n: currentResultData.name || '',
+                b: currentResultData.userBirthStr || '',
+                t: currentResultData.userTimeKey || 'unknown',
+                g: currentResultData.userGender || 'female',
+                c: currentResultData.userCalendar || 'solar',
+                k: currentResultData.concernKey || 'money',
+                m: currentResultData.currentMode || 'T'
+            }));
+            const successUrl = `${cleanOrigin}/?payment=success&udata=${uDataParam}`;
             const failUrl = cleanOrigin + "/?payment=fail";
 
             const toss = getTossSDK();
@@ -2680,21 +2690,46 @@
             const orderId = urlParams.get('orderId');
             const amount = urlParams.get('amount');
 
-            // 결제 직전 백업해 둔 분석 데이터 복원
+            // 1차: 브라우저 캐시에서 복원 시도
             let restoredData = null;
             try {
                 const tempStr = sessionStorage.getItem('sajuft_temp_result') || localStorage.getItem('sajuft_temp_result');
                 if (tempStr) restoredData = JSON.parse(tempStr);
-            } catch (e) { console.error("결제 데이터 복원 오류:", e); }
+            } catch (e) { console.error("스토리지 복원 오류:", e); }
 
-                        // [수정] 승인 실패 시 재시도할 수 있도록, 결제 정보는 승인 성공 후에만 지운다
+            // 2차: 인앱 웹뷰가 스토리지를 날렸을 경우, URL의 udata 파라미터에서 강제 복원
+            if (!restoredData && urlParams.get('udata')) {
+                try {
+                    const parsed = JSON.parse(decodeURIComponent(urlParams.get('udata')));
+                    const birth = parsed.b || '';
+                    const year = parseInt(birth.substring(0, 4));
+                    const month = parseInt(birth.substring(4, 6));
+                    const day = parseInt(birth.substring(6, 8));
+
+                    let calcYear = year, calcMonth = month, calcDay = day;
+                    if (parsed.c === 'lunar' && typeof Lunar !== 'undefined') {
+                        const lunarObj = Lunar.fromYmd(year, month, day);
+                        const solarObj = lunarObj.getSolar();
+                        calcYear = solarObj.getYear(); calcMonth = solarObj.getMonth(); calcDay = solarObj.getDay();
+                    }
+
+                    const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, parsed.t === 'unknown' ? null : parsed.t);
+                    restoredData = {
+                        name: parsed.n, userName: parsed.n, userBirthStr: birth, userTimeKey: parsed.t,
+                        userGender: parsed.g, userCalendar: parsed.c, currentMode: parsed.m,
+                        concernKey: parsed.k, ...sazuResult
+                    };
+                } catch (e) {
+                    console.error("URL 파라미터 복원 실패:", e);
+                }
+            }
+
             if (!paymentKey) window.history.replaceState({}, document.title, window.location.pathname);
 
             if (!restoredData) {
                 showToast("결과 데이터를 불러오지 못했습니다. 고객센터로 문의해주세요.");
                 return;
             }
-
             const allSolutions = getTrueBaziSolutions(restoredData.name, getLowestStatInfo(restoredData.stats), restoredData.yongshin, restoredData.dayOheng, restoredData.userGender, restoredData.mbtiKey);
             restoredData.rawSolutionTemplate = allSolutions[restoredData.concernKey || 'money'] || allSolutions.money;
             currentResultData = restoredData;
