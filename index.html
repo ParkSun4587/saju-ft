@@ -941,9 +941,18 @@
         }
 
         // [핵심 1] 사주 일간(5종) × 6대 고민 십신 결합 '개별 분기' 골든타임 엔진
-        function getTrueBaziTiming(dayOheng, concern, gender) {
+                function getTrueBaziTiming(dayOheng, concern, gender, birthStr) {
             const validKeys = ['mok', 'hwa', 'to', 'geum', 'su'];
             const dk = validKeys.includes(dayOheng) ? dayOheng : 'to';
+
+            // [정확도 개선] 오행·고민·성별만으론 같은 조합의 유저 전원이 똑같은 시점을 받는다.
+            // 실제 생일(월+일)을 시드로 더해서, 오행이 같아도 사람마다 다른 시점이 나오게 만든다.
+            let birthSeed = 0;
+            if (birthStr && birthStr.length === 8) {
+                const bMonth = parseInt(birthStr.substring(4, 6), 10) || 0;
+                const bDay = parseInt(birthStr.substring(6, 8), 10) || 0;
+                birthSeed = bMonth + bDay;
+            }
 
             const now = new Date();
             const currentYear = now.getFullYear();
@@ -971,11 +980,11 @@
             const genderShift = (gender === 'female') ? 1 : 0;
             // 이번 달 22일 이후 접속이면 1차 타이밍을 최소 다음 달로 밀어냄
             const minStep = (currentDay >= 22) ? 1 : 0;
-            const step1 = Math.max(minStep, (rawOffset + genderShift) % 3);
+            const step1 = Math.max(minStep, (rawOffset + genderShift + birthSeed) % 3);
 
             const idx1 = baseIdx + step1;
             // 2차 골든타임을 3~4개월 뒤로 확장하여 2027년 상반기까지 도달하도록 계산
-            const gap = (rawOffset % 2 === 0) ? 3 : 4;
+            const gap = ((rawOffset + birthSeed) % 2 === 0) ? 3 : 4;
             const idx2 = idx1 + gap;
 
             const r1Year = Math.floor(idx1 / 12);
@@ -1047,7 +1056,7 @@
         }
 
         // [핵심 2] 십신 타이밍 및 사주 일간·결핍 스탯·고민 정밀 결합 생성기
-        function getTrueBaziSolutions(name, lowestStat, yongshin, dayOheng, gender, mbtiKey) {
+        function getTrueBaziSolutions(name, lowestStat, yongshin, dayOheng, gender, mbtiKey, birthStr) {
             const validKeys = ['mok', 'hwa', 'to', 'geum', 'su'];
             const yk = validKeys.includes(yongshin) ? yongshin : 'mok';
             const dk = validKeys.includes(dayOheng) ? dayOheng : 'to';
@@ -1141,12 +1150,12 @@
             const myCause = STAT_CAUSES[lowestStat.type];
             const myLeak = LEAK_MATRIX;
 
-            const tMoney = getTrueBaziTiming(dk, 'money', gender);
-            const tCareer = getTrueBaziTiming(dk, 'career', gender);
-            const tLove = getTrueBaziTiming(dk, 'love', gender);
-            const tPath = getTrueBaziTiming(dk, 'path', gender);
-            const tPeople = getTrueBaziTiming(dk, 'people', gender);
-            const tMental = getTrueBaziTiming(dk, 'mental', gender);
+            const tMoney = getTrueBaziTiming(dk, 'money', gender, birthStr);
+            const tCareer = getTrueBaziTiming(dk, 'career', gender, birthStr);
+            const tLove = getTrueBaziTiming(dk, 'love', gender, birthStr);
+            const tPath = getTrueBaziTiming(dk, 'path', gender, birthStr);
+            const tPeople = getTrueBaziTiming(dk, 'people', gender, birthStr);
+            const tMental = getTrueBaziTiming(dk, 'mental', gender, birthStr);
 
             return {
                 money: {
@@ -1155,7 +1164,7 @@
                         preview: () => `솔직히 팩트만 까겠습니다.\n돈이 안 모이는 건 불경기 탓이 아니라, ${myCause} 때문입니다.\n머릿속으론 이미 자산가인데 현실 통장이 비어 있는 치명적 이유부터 직시해야 합니다.`,
                         asset: `${myOheng.name} 기운의 특성상 잠재 수익 능력은 출중하나, ${isIntrovert ? '혼자 머릿속으로만 손익을 재다 실질적 타이밍을 놓침.' : '겉으로는 여유로운 척 쿨하게 지갑을 열고 뒤돌아서서 홀로 손익을 걱정함.'}`,
                         flaw: `${myCause} 충동적 소비와 감정적 결제를 이성으로 통제하지 못하고 반복함.`,
-                        leak: myLeak.money[lowestStat.type],
+                        leak: myLeak.career[lowestStat.type],
                         r1: `⚡ ${tMoney.r1} : [잠든 돈맥이 터지는 1차 승부처]`,
                         r1d: `${tMoney.r1} 무렵, 사주에 잠들어 있던 돈맥이 살아나며 ${tMoney.reason}이 시작됩니다. 뜻밖의 수입이나 새로운 제안으로 확실한 반등 기회가 찾아오니, 감정적인 충동 결제를 통제하고 시드머니를 확실히 묶어두세요.`,
                         r2: `📈 ${tMoney.r2} : [자산 퀀텀점프 & 굳히기 골든타임]`,
@@ -1170,7 +1179,7 @@
                         preview: () => `혼자 속앓이 많이 하셨죠?\n사주에 타고난 착한 마음 때문에, 정작 ${myCause} 내 몫은 늘 뒷전이셨네요.\n남 챙기느라 텅 비어버린 내 마음과 통장, 이제는 온전히 나부터 챙겨야 할 때입니다.`,
                         asset: `${myOheng.name}의 온기를 품고 있어 누구보다 진심을 다하지만, ${isIntrovert ? '혹여 폐가 될까 조용히 혼자 삭이며 버텨오셨네요.' : '주변 분위기를 맞추느라 정작 내 실속은 챙기지 못하셨군요.'}`,
                         flaw: `상대에게 상처를 주기 싫어 거절하지 못하고, ${myCause} 남몰래 마음과 통장의 에너지를 깎아먹고 계셨네요.`,
-                        leak: myLeak.money[lowestStat.type],
+                        leak: myLeak.career[lowestStat.type] + ` (특히 ${lowestStat.score}점대 구간에서 두드러지는 패턴이에요.)`,
                         r1: `🌸 ${tMoney.r1} : [막혔던 금전맥이 풀리는 포근한 시기]`,
                         r1d: `${tMoney.r1} 무렵, 당신을 돕는 따뜻한 기운이 스며들며 ${tMoney.reason}이 나타납니다. 그동안 마음을 무겁게 짓누르던 금전적 고민에서 한숨 돌릴 수 있는 반가운 소식이 찾아올 거예요.`,
                         r2: `🌿 ${tMoney.r2} : [나를 위한 온전한 '가치 소비'의 시기]`,
@@ -1721,7 +1730,7 @@
                // [핵심] 정밀 연산 및 솔루션 매핑
                 const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, hour === 'unknown' ? null : hour);
                 const lowest = getLowestStatInfo(sazuResult.stats);
-                const allSolutions = getTrueBaziSolutions(name, lowest, sazuResult.yongshin, sazuResult.dayOheng, gender, sazuResult.mbtiKey);
+                const allSolutions = getTrueBaziSolutions(name, lowest, sazuResult.yongshin, sazuResult.dayOheng, gender, sazuResult.mbtiKey, birthStr);
                 const solutionTemplate = allSolutions[concernKey] || allSolutions.money;
 
                 currentResultData = { 
@@ -2750,7 +2759,7 @@
                 showToast("결과 데이터를 불러오지 못했습니다. 고객센터로 문의해주세요.");
                 return;
             }
-            const allSolutions = getTrueBaziSolutions(restoredData.name, getLowestStatInfo(restoredData.stats), restoredData.yongshin, restoredData.dayOheng, restoredData.userGender, restoredData.mbtiKey);
+            const allSolutions = getTrueBaziSolutions(restoredData.name, getLowestStatInfo(restoredData.stats), restoredData.yongshin, restoredData.dayOheng, restoredData.userGender, restoredData.mbtiKey, restoredData.userBirthStr);
             restoredData.rawSolutionTemplate = allSolutions[restoredData.concernKey || 'money'] || allSolutions.money;
             currentResultData = restoredData;
 
@@ -2857,7 +2866,7 @@
             if (savedDataStr && savedToken) {
                 try {
                     const savedData = JSON.parse(savedDataStr);
-                    const allSolutions = getTrueBaziSolutions(savedData.name, getLowestStatInfo(savedData.stats), savedData.yongshin, savedData.dayOheng, savedData.userGender, savedData.mbtiKey);
+                    const allSolutions = getTrueBaziSolutions(savedData.name, getLowestStatInfo(savedData.stats), savedData.yongshin, savedData.dayOheng, savedData.userGender, savedData.mbtiKey, savedData.userBirthStr);
                     savedData.rawSolutionTemplate = allSolutions[savedData.concernKey || 'money'] || allSolutions.money;
                     currentResultData = savedData;
                     isUnlocked = false;
