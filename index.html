@@ -545,9 +545,12 @@
             </div>
 
             <!-- 무료 유저 바이럴 루프: 프로필 카드 직후 공유 유도 버튼 -->
-            <div class="pt-3 pb-1">
+                        <div class="pt-3 pb-1 space-y-2">
                 <button type="button" id="mainShareBtn" onclick="openShareModal()" class="w-full py-3 px-3 bg-slate-800 border border-slate-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-98 cursor-pointer">
                     <span>📸 내 본캐 스탯 카드 저장 · 공유하기</span>
+                </button>
+                <button type="button" id="modeToggleBtn" onclick="toggleModeView()" class="w-full py-2.5 px-3 bg-transparent border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1 active:scale-98 cursor-pointer">
+                    <span id="modeToggleText">🔄 반대로도 들어보기</span>
                 </button>
             </div>
         </div>
@@ -728,8 +731,8 @@
 
                     <!-- 2순위 (바이럴 공유 & 신규 유치): 1:1 반반 그리드 -->
                     <div class="grid grid-cols-2 gap-2">
-                        <button type="button" onclick="openShareModal()" class="py-3 px-2 bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
-                            <span>📸 본캐 카드 공유</span>
+                                                <button type="button" onclick="toggleModeView()" class="py-3 px-2 bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
+                            <span>🔄 반대로 들어보기</span>
                         </button>
                         <button type="button" onclick="startFreshAnalysis()" class="py-3 px-2 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
                             <span>👥 친구 사주 보기</span>
@@ -1838,6 +1841,12 @@
                 mainShareBtn.className = isT 
                     ? "w-full py-3 px-3 bg-sky-950/40 hover:bg-sky-900/60 border border-sky-400/60 text-sky-100 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(56,189,248,0.2)] active:scale-98 cursor-pointer"
                     : "w-full py-3 px-3 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-400/60 text-rose-100 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.2)] active:scale-98 cursor-pointer";
+                        }
+
+            // [바이럴] 토글 버튼 문구를 현재 보고 있는 모드의 반대로 표시
+            const modeToggleTxt = document.getElementById('modeToggleText');
+            if (modeToggleTxt) {
+                modeToggleTxt.innerText = isT ? '🌸 F 공감 버전으로도 들어보기' : '🧊 T 팩폭 버전으로도 들어보기';
             }
 
             // [개선] 등급별 시각적 차별화 (마케팅 과시욕 극대화)
@@ -2877,7 +2886,17 @@
             document.getElementById('landingSection').style.display = 'flex';
             window.scrollTo({ top: 0 });
         });
+                // [바이럴] 같은 사주를 반대 말투로 다시 보기. 결제 상태는 그대로 유지된다.
+        function toggleModeView() {
+            if (!currentResultData) return;
+            const nextMode = currentResultData.currentMode === 'T' ? 'F' : 'T';
+            currentResultData.currentMode = nextMode;
 
+            if (typeof gtag === 'function') gtag('event', 'mode_toggle', { to_mode: nextMode });
+
+            renderResultView(currentResultData);
+            showToast(nextMode === 'T' ? "🧊 팩폭 모드로 다시 읽는 중" : "🌸 공감 모드로 다시 읽는 중");
+        }
         function restartAnalysisWithOtherConcern() {
             // 이미 결제한 기존 고민의 권한은 절대 지우지 않고 보존
             if (currentResultData) {
