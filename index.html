@@ -2484,9 +2484,15 @@
             ctx.textAlign = 'left';
                         ctx.fillText('타고난 4대 잠재 정밀 수치', 72, 395);
 
-            // 공유 카드 우측에 밸런스 등급 표기 ("나 S+ 나왔어" 바이럴)
+            // 공유 카드 우측에 밸런스 등급 표기 (등급별 컬러 매핑 동기화)
             const cardGrade = calculateSazuGrade(data.elements || {}, data.stats);
-            ctx.fillStyle = '#fbbf24';
+            let gradeHex = '#c084fc'; // 기본 포텐/히든 (퍼플)
+            if (cardGrade.grade === 'S+') gradeHex = '#f59e0b'; // S+ (골드)
+            else if (cardGrade.grade === 'S') gradeHex = '#fb7185'; // S (로즈)
+            else if (cardGrade.grade === 'A') gradeHex = '#38bdf8'; // A (스카이)
+            else if (cardGrade.grade === '포텐') gradeHex = '#34d399'; // 포텐 (민트)
+
+            ctx.fillStyle = gradeHex;
             ctx.font = '900 14px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'right';
             ctx.fillText(cardGrade.grade + '급 밸런스', w - 72, 395);
