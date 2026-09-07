@@ -1741,28 +1741,32 @@
 
                 const percentText = document.getElementById('loadingPercent');
                 const mainStatus = document.getElementById('loadingMainStatus');
-                const totalDuration = 3200;
+                const totalDuration = 4500; // 3.2초 ➔ 4.5초로 연장 (과몰입 빌드업 황금 시간)
                 const startTime = Date.now();
                 let isRendered = false;
 
                 const timer = setInterval(() => {
                     const elapsed = Date.now() - startTime;
                     let progress = 0;
-                    if (elapsed < 600) progress = Math.floor((elapsed / 600) * 30);
-                    else if (elapsed < 1500) progress = 30 + Math.floor(((elapsed - 600) / 900) * 28);
-                    else if (elapsed < 2400) progress = 58 + Math.floor(((elapsed - 1500) / 900) * 26);
-                    else if (elapsed < totalDuration) progress = 84 + Math.floor(((elapsed - 2400) / 800) * 16);
+                    // 진행도(%) 오르는 속도 부드럽게 조정
+                    if (elapsed < 1000) progress = Math.floor((elapsed / 1000) * 35);
+                    else if (elapsed < 2500) progress = 35 + Math.floor(((elapsed - 1000) / 1500) * 35);
+                    else if (elapsed < 4000) progress = 70 + Math.floor(((elapsed - 2500) / 1500) * 25);
+                    else if (elapsed < totalDuration) progress = 95 + Math.floor(((elapsed - 4000) / 500) * 5);
                     else progress = 100;
 
                     if (percentText) percentText.innerText = progress + "%";
                     if (progressFill) progressFill.style.width = progress + "%";
 
-                                        if (mainStatus) {
-                        if (progress < 30) mainStatus.innerText = `${name}님의 사주 8글자 십신(十神) 연산 중...`;
-                        else if (progress < 55) mainStatus.innerHTML = `⚠️ [${lowest.name}] <b class="text-amber-300">${lowest.score}점</b> — 4대 스탯 중 치명적 누수 감지`;
-                        else if (progress < 78) mainStatus.innerText = isT ? `2026-2027 세운(歲運) 팩트 폭행 장전 중...` : `2026-2027 세운(歲運) 위로 처방 조제 중...`;
-                        else if (progress < 95) mainStatus.innerText = `[${solutionTemplate.label}] 막힌 운 뚫어줄 1년 골든타임 도출 중...`;
-                        else mainStatus.innerText = `[분석 완료] 완벽하게 맞춤 조제되었습니다.`;
+                    if (mainStatus) {
+                        // 1. [0~1.3초] 전문적인 명식 추출 (신뢰도)
+                        if (progress < 30) mainStatus.innerText = `🔍 ${name}님의 사주 8글자 정밀 명식 추출 중...`;
+                        // 2. [1.3초~3.2초] 뼈 때리는 결핍 스탯 팩폭 (도파민/어그로 극대화 - 가장 오래 노출)
+                        else if (progress < 75) mainStatus.innerHTML = `⚠️ [${lowest.name}] <b class="text-amber-300">${lowest.score}점</b> — 치명적 누수 원인 분석 중`;
+                        // 3. [3.2초~4.3초] 모드별 해결책 제시 (기대감)
+                        else if (progress < 96) mainStatus.innerText = isT ? `💣 2026-2027 팩트 폭행 골든타임 도출 중...` : `🌸 2026-2027 마음의 짐 풀어줄 위로 조제 중...`;
+                        // 4. [4.3초~4.5초] 완료
+                        else mainStatus.innerText = `✨ [분석 완료] 결과지가 준비되었습니다.`;
                     }
 
                     if (elapsed >= totalDuration && !isRendered) {
