@@ -1106,10 +1106,10 @@
 
             // 2. 취약 스탯(돈촉/멘탈/기회/귀인)별 근본 원인
             const STAT_CAUSES = {
-                wealth: `[돈 냄새 맡는 촉 ${lowestStat.score}점]으로 현실적 손익 계산이 마비되어`,
-                mental: `[멘탈 방어력 ${lowestStat.score}점]으로 사소한 스트레스에도 쉽게 방전되어`,
-                drive: `[기회 포착력 ${lowestStat.score}점]으로 머릿속 시뮬레이션만 돌리다 타이밍을 놓쳐`,
-                network: `[인생 뒤집을 귀인복 ${lowestStat.score}점]으로 선 넘는 사람을 제때 쳐내지 못해`
+                wealth: `<b class="text-amber-300">[돈 냄새 맡는 촉 ${lowestStat.score}점]</b>으로 현실적 손익 계산이 마비되어`,
+                mental: `<b class="text-amber-300">[멘탈 방어력 ${lowestStat.score}점]</b>으로 사소한 스트레스에도 쉽게 방전되어`,
+                drive: `<b class="text-amber-300">[기회 포착력 ${lowestStat.score}점]</b>으로 머릿속 시뮬레이션만 돌리다 타이밍을 놓쳐`,
+                network: `<b class="text-amber-300">[인생 뒤집을 귀인복 ${lowestStat.score}점]</b>으로 선 넘는 사람을 제때 쳐내지 못해`
             };
 
             // 3. 6대 고민 × 4대 취약 스탯별 치명적 누수(Leak) 매트릭스 (100% 매칭)
@@ -1843,14 +1843,15 @@
             const tagsWrapper = document.getElementById('characterHashTags');
             if (tagsWrapper) {
                 const tags = isT ? data.profile.T_tags : data.profile.F_tags;
-                tagsWrapper.innerHTML = tags.map(tag => `<span class="px-2.5 py-0.5 rounded-full ${isT ? 'bg-sky-950/80 text-sky-300 border-sky-400/50' : 'bg-rose-950/50 text-rose-300 border-rose-400/50'} border text-[11px] font-bold shadow-sm">${tag}</span>`).join('');
+                tagsWrapper.innerHTML = tags.map(tag => `<span class="px-2.5 py-1 rounded-full ${isT ? 'bg-sky-950/90 text-sky-300 border-sky-400/60 shadow-[0_0_8px_rgba(56,189,248,0.2)]' : 'bg-[#26131c] text-rose-300 border-rose-400/60 shadow-[0_0_8px_rgba(244,63,94,0.2)]'} border text-[11px] font-extrabold tracking-tight">${tag}</span>`).join('');
             }
 
             const sazuTitle = document.getElementById('sazuCharacterTitle');
             if (sazuTitle) {
                 sazuTitle.innerText = isT ? data.profile.title_T : data.profile.title_F;
-                // [컬러 개선] 촌스러운 풀 컬러를 빼고 깔끔한 화이트로 텍스트 신뢰도와 가독성 극대화
-                sazuTitle.className = "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-white drop-shadow-sm";
+                sazuTitle.className = isT 
+                    ? "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-sky-200 drop-shadow-sm"
+                    : "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-rose-200 drop-shadow-sm";
             }
 
             // [공유 버튼 시인성 개선] 모드(T/F)에 맞춰 테두리와 네온 효과 동적 부여 (보호색 탈피)
@@ -1923,7 +1924,7 @@
             if (concernPreviewTitle) concernPreviewTitle.innerHTML = `<span class="font-bold text-xs sm:text-sm text-slate-100 break-keep">선택하신 [${data.rawSolutionTemplate.label}] 막혀있는 핵심 이유</span>`;
             
             const concernPreviewDesc = document.getElementById('concernPreviewDesc');
-            if (concernPreviewDesc) concernPreviewDesc.innerText = template.preview();
+            if (concernPreviewDesc) concernPreviewDesc.innerHTML = template.preview();
 
             // [보안] 유료 본문은 buffer에만 담고, 승인 완료 시에만 paintPremiumArea()로 주입한다.
             const pColor = isT ? 'sky' : 'rose'; // 모드에 따른 컬러 동기화
