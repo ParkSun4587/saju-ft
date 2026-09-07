@@ -544,15 +544,6 @@
                 </div>
             </div>
 
-            <!-- 무료 유저 바이럴 루프: 프로필 카드 직후 공유 유도 버튼 -->
-                        <div class="pt-3 pb-1 space-y-2">
-                <button type="button" id="mainShareBtn" onclick="openShareModal()" class="w-full py-3 px-3 bg-slate-800 border border-slate-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-98 cursor-pointer">
-                    <span>📸 내 본캐 스탯 카드 저장 · 공유하기</span>
-                </button>
-                <button type="button" id="modeToggleBtn" onclick="toggleModeView()" class="w-full py-2.5 px-3 bg-transparent border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1 active:scale-98 cursor-pointer">
-                    <span id="modeToggleText">🔄 반대로도 들어보기</span>
-                </button>
-            </div>
         </div>
 
         <!-- 카드 2: 무료 요약 진단 (정보 축소, 궁금증 유발) -->
@@ -659,7 +650,7 @@
                                     <!-- 2단계: 원본 유지 -->
                                     <div class="flex items-start gap-2 text-xs text-slate-200">
                                         <span class="text-sky-400 font-bold shrink-0">🔓 2단계</span>
-                                        <span>[1년 로드맵] 2026-2027 터지는 정확한 시점</span>
+                                        <span>[골든타임] 2026-2027 승부처 & <b class="text-amber-300">터지는 정확한 시점</b></span>
                                     </div>
                                     <!-- 3단계: 템플릿 ➔ 귀인/손절 필터로 수정 -->
                                     <div class="flex items-start gap-2 text-xs text-slate-200">
@@ -741,6 +732,16 @@
                 </div>
 
             </div>
+        </div>
+
+        <!-- [전환율] 페이월 통과 후로 이동: 결제 화면을 먼저 보게 하고, 이탈자만 공유·토글로 유도 (카드 3 바깥, 독립 섹션) -->
+        <div class="pt-4 pb-1 space-y-2">
+            <button type="button" id="mainShareBtn" onclick="openShareModal()" class="w-full py-3 px-3 bg-slate-800 border border-slate-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-98 cursor-pointer">
+                <span>📸 내 본캐 스탯 카드 저장 · 공유하기</span>
+            </button>
+            <button type="button" id="modeToggleBtn" onclick="toggleModeView()" class="w-full py-2.5 px-3 bg-transparent border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1 active:scale-98 cursor-pointer">
+                <span id="modeToggleText">🔄 반대로도 들어보기</span>
+            </button>
         </div>
     </main>
 
@@ -1741,32 +1742,27 @@
 
                 const percentText = document.getElementById('loadingPercent');
                 const mainStatus = document.getElementById('loadingMainStatus');
-                const totalDuration = 4500; // 3.2초 ➔ 4.5초로 연장 (과몰입 빌드업 황금 시간)
+                const totalDuration = 4000;
                 const startTime = Date.now();
                 let isRendered = false;
 
                 const timer = setInterval(() => {
                     const elapsed = Date.now() - startTime;
                     let progress = 0;
-                    // 진행도(%) 오르는 속도 부드럽게 조정
-                    if (elapsed < 1000) progress = Math.floor((elapsed / 1000) * 35);
-                    else if (elapsed < 2500) progress = 35 + Math.floor(((elapsed - 1000) / 1500) * 35);
-                    else if (elapsed < 4000) progress = 70 + Math.floor(((elapsed - 2500) / 1500) * 25);
-                    else if (elapsed < totalDuration) progress = 95 + Math.floor(((elapsed - 4000) / 500) * 5);
-                    else progress = 100;
+                    if (elapsed < 1000) progress = Math.floor((elapsed / 1000) * 30);
+                    else if (elapsed < 2000) progress = 30 + Math.floor(((elapsed - 1000) / 1000) * 28);
+                    else if (elapsed < 3000) progress = 58 + Math.floor(((elapsed - 2000) / 1000) * 37);
+                    else progress = 95 + Math.floor(((elapsed - 3000) / 1000) * 5);
+                    if (progress > 100) progress = 100;
 
                     if (percentText) percentText.innerText = progress + "%";
                     if (progressFill) progressFill.style.width = progress + "%";
 
-                    if (mainStatus) {
-                        // 1. [0~1.3초] 전문적인 명식 추출 (신뢰도)
-                        if (progress < 30) mainStatus.innerText = `🔍 ${name}님의 사주 8글자 정밀 명식 추출 중...`;
-                        // 2. [1.3초~3.2초] 뼈 때리는 결핍 스탯 팩폭 (도파민/어그로 극대화 - 가장 오래 노출)
-                        else if (progress < 75) mainStatus.innerHTML = `⚠️ [${lowest.name}] <b class="text-amber-300">${lowest.score}점</b> — 치명적 누수 원인 분석 중`;
-                        // 3. [3.2초~4.3초] 모드별 해결책 제시 (기대감)
-                        else if (progress < 96) mainStatus.innerText = isT ? `💣 2026-2027 팩트 폭행 골든타임 도출 중...` : `🌸 2026-2027 마음의 짐 풀어줄 위로 조제 중...`;
-                        // 4. [4.3초~4.5초] 완료
-                        else mainStatus.innerText = `✨ [분석 완료] 결과지가 준비되었습니다.`;
+                                        if (mainStatus) {
+                        if (progress < 30) mainStatus.innerText = `${name}님의 사주 8글자 십신(十神) 연산 중...`;
+                        else if (progress < 58) mainStatus.innerHTML = `⚠️ [${lowest.name}] <b class="text-amber-300">${lowest.score}점</b> — 4대 스탯 중 치명적 누수 감지`;
+                        else if (progress < 95) mainStatus.innerText = isT ? `2026-2027 세운(歲運) 팩트 폭행 장전 중...` : `2026-2027 세운(歲運) 위로 처방 조제 중...`;
+                        else mainStatus.innerText = `[분석 완료] 완벽하게 맞춤 조제되었습니다.`;
                     }
 
                     if (elapsed >= totalDuration && !isRendered) {
@@ -2005,29 +2001,29 @@
             const payFeatures = document.getElementById('payBoxFeatures');
             if (payFeatures) {
                 payFeatures.innerHTML = isT ? `
-                    <div class="flex items-center text-[11px] text-slate-200 py-0.5">
-                        <span class="text-sky-400 font-bold whitespace-nowrap shrink-0 text-left">🔓 1단계 [원인분석]&nbsp;</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-sky-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 1단계 [원인분석]</span>
                         <span class="text-slate-300 truncate font-medium text-left">내 발목을 잡던 치명적 누수 팩트 진단</span>
                     </div>
-                    <div class="flex items-center text-[11px] text-slate-200 py-0.5">
-                        <span class="text-amber-400 font-bold whitespace-nowrap shrink-0 text-left">🔓 2단계 [1년 로드맵]&nbsp;</span>
-                        <span class="text-amber-300 truncate font-semibold text-left">2026-2027 터지는 정확한 시점</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-amber-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 2단계 [1년 로드맵]</span>
+                        <span class="text-amber-300 truncate font-semibold text-left"> 2026-2027 터지는 정확한 시점</span>
                     </div>
-                    <div class="flex items-center text-[11px] text-slate-200 py-0.5">
-                        <span class="text-emerald-400 font-bold whitespace-nowrap shrink-0 text-left">🔓 3단계 [실전처방]&nbsp;</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-emerald-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🔓 3단계 [실전처방]</span>
                         <span class="text-emerald-300 truncate font-semibold text-left">오행 개운법 & 귀인·손절 인맥 필터</span>
                     </div>
                 ` : `
-                    <div class="flex items-center text-[11px] text-slate-200 py-0.5">
-                        <span class="text-rose-400 font-bold whitespace-nowrap shrink-0 text-left">🌸 1단계 [심층공감]&nbsp;</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-rose-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 1단계 [심층공감]</span>
                         <span class="text-slate-300 truncate font-medium text-left">혼자 속앓이한 악순환의 근본 치유</span>
                     </div>
-                    <div class="flex items-center text-[11px] text-slate-200 py-0.5">
-                        <span class="text-rose-400 font-bold whitespace-nowrap shrink-0 text-left">🌸 2단계 [1년 로드맵]&nbsp;</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-rose-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 2단계 [1년 로드맵]</span>
                         <span class="text-rose-300 truncate font-semibold text-left">마음의 짐이 풀리는 반등 골든타임</span>
                     </div>
-                    <div class="flex items-center text-[11px] text-slate-200 py-0.5">
-                        <span class="text-emerald-400 font-bold whitespace-nowrap shrink-0 text-left">🌸 3단계 [실전처방]&nbsp;</span>
+                    <div class="flex items-center gap-2.5 text-[11px] text-slate-200 py-0.5">
+                        <span class="text-emerald-400 font-bold whitespace-nowrap w-24 shrink-0 text-left">🌸 3단계 [실전처방]</span>
                         <span class="text-emerald-300 truncate font-semibold text-left">힐링 템 & 나를 지켜줄 귀인 인연법</span>
                     </div>
                 `;
