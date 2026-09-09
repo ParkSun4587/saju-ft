@@ -415,28 +415,31 @@
     </main>
 
     <!-- 2. 로딩 섹션 -->
-    <main id="loadingSection" style="display: none;" class="max-w-lg w-full flex flex-col justify-center min-h-[100dvh] space-y-5">
-        <div class="card-box p-6 sm:p-8 rounded-3xl text-center space-y-6 relative overflow-hidden">
+    <main id="loadingSection" style="display: none;" class="max-w-lg w-full flex flex-col justify-center min-h-[100dvh] space-y-4 px-2">
+        <div class="card-box p-6 sm:p-8 rounded-[28px] text-center space-y-6 relative overflow-hidden bg-white border border-rose-200/60 shadow-sm">
             <div id="loadingGlowBg" class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full blur-3xl pointer-events-none"></div>
             
-            <div class="relative w-44 h-44 mx-auto flex items-center justify-center my-2">
-                <div id="outerTechRing" class="absolute inset-0 rounded-full border border-rose-200 anim-spin"></div>
-                <div class="absolute inset-3 rounded-full border border-dashed border-rose-300 anim-spin" style="animation-direction: reverse; animation-duration: 12s;"></div>
+            <div class="relative w-40 h-40 mx-auto flex items-center justify-center my-2">
+                <!-- 부드러운 파스텔 글로우 링 -->
+                <div id="outerTechRing" class="absolute inset-0 rounded-full border-2 border-rose-200/60 transition-all duration-300"></div>
+                <div class="absolute inset-2 rounded-full bg-gradient-to-b from-rose-50/50 to-sky-50/50 animate-pulse"></div>
                 
-                <div class="relative w-28 h-28 rounded-full bg-white border border-rose-100 flex items-center justify-center shadow-inner">
-                    <span id="loadingPercent" class="text-4xl font-black text-slate-800 tracking-tight font-mono">0%</span>
+                <!-- 중앙 크리스탈 구슬 & 퍼센트 -->
+                <div class="relative flex flex-col items-center justify-center z-10 space-y-1">
+                    <div class="text-4xl anim-float select-none">🔮</div>
+                    <span id="loadingPercent" class="text-3xl font-black text-slate-800 tracking-tight">0%</span>
                 </div>
             </div>
 
             <div class="min-h-[48px] flex items-center justify-center px-2">
-                <h2 id="loadingMainStatus" class="text-xs sm:text-sm font-black text-slate-700 tracking-tight transition-all duration-150 break-keep text-center">
-                    사주 8글자 정밀 만세력 산출 중...
+                <h2 id="loadingMainStatus" class="text-xs sm:text-sm font-bold text-slate-700 tracking-tight transition-all duration-150 break-keep text-center leading-relaxed">
+                    🔍 생일 데이터에서 숨은 본캐 스캔 중...
                 </h2>
             </div>
 
-            <div class="pt-1 max-w-[280px] mx-auto w-full">
-                <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
-                    <div id="loadingProgressFill" class="h-full rounded-full transition-all duration-75" style="width: 0%;"></div>
+            <div class="pt-1 max-w-[260px] mx-auto w-full">
+                <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/80">
+                    <div id="loadingProgressFill" class="h-full rounded-full transition-all duration-75 bg-rose-400" style="width: 0%;"></div>
                 </div>
             </div>
         </div>
@@ -1754,13 +1757,13 @@
                 const glowBg = document.getElementById('loadingGlowBg');
 
                 if (isT) {
-                    if (glowBg) glowBg.className = "absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-sky-500/20 rounded-full blur-3xl pointer-events-none";
+                    if (glowBg) glowBg.className = "absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-sky-400/20 rounded-full blur-3xl pointer-events-none";
                     if (progressFill) { progressFill.className = "h-full rounded-full transition-all duration-75"; progressFill.style.backgroundColor = '#38bdf8'; }
-                    if (outerRing) outerRing.className = "absolute inset-0 rounded-full border border-slate-800 border-t-sky-400 border-r-indigo-400 anim-spin";
+                    if (outerRing) outerRing.className = "absolute inset-0 rounded-full border-2 border-sky-300 shadow-[0_0_18px_rgba(56,189,248,0.3)] transition-all duration-300";
                 } else {
-                    if (glowBg) glowBg.className = "absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-rose-500/15 rounded-full blur-3xl pointer-events-none";
+                    if (glowBg) glowBg.className = "absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-rose-400/20 rounded-full blur-3xl pointer-events-none";
                     if (progressFill) { progressFill.className = "h-full rounded-full transition-all duration-75"; progressFill.style.backgroundColor = '#fb7185'; }
-                    if (outerRing) outerRing.className = "absolute inset-0 rounded-full border border-slate-800 border-t-rose-400 border-r-pink-300 anim-spin";
+                    if (outerRing) outerRing.className = "absolute inset-0 rounded-full border-2 border-rose-300 shadow-[0_0_18px_rgba(251,113,133,0.3)] transition-all duration-300";
                 }
 
                 let calcYear = year, calcMonth = month, calcDay = day;
@@ -1811,14 +1814,14 @@
                     if (progressFill) progressFill.style.width = progress + "%";
 
                     if (mainStatus) {
-                        // 1. [0~1.3초] 전문적인 명식 추출 (신뢰도)
-                        if (progress < 30) mainStatus.innerText = `🔍 ${name}님의 사주 8글자 정밀 명식 추출 중...`;
-                        // 2. [1.3초~3.2초] 뼈 때리는 결핍 스탯 팩폭 (도파민/어그로 극대화 - 가장 오래 노출)
-                        else if (progress < 75) mainStatus.innerHTML = `⚠️ [${lowest.name}] <b class="text-amber-300">${lowest.score}점</b> — 치명적 누수 원인 분석 중`;
-                        // 3. [3.2초~4.3초] 모드별 해결책 제시 (기대감)
-                        else if (progress < 96) mainStatus.innerText = isT ? `💣 2026-2027 팩트 폭행 골든타임 도출 중...` : `🌸 2026-2027 마음의 짐 풀어줄 위로 조제 중...`;
-                        // 4. [4.3초~4.5초] 완료
-                        else mainStatus.innerText = `✨ [분석 완료] 결과지가 준비되었습니다.`;
+                        // 1. [0~1.3초] 가벼운 스캔 시작
+                        if (progress < 30) mainStatus.innerText = `🔍 ${name}님의 생일 데이터에서 본캐 스캔 중...`;
+                        // 2. [1.3초~3.2초] 찔림 유발 / 과몰입 (바뀐 스탯명 적용)
+                        else if (progress < 75) mainStatus.innerHTML = `⚠️ [${lowest.name}] <b class="text-rose-500 font-extrabold">${lowest.score}점</b> — 숨겨왔던 팩트 본성 발견!`;
+                        // 3. [3.2초~4.3초] 선택한 모드별 맞춤 빌드업
+                        else if (progress < 96) mainStatus.innerText = isT ? `🧊 뼈 부러질 준비 완료! 현실 팩폭 조제 중...` : `🌸 눈물 쏙 빠지는 100% 무조건 내 편 위로 조제 중...`;
+                        // 4. [4.3초~4.5초] 완료 안내
+                        else mainStatus.innerText = `✨ 본캐 분석 완료! 결과 카드를 열어보는 중...`;
                     }
 
                     if (elapsed >= totalDuration && !isRendered) {
