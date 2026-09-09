@@ -877,21 +877,6 @@
         </div>
     </div>
 
-    <!-- 6. 약관 및 개인정보처리방침 팝업 모달 -->
-    <div id="policyModal" style="display: none; position: fixed; inset: 0; width: 100vw; height: 100dvh; z-index: 99999;" class="items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-        <div class="bg-white border border-rose-200/80 w-full max-w-lg rounded-[28px] p-5 sm:p-6 shadow-2xl flex flex-col max-h-[80dvh] text-left my-auto">
-            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
-                <h3 id="policyModalTitle" class="text-base sm:text-lg font-black text-slate-900">이용약관</h3>
-                <button type="button" onclick="closePolicyModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold p-1 leading-none bg-transparent border-0 cursor-pointer">&times;</button>
-            </div>
-            <div id="policyModalContent" class="overflow-y-auto py-4 text-xs text-slate-600 space-y-4 pr-1 leading-relaxed" style="-webkit-overflow-scrolling: touch;">
-            </div>
-            <div class="pt-3 border-t border-slate-100">
-                <button type="button" onclick="closePolicyModal()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-sm font-bold transition border-0 cursor-pointer">닫기</button>
-            </div>
-        </div>
-    </div>
-
     <!-- 법적 필수 푸터 -->
     <footer id="mainFooter" class="w-full max-w-lg text-center pt-8 pb-10">
         <div class="text-[10px] text-slate-500 font-medium space-y-1.5">
@@ -2790,20 +2775,21 @@
         };
 
         function openPolicyModal(type) {
-          const modal = document.getElementById('policyModal');
-          if (policyTexts[type]) {
-            document.getElementById('policyModalTitle').innerText = policyTexts[type].title;
-            document.getElementById('policyModalContent').innerHTML = policyTexts[type].content;
-            // 스크롤 이동 없이 현재 유저 시야 한가운데에 즉시 띄움
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-          }
+            const modal = document.getElementById('policyModal');
+            if (modal && policyTexts[type]) {
+                document.getElementById('policyModalTitle').innerText = policyTexts[type].title;
+                document.getElementById('policyModalContent').innerHTML = policyTexts[type].content;
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
         }
 
         function closePolicyModal() { 
-          const modal = document.getElementById('policyModal');
-          modal.style.display = 'none';
-          document.body.style.overflow = '';
+            const modal = document.getElementById('policyModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
         }
         function goToLandingForNewConcern() { document.getElementById('resultSection').style.display = 'none'; document.getElementById('loadingSection').style.display = 'none'; document.getElementById('landingSection').style.display = 'flex'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
@@ -3042,5 +3028,19 @@
             setTimeout(() => { document.getElementById('nameInput').focus(); }, 100);
         }
     </script>
+<!-- 6. 약관 및 개인정보처리방침 팝업 모달 (최상위 독립 배치) -->
+    <div id="policyModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; z-index: 999999; background: rgba(15, 23, 42, 0.45); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);" class="items-center justify-center p-4">
+        <div class="bg-white border border-rose-200/80 w-full max-w-sm rounded-[28px] p-5 shadow-2xl flex flex-col max-h-[75dvh] text-left relative m-auto" style="transform: translate3d(0,0,0);">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                <h3 id="policyModalTitle" class="text-base font-black text-slate-900">이용약관</h3>
+                <button type="button" onclick="closePolicyModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold p-1 leading-none bg-transparent border-0 cursor-pointer">&times;</button>
+            </div>
+            <div id="policyModalContent" class="overflow-y-auto py-3 text-xs text-slate-600 space-y-3 pr-1 leading-relaxed font-normal" style="-webkit-overflow-scrolling: touch;">
+            </div>
+            <div class="pt-3 border-t border-slate-100">
+                <button type="button" onclick="closePolicyModal()" class="w-full py-3 bg-slate-100 active:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition border-0 cursor-pointer">닫기</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
