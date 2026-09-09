@@ -549,7 +549,6 @@
                     <!-- JS에서 3줄 자동 주입 -->
                 </div>
             </div>
-            </div>
 
             <!-- [바이럴 치트키] 환상의 찰떡 깐부 vs 숨 막히는 상극 -->
             <div class="grid grid-cols-2 gap-2 mt-2 text-left">
@@ -2050,13 +2049,7 @@
                 badge.innerHTML = isT ? `필터 없이 뼈 때리는 <span class="text-sky-700">${data.name}</span>님의 T 팩폭 리포트` : `100% 내 편 들어주는 <span class="text-rose-700">${data.name}</span>님의 F 힐링 리포트`;
                 badge.className = isT ? "px-3.5 py-1 bg-sky-50 text-sky-600 border border-sky-200 rounded-full text-xs font-extrabold tracking-wide shadow-sm" : "px-3.5 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-xs font-extrabold tracking-wide shadow-sm";
             }
-
-            const tagsWrapper = document.getElementById('characterHashTags');
-            if (tagsWrapper) {
-                const tags = isT ? data.profile.T_tags : data.profile.F_tags;
-                tagsWrapper.innerHTML = tags.map(tag => `<span class="px-2.5 py-1 rounded-full ${isT ? 'bg-sky-50 text-sky-600 border-sky-200' : 'bg-rose-50 text-rose-600 border-rose-200'} border text-[11px] font-extrabold tracking-tight shadow-sm">${tag}</span>`).join('');
-            }
-
+            
             const mKey = data.mbtiKey || 'ESTJ';
             const prof = SAZU_CHARACTER_PROFILES[mKey] || SAZU_CHARACTER_PROFILES['ESTJ'];
             const lowest = getLowestStatInfo(data.stats);
@@ -2317,7 +2310,6 @@
             if (cardSubtitleEl) cardSubtitleEl.innerHTML = isT ? `<span class="text-sky-400 text-[10px] font-bold tracking-wider">🔍 사회적 가면 속 진짜 팩트 본성</span>` : `<span class="text-rose-300 text-[10px] font-bold tracking-wider">🌙 애써 감춰왔던 진짜 다정 본캐</span>`;
 
             const mainTitle = document.getElementById('cardMainTitle');
-            const tagsWrap = document.getElementById('cardTags');
             const bigMbti = document.getElementById('cardBigMbti');
 
             if (mainTitle) {
@@ -2327,10 +2319,6 @@
             if (bigMbti) {
                 bigMbti.innerText = data.mbtiKey || 'ISTJ';
                 bigMbti.className = isT ? "font-mono drop-shadow-[0_0_12px_rgba(56,189,248,0.5)] text-sky-400" : "font-mono drop-shadow-[0_0_12px_rgba(253,164,175,0.5)] text-rose-300";
-            }
-            if (tagsWrap) {
-                const tags = isT ? data.profile.T_tags : data.profile.F_tags;
-                tagsWrap.innerHTML = tags.map(tag => `<span class="${isT ? 'text-sky-300' : 'text-rose-300'} px-1.5 font-semibold">${tag}</span>`).join('');
             }
 
             const lowest = getLowestStatInfo(s);
@@ -2566,7 +2554,7 @@
             ctx.stroke();
             ctx.restore();
 
-            // 1) 상단 헤더: 🌸 100% 내 편 들어주는 [이름]의 사주 MBTI (Y: 60)
+            // 1) 상단 헤더
             ctx.save();
             ctx.fillStyle = isT ? '#0284c7' : '#e11d48';
             ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
@@ -2576,7 +2564,7 @@
             ctx.fillText(`${headerPrefix}[${userName}]의 사주 MBTI`, w / 2, 60);
             ctx.restore();
 
-            // 2) 사주 등급: 👑 S급 밸런스 확신형 리더 (Y: 105)
+            // 2) 사주 등급 뱃지
             ctx.save();
             ctx.fillStyle = isT ? '#f0f9ff' : '#fff1f2';
             ctx.strokeStyle = isT ? '#bae6fd' : '#fecdd3';
@@ -2592,7 +2580,7 @@
             ctx.fillText(`${gradeInfo.grade}급 ${gradeInfo.title}`, w / 2, 105);
             ctx.restore();
 
-            // 3) 거대 MBTI (Y: 180)
+            // 3) 거대 MBTI
             ctx.save();
             ctx.fillStyle = isT ? '#0284c7' : '#e11d48';
             ctx.font = '900 68px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
@@ -2602,7 +2590,7 @@
             ctx.fillText(mKey, w / 2, 180);
             ctx.restore();
 
-            // 4) 타이틀: "남들 싼 똥 혼자 다 치우는 K-장녀" (Y: 235)
+            // 4) 메인 타이틀
             const mainTitle = `"${isT ? prof.title_T : prof.title_F}"`;
             ctx.save();
             ctx.fillStyle = '#0f172a';
@@ -2612,7 +2600,7 @@
             drawWrappedTitle(ctx, mainTitle, w / 2, 235, 490, 26);
             ctx.restore();
 
-            // 5) 캐릭터 밈 배너 (Y: 295)
+            // 5) 캐릭터 밈 배너
             ctx.save();
             ctx.fillStyle = '#fef3c7';
             ctx.strokeStyle = '#fde68a';
@@ -2628,7 +2616,7 @@
             ctx.fillText(`[ ${prof.memeIcon} ${prof.memeText} ]`, w / 2, 296);
             ctx.restore();
 
-            // 6) 📌 내 본캐 취급설명서 박스 (Y: 345 ~ 630)
+            // 6) 📌 내 본캐 취급설명서 박스
             ctx.save();
             ctx.fillStyle = '#f8fafc';
             ctx.strokeStyle = '#e2e8f0';
@@ -2637,14 +2625,12 @@
             ctx.fill();
             ctx.stroke();
 
-            // 취급설명서 타이틀
             ctx.fillStyle = '#0f172a';
             ctx.font = '900 15px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
             ctx.fillText('📌 내 본캐 취급설명서', 68, 380);
 
-            // 구분선
             ctx.strokeStyle = '#e2e8f0';
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -2652,7 +2638,6 @@
             ctx.lineTo(w - 68, 405);
             ctx.stroke();
 
-            // 3줄 불렛 드로잉
             const bList = isT ? prof.bullets_T : prof.bullets_F;
             const bullets = [
                 `• ${bList[0]}`,
@@ -2669,7 +2654,7 @@
             });
             ctx.restore();
 
-            // 7) 💖 찰떡 깐부 vs 💣 숨 막히는 상극 (Y: 645 ~ 720)
+            // 7) 💖 찰떡 깐부 vs 💣 상극
             ctx.save();
             ctx.fillStyle = '#fff1f2';
             ctx.strokeStyle = '#fecdd3';
@@ -2687,7 +2672,7 @@
             ctx.fillText(`💣 숨 막히는 상극: ${prof.worst} (${prof.worstTag})`, w / 2, 688);
             ctx.restore();
 
-            // 8) 하단 링크 스티커 영역 (Y: 735 ~ 825)
+            // 8) 하단 링크 스티커 영역
             ctx.save();
             ctx.setLineDash([6, 4]);
             ctx.strokeStyle = isT ? '#7dd3fc' : '#fda4af';
@@ -2708,7 +2693,6 @@
             ctx.fillText('인스타 스토리 링크 스티커를 여기에 붙여주세요', w / 2, 788);
             ctx.restore();
 
-            // 파일 출력
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             canvas.toBlob(async (blob) => {
                 if (!blob) return;
