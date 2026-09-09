@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="color-scheme" content="light only">
+    <meta name="color-scheme" content="only light">
     <meta name="supported-color-schemes" content="light">
+    <meta name="darkreader-lock">
     <title>사주FT - F공감 vs T팩폭 사주 MBTI</title>
     
     <!-- 구글/네이버 검색엔진 최적화(SEO) 표준 메타 태그 -->
@@ -70,29 +71,36 @@
         /* Pretendard 폰트 제거 - 시스템 폰트 사용으로 로딩 속도 개선 */
 
         :root {
-            color-scheme: light only;
+            color-scheme: only light !important;
+            supported-color-schemes: light !important;
         }
 
-        html, body { 
-            background: #fcfaf7 !important;
+        /* 삼성 인터넷 강제 다크모드 무력화 핵심 */
+        html {
+            background-color: #fcfaf7 !important;
+            color-scheme: only light !important;
+        }
+
+        body { 
+            background-color: #fcfaf7 !important;
             color: #1e293b !important; 
-            color-scheme: light only;
+            color-scheme: only light !important;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
-        }
-        /* 삼성 인터넷 강제 다크모드 반전 방어 레이어 */
-        body {
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
+            /* 삼성 인터넷 렌더러의 색상 반전 강제 우회 */
+            background-image: radial-gradient(rgba(0,0,0,0) 1px, transparent 0) !important;
+            min-height: 100dvh;
         }
 
         .card-box { 
             background-color: #ffffff !important; 
             border: 1px solid rgba(254, 205, 211, 0.8) !important; 
             box-shadow: 0 10px 30px rgba(225, 175, 185, 0.15) !important;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
+            /* 그래픽 레이어로 분리하여 흑백 반전 대상에서 강제 제외 */
+            isolation: isolate;
+            filter: contrast(100%);
+            -webkit-filter: contrast(100%);
         }
         .input-box {
             background-color: #ffffff !important;
