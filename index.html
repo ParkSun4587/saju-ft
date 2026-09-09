@@ -2647,24 +2647,47 @@
             });
             ctx.restore();
 
-            // 7) 하단 인스타 링크 스티커 영역 (Y: 748 ~ 835)
+            // 7) 찰떡 깐부 vs 상극 바이럴 바 (Y: 742 ~ 788)
+            const mKeyCanvas = data.mbtiKey || 'ISTJ';
+            const chemCanvas = MBTI_CHEMISTRY[mKeyCanvas] || MBTI_CHEMISTRY['ISTJ'];
+            
             ctx.save();
-            ctx.setLineDash([6, 4]);
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#fecdd3';
+            ctx.lineWidth = 1;
+            roundRect(ctx, 50, 742, w - 100, 44, 14);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'center';
+
+            ctx.fillStyle = '#e11d48';
+            ctx.fillText(`💖 찰떡: ${chemCanvas.best} (${chemCanvas.bestTag})`, w / 2 - 120, 764);
+
+            ctx.fillStyle = '#64748b';
+            ctx.fillText('|', w / 2, 764);
+
+            ctx.fillStyle = '#475569';
+            ctx.fillText(`💣 상극: ${chemCanvas.worst} (${chemCanvas.worstTag})`, w / 2 + 120, 764);
+            ctx.restore();
+
+            // 8) 하단 인스타 링크 스티커 영역 (Y: 796 ~ 846)
+            ctx.save();
+            ctx.setLineDash([5, 4]);
             ctx.strokeStyle = isT ? '#7dd3fc' : '#fda4af';
             ctx.fillStyle = isT ? '#f0f9ff' : '#fff1f2';
             ctx.lineWidth = 1.5;
-            roundRect(ctx, 50, 748, w - 100, 84, 16);
+            roundRect(ctx, 50, 796, w - 100, 50, 14);
             ctx.fill();
             ctx.stroke();
 
             ctx.fillStyle = isT ? '#0284c7' : '#e11d48';
-            ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            ctx.font = '900 12px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('🔗 [링크는 본문 / 스토리 스티커에 붙이기]', w / 2, 780);
-
-            ctx.fillStyle = '#64748b';
-            ctx.font = '12px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.fillText('너도 네 숨겨진 사주 본캐 스탯 확인해봐 (터치)', w / 2, 808);
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🔗 [링크는 본문 / 스토리 스티커에 붙이기] 너도 본캐 까봐!', w / 2, 821);
             ctx.restore();
 
             // 3. 파일 출력 및 모바일 뷰어 분기 (전체 SNS 범용 지원)
