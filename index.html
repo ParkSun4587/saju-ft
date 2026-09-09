@@ -43,8 +43,8 @@
         gtag('config', 'G-XZ9JH0P8P8');
     </script>
     
-    <!-- Tailwind CDN 로드 전 흰 화면 깜빡임(FOUC) 방지 -->
-    <style>html,body{background:#080c16;color:#f8fafc;}</style>
+    <!-- Tailwind CDN 로드 전 깜빡임 방지 (파스텔 크림 톤) -->
+    <style>html,body{background:#fcfaf7;color:#1e293b;}</style>
     <!-- 인앱 브라우저 및 모바일 차단 방지용 Tailwind 설정 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -57,64 +57,61 @@
     <script src="https://js.tosspayments.com/v1/payment"></script>
 
    <style>
-        /* Pretendard 폰트 제거 - 시스템 폰트 사용으로 로딩 속도 개선 */
-
         body { 
-            background: #080c16;
-            color: #f8fafc; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fcfaf7;
+            color: #1e293b; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Segoe UI', sans-serif;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
         .card-box { 
-            background: rgba(15, 23, 42, 0.95); 
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1px solid rgba(255, 255, 255, 0.12); 
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            background: rgba(255, 255, 255, 0.98); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(254, 205, 211, 0.6); 
+            box-shadow: 0 10px 30px rgba(225, 175, 185, 0.12);
         }
         .input-box {
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: #f8fafc;
+            background: #ffffff;
+            border: 1.5px solid #f1f5f9;
+            color: #0f172a;
             transition: all 0.2s ease;
             -webkit-appearance: none;
             appearance: none;
         }
         .input-box:focus {
-            border-color: #f59e0b;
-            background: #090e1a;
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+            border-color: #fb7185;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.15);
             outline: none;
         }
         
-        /* 모바일 브라우저 자동 확대 방지 */
         @media screen and (max-width: 768px) {
-            input[type="text"], select, textarea { font-size: 16px !important; }
+            input[type="text"], input[type="tel"], select, textarea { font-size: 16px !important; }
         }
         
         select.input-box { 
-            color: #f1f5f9; 
-            font-weight: 600; 
+            color: #334155; 
+            font-weight: 700; 
             text-align-last: center; 
         }
-        select.input-box option { background: #0f172a; color: #f8fafc; }
+        select.input-box option { background: #ffffff; color: #1e293b; }
 
         .btn-action-f {
-            background: #18121e;
+            background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
             border: 2px solid #fda4af;
-            box-shadow: 0 0 18px rgba(253, 164, 175, 0.4), inset 0 0 10px rgba(253, 164, 175, 0.15);
+            box-shadow: 0 6px 16px rgba(253, 164, 175, 0.35);
             transition: all 0.2s ease;
         }
-        .btn-action-f:active { transform: scale(0.98); }
+        .btn-action-f:active { transform: scale(0.97); }
 
         .btn-action-t {
-            background: #111c33;
-            border: 2px solid #38bdf8;
-            box-shadow: 0 0 18px rgba(56, 189, 248, 0.6), inset 0 0 10px rgba(56, 189, 248, 0.2);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #7dd3fc;
+            box-shadow: 0 6px 16px rgba(125, 211, 252, 0.35);
             transition: all 0.2s ease;
         }
-        .btn-action-t:active { transform: scale(0.98); }
+        .btn-action-t:active { transform: scale(0.97); }
 
         .toggle-tab-btn { 
             transition: all 0.2s ease; 
@@ -125,25 +122,25 @@
             line-height: 1 !important;
         }
         .toggle-tab-btn.active { 
-            background: #334155; 
-            color: #ffffff !important; 
-            font-weight: 700; 
-            box-shadow: 0 2px 6px rgba(0,0,0,0.5); 
+            background: #ffffff; 
+            color: #0f172a !important; 
+            font-weight: 800; 
+            box-shadow: 0 2px 8px rgba(148, 163, 184, 0.25); 
         }
         .toggle-tab-btn.inactive { 
             background: transparent; 
             color: #94a3b8 !important; 
-            font-weight: 500; 
+            font-weight: 600; 
         }
-        
+
         .btn-pay-main {
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-            box-shadow: 0 0 25px rgba(245, 158, 11, 0.6), 0 4px 15px rgba(0,0,0,0.5) !important;
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.4), 0 4px 15px rgba(0,0,0,0.15) !important;
             border: 2px solid #fde68a !important;
-            color: #050811 !important;
+            color: #ffffff !important;
             transition: all 0.2s ease;
         }
-        .btn-pay-main:active { transform: scale(0.98); border-bottom-width: 2px !important; }
+        .btn-pay-main:active { transform: scale(0.98); }
 
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .anim-spin { animation: spin-slow 8s linear infinite; }
@@ -156,7 +153,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(11,17,32,0.3) 30%, rgba(8,12,22,0.75) 70%, rgba(8,12,22,0.95) 100%);
+            background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 40%, rgba(252,250,247,0.95) 85%, #fcfaf7 100%);
             backdrop-filter: blur(1.5px);
             -webkit-backdrop-filter: blur(1.5px);
             z-index: 10;
@@ -189,30 +186,32 @@
         .anim-float { animation: float 3s ease-in-out infinite; }
 
         .concern-chip {
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: #94a3b8;
+            background: #ffffff;
+            border: 1.5px solid #f1f5f9;
+            color: #64748b;
             transition: all 0.2s ease;
             cursor: pointer;
             text-align: left;
         }
-        .concern-chip:hover { border-color: #64748b; color: #e2e8f0; }         .concern-chip:active { transform: scale(0.96); }         
+        .concern-chip:hover { border-color: #fbcfe8; color: #334155; }
+        .concern-chip:active { transform: scale(0.96); }         
         .concern-chip.selected {
-            background: rgba(245, 158, 11, 0.15);
-            border-color: #fbbf24; color: #fef08a;
-            font-weight: 700; box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+            background: #fff1f2;
+            border-color: #fb7185; 
+            color: #e11d48;
+            font-weight: 800; 
+            box-shadow: 0 4px 14px rgba(251, 113, 133, 0.18);
         }
         .mobile-title {
-            font-size: clamp(1.1rem, 4.8vw, 1.5rem);
-            line-height: 1.4; word-break: keep-all; white-space: normal; letter-spacing: -0.03em;
+            font-size: clamp(1.15rem, 4.8vw, 1.5rem);
+            line-height: 1.4; word-break: keep-all; letter-spacing: -0.03em;
         }
-        .nowrap-chunk { display: inline-block; white-space: nowrap; }
 
         .fade-in-up {
-            animation: fadeInUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(15px); }
+            from { opacity: 0; transform: translateY(14px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -220,71 +219,52 @@
             position: relative;
             z-index: 0;
         }
-        .badge-rainbow-glow::before {
-            content: '';
-            position: absolute;
-            top: -2px; left: -2px; right: -2px; bottom: -2px;
-            background: linear-gradient(45deg, #22d3ee, #818cf8, #2dd4bf, #fbbf24, #22d3ee);
-            background-size: 400%;
-            z-index: -1;
-            filter: blur(8px);
-            width: calc(100% + 4px);
-            height: calc(100% + 4px);
-            animation: rainbowGlow 20s linear infinite;
-            opacity: 0.9;
-            border-radius: 9999px;
-        }
-        @keyframes rainbowGlow {
-            0% { background-position: 0 0; }
-            50% { background-position: 400% 0; }
-            100% { background-position: 0 0; }
-        }
-        .grade-pop-in {
-            animation: gradePopIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-        @keyframes gradePopIn {
-            0% { transform: scale(0.85); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
 
-        .card-stat-bar-f { background: linear-gradient(90deg, #fb7185 0%, #fda4af 100%); }
-        .card-stat-bar-t { background: linear-gradient(90deg, #38bdf8 0%, #30c5f7 100%); }
+        .card-stat-bar-f { background: linear-gradient(90deg, #f43f5e 0%, #fb7185 100%); }
+        .card-stat-bar-t { background: linear-gradient(90deg, #0ea5e9 0%, #38bdf8 100%); }
+
+        .result-hero-card {
+            background: #ffffff;
+            border: 1.5px solid rgba(254, 205, 211, 0.8);
+            box-shadow: 0 16px 40px rgba(225, 175, 185, 0.16);
+            color: #1e293b;
+        }
+        .chip-ink { background: #f8fafc; border: 1px solid #e2e8f0; }
+        .stat-track { background: #f1f5f9; border: 1px solid #e2e8f0; }
     </style>
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-between items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-    <!-- 1. 랜딩 페이지 (모바일 1화면 완벽 핏) -->
-    <main id="landingSection" class="max-w-lg w-full flex flex-col justify-center min-h-[100dvh] py-2 sm:py-4 space-y-2 sm:space-y-3">
-        <div class="text-center space-y-1">
-            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/90 border border-amber-500/40 text-[10px] sm:text-xs shadow-[0_0_12px_rgba(245,158,11,0.2)]">
-                <span class="text-rose-300 font-black leading-none">F 공감</span>
-                <span class="text-slate-500 font-bold leading-none">vs</span>
-                <span class="text-sky-400 font-black leading-none">T 팩폭</span>
-                <span class="text-slate-600 leading-none">|</span>
-                <span class="text-slate-300 font-bold tracking-wide leading-none">골라듣는 사주 MBTI</span>
+    <!-- 1. 랜딩 페이지 (파스텔 크림 톤) -->
+    <main id="landingSection" class="max-w-md w-full flex flex-col justify-center min-h-[100dvh] py-4 space-y-3.5">
+        <div class="text-center space-y-1.5">
+            <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white border border-rose-200 text-[11px] shadow-sm">
+                <span class="text-rose-500 font-black">🌸 F 공감</span>
+                <span class="text-slate-300 font-bold">vs</span>
+                <span class="text-sky-500 font-black">🧊 T 팩폭</span>
+                <span class="text-slate-300">|</span>
+                <span class="text-slate-600 font-extrabold tracking-tight">골라듣는 사주 MBTI</span>
             </div>
             
-                        <h1 class="text-xl sm:text-3xl font-black tracking-tight leading-tight text-white pt-0.5 text-center">
-                <span class="text-rose-300 drop-shadow-[0_0_12px_rgba(253,164,175,0.6)]">공감</span>이 필요해? 
-                <span class="text-sky-400 drop-shadow-[0_0_12px_rgba(56,189,248,0.8)]">팩폭</span>이 필요해?
+            <h1 class="text-2xl sm:text-3xl font-black tracking-tight leading-tight text-slate-800 pt-1 text-center">
+                오늘 어떤 맛으로 들을래? 🔮
             </h1>
-
-            
+            <p class="text-xs text-slate-500 font-medium">질문지 검사 없이, 생년월일시로 까보는 내 진짜 본캐</p>
         </div>
 
-        <div class="card-box p-3.5 sm:p-5 rounded-2xl space-y-2.5">
-            <form id="sazuForm" class="space-y-2 sm:space-y-2.5" onsubmit="event.preventDefault();">
+        <div class="card-box p-4 sm:p-5 rounded-3xl space-y-3.5">
+            <form id="sazuForm" class="space-y-3" onsubmit="event.preventDefault();">
                 <!-- 이름 & 성별 -->
-                <div class="grid grid-cols-2 gap-2 items-end">
+                <div class="grid grid-cols-2 gap-2.5 items-end">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-300 mb-0.5">이름</label>
-                        <input type="text" id="nameInput" maxlength="10" placeholder="이름 입력" class="input-box w-full h-[40px] px-3 rounded-xl font-bold placeholder-slate-500 text-xs sm:text-sm">
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1">이름</label>
+                        <input type="text" id="nameInput" maxlength="10" placeholder="이름 입력" class="input-box w-full h-[42px] px-3.5 rounded-2xl font-bold placeholder-slate-400 text-xs sm:text-sm">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-300 mb-0.5">성별</label>
-                        <div class="grid grid-cols-2 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 h-[40px] items-center">
-                            <button type="button" id="btnMale" onclick="setGender('male')" class="toggle-tab-btn active h-full text-xs font-bold rounded-lg">남</button>
-                            <button type="button" id="btnFemale" onclick="setGender('female')" class="toggle-tab-btn inactive h-full text-xs font-bold rounded-lg">여</button>
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1">성별</label>
+                        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200/60 h-[42px] items-center">
+                            <button type="button" id="btnMale" onclick="setGender('male')" class="toggle-tab-btn active h-full text-xs font-bold rounded-xl">남</button>
+                            <button type="button" id="btnFemale" onclick="setGender('female')" class="toggle-tab-btn inactive h-full text-xs font-bold rounded-xl">여</button>
                         </div>
                         <input type="hidden" id="genderValue" value="male">
                     </div>
@@ -292,76 +272,76 @@
 
                 <!-- 고민 선택 -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-200 mb-1">
-                        지금 가장 풀고 싶은 고민
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">
+                        지금 가장 풀고 싶은 고민은?
                     </label>
                     <input type="hidden" id="selectedConcernKey" value="money">
-                    <div class="grid grid-cols-2 gap-1.5" id="concernGrid">
-                        <button type="button" onclick="selectConcern('money', this)" class="concern-chip selected p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
-                            <span class="text-base">💸</span>
+                    <div class="grid grid-cols-2 gap-2" id="concernGrid">
+                        <button type="button" onclick="selectConcern('money', this)" class="concern-chip selected p-2.5 rounded-2xl flex items-center gap-2">
+                            <span class="text-lg">💸</span>
                             <div class="truncate text-left">
-                                <div class="text-xs font-bold leading-tight">재물 · 돈복</div>
-                                <div class="text-[10px] text-slate-400 truncate mt-0.5">언제 돈 모이나요?</div>
+                                <div class="text-xs font-extrabold leading-tight">돈복 · 재물</div>
+                                <div class="text-[10px] text-slate-400 truncate mt-0.5">언제 돈 모일까?</div>
                             </div>
                         </button>
-                        <button type="button" onclick="selectConcern('career', this)" class="concern-chip p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
-                            <span class="text-base">🚪</span>
+                        <button type="button" onclick="selectConcern('career', this)" class="concern-chip p-2.5 rounded-2xl flex items-center gap-2">
+                            <span class="text-lg">🚪</span>
                             <div class="truncate text-left">
-                                <div class="text-xs font-bold leading-tight">이직 · 퇴사</div>
-                                <div class="text-[10px] text-slate-400 truncate mt-0.5">지금 옮겨도 될까요?</div>
+                                <div class="text-xs font-extrabold leading-tight">이직 · 퇴사</div>
+                                <div class="text-[10px] text-slate-400 truncate mt-0.5">지금 옮겨도 될까?</div>
                             </div>
                         </button>
-                        <button type="button" onclick="selectConcern('love', this)" class="concern-chip p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
-                            <span class="text-base">💞</span>
+                        <button type="button" onclick="selectConcern('love', this)" class="concern-chip p-2.5 rounded-2xl flex items-center gap-2">
+                            <span class="text-lg">💖</span>
                             <div class="truncate text-left">
-                                <div class="text-xs font-bold leading-tight">연애 · 결혼</div>
+                                <div class="text-xs font-extrabold leading-tight">연애 · 썸</div>
                                 <div class="text-[10px] text-slate-400 truncate mt-0.5">내 반쪽은 어디에?</div>
                             </div>
                         </button>
-                        <button type="button" onclick="selectConcern('path', this)" class="concern-chip p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
-                            <span class="text-base">🧭</span>
+                        <button type="button" onclick="selectConcern('path', this)" class="concern-chip p-2.5 rounded-2xl flex items-center gap-2">
+                            <span class="text-lg">🧭</span>
                             <div class="truncate text-left">
-                                <div class="text-xs font-bold leading-tight">진로 · 적성</div>
-                                <div class="text-[10px] text-slate-400 truncate mt-0.5">뭐해먹고 살까요?</div>
+                                <div class="text-xs font-extrabold leading-tight">진로 · 적성</div>
+                                <div class="text-[10px] text-slate-400 truncate mt-0.5">뭐해먹고 살까?</div>
                             </div>
                         </button>
-                        <button type="button" onclick="selectConcern('people', this)" class="concern-chip p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
-                            <span class="text-base">✂️</span>
+                        <button type="button" onclick="selectConcern('people', this)" class="concern-chip p-2.5 rounded-2xl flex items-center gap-2">
+                            <span class="text-lg">✂️</span>
                             <div class="truncate text-left">
-                                <div class="text-xs font-bold leading-tight">인간관계 · 손절</div>
-                                <div class="text-[10px] text-slate-400 truncate mt-0.5">이상한 사람 꼬일 때</div>
+                                <div class="text-xs font-extrabold leading-tight">인간관계 · 손절</div>
+                                <div class="text-[10px] text-slate-400 truncate mt-0.5">스트레스받는 관계</div>
                             </div>
                         </button>
-                        <button type="button" onclick="selectConcern('mental', this)" class="concern-chip p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
-                            <span class="text-base">🔋</span>
+                        <button type="button" onclick="selectConcern('mental', this)" class="concern-chip p-2.5 rounded-2xl flex items-center gap-2">
+                            <span class="text-lg">🔋</span>
                             <div class="truncate text-left">
-                                <div class="text-xs font-bold leading-tight">번아웃 · 멘탈</div>
+                                <div class="text-xs font-extrabold leading-tight">번아웃 · 멘탈</div>
                                 <div class="text-[10px] text-slate-400 truncate mt-0.5">무기력 탈출 타이밍</div>
                             </div>
                         </button>
                     </div>
                 </div>
 
-                <!-- 생년월일 (직관적 예시 안내형) -->
+                <!-- 생년월일 -->
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-300 mb-0.5">
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1">
                         생년월일
                     </label>
                     <input type="hidden" id="calendarSelect" value="solar">
-                    <div class="flex gap-1.5 items-center">
-                        <div class="grid grid-cols-2 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 w-[105px] shrink-0 h-[40px] items-center">
-                            <button type="button" id="btnSolar" onclick="setCalendar('solar')" class="toggle-tab-btn active text-xs font-bold h-full rounded-lg">양력</button>
-                            <button type="button" id="btnLunar" onclick="setCalendar('lunar')" class="toggle-tab-btn inactive text-xs font-bold h-full rounded-lg">음력</button>
+                    <div class="flex gap-2 items-center">
+                        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200/60 w-[105px] shrink-0 h-[42px] items-center">
+                            <button type="button" id="btnSolar" onclick="setCalendar('solar')" class="toggle-tab-btn active text-xs font-bold h-full rounded-xl">양력</button>
+                            <button type="button" id="btnLunar" onclick="setCalendar('lunar')" class="toggle-tab-btn inactive text-xs font-bold h-full rounded-xl">음력</button>
                         </div>
-                        <input type="tel" id="birthDateInput" maxlength="10" inputmode="numeric" placeholder="8자리 입력 (예: 19991231)" oninput="formatBirthDate(this)" class="input-box flex-1 min-w-0 h-[40px] px-3 rounded-xl font-bold placeholder-slate-500 text-xs sm:text-sm text-center font-mono">
+                        <input type="tel" id="birthDateInput" maxlength="10" inputmode="numeric" placeholder="8자리 (예: 20010524)" oninput="formatBirthDate(this)" class="input-box flex-1 min-w-0 h-[42px] px-3 rounded-2xl font-bold placeholder-slate-400 text-xs sm:text-sm text-center font-mono">
                     </div>
                 </div>
 
                 <!-- 태어난 시간 -->
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-300 mb-1">태어난 시간</label>
+                    <label class="block text-[11px] font-bold text-slate-500 mb-1">태어난 시간</label>
                     <div class="relative">
-                        <select id="birthTimeSelect" class="input-box w-full py-2 px-3 pr-8 rounded-xl text-center font-bold text-xs cursor-pointer appearance-none">
+                        <select id="birthTimeSelect" class="input-box w-full py-2.5 px-3.5 pr-8 rounded-2xl text-center font-bold text-xs cursor-pointer appearance-none">
                             <option value="" selected disabled>태어난 시간 선택</option>
                             <option value="unknown">시간 모름 (정밀 추정)</option>
                             <option value="子">자시 (23:30 ~ 01:29)</option>
@@ -377,8 +357,8 @@
                             <option value="戌">술시 (19:30 ~ 21:29)</option>
                             <option value="亥">해시 (21:30 ~ 23:29)</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400">
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
                                 <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
                             </svg>
                         </div>
@@ -386,22 +366,19 @@
                 </div>
 
                 <!-- 실행 버튼 -->
-                <div class="pt-1">
-                    <div class="text-[11px] font-bold text-amber-300 text-center mb-1.5 tracking-wide">
-                        오늘은 어떤 맛으로 들을래?
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" onclick="startAnalysis('F')" class="btn-action-f py-2.5 sm:py-3.5 px-2 rounded-xl text-center flex flex-col items-center justify-center">
-                            <div class="text-rose-300 font-black text-sm sm:text-base leading-tight drop-shadow-[0_0_8px_rgba(253,164,175,0.6)]">
-                                <span>F 공감받을래</span>
+                <div class="pt-2">
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button type="button" onclick="startAnalysis('F')" class="btn-action-f py-3 px-2 rounded-2xl text-center flex flex-col items-center justify-center">
+                            <div class="text-rose-600 font-black text-sm sm:text-base leading-tight">
+                                🌸 F 공감받을래
                             </div>
-                            <div class="text-[10px] text-slate-300 font-semibold mt-0.5">내 편이 되어주는 위로</div>
+                            <div class="text-[10px] text-rose-500 font-semibold mt-0.5">내 편 들어주는 위로</div>
                         </button>
-                        <button type="button" onclick="startAnalysis('T')" class="btn-action-t py-2.5 sm:py-3.5 px-2 rounded-xl text-center flex flex-col items-center justify-center">
-                            <div class="text-sky-400 font-black text-sm sm:text-base leading-tight drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]">
-                                <span>T 팩폭받을래</span>
+                        <button type="button" onclick="startAnalysis('T')" class="btn-action-t py-3 px-2 rounded-2xl text-center flex flex-col items-center justify-center">
+                            <div class="text-sky-600 font-black text-sm sm:text-base leading-tight">
+                                🧊 T 팩폭받을래
                             </div>
-                            <div class="text-[10px] text-slate-300 font-semibold mt-0.5">필터 없는 현실 조언</div>
+                            <div class="text-[10px] text-sky-500 font-semibold mt-0.5">뼈 때리는 현실 조언</div>
                         </button>
                     </div>
                 </div>
@@ -409,28 +386,28 @@
         </div>
     </main>
 
-    <!-- 2. 로딩 섹션 -->
-    <main id="loadingSection" style="display: none;" class="max-w-lg w-full flex flex-col justify-center min-h-[100dvh] space-y-5">
-        <div class="card-box p-6 sm:p-8 rounded-3xl text-center space-y-6 relative overflow-hidden">
+    <!-- 2. 로딩 섹션 (화사한 파스텔 원형 게이지) -->
+    <main id="loadingSection" style="display: none;" class="max-w-md w-full flex flex-col justify-center min-h-[100dvh] space-y-4">
+        <div class="card-box p-7 rounded-3xl text-center space-y-5 relative overflow-hidden">
             <div id="loadingGlowBg" class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full blur-3xl pointer-events-none"></div>
             
-            <div class="relative w-44 h-44 mx-auto flex items-center justify-center my-2">
-                <div id="outerTechRing" class="absolute inset-0 rounded-full border border-slate-800 anim-spin"></div>
-                <div class="absolute inset-3 rounded-full border border-dashed border-slate-700/50 anim-spin" style="animation-direction: reverse; animation-duration: 12s;"></div>
+            <div class="relative w-40 h-40 mx-auto flex items-center justify-center my-2">
+                <div id="outerTechRing" class="absolute inset-0 rounded-full border-2 border-rose-200 anim-spin"></div>
+                <div class="absolute inset-3 rounded-full border border-dashed border-rose-300 anim-spin" style="animation-direction: reverse; animation-duration: 12s;"></div>
                 
-                <div class="relative w-28 h-28 rounded-full bg-slate-950/90 border border-slate-800 flex items-center justify-center shadow-inner">
-                    <span id="loadingPercent" class="text-4xl font-black text-white tracking-tight font-mono">0%</span>
+                <div class="relative w-28 h-28 rounded-full bg-white border border-rose-100 flex items-center justify-center shadow-md">
+                    <span id="loadingPercent" class="text-4xl font-black text-slate-800 tracking-tight font-mono">0%</span>
                 </div>
             </div>
 
-            <div class="min-h-[48px] flex items-center justify-center px-2">
-                <h2 id="loadingMainStatus" class="text-xs sm:text-sm font-black text-white tracking-tight transition-all duration-150 break-keep text-center">
-                    사주 8글자 정밀 만세력 산출 중...
+            <div class="min-h-[44px] flex items-center justify-center px-2">
+                <h2 id="loadingMainStatus" class="text-xs sm:text-sm font-black text-slate-700 tracking-tight transition-all duration-150 break-keep text-center">
+                    사주 8글자 본캐 데이터 분석 중 🔍
                 </h2>
             </div>
 
-            <div class="pt-1 max-w-[280px] mx-auto w-full">
-                <div class="h-2.5 bg-slate-950 rounded-full overflow-hidden p-0.5 border border-slate-800/80">
+            <div class="pt-1 max-w-[260px] mx-auto w-full">
+                <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
                     <div id="loadingProgressFill" class="h-full rounded-full transition-all duration-75" style="width: 0%;"></div>
                 </div>
             </div>
@@ -448,7 +425,7 @@
         </div>
 
         <!-- 카드 1: 프로필 & 세부 스탯 -->
-        <div class="card-box p-4 sm:p-6 rounded-3xl space-y-2.5 relative overflow-hidden text-center">
+        <div class="result-hero-card p-5 sm:p-7 rounded-[28px] space-y-3 relative overflow-hidden text-center">
             
             <div class="space-y-1">
                 <div class="flex justify-center items-center">
@@ -461,18 +438,18 @@
                         <div id="gradeSection" class="pt-1 pb-1 flex flex-col items-center justify-center space-y-1">
 
                 <!-- 사주 밸런스 등급 뱃지 (공유 유발 포인트) -->
-                <div class="badge-rainbow-glow inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950 border border-slate-700 mb-1">
+                <div class="badge-rainbow-glow inline-flex items-center gap-1.5 px-3 py-1 rounded-full chip-ink mb-1">
                     <span id="resultGradeText" class="text-sm font-black text-amber-300 font-mono">-</span>
                     <span id="resultGradeTitle" class="text-[10px] font-bold text-slate-300 whitespace-nowrap">-</span>
                 </div>
                 
-                <div id="resultBigMbti" class="text-[52px] sm:text-[64px] font-black tracking-widest font-mono drop-shadow-lg leading-none py-1">
+                <div id="resultBigMbti" class="text-[56px] sm:text-[68px] font-black tracking-widest font-mono leading-none py-1" style="color:#241634;">
                     -
                 </div>
 
                 <!-- 아래쪽 여백을 mb-2 에서 mb-4 로 확장하여 해시태그와의 숨통 확보 -->
-                <div class="text-[11px] text-slate-400 font-semibold mt-1 mb-4 break-keep px-4">
-                    ※ 질문지 검사 말고, <span class="text-slate-200">내 진짜 사주 데이터로 까본 본캐 MBTI</span>
+                <div class="text-[11px] font-semibold mt-1 mb-4 break-keep px-4" style="color:#6B5A82;">
+                    ※ 질문지 검사 말고, <span style="color:#241634;">내 진짜 사주 데이터로 까본 본캐 MBTI</span>
                 </div>
 
                 <div id="characterHashTags" class="flex flex-wrap justify-center gap-1 text-[10px] font-bold">
@@ -481,66 +458,88 @@
                 <h1 class="mobile-title font-black text-center w-full px-2 mt-0.5 mb-0.5 leading-snug" id="sazuCharacterTitle">-</h1>
             </div>
 
+            <!-- 사주 원국 (4주) -->
+            <div class="mt-2 mb-3">
+                <div class="text-center text-[11px] font-bold mb-2" id="pillarSectionTitle" style="color:#6B5A82;">사주 원국</div>
+                <div class="grid grid-cols-4 gap-1.5" id="pillarGrid">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-[10px] font-bold" style="color:#6B5A82;">시주(時)</span>
+                        <div id="pillarHourBox" class="w-full py-2.5 rounded-xl text-center chip-ink">
+                            <div id="pillarHourGZ" class="text-sm font-black text-slate-300">추정</div>
+                            <div class="text-[9px] text-slate-500 mt-0.5">시주 모름</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-[10px] font-bold" style="color:#6B5A82;">일주(日)</span>
+                        <div id="pillarDayBox" class="w-full py-2.5 rounded-xl text-center chip-ink relative" style="box-shadow: 0 0 0 2px #E8A33D;">
+                            <span class="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded text-[8px] font-black bg-amber-400" style="color:#241634;">본인</span>
+                            <div id="pillarDayGZ" class="text-sm font-black text-white">-</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-[10px] font-bold" style="color:#6B5A82;">월주(月)</span>
+                        <div id="pillarMonthBox" class="w-full py-2.5 rounded-xl text-center chip-ink">
+                            <div id="pillarMonthGZ" class="text-sm font-black text-slate-300">-</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-[10px] font-bold" style="color:#6B5A82;">년주(年)</span>
+                        <div id="pillarYearBox" class="w-full py-2.5 rounded-xl text-center chip-ink">
+                            <div id="pillarYearGZ" class="text-sm font-black text-slate-300">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 4대 스탯 -->
-            <div class="space-y-2.5 text-left pt-1 bg-slate-900/70 p-3.5 sm:p-5 rounded-2xl border border-slate-800 mt-3">
+            <div class="space-y-3 text-left pt-3 mt-3" style="border-top: 1px solid rgba(36,22,52,0.12);">
                 <div class="flex justify-between items-center mb-0.5">
-                    <span class="text-[11px] font-black text-slate-200 tracking-wider">타고난 4대 잠재 정밀 수치</span>
+                    <span class="text-[11px] font-black tracking-wider" style="color:#241634;">사주 원국 4대 성향 지표 (십신 연산)</span>
+                    <span class="text-[9px] font-medium" style="color:#6B5A82;">*60점 미만 집중 처방</span>
                 </div>
                 
-                <div class="space-y-1">
+                <div class="space-y-1.5">
                     <div class="flex justify-between items-center text-xs font-bold">
-                        <div class="flex items-center gap-1">
-                            <span class="text-slate-100 font-bold">돈 냄새 맡는 촉</span>
-                            <span id="badgeWealthHighlight" class="hidden text-[9px] px-1 py-0.2 rounded font-bold"></span>
-                        </div>
-                        <span id="statWealthTxt" class="font-mono text-xs font-black text-white">0점</span>
+                        <span class="font-bold" style="color:#241634;">💰 재물 그릇 <span class="text-[10px] font-normal" style="color:#6B5A82;">(재성)</span></span>
+                        <span id="statWealthTxt" class="font-mono text-xs font-black">0점</span>
                     </div>
-                    <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800/80">
+                    <div class="w-full h-2.5 rounded-full overflow-hidden stat-track">
                         <div id="statWealthBar" class="h-full rounded-full" style="width: 0%"></div>
                     </div>
                 </div>
 
-                <div class="space-y-1">
+                <div class="space-y-1.5">
                     <div class="flex justify-between items-center text-xs font-bold">
-                        <div class="flex items-center gap-1">
-                            <span class="text-slate-100 font-bold">멘탈 방어력</span>
-                            <span id="badgeMentalHighlight" class="hidden text-[9px] px-1 py-0.2 rounded font-bold"></span>
-                        </div>
-                        <span id="statMentalTxt" class="font-mono text-xs font-black text-white">0점</span>
+                        <span class="font-bold" style="color:#241634;">🛡️ 멘탈 방어력 <span class="text-[10px] font-normal" style="color:#6B5A82;">(인성)</span></span>
+                        <span id="statMentalTxt" class="font-mono text-xs font-black">0점</span>
                     </div>
-                    <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800/80">
+                    <div class="w-full h-2.5 rounded-full overflow-hidden stat-track">
                         <div id="statMentalBar" class="h-full rounded-full" style="width: 0%"></div>
                     </div>
                 </div>
 
-                <div class="space-y-1">
+                <div class="space-y-1.5">
                     <div class="flex justify-between items-center text-xs font-bold">
-                        <div class="flex items-center gap-1">
-                            <span class="text-slate-100 font-bold" id="statDriveLabel">기회 포착력</span>
-                            <span id="badgeDriveHighlight" class="hidden text-[9px] px-1 py-0.2 rounded font-bold"></span>
-                        </div>
-                        <span id="statDriveTxt" class="font-mono text-xs font-black text-white">0점</span>
+                        <span class="font-bold" id="statDriveLabel" style="color:#241634;">🔥 현실 돌파력 <span class="text-[10px] font-normal" style="color:#6B5A82;">(관·식상)</span></span>
+                        <span id="statDriveTxt" class="font-mono text-xs font-black">0점</span>
                     </div>
-                    <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800/80">
+                    <div class="w-full h-2.5 rounded-full overflow-hidden stat-track">
                         <div id="statDriveBar" class="h-full rounded-full" style="width: 0%"></div>
                     </div>
                 </div>
 
-                <div class="space-y-1">
+                <div class="space-y-1.5">
                     <div class="flex justify-between items-center text-xs font-bold">
-                        <div class="flex items-center gap-1">
-                            <span class="text-slate-100 font-bold">인생 뒤집을 귀인복</span>
-                            <span id="badgeNetworkHighlight" class="hidden text-[9px] px-1 py-0.2 rounded font-bold"></span>
-                        </div>
-                        <span id="statNetworkTxt" class="font-mono text-xs font-black text-white">0점</span>
+                        <span class="font-bold" style="color:#241634;">🤝 인적 네트워크 <span class="text-[10px] font-normal" style="color:#6B5A82;">(비겁)</span></span>
+                        <span id="statNetworkTxt" class="font-mono text-xs font-black">0점</span>
                     </div>
-                    <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800/80">
+                    <div class="w-full h-2.5 rounded-full overflow-hidden stat-track">
                         <div id="statNetworkBar" class="h-full rounded-full" style="width: 0%"></div>
                     </div>
                 </div>
 
-                <div id="statWeakWarningBox" style="display: none;" class="pt-2 text-[10px] sm:text-xs font-semibold border-t border-slate-800">
-                    <span id="statWeakWarningTxt" class="leading-relaxed block"></span>
+                <div id="statWeakWarningBox" style="display: none;" class="mt-1 p-3 rounded-xl text-[11px] sm:text-xs font-medium flex items-center gap-2 chip-ink">
+                    <span>⚠️</span> <span id="statWeakWarningTxt" class="leading-relaxed block" style="color:#FFF6E9;"></span>
                 </div>
             </div>
 
@@ -758,11 +757,11 @@
                 <div class="bg-slate-900/70 p-4 rounded-2xl border border-slate-800 relative z-10" style="display: flex; flex-direction: column; gap: 14px;">
                     <div class="text-[11px] font-black text-slate-200 tracking-wider">타고난 4대 잠재 정밀 수치</div>
                     
-                    <!-- 돈 냄새 맡는 촉 -->
+                    <!-- 재물 그릇 -->
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; line-height: 1.2;">
                             <div style="display: flex; align-items: center; gap: 6px;">
-                                <span class="text-slate-100" style="font-size: 11px; font-weight: 700;">돈 냄새 맡는 촉</span>
+                                <span class="text-slate-100" style="font-size: 11px; font-weight: 700;">재물 그릇</span>
                                 <span id="cardBadgeWealth" class="hidden px-1.5 py-0.5 rounded text-[8px] font-bold"></span>
                             </div>
                             <span id="cardStatWealthTxt" class="font-mono text-white" style="font-size: 11px; font-weight: 700;">0점</span>
@@ -786,11 +785,11 @@
                         </div>
                     </div>
 
-                    <!-- 기회 포착력 -->
+                    <!-- 현실 돌파력 -->
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; line-height: 1.2;">
                             <div style="display: flex; align-items: center; gap: 6px;">
-                                <span class="text-slate-100" style="font-size: 11px; font-weight: 700;">기회 포착력</span>
+                                <span class="text-slate-100" style="font-size: 11px; font-weight: 700;">현실 돌파력</span>
                                 <span id="cardBadgeDrive" class="hidden px-1.5 py-0.5 rounded text-[8px] font-bold"></span>
                             </div>
                             <span id="cardStatDriveTxt" class="font-mono text-white" style="font-size: 11px; font-weight: 700;">0점</span>
@@ -800,11 +799,11 @@
                         </div>
                     </div>
 
-                    <!-- 인생 뒤집을 귀인복 -->
+                    <!-- 인적 네트워크 -->
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; line-height: 1.2;">
                             <div style="display: flex; align-items: center; gap: 6px;">
-                                <span class="text-slate-100" style="font-size: 11px; font-weight: 700;">인생 뒤집을 귀인복</span>
+                                <span class="text-slate-100" style="font-size: 11px; font-weight: 700;">인적 네트워크</span>
                                 <span id="cardBadgeNetwork" class="hidden px-1.5 py-0.5 rounded text-[8px] font-bold"></span>
                             </div>
                             <span id="cardStatNetworkTxt" class="font-mono text-white" style="font-size: 11px; font-weight: 700;">0점</span>
@@ -851,8 +850,7 @@
     <footer id="mainFooter" class="w-full max-w-lg text-center pt-8 pb-10">
         <div class="text-[10px] text-slate-500 font-medium space-y-1.5">
             <p>상호: 사주FT | 대표: 박소영</p>
-            <p>사업자등록번호: 424-40-01405 | 통신판매업 신고번호: 심사통과중</p>
-            <!-- ⚠️ 위 통신판매업 신고번호를 실제 발급 번호로 교체한 뒤 결제를 오픈하세요. 미신고 상태 판매는 전자상거래법 위반입니다. -->
+            <p>사업자등록번호: 424-40-01405 | 통신판매업 신고번호: 제 2026-울산남구-0547 호</p>
             <p>주소: 울산광역시 남구 중앙로214번길 12, 2층 202호 S25호(신정동, 근훈스카이빌2차)</p>
             <p>고객센터: support@sajuft.com | 연락처: 070-4509-2503 (이메일 문의 권장)</p>
             <div class="flex justify-center gap-2 pt-2 text-slate-400">
@@ -906,6 +904,15 @@
         const SAJU_CONS = { mok: 'ㄱ, ㅋ', hwa: 'ㄴ, ㄷ, ㄹ, ㅌ', to: 'ㅇ, ㅎ', geum: 'ㅅ, ㅈ, ㅊ', su: 'ㅁ, ㅂ, ㅍ' };
         const SAJU_ITEMS = { mok: '작은 식물이나 우디향 디퓨저', hwa: '따뜻한 무드등이나 캔들', to: '도자기 소품이나 흙내음 향수', geum: '메탈 시계나 은 액세서리', su: '시원하고 맑은 아쿠아 향수' };
         // 한글 받침 여부에 따라 알맞은 조사를 자동으로 결합하는 함수
+        // 스탯별 핵심 심리 기제 — 여러 함수(getTrueBaziSolutions, generateDynamicDeepSolution)에서
+        // 공통으로 참조하므로 반드시 전역에 둔다. 함수 안에 두면 다른 함수에서 ReferenceError가 발생함.
+        const STAT_CORE_TRAIT = {
+            wealth: '이해득실을 냉정하게 재는 감각',
+            mental: '작은 자극에도 쉽게 흔들리는 마음의 맷집',
+            drive: '재고 따지다 타이밍을 놓치는 신중함',
+            network: '나와 남 사이 경계를 긋는 감각'
+        };
+
         function attachJosa(word, josaType = '을/를') {
             if (!word) return '';
             const lastChar = word.charCodeAt(word.length - 1);
@@ -1078,13 +1085,16 @@
                 }
             };
 
-            // 2. 취약 스탯(돈촉/멘탈/기회/귀인)별 근본 원인
+            // 2. 취약 스탯(재물/멘탈/현실/인맥)별 근본 원인 — 어떤 고민(재물·이직·연애·진로·인간관계·번아웃)에도
+            //    자연스럽게 이어지도록, 스탯 이름의 표면(돈/기회 등)이 아니라 그 밑에 깔린 심리적 기제로 서술
             const STAT_CAUSES = {
-                wealth: `<b class="text-amber-300">[돈 냄새 맡는 촉 ${lowestStat.score}점]</b>으로 현실적 손익 계산이 마비되어`,
-                mental: `<b class="text-amber-300">[멘탈 방어력 ${lowestStat.score}점]</b>으로 사소한 스트레스에도 쉽게 방전되어`,
-                drive: `<b class="text-amber-300">[기회 포착력 ${lowestStat.score}점]</b>으로 머릿속 시뮬레이션만 돌리다 타이밍을 놓쳐`,
-                network: `<b class="text-amber-300">[인생 뒤집을 귀인복 ${lowestStat.score}점]</b>으로 선 넘는 사람을 제때 쳐내지 못해`
+                wealth: `<b class="text-amber-300">[재물 그릇 ${lowestStat.score}점]</b>처럼 이해득실을 냉정하게 재는 감각이 둔해져`,
+                mental: `<b class="text-amber-300">[멘탈 방어력 ${lowestStat.score}점]</b>처럼 사소한 자극에도 쉽게 흔들리는 평정심 탓에`,
+                drive: `<b class="text-amber-300">[현실 돌파력 ${lowestStat.score}점]</b>처럼 재고 따지다 정작 움직여야 할 타이밍을 놓쳐`,
+                network: `<b class="text-amber-300">[인적 네트워크 ${lowestStat.score}점]</b>처럼 나와 남 사이 경계를 긋는 감각이 흐려져`
             };
+
+            // 스탯별 핵심 심리 기제는 전역 STAT_CORE_TRAIT 사용 (generateDynamicDeepSolution에서도 참조)
 
             // 3. 6대 고민 × 4대 취약 스탯별 치명적 누수(Leak) 매트릭스 (100% 매칭)
             const LEAK_MATRIX = {
@@ -1348,31 +1358,31 @@
             let trapDetail = "";
             if (isT) {
                 if (concern === 'money') {
-                    trapDetail = `[${lowest.name} ${lowest.score}점] 상태로 불나방처럼 뜬구름 잡는 곳에 돈을 태우니 지갑이 빌 수밖에요. 핑계 대지 말고 오늘부터 가계부 앱 켜고 고정 지출부터 도려내십시오.`;
+                    trapDetail = `[${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들린 탓에 불나방처럼 뜬구름 잡는 곳에 돈을 태우니 지갑이 빌 수밖에요. 핑계 대지 말고 오늘부터 가계부 앱 켜고 고정 지출부터 도려내십시오.`;
                 } else if (concern === 'career') {
-                    trapDetail = `회사 불만은 제일 많으면서 [${lowest.name} ${lowest.score}점]이라 이력서 업데이트는 한 줄도 안 하죠? 징징댈 시간에 포트폴리오에 수치 3개 박으세요.`;
+                    trapDetail = `회사 불만은 제일 많으면서 [${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들려 이력서 업데이트는 한 줄도 안 하죠? 징징댈 시간에 포트폴리오에 수치 3개 박으세요.`;
                 } else if (concern === 'love') {
-                    trapDetail = `[${lowest.name} ${lowest.score}점] 핑계 대며 자존심만 세우고 먼저 연락 한 통 안 하니 기회가 날아가는 겁니다. 계산 그만하고 호감 있으면 당장 직진하십시오.`;
+                    trapDetail = `[${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들린 핑계로 자존심만 세우고 먼저 연락 한 통 안 하니 기회가 날아가는 겁니다. 계산 그만하고 호감 있으면 당장 직진하십시오.`;
                 } else if (concern === 'path') {
-                    trapDetail = `머릿속 구상은 1등인데 [${lowest.name} ${lowest.score}점]이라 행동은 제로입니다. 완벽한 준비란 평생 없으니 완성도 60%에서 당장 세상에 던지십시오.`;
+                    trapDetail = `머릿속 구상은 1등인데 [${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들려 행동은 제로입니다. 완벽한 준비란 평생 없으니 완성도 60%에서 당장 세상에 던지십시오.`;
                 } else if (concern === 'people') {
-                    trapDetail = `[${lowest.name} ${lowest.score}점]이라 착한 척하느라 선 넘는 인간 하나 못 쳐내고 속으로만 꿍해 있죠? 손절 못 치면 평생 남의 감정 쓰레기통으로 살게 됩니다.`;
+                    trapDetail = `[${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들려 착한 척하느라 선 넘는 인간 하나 못 쳐내고 속으로만 꿍해 있죠? 손절 못 치면 평생 남의 감정 쓰레기통으로 살게 됩니다.`;
                 } else if (concern === 'mental') {
-                    trapDetail = `[${lowest.name} ${lowest.score}점] 탓하며 침대에 누워 숏폼이나 보는 건 휴식이 아니라 뇌 혹사입니다. 생각 끄고 지금 당장 일어나 스트레칭이라도 하세요.`;
+                    trapDetail = `[${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들린 탓에 침대에 누워 숏폼이나 보는 건 휴식이 아니라 뇌 혹사입니다. 생각 끄고 지금 당장 일어나 스트레칭이라도 하세요.`;
                 }
             } else {
                 if (concern === 'money') {
-                    trapDetail = `[${lowest.name} ${lowest.score}점]이 말해주듯, 정 때문에 거절을 못 해 내 마음이 닳도록 남부터 챙기느라 고생 많으셨어요. 당신의 착한 마음이 죄는 아닙니다. 이제는 본인의 곳간을 가장 먼저 채워주세요.`;
+                    trapDetail = `[${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들린 탓에, 정 때문에 거절을 못 해 내 마음이 닳도록 남부터 챙기느라 고생 많으셨어요. 당신의 착한 마음이 죄는 아닙니다. 이제는 본인의 곳간을 가장 먼저 채워주세요.`;
                 } else if (concern === 'career') {
-                    trapDetail = `[${lowest.name} ${lowest.score}점]에 그 시간이 그대로 담겨 있네요. 남들에게 민폐 끼치기 싫어 방전될 때까지 궂은일을 다 떠안고 버텨오셨네요. 당신이 없어도 회사는 돌아가니, 이제는 내 행복을 위해 결단해도 괜찮습니다.`;
+                    trapDetail = `[${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들린 그 시간이 그대로 담겨 있네요. 남들에게 민폐 끼치기 싫어 방전될 때까지 궂은일을 다 떠안고 버텨오셨네요. 당신이 없어도 회사는 돌아가니, 이제는 내 행복을 위해 결단해도 괜찮습니다.`;
                 } else if (concern === 'love') {
-                    trapDetail = `[${lowest.name} ${lowest.score}점]이 보여주듯, 상처받거나 거절당할까 봐 뒤로 숨어 먼저 다가서지 못했던 거, 다 압니다. 망설였던 건 부족해서가 아니라 상대를 너무 소중히 여겨서예요. 자책하지 마세요.`;
+                    trapDetail = `[${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들린 탓에, 상처받거나 거절당할까 봐 뒤로 숨어 먼저 다가서지 못했던 거, 다 압니다. 망설였던 건 부족해서가 아니라 상대를 너무 소중히 여겨서예요. 자책하지 마세요.`;
                 } else if (concern === 'path') {
-                    trapDetail = `[${lowest.name} ${lowest.score}점]에 그 마음이 고스란히 남아 있어요. 남들의 기대에 나를 맞추느라 망설이며 품어왔던 꿈을 묻어두셨군요. 당신 안의 빛나는 잠재력을 믿고 나만의 속도로 한 걸음 내딛어보세요.`;
+                    trapDetail = `[${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들린 그 마음이 고스란히 남아 있어요. 남들의 기대에 나를 맞추느라 망설이며 품어왔던 꿈을 묻어두셨군요. 당신 안의 빛나는 잠재력을 믿고 나만의 속도로 한 걸음 내딛어보세요.`;
                 } else if (concern === 'people') {
-                    trapDetail = `[${lowest.name} ${lowest.score}점]이 말해주듯, 내 마음 같지 않은 사람들에게 진심을 다 쏟아붓느라 상처만 남았군요. 당신의 소중한 진심을 몰라주는 인연 때문에 더는 아파하지 마세요.`;
+                    trapDetail = `[${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들린 탓에, 내 마음 같지 않은 사람들에게 진심을 다 쏟아붓느라 상처만 남았군요. 당신의 소중한 진심을 몰라주는 인연 때문에 더는 아파하지 마세요.`;
                 } else if (concern === 'mental') {
-                    trapDetail = `[${lowest.name} ${lowest.score}점]에 그동안의 버팀이 고스란히 담겨 있어요. 사소한 눈빛 하나에도 밤새 가슴 졸이며 멍들 만큼 혼자 버텨오셨네요. 남들 눈치 보느라 다친 내 마음을 오늘만큼은 가장 먼저 꼭 안아주세요.`;
+                    trapDetail = `[${lowest.name} ${lowest.score}점] — ${STAT_CORE_TRAIT[lowest.type]}이 흔들린 그동안의 버팀이 고스란히 담겨 있어요. 사소한 눈빛 하나에도 밤새 가슴 졸이며 멍들 만큼 혼자 버텨오셨네요. 남들 눈치 보느라 다친 내 마음을 오늘만큼은 가장 먼저 꼭 안아주세요.`;
                 }
             }
 
@@ -1534,11 +1544,25 @@
 
                 const matchedProfile = SAZU_CHARACTER_PROFILES[calculatedKey] || SAZU_CHARACTER_PROFILES['ISTJ'];
 
-                // 용신 도출 (가장 약한 기운)
-                let yongshin = 'mok';
-                let minVal = 999;
-                for (const [key, val] of Object.entries(counts)) {
-                    if (val < minVal) { minVal = val; yongshin = key; }
+                // [이론 검증 1단계] 억부법(抑扶法) 기반 신강/신약 판정
+                // 일간을 돕는 세력(비겁+인성) vs 빼앗는 세력(식상+재성+관성)을 비교.
+                // 월지는 이미 counts 계산 단계에서 가중치 3.0으로 반영되어 있어 '득령' 여부가 자연스럽게 녹아 있음.
+                const helpForce = scoreBi + scoreIn;
+                const drainForce = scoreSike + scoreJae + scoreGwan;
+                const isDayMasterStrong = helpForce >= drainForce;
+
+                // [이론 검증 2단계] 억부법 기반 진짜 용신 도출 (기존 "오행 중 최소값" 방식 폐기)
+                // 신강(身强): 힘을 덜어내는 식상·재성·관성 중 가장 강한 오행이 용신 (넘치는 기운을 눌러줌)
+                // 신약(身弱): 힘을 보태는 비겁·인성 중 가장 약한 오행이 용신 (부족한 기운을 채워줌)
+                let yongshin;
+                if (isDayMasterStrong) {
+                    const drainCandidates = [[sikeOheng, scoreSike], [jaeOheng, scoreJae], [gwanOheng, scoreGwan]];
+                    drainCandidates.sort((a, b) => b[1] - a[1]);
+                    yongshin = drainCandidates[0][0];
+                } else {
+                    const helpCandidates = [[biOheng, scoreBi], [inOheng, scoreIn]];
+                    helpCandidates.sort((a, b) => a[1] - b[1]);
+                    yongshin = helpCandidates[0][0];
                 }
 
                 return {
@@ -1548,7 +1572,14 @@
                     elements: counts,
                     profile: matchedProfile,
                     dayOheng: dayOheng, 
-                    yongshin: yongshin 
+                    yongshin: yongshin,
+                    isDayMasterStrong: isDayMasterStrong,
+                    pillars: {
+                        year:  { gan: yGan, zhi: yZhi },
+                        month: { gan: mGan, zhi: mZhi },
+                        day:   { gan: dGan, zhi: dZhi },
+                        hour:  hourZhi ? { gan: hGan, zhi: hourZhi } : null
+                    }
                 };
             } catch (err) {
                 console.error("정밀 만세력 엔진 연산 예외:", err);
@@ -1559,7 +1590,14 @@
                     elements: { mok: 1.0, hwa: 1.0, to: 3.0, geum: 2.0, su: 1.0 },
                     profile: SAZU_CHARACTER_PROFILES['ISTJ'],
                     dayOheng: 'to',
-                    yongshin: 'mok'
+                    yongshin: 'mok',
+                    isDayMasterStrong: true,
+                    pillars: {
+                        year:  { gan: '己', zhi: '亥' },
+                        month: { gan: '癸', zhi: '酉' },
+                        day:   { gan: '戊', zhi: '辰' },
+                        hour:  null
+                    }
                 };
             }
         }
@@ -1619,6 +1657,12 @@
 
         // [보안] 유료 본문은 결제 승인 전까지 DOM에 절대 넣지 않는다. 여기에만 보관.
         let premiumBuffer = null;
+        // ============================================================
+        // [초반 무료 이벤트 모드] true = 전체 리포트 무료 공개 (결제 코드/버튼은 그대로 두고 잠금만 해제)
+        // 나중에 유료 전환 시 이 값만 false로 바꾸면, 결제 로직 수정 없이 원래대로 복귀합니다.
+        // ============================================================
+        const FREE_LAUNCH_MODE = true;
+
         let isUnlocked = false;
 
         // ⚠️ 키는 반드시 이 한 줄에서만 관리. 토스 대시보드에서 직접 복사해 붙여넣을 것.
@@ -1763,12 +1807,12 @@
         }
 
         function getLowestStatInfo(stats) {
-            const list = [ { type: 'wealth', name: '돈 냄새 맡는 촉', score: stats.wealth, cap: 'Wealth' }, { type: 'mental', name: '멘탈 방어력', score: stats.mental, cap: 'Mental' }, { type: 'drive', name: '기회 포착력', score: stats.drive, cap: 'Drive' }, { type: 'network', name: '인생 뒤집을 귀인복', score: stats.network, cap: 'Network' } ];
+            const list = [ { type: 'wealth', name: '재물 그릇', score: stats.wealth, cap: 'Wealth' }, { type: 'mental', name: '멘탈 방어력', score: stats.mental, cap: 'Mental' }, { type: 'drive', name: '현실 돌파력', score: stats.drive, cap: 'Drive' }, { type: 'network', name: '인적 네트워크', score: stats.network, cap: 'Network' } ];
             list.sort((a, b) => a.score - b.score); return list[0];
         }
 
         function getHighestStatInfo(stats) {
-            const list = [ { type: 'wealth', name: '돈 냄새 맡는 촉', score: stats.wealth, cap: 'Wealth' }, { type: 'mental', name: '멘탈 방어력', score: stats.mental, cap: 'Mental' }, { type: 'drive', name: '기회 포착력', score: stats.drive, cap: 'Drive' }, { type: 'network', name: '인생 뒤집을 귀인복', score: stats.network, cap: 'Network' } ];
+            const list = [ { type: 'wealth', name: '재물 그릇', score: stats.wealth, cap: 'Wealth' }, { type: 'mental', name: '멘탈 방어력', score: stats.mental, cap: 'Mental' }, { type: 'drive', name: '현실 돌파력', score: stats.drive, cap: 'Drive' }, { type: 'network', name: '인적 네트워크', score: stats.network, cap: 'Network' } ];
             list.sort((a, b) => b.score - a.score); return list[0];
         }
 
@@ -1816,7 +1860,7 @@
             const badge = document.getElementById('resultModeBadge');
             if (badge) {
                 badge.innerHTML = isT ? `필터 없이 뼈 때리는 <span class="text-white">${data.name}</span>님의 T 팩폭 리포트` : `100% 내 편 들어주는 <span class="text-white">${data.name}</span>님의 F 힐링 리포트`;
-                badge.className = isT ? "px-3.5 py-1 bg-sky-500/20 text-sky-300 border border-sky-400/50 rounded-full text-xs font-black tracking-wide shadow-[0_0_15px_rgba(56,189,248,0.4)]" : "px-3.5 py-1 bg-rose-500/20 text-rose-300 border border-rose-400/50 rounded-full text-xs font-black tracking-wide shadow-[0_0_15px_rgba(253,164,175,0.3)]";
+                badge.className = isT ? "px-3.5 py-1 bg-sky-600 text-white rounded-full text-xs font-black tracking-wide shadow-md" : "px-3.5 py-1 bg-rose-500 text-white rounded-full text-xs font-black tracking-wide shadow-md";
             }
 
             const tagsWrapper = document.getElementById('characterHashTags');
@@ -1827,10 +1871,33 @@
 
             const sazuTitle = document.getElementById('sazuCharacterTitle');
             if (sazuTitle) {
-                sazuTitle.innerText = isT ? data.profile.title_T : data.profile.title_F;
+                const dayGan = (data.pillars && data.pillars.day) ? data.pillars.day.gan : null;
+                const dmSuffix = (data.dayOheng && OHENG_NAMES[data.dayOheng])
+                    ? ` (${dayGan && HANJA_TO_KR[dayGan] ? HANJA_TO_KR[dayGan] : ''}${OHENG_NAMES[data.dayOheng][0]})`
+                    : '';
+                sazuTitle.innerText = (isT ? data.profile.title_T : data.profile.title_F) + dmSuffix;
                 sazuTitle.className = isT 
-                    ? "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-sky-200 drop-shadow-sm"
-                    : "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-rose-200 drop-shadow-sm";
+                    ? "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-transparent bg-clip-text bg-gradient-to-b from-[#241634] via-[#241634] to-sky-700"
+                    : "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-transparent bg-clip-text bg-gradient-to-b from-[#241634] via-[#241634] to-rose-700";
+            }
+
+            // 사주 원국 (4주) 렌더링 — 한자·괄호 없이 한글 간지만 표시
+            if (data.pillars) {
+                const gz = (p) => p ? `${HANJA_TO_KR[p.gan] || ''}${HANJA_TO_KR[p.zhi] || ''}` : null;
+                const yearEl = document.getElementById('pillarYearGZ');
+                const monthEl = document.getElementById('pillarMonthGZ');
+                const dayEl = document.getElementById('pillarDayGZ');
+                const hourEl = document.getElementById('pillarHourGZ');
+                const hourSubEl = document.querySelector('#pillarHourBox .text-\\[9px\\]');
+                if (yearEl) yearEl.innerText = gz(data.pillars.year) || '-';
+                if (monthEl) monthEl.innerText = gz(data.pillars.month) || '-';
+                if (dayEl) dayEl.innerText = gz(data.pillars.day) || '-';
+                if (data.pillars.hour) {
+                    if (hourEl) { hourEl.innerText = gz(data.pillars.hour); hourEl.className = "text-sm font-black text-white"; }
+                    if (hourSubEl) hourSubEl.remove();
+                } else {
+                    if (hourEl) { hourEl.innerText = '추정'; hourEl.className = "text-sm font-black text-slate-300"; }
+                }
             }
 
             // [공유 버튼 시인성 개선] 모드(T/F)에 맞춰 테두리와 네온 효과 동적 부여 (보호색 탈피)
@@ -1859,27 +1926,27 @@
             if (gradeBoxEl && gradeTxtEl && gradeTtlEl) {
                 if (myGrade.grade === 'S+') { 
                     // 골드(Amber) - 천상계
-                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-amber-500/70 bg-amber-950/40 shadow-[0_0_15px_rgba(245,158,11,0.5)] mb-1";
+                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-amber-400/80 bg-[#241634] shadow-[0_0_15px_rgba(245,158,11,0.5)] mb-1";
                     gradeTxtEl.className = "font-black text-[13px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200";
                     gradeTtlEl.className = "text-[11px] font-bold text-amber-100/90 tracking-tight";
                 } else if (myGrade.grade === 'S') { 
                     // 레드(Rose) - 1티어
-                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-rose-500/70 bg-rose-950/40 shadow-[0_0_15px_rgba(244,63,94,0.5)] mb-1";
+                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-rose-400/80 bg-[#241634] shadow-[0_0_15px_rgba(244,63,94,0.5)] mb-1";
                     gradeTxtEl.className = "font-black text-[13px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-rose-400 to-rose-200";
                     gradeTtlEl.className = "text-[11px] font-bold text-rose-100/90 tracking-tight";
                 } else if (myGrade.grade === 'A') { 
                     // 스카이(Sky) - 특화 전문가
-                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-sky-500/70 bg-sky-950/40 shadow-[0_0_15px_rgba(56,189,248,0.5)] mb-1";
+                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-sky-400/80 bg-[#241634] shadow-[0_0_15px_rgba(56,189,248,0.5)] mb-1";
                     gradeTxtEl.className = "font-black text-[13px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-sky-400 to-sky-200";
                     gradeTtlEl.className = "text-[11px] font-bold text-sky-100/90 tracking-tight";
                 } else if (myGrade.grade === '포텐') { 
                     // 민트(Emerald) - 대기만성
-                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/70 bg-emerald-950/40 shadow-[0_0_15px_rgba(16,185,129,0.5)] mb-1";
+                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-400/80 bg-[#241634] shadow-[0_0_15px_rgba(16,185,129,0.5)] mb-1";
                     gradeTxtEl.className = "font-black text-[13px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200";
                     gradeTtlEl.className = "text-[11px] font-bold text-emerald-100/90 tracking-tight";
                 } else { 
                     // 퍼플(Purple) - 히든급
-                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-500/70 bg-purple-950/40 shadow-[0_0_15px_rgba(168,85,247,0.5)] mb-1";
+                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-400/80 bg-[#241634] shadow-[0_0_15px_rgba(168,85,247,0.5)] mb-1";
                     gradeTxtEl.className = "font-black text-[13px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-purple-400 to-purple-200";
                     gradeTtlEl.className = "text-[11px] font-bold text-purple-100/90 tracking-tight";
                 }
@@ -1890,8 +1957,8 @@
                 bigMbti.innerText = data.mbtiKey || 'ISTJ';
                 // [컬러 개선] 단색에서 고급스러운 그라데이션 텍스트로 변경하여 시선 강탈
                 bigMbti.className = isT 
-                    ? "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-transparent bg-clip-text bg-gradient-to-b from-sky-200 to-sky-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.5)] leading-none pt-1" 
-                    : "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-transparent bg-clip-text bg-gradient-to-b from-rose-200 to-rose-400 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)] leading-none pt-1";
+                    ? "text-[56px] sm:text-[68px] font-black tracking-widest font-mono text-transparent bg-clip-text bg-gradient-to-b from-[#241634] to-sky-700 leading-none pt-1" 
+                    : "text-[56px] sm:text-[68px] font-black tracking-widest font-mono text-transparent bg-clip-text bg-gradient-to-b from-[#241634] to-rose-700 leading-none pt-1";
             }
 
             const firstSecTitle = document.getElementById('firstSectionTitle');
@@ -2041,42 +2108,22 @@
                 const lowest = getLowestStatInfo(s);
                 const highest = getHighestStatInfo(s);
 
-                ['Wealth', 'Mental', 'Drive', 'Network'].forEach(cap => {
-                    const badge = document.getElementById(`badge${cap}Highlight`);
-                    if (badge) { badge.className = 'hidden'; badge.innerText = ''; }
-                });
-
-                const highBadge = document.getElementById(`badge${highest.cap}Highlight`);
-                if (highBadge) {
-                    highBadge.className = isT ? 'inline-block text-[10px] font-bold text-amber-300 ml-1.5 align-middle' : 'inline-block text-[10px] font-bold text-amber-300 ml-1.5 align-middle';
-                    highBadge.innerText = isT ? '⚡ 사기급 주특기' : '👑 타고난 치트키';
-                }
-
-                const lowBadge = document.getElementById(`badge${lowest.cap}Highlight`);
-                if (lowBadge) {
-                    lowBadge.className = isT ? 'inline-block text-[10px] font-bold text-rose-400 ml-1.5 align-middle' : 'inline-block text-[10px] font-bold text-rose-400 ml-1.5 align-middle';
-                    lowBadge.innerText = isT ? '🚨 발목 잡는 주범' : '💔 혼자 속앓이';
-                }
-
-                renderStatWithTag('Wealth', s.wealth, isT);
-                renderStatWithTag('Mental', s.mental, isT);
-                renderStatWithTag('Drive', s.drive, isT);
-                renderStatWithTag('Network', s.network, isT);
+                renderStat('statWealthTxt', 'statWealthBar', s.wealth, 'text-amber-700', 'bg-amber-400');
+                renderStat('statMentalTxt', 'statMentalBar', s.mental, 'text-sky-700', 'bg-sky-400');
+                renderStat('statDriveTxt', 'statDriveBar', s.drive, 'text-rose-700', 'bg-rose-400');
+                renderStat('statNetworkTxt', 'statNetworkBar', s.network, 'text-emerald-700', 'bg-emerald-400');
 
                 const weakBox = document.getElementById('statWeakWarningBox');
                 if (weakBox) {
-                    weakBox.style.display = 'block';
-                    weakBox.className = "pt-2.5 text-[11px] sm:text-xs font-semibold border-t border-slate-800"; 
-                    
-                    document.getElementById('statWeakWarningTxt').innerHTML = isT
-                        ? `<div class="bg-sky-950/60 border border-sky-500/40 p-3.5 rounded-2xl text-sky-200 leading-relaxed space-y-1.5 shadow-inner break-keep">
-                               <div class="text-xs font-bold text-sky-300">⚠️ "${highest.name} ${highest.score}점으로 버티면 뭐 합니까? ${lowest.name} ${lowest.score}점 하나 때문에 밑 빠진 독처럼 다 새는데."</div>
-                               <div class="text-[11px] text-slate-300">➔ 겉으론 괜찮은 척하다 뒤에서 기회 다 날려먹은 결정적 이유, 아래 진단에서 까드립니다.</div>
-                           </div>`
-                        : `<div class="bg-[#231520] border border-rose-400/40 p-3.5 rounded-2xl text-rose-200 leading-relaxed space-y-1.5 shadow-inner break-keep">
-                               <div class="text-xs font-bold text-rose-300">🌸 "${highest.name} ${highest.score}점짜리 대단한 무기를 두고, 왜 ${lowest.name} ${lowest.score}점 때문에 혼자 속앓이하며 발이 묶였을까?"</div>
-                               <div class="text-[11px] text-rose-200/80">➔ 남몰래 속으로 삭이느라 놓쳐버린 내 진짜 복의 실체, 아래 진단에서 확인하세요.</div>
-                           </div>`;
+                    const minScore = Math.min(s.wealth, s.mental, s.drive, s.network);
+                    if (minScore < 60) {
+                        weakBox.style.display = 'flex';
+                        const who = data.name ? `${data.name}님의 ` : '';
+                        const concernLabel = (data.rawSolutionTemplate && data.rawSolutionTemplate.label) ? data.rawSolutionTemplate.label : '선택하신';
+                        document.getElementById('statWeakWarningTxt').innerText = `${who}선택 고민 [${concernLabel}] 영역의 핵심 취약점입니다.`;
+                    } else {
+                        weakBox.style.display = 'none';
+                    }
                 }
 
                 const overlay = document.getElementById('lockedOverlay');
@@ -2084,6 +2131,10 @@
                 const vipBadge = document.getElementById('vipBadge');
                 const reAnalyzeBox = document.getElementById('reAnalyzeBox');
 
+                if (FREE_LAUNCH_MODE) {
+                    // [초반 무료 이벤트] 결제 유도 카드를 아예 띄우지 않고, 기존 해금 함수를 그대로 재사용해 전체 공개
+                    unlockFullReport(null, true);
+                } else {
                 if (overlay) overlay.style.display = 'flex';
                 if (wrapper) { wrapper.classList.add('premium-lock-mask'); wrapper.classList.add('pb-36'); }
                 paintPremiumArea();
@@ -2092,6 +2143,7 @@
                     vipBadge.innerText = "🔒 [비공개] 시크릿 솔루션 문서";
                 }
                 if (reAnalyzeBox) reAnalyzeBox.style.display = 'none';
+                }
 
                 // [보안] localStorage 값만 믿지 않고, 서버가 발급한 토큰을 재검증한 뒤에만 해금
                 const currentUniqueKey = getUserUniqueKey(data);
@@ -2106,16 +2158,21 @@
             }, 50);
         }
 
-        function renderStatWithTag(capName, score, isT) {
-            const txtEl = document.getElementById(`stat${capName}Txt`);
-            const barEl = document.getElementById(`stat${capName}Bar`);
+        function renderStat(txtId, barId, score, defaultTextColor, defaultBarColor) {
+            const txtEl = document.getElementById(txtId);
+            const barEl = document.getElementById(barId);
             if (!txtEl || !barEl) return;
-            txtEl.innerText = `${score}점`;
-            txtEl.className = `font-mono text-sm font-black text-white`;
-            barEl.style.backgroundColor = isT ? '#38bdf8' : '#fb7185';
+
+            if (score < 60) {
+                txtEl.className = "text-rose-700 font-mono text-xs font-black flex items-center gap-1.5";
+                txtEl.innerHTML = `<span>${score}점</span> <span class="text-[9px] bg-rose-600 text-white px-1.5 py-0.5 rounded-full font-bold">⚠️ 2026 처방</span>`;
+                barEl.className = "h-full bg-rose-500 rounded-full";
+            } else {
+                txtEl.className = `${defaultTextColor} font-mono text-xs font-black`;
+                txtEl.innerText = `${score}점`;
+                barEl.className = `h-full ${defaultBarColor} rounded-full`;
+            }
             barEl.style.width = `${score}%`;
-            barEl.style.height = '100%';
-            barEl.style.borderRadius = '9999px';
             barEl.style.transition = 'width 0.6s ease';
         }
 
@@ -2300,7 +2357,7 @@
     return `sazu_pay_${data.userName || ''}_${data.userBirthStr || ''}_${data.userTimeKey || ''}_${data.userGender || ''}_${data.concernKey || 'money'}`;
 }
 
-        function unlockFullReport(msg) {
+        function unlockFullReport(msg, skipScroll) {
             isUnlocked = true;
             paintPremiumArea();
 
@@ -2323,15 +2380,17 @@
                 wrapper.classList.remove('premium-lock-mask');
                                 wrapper.classList.remove('pb-36');
                 wrapper.classList.remove('min-h-[640px]');
+                if (!skipScroll) {
                 setTimeout(() => {
                     const cardContainer = wrapper.closest('.card-box');
                     if (cardContainer) cardContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     else wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
+                }
             }
             if (vipBadge) {
                 vipBadge.className = "inline-block mt-1 text-[10px] sm:text-xs bg-emerald-500/20 text-emerald-400 px-3 py-0.5 rounded-full font-bold border border-emerald-500/40 shadow-[0_0_10px_rgba(52,211,153,0.3)]";
-                vipBadge.innerText = "🔓 해금 완료 (시크릿 열람)";
+                vipBadge.innerText = FREE_LAUNCH_MODE ? "🎉 오픈 기념 100% 무료 공개" : "🔓 해금 완료 (시크릿 열람)";
             }
             if (msg) showToast(msg);
         }
@@ -2515,10 +2574,10 @@
             const lowest = getLowestStatInfo(s);
             const highest = getHighestStatInfo(s);
             const statItems = [
-                { name: '돈 냄새 맡는 촉', cap: 'Wealth', score: s.wealth },
+                { name: '재물 그릇', cap: 'Wealth', score: s.wealth },
                 { name: '멘탈 방어력', cap: 'Mental', score: s.mental },
-                { name: '기회 포착력', cap: 'Drive', score: s.drive },
-                { name: '인생 뒤집을 귀인복', cap: 'Network', score: s.network }
+                { name: '현실 돌파력', cap: 'Drive', score: s.drive },
+                { name: '인적 네트워크', cap: 'Network', score: s.network }
             ];
 
             let currY = 442;
