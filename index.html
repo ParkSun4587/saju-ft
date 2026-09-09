@@ -878,16 +878,16 @@
     </div>
 
     <!-- 6. 약관 및 개인정보처리방침 팝업 모달 -->
-    <div id="policyModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl flex flex-col max-h-[80vh] text-left">
-            <div class="flex justify-between items-center pb-3 border-b border-slate-700">
-                <h3 id="policyModalTitle" class="text-base sm:text-lg font-bold text-white">이용약관</h3>
-                <button type="button" onclick="closePolicyModal()" class="text-slate-400 hover:text-white text-2xl font-bold p-1 leading-none">&times;</button>
+    <div id="policyModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 hidden">
+        <div class="bg-white border border-rose-200/80 w-full max-w-lg rounded-[28px] p-6 shadow-2xl flex flex-col max-h-[80vh] text-left">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                <h3 id="policyModalTitle" class="text-base sm:text-lg font-black text-slate-900">이용약관</h3>
+                <button type="button" onclick="closePolicyModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold p-1 leading-none">&times;</button>
             </div>
-            <div id="policyModalContent" class="overflow-y-auto py-4 text-xs text-slate-300 space-y-4 pr-1 leading-relaxed">
+            <div id="policyModalContent" class="overflow-y-auto py-4 text-xs text-slate-600 space-y-4 pr-1 leading-relaxed">
             </div>
-            <div class="pt-3 border-t border-slate-700">
-                <button type="button" onclick="closePolicyModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold transition">닫기</button>
+            <div class="pt-3 border-t border-slate-100">
+                <button type="button" onclick="closePolicyModal()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-sm font-bold transition">닫기</button>
             </div>
         </div>
     </div>
@@ -1447,11 +1447,11 @@
                 }
 
                 return `
-                <div class="p-3 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-1">
+                <div class="p-3 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-1">
                     <div class="text-xs font-black ${themeColor} leading-snug">
                         ${icon} [${dateText}] ${subTitle}
                     </div>
-                    <div class="text-xs text-slate-200 leading-relaxed break-keep">
+                    <div class="text-xs text-slate-700 leading-relaxed break-keep">
                         ${cleanedDesc}
                     </div>
                 </div>`;
@@ -1459,38 +1459,38 @@
                     
             let roadmapHtml = `
             <div class="space-y-2.5">
-                ${formatRoadmapItem(sel.r1, sel.r1d, isT ? 'text-amber-400' : 'text-amber-300', isT ? '⚡' : '🌸')}
-                ${formatRoadmapItem(sel.r2, sel.r2d, isT ? 'text-amber-300' : 'text-rose-300', isT ? '📈' : '🌿')}
+                ${formatRoadmapItem(sel.r1, sel.r1d, isT ? 'text-amber-700' : 'text-amber-600', isT ? '⚡' : '🌸')}
+                ${formatRoadmapItem(sel.r2, sel.r2d, isT ? 'text-amber-700' : 'text-rose-600', isT ? '📈' : '🌿')}
             </div>`;
 
             let trapHtml = isT 
-                ? `<div class="p-3 rounded-xl border border-sky-500/40 bg-sky-950/30 shadow-inner">
+                ? `<div class="p-3.5 rounded-2xl border border-sky-200 bg-sky-50 shadow-sm">
                        <div class="flex items-center gap-1.5 mb-1.5">
-                           <span class="text-[10px] font-black px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30">⚡ T 팩폭 조언</span>
+                           <span class="text-[10px] font-black px-2 py-0.5 rounded bg-sky-100 text-sky-600 border border-sky-300">⚡ T 팩폭 조언</span>
                        </div>
-                       <p class="text-sky-100 text-xs sm:text-[13px] leading-relaxed break-keep">${trapDetail}</p>
+                       <p class="text-sky-950 text-xs sm:text-[13px] leading-relaxed break-keep">${trapDetail}</p>
                    </div>`
-                : `<div class="p-3 rounded-xl border border-rose-500/40 bg-rose-950/30 shadow-inner">
+                : `<div class="p-3.5 rounded-2xl border border-rose-200 bg-rose-50 shadow-sm">
                        <div class="flex items-center gap-1.5 mb-1.5">
-                           <span class="text-[10px] font-black px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-400/30">🌸 F 공감 치유</span>
+                           <span class="text-[10px] font-black px-2 py-0.5 rounded bg-rose-100 text-rose-600 border border-rose-300">🌸 F 공감 치유</span>
                        </div>
-                       <p class="text-rose-100 text-xs sm:text-[13px] leading-relaxed break-keep">${trapDetail}</p>
+                       <p class="text-rose-950 text-xs sm:text-[13px] leading-relaxed break-keep">${trapDetail}</p>
                    </div>`;
 
             let actionHtml = `<div class="space-y-2.5">
-                <div class="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-1">
-                    <div class="text-xs font-black text-emerald-300">${sel.acts[0].t}</div>
-                    <div class="text-xs text-slate-200 leading-relaxed">${sel.acts[0].d || sel.acts[0].b}</div>
+                <div class="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1">
+                    <div class="text-xs font-black text-emerald-700">${sel.acts[0].t}</div>
+                    <div class="text-xs text-slate-700 leading-relaxed">${sel.acts[0].d || sel.acts[0].b}</div>
                 </div>
-                <div class="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/40 space-y-1.5">
-                    <div class="text-xs font-black text-emerald-300">${sel.acts[1].t}</div>
+                <div class="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1.5">
+                    <div class="text-xs font-black text-emerald-700">${sel.acts[1].t}</div>
                     ${sel.acts[1].b 
-                        ? `<div class="rounded-lg bg-slate-950 border border-emerald-500/40 p-2.5 text-[11px] sm:text-xs font-semibold text-emerald-200 select-all leading-relaxed">${sel.acts[1].b}</div>` 
-                        : `<div class="text-xs text-slate-200 leading-relaxed">${sel.acts[1].d}</div>`}
+                        ? `<div class="rounded-xl bg-white border border-emerald-300 p-2.5 text-[11px] sm:text-xs font-bold text-emerald-800 select-all leading-relaxed">${sel.acts[1].b}</div>` 
+                        : `<div class="text-xs text-slate-700 leading-relaxed">${sel.acts[1].d}</div>`}
                 </div>
-                <div class="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-1">
-                    <div class="text-xs font-black text-emerald-300">${sel.acts[2].t}</div>
-                    <div class="text-xs text-slate-200 leading-relaxed">${sel.acts[2].d || sel.acts[2].b}</div>
+                <div class="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1">
+                    <div class="text-xs font-black text-emerald-700">${sel.acts[2].t}</div>
+                    <div class="text-xs text-slate-700 leading-relaxed">${sel.acts[2].d || sel.acts[2].b}</div>
                 </div>
             </div>`;
 
@@ -1906,14 +1906,14 @@
 
             const badge = document.getElementById('resultModeBadge');
             if (badge) {
-                badge.innerHTML = isT ? `필터 없이 뼈 때리는 <span class="text-white">${data.name}</span>님의 T 팩폭 리포트` : `100% 내 편 들어주는 <span class="text-white">${data.name}</span>님의 F 힐링 리포트`;
-                badge.className = isT ? "px-3.5 py-1 bg-sky-500/20 text-sky-300 border border-sky-400/50 rounded-full text-xs font-black tracking-wide shadow-[0_0_15px_rgba(56,189,248,0.4)]" : "px-3.5 py-1 bg-rose-500/20 text-rose-300 border border-rose-400/50 rounded-full text-xs font-black tracking-wide shadow-[0_0_15px_rgba(253,164,175,0.3)]";
+                badge.innerHTML = isT ? `필터 없이 뼈 때리는 <span class="text-sky-700">${data.name}</span>님의 T 팩폭 리포트` : `100% 내 편 들어주는 <span class="text-rose-700">${data.name}</span>님의 F 힐링 리포트`;
+                badge.className = isT ? "px-3.5 py-1 bg-sky-50 text-sky-600 border border-sky-200 rounded-full text-xs font-extrabold tracking-wide shadow-sm" : "px-3.5 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-xs font-extrabold tracking-wide shadow-sm";
             }
 
             const tagsWrapper = document.getElementById('characterHashTags');
             if (tagsWrapper) {
                 const tags = isT ? data.profile.T_tags : data.profile.F_tags;
-                tagsWrapper.innerHTML = tags.map(tag => `<span class="px-2.5 py-1 rounded-full ${isT ? 'bg-sky-950/90 text-sky-300 border-sky-400/60 shadow-[0_0_8px_rgba(56,189,248,0.2)]' : 'bg-[#26131c] text-rose-300 border-rose-400/60 shadow-[0_0_8px_rgba(244,63,94,0.2)]'} border text-[11px] font-extrabold tracking-tight">${tag}</span>`).join('');
+                tagsWrapper.innerHTML = tags.map(tag => `<span class="px-2.5 py-1 rounded-full ${isT ? 'bg-sky-50 text-sky-600 border-sky-200' : 'bg-rose-50 text-rose-600 border-rose-200'} border text-[11px] font-extrabold tracking-tight shadow-sm">${tag}</span>`).join('');
             }
 
             const sazuTitle = document.getElementById('sazuCharacterTitle');
@@ -1923,9 +1923,7 @@
                     ? ` (${dayGan && HANJA_TO_KR[dayGan] ? HANJA_TO_KR[dayGan] : ''}${OHENG_NAMES[data.dayOheng][0]})`
                     : '';
                 sazuTitle.innerText = (isT ? data.profile.title_T : data.profile.title_F) + dmSuffix;
-                sazuTitle.className = isT 
-                    ? "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-sky-200 drop-shadow-sm"
-                    : "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-rose-200 drop-shadow-sm";
+                sazuTitle.className = "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-slate-900";
             }
 
             // 사주 원국 (4주) 렌더링 — 한자·괄호 없이 한글 간지만 표시
@@ -1940,19 +1938,19 @@
                 if (monthEl) monthEl.innerText = gz(data.pillars.month) || '-';
                 if (dayEl) dayEl.innerText = gz(data.pillars.day) || '-';
                 if (data.pillars.hour) {
-                    if (hourEl) { hourEl.innerText = gz(data.pillars.hour); hourEl.className = "text-sm font-black text-white"; }
+                    if (hourEl) { hourEl.innerText = gz(data.pillars.hour); hourEl.className = "text-sm font-black text-slate-800"; }
                     if (hourSubEl) hourSubEl.remove();
                 } else {
-                    if (hourEl) { hourEl.innerText = '추정'; hourEl.className = "text-sm font-black text-slate-300"; }
+                    if (hourEl) { hourEl.innerText = '추정'; hourEl.className = "text-sm font-black text-slate-500"; }
                 }
             }
 
-            // [공유 버튼 시인성 개선] 모드(T/F)에 맞춰 테두리와 네온 효과 동적 부여 (보호색 탈피)
+            // [공유 버튼 시인성 개선] 라이트 파스텔 모드에 완벽 매칭
             const mainShareBtn = document.getElementById('mainShareBtn');
             if (mainShareBtn) {
                 mainShareBtn.className = isT 
-                    ? "w-full py-3 px-3 bg-sky-900/50 hover:bg-sky-800/70 border border-sky-300 text-sky-50 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-[0_0_18px_rgba(56,189,248,0.35)] active:scale-98 cursor-pointer"
-                    : "w-full py-3 px-3 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-400/60 text-rose-100 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.2)] active:scale-98 cursor-pointer";
+                    ? "w-full py-3 px-3 bg-sky-50 hover:bg-sky-100 border-2 border-sky-300 text-sky-800 rounded-2xl text-[13px] font-black transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer"
+                    : "w-full py-3 px-3 bg-rose-50 hover:bg-rose-100 border-2 border-rose-300 text-rose-800 rounded-2xl text-[13px] font-black transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer";
             }
 
             // [바이럴] 토글 버튼 문구를 현재 보고 있는 모드의 반대로 표시
@@ -1961,7 +1959,7 @@
                 modeToggleTxt.innerText = isT ? '🌸 F 공감 버전으로도 들어보기' : '🧊 T 팩폭 버전으로도 들어보기';
             }
 
-            // [개선] 등급별 시각적 차별화 (마케팅 과시욕 극대화)
+            // [개선] 등급별 시각적 차별화 (라이트 파스텔 테두리 & 뱃지)
             const myGrade = calculateSazuGrade(data.elements || {}, data.stats);
             const gradeTxtEl = document.getElementById('resultGradeText');
             const gradeTtlEl = document.getElementById('resultGradeTitle');
@@ -1972,40 +1970,34 @@
 
             if (gradeBoxEl && gradeTxtEl && gradeTtlEl) {
                 if (myGrade.grade === 'S+') { 
-                    // 골드(Amber) - 천상계
-                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-amber-500/70 bg-amber-950/40 shadow-[0_0_15px_rgba(245,158,11,0.5)] mb-1";
-                    gradeTxtEl.className = "font-black text-[13px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200";
-                    gradeTtlEl.className = "text-[11px] font-bold text-amber-100/90 tracking-tight";
+                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-amber-300 bg-amber-50 shadow-sm mb-1";
+                    gradeTxtEl.className = "font-black text-[13px] tracking-wide text-amber-700";
+                    gradeTtlEl.className = "text-[11px] font-bold text-amber-900 tracking-tight";
                 } else if (myGrade.grade === 'S') { 
-                    // 레드(Rose) - 1티어
-                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-rose-500/70 bg-rose-950/40 shadow-[0_0_15px_rgba(244,63,94,0.5)] mb-1";
-                    gradeTxtEl.className = "font-black text-[13px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-rose-400 to-rose-200";
-                    gradeTtlEl.className = "text-[11px] font-bold text-rose-100/90 tracking-tight";
+                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-rose-300 bg-rose-50 shadow-sm mb-1";
+                    gradeTxtEl.className = "font-black text-[13px] tracking-wide text-rose-600";
+                    gradeTtlEl.className = "text-[11px] font-bold text-rose-900 tracking-tight";
                 } else if (myGrade.grade === 'A') { 
-                    // 스카이(Sky) - 특화 전문가
-                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-sky-500/70 bg-sky-950/40 shadow-[0_0_15px_rgba(56,189,248,0.5)] mb-1";
-                    gradeTxtEl.className = "font-black text-[13px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-sky-400 to-sky-200";
-                    gradeTtlEl.className = "text-[11px] font-bold text-sky-100/90 tracking-tight";
+                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-sky-300 bg-sky-50 shadow-sm mb-1";
+                    gradeTxtEl.className = "font-black text-[13px] tracking-wide text-sky-600";
+                    gradeTtlEl.className = "text-[11px] font-bold text-sky-900 tracking-tight";
                 } else if (myGrade.grade === '포텐') { 
-                    // 민트(Emerald) - 대기만성
-                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/70 bg-emerald-950/40 shadow-[0_0_15px_rgba(16,185,129,0.5)] mb-1";
-                    gradeTxtEl.className = "font-black text-[13px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200";
-                    gradeTtlEl.className = "text-[11px] font-bold text-emerald-100/90 tracking-tight";
+                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-300 bg-emerald-50 shadow-sm mb-1";
+                    gradeTxtEl.className = "font-black text-[13px] tracking-wide text-emerald-600";
+                    gradeTtlEl.className = "text-[11px] font-bold text-emerald-900 tracking-tight";
                 } else { 
-                    // 퍼플(Purple) - 히든급
-                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-500/70 bg-purple-950/40 shadow-[0_0_15px_rgba(168,85,247,0.5)] mb-1";
-                    gradeTxtEl.className = "font-black text-[13px] tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-purple-400 to-purple-200";
-                    gradeTtlEl.className = "text-[11px] font-bold text-purple-100/90 tracking-tight";
+                    gradeBoxEl.className = "inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-300 bg-purple-50 shadow-sm mb-1";
+                    gradeTxtEl.className = "font-black text-[13px] tracking-wide text-purple-600";
+                    gradeTtlEl.className = "text-[11px] font-bold text-purple-900 tracking-tight";
                 }
             }
 
             const bigMbti = document.getElementById('resultBigMbti');
             if (bigMbti) {
                 bigMbti.innerText = data.mbtiKey || 'ISTJ';
-                // [컬러 개선] 단색에서 고급스러운 그라데이션 텍스트로 변경하여 시선 강탈
                 bigMbti.className = isT 
-                    ? "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-transparent bg-clip-text bg-gradient-to-b from-sky-200 to-sky-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.5)] leading-none pt-1" 
-                    : "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-transparent bg-clip-text bg-gradient-to-b from-rose-200 to-rose-400 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)] leading-none pt-1";
+                    ? "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-sky-600 drop-shadow-sm leading-none pt-1" 
+                    : "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-rose-500 drop-shadow-sm leading-none pt-1";
             }
 
             const firstSecTitle = document.getElementById('firstSectionTitle');
@@ -2496,24 +2488,24 @@
             canvas.width = w;
             canvas.height = h;
 
-            // 배경
-            ctx.fillStyle = '#080c16';
+            // 배경: 랜딩과 일치하는 뽀얀 크림 톤
+            ctx.fillStyle = '#fcfaf7';
             ctx.fillRect(0, 0, w, h);
 
-            // 카드 메인 컨테이너 (위아래 24px 여백으로 확장)
+            // 카드 메인 컨테이너 (화이트 카드 + 로즈 핑크 테두리)
             ctx.save();
-            ctx.fillStyle = '#0f172a';
-            ctx.strokeStyle = '#334155';
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#fecdd3';
             ctx.lineWidth = 2;
-            roundRect(ctx, 28, 24, w - 56, h - 48, 24);
+            roundRect(ctx, 28, 24, w - 56, h - 48, 28);
             ctx.fill();
             ctx.stroke();
             ctx.restore();
 
             // 1) 상단 리포트 알약 뱃지 (Y: 52)
             ctx.save();
-            ctx.fillStyle = isT ? 'rgba(14, 165, 233, 0.2)' : 'rgba(244, 63, 94, 0.2)';
-            ctx.strokeStyle = isT ? 'rgba(56, 189, 248, 0.5)' : 'rgba(253, 164, 175, 0.5)';
+            ctx.fillStyle = isT ? '#f0f9ff' : '#fff1f2';
+            ctx.strokeStyle = isT ? '#bae6fd' : '#fecdd3';
             ctx.lineWidth = 1.5;
             roundRect(ctx, 85, 52, 430, 40, 20);
             ctx.fill();
@@ -2521,7 +2513,7 @@
 
             const prefix = isT ? '필터 없이 뼈 때리는 ' : '100% 내 편 들어주는 ';
             const suffix = isT ? '님의 T 팩폭 리포트' : '님의 F 힐링 리포트';
-            const themeColor = isT ? '#38bdf8' : '#fda4af';
+            const themeColor = isT ? '#0284c7' : '#e11d48';
 
             ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textBaseline = 'middle';
@@ -2535,13 +2527,13 @@
 
             ctx.fillStyle = themeColor;
             ctx.fillText(prefix, startX, 72);
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = '#0f172a';
             ctx.fillText(userName, startX + wPrefix, 72);
             ctx.fillStyle = themeColor;
             ctx.fillText(suffix, startX + wPrefix + wName, 72);
             ctx.restore();
 
-            // 2) 서브 타이틀: 🎭 사회적 가면을 벗은 내 진짜 사주 본캐 (Y: 122로 여유 있게 배치)
+            // 2) 서브 타이틀: 🎭 사회적 가면을 벗은 내 진짜 사주 본캐 (Y: 122)
             ctx.save();
             ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textBaseline = 'middle';
@@ -2554,15 +2546,15 @@
             const totalSubW = wSub1 + wSub2;
             const subStartX = (w - totalSubW) / 2;
 
-            ctx.fillStyle = '#94a3b8';
+            ctx.fillStyle = '#64748b';
             ctx.fillText(subPart1, subStartX, 122);
-            ctx.fillStyle = '#fbbf24';
+            ctx.fillStyle = '#d97706';
             ctx.fillText(subPart2, subStartX + wSub1, 122);
             ctx.restore();
 
-            // 3) MBTI 거대 글자 (Y: 195로 간격 확보)
+            // 3) MBTI 거대 글자 (Y: 195)
             ctx.save();
-            ctx.fillStyle = isT ? '#38bdf8' : '#fda4af';
+            ctx.fillStyle = isT ? '#0284c7' : '#e11d48';
             ctx.font = '900 66px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'center';
             ctx.letterSpacing = '4px';
@@ -2572,52 +2564,51 @@
             // 4) 해시태그 (Y: 240)
             const tags = isT ? data.profile.T_tags : data.profile.F_tags;
             ctx.save();
-            ctx.fillStyle = isT ? '#38bdf8' : '#fda4af';
+            ctx.fillStyle = isT ? '#0369a1' : '#be123c';
             ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(tags.join('   '), w / 2, 240);
             ctx.restore();
 
-            // 5) 메인 타이틀 (Y: 280, 2줄 자동 줄바꿈)
+            // 5) 메인 타이틀 (Y: 280)
             const mainTitle = (isT ? data.profile.title_T : data.profile.title_F);
             ctx.save();
-            ctx.fillStyle = isT ? '#38bdf8' : '#fda4af';
+            ctx.fillStyle = '#0f172a';
             ctx.font = '900 20px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'center';
             drawWrappedTitle(ctx, mainTitle, w / 2, 280, 480, 30);
             ctx.restore();
 
-            // 6) 4대 스탯 컨테이너 박스 (Y: 360 ~ 730로 확장하여 넉넉하게 배치)
+            // 6) 4대 스탯 컨테이너 박스 (Y: 360 ~ 730)
             ctx.save();
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-            ctx.strokeStyle = '#1e293b';
+            ctx.fillStyle = '#f8fafc';
+            ctx.strokeStyle = '#e2e8f0';
             ctx.lineWidth = 1.5;
-            roundRect(ctx, 50, 360, w - 100, 370, 18);
+            roundRect(ctx, 50, 360, w - 100, 370, 20);
             ctx.fill();
             ctx.stroke();
 
             // 스탯 헤더
-            ctx.fillStyle = '#e2e8f0';
+            ctx.fillStyle = '#1e293b';
             ctx.font = '900 14px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'left';
-                        ctx.fillText('타고난 4대 잠재 정밀 수치', 72, 395);
+            ctx.fillText('내 타고난 본캐 4대 스탯', 72, 395);
 
-            // 공유 카드 우측에 밸런스 등급 표기 (등급별 컬러 매핑 동기화)
+            // 공유 카드 우측 밸런스 등급 표기
             const cardGrade = calculateSazuGrade(data.elements || {}, data.stats);
-            let gradeHex = '#c084fc'; // 기본 포텐/히든 (퍼플)
-            if (cardGrade.grade === 'S+') gradeHex = '#f59e0b'; // S+ (골드)
-            else if (cardGrade.grade === 'S') gradeHex = '#fb7185'; // S (로즈)
-            else if (cardGrade.grade === 'A') gradeHex = '#38bdf8'; // A (스카이)
-            else if (cardGrade.grade === '포텐') gradeHex = '#34d399'; // 포텐 (민트)
+            let gradeHex = '#7c3aed';
+            if (cardGrade.grade === 'S+') gradeHex = '#d97706';
+            else if (cardGrade.grade === 'S') gradeHex = '#e11d48';
+            else if (cardGrade.grade === 'A') gradeHex = '#0284c7';
+            else if (cardGrade.grade === '포텐') gradeHex = '#059669';
 
             ctx.fillStyle = gradeHex;
             ctx.font = '900 14px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'right';
             ctx.fillText(cardGrade.grade + '급 밸런스', w - 72, 395);
             ctx.textAlign = 'left';
-            ctx.fillStyle = '#e2e8f0';
 
-            // 4대 수치 데이터 렌더링 (간격을 72px로 넓혀 시원하게 정렬)
+            // 4대 수치 데이터 렌더링
             const lowest = getLowestStatInfo(s);
             const highest = getHighestStatInfo(s);
             const statItems = [
@@ -2632,7 +2623,7 @@
                 ctx.textBaseline = 'middle';
 
                 // 라벨 텍스트
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = '#0f172a';
                 ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText(item.name, 72, currY);
@@ -2645,27 +2636,27 @@
                 let isLow = (lowest.cap === item.cap);
 
                 if (isHigh) badgeTxt = isT ? '⚡ 사기급 주특기' : '👑 타고난 치트키';
-                else if (isLow) badgeTxt = isT ? '🚨 발목 잡는 주범' : '💔 혼자 속앓이';
+                else if (isLow) badgeTxt = isT ? '🚨 집중 케어' : '💔 혼자 속앓이';
 
                 if (badgeTxt) {
-                    ctx.fillStyle = isHigh ? '#fcd34d' : '#fb7185';
+                    ctx.fillStyle = isHigh ? '#d97706' : '#e11d48';
                     ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
                     ctx.fillText(badgeTxt, 72 + labelWidth + 8, currY);
                 }
 
                 // 점수 텍스트
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = '#0f172a';
                 ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
                 ctx.textAlign = 'right';
                 ctx.fillText(`${item.score}점`, w - 72, currY);
 
                 // 게이지 바 트랙
-                ctx.fillStyle = '#1e293b';
+                ctx.fillStyle = '#e2e8f0';
                 roundRect(ctx, 72, currY + 18, w - 144, 7, 3.5);
                 ctx.fill();
 
                 // 게이지 바 채우기
-                ctx.fillStyle = isT ? '#38bdf8' : '#fda4af';
+                ctx.fillStyle = isT ? '#38bdf8' : '#fb7185';
                 const fillW = Math.max(7, ((w - 144) * item.score) / 100);
                 roundRect(ctx, 72, currY + 18, fillW, 7, 3.5);
                 ctx.fill();
@@ -2674,22 +2665,22 @@
             });
             ctx.restore();
 
-            // 7) 하단 인스타 링크 스티커 영역 (Y: 748 ~ 835로 내려 카드 하단부를 꽉 채움)
+            // 7) 하단 인스타 링크 스티커 영역 (Y: 748 ~ 835)
             ctx.save();
             ctx.setLineDash([6, 4]);
-            ctx.strokeStyle = isT ? 'rgba(56, 189, 248, 0.45)' : 'rgba(253, 164, 175, 0.45)';
-            ctx.fillStyle = isT ? 'rgba(14, 165, 233, 0.05)' : 'rgba(244, 63, 94, 0.05)';
+            ctx.strokeStyle = isT ? '#7dd3fc' : '#fda4af';
+            ctx.fillStyle = isT ? '#f0f9ff' : '#fff1f2';
             ctx.lineWidth = 1.5;
-            roundRect(ctx, 50, 748, w - 100, 84, 14);
+            roundRect(ctx, 50, 748, w - 100, 84, 16);
             ctx.fill();
             ctx.stroke();
 
-            ctx.fillStyle = isT ? '#38bdf8' : '#fda4af';
+            ctx.fillStyle = isT ? '#0284c7' : '#e11d48';
             ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('🔗 [링크는 본문 / 스토리 스티커에 붙이기]', w / 2, 780);
 
-            ctx.fillStyle = '#94a3b8';
+            ctx.fillStyle = '#64748b';
             ctx.font = '12px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.fillText('너도 네 숨겨진 사주 본캐 스탯 확인해봐 (터치)', w / 2, 808);
             ctx.restore();
