@@ -2022,12 +2022,20 @@
                     : "w-full py-3 px-3 bg-rose-50 hover:bg-rose-100 border-2 border-rose-300 text-rose-800 rounded-2xl text-[13px] font-black transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer";
             }
 
-            // 토글 버튼 문구
-            const modeToggleTxt = document.getElementById('modeToggleText');
-            if (modeToggleTxt) {
-                modeToggleTxt.innerText = isT ? '🌸 F 공감 버전으로도 들어보기' : '🧊 T 팩폭 버전으로도 들어보기';
+            // [바이럴] 반대 모드 토글 버튼 (1줄 콤팩트 세팅)
+            const toggleBtn = document.getElementById('modeToggleBtn');
+            const toggleTxt = document.getElementById('modeToggleText');
+            if (toggleBtn && toggleTxt) {
+                if (isT) {
+                    // 현재 T 팩폭 모드일 때 -> 분홍색 배경에 눈물 닦기
+                    toggleBtn.className = "w-full py-3 px-4 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer shadow-sm";
+                    toggleTxt.innerText = "🌸 힐링 모드로 눈물 닦기";
+                } else {
+                    // 현재 F 공감 모드일 때 -> 하늘색 배경에 뼈 맞기
+                    toggleBtn.className = "w-full py-3 px-4 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-600 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer shadow-sm";
+                    toggleTxt.innerText = "🧊 팩폭 모드로 뼈 맞기";
+                }
             }
-
             // 등급 뱃지 렌더링
             const myGrade = calculateSazuGrade(data.elements || {}, data.stats);
             const gradeTxtEl = document.getElementById('resultGradeText');
