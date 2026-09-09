@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
     <title>사주FT - F공감 vs T팩폭 사주 MBTI</title>
     
     <!-- 구글/네이버 검색엔진 최적화(SEO) 표준 메타 태그 -->
@@ -59,9 +61,14 @@
    <style>
         /* Pretendard 폰트 제거 - 시스템 폰트 사용으로 로딩 속도 개선 */
 
-        body { 
-            background: #fcfaf7;
-            color: #1e293b; 
+        :root {
+            color-scheme: light only;
+        }
+
+        html, body { 
+            background: #fcfaf7 !important;
+            color: #1e293b !important; 
+            color-scheme: light only;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
