@@ -287,9 +287,9 @@
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 mb-0.5">성별</label>
-                        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200/50 h-[38px] items-center">
-                            <button type="button" id="btnMale" onclick="setGender('male')" class="toggle-tab-btn inactive h-full text-xs font-bold rounded-lg">남</button>
+                        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/60 h-[40px] items-center">
                             <button type="button" id="btnFemale" onclick="setGender('female')" class="toggle-tab-btn active h-full text-xs font-bold rounded-lg">여</button>
+                            <button type="button" id="btnMale" onclick="setGender('male')" class="toggle-tab-btn inactive h-full text-xs font-bold rounded-lg">남</button>
                         </div>
                         <input type="hidden" id="genderValue" value="female">
                     </div>
@@ -3002,7 +3002,7 @@
             premiumBuffer = null;
             const form = document.getElementById('sazuForm'); if (form) form.reset();
             document.getElementById('nameInput').value = ''; document.getElementById('birthDateInput').value = ''; document.getElementById('birthTimeSelect').selectedIndex = 0;
-            setGender('male'); setCalendar('solar'); selectConcern('money', document.querySelector('#concernGrid .concern-chip'));
+            setGender('female'); setCalendar('solar'); selectConcern('money', document.querySelector('#concernGrid .concern-chip'));
             document.getElementById('resultSection').style.display = 'none'; document.getElementById('loadingSection').style.display = 'none'; document.getElementById('landingSection').style.display = 'flex';
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => { document.getElementById('nameInput').focus(); }, 100);
