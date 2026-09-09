@@ -531,52 +531,24 @@
                 <h1 class="mobile-title font-black text-center w-full px-2 mt-0.5 mb-0.5 leading-snug" id="sazuCharacterTitle">-</h1>
             </div>
 
-            <!-- 4대 스탯 (클린 룩) -->
-            <div class="space-y-2.5 text-left pt-1 bg-slate-50 p-3.5 sm:p-5 rounded-2xl border border-slate-200 mt-2">
-                <div class="flex justify-between items-center mb-0.5">
-                    <span class="text-[11px] font-black text-slate-700 tracking-wider">내 타고난 본캐 4대 스탯</span>
-                    <span class="text-[9px] text-rose-500 font-bold">*취약 구간 집중 케어</span>
-                </div>
-                
-                <div class="space-y-1">
-                    <div class="flex justify-between items-center text-xs font-bold">
-                        <span class="text-slate-800 font-bold flex items-center gap-1"><span>💸</span> 돈 냄새 맡는 촉</span>
-                        <span id="statWealthTxt" class="font-mono text-xs font-black text-slate-800">0점</span>
-                    </div>
-                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                        <div id="statWealthBar" class="h-full rounded-full" style="width: 0%"></div>
-                    </div>
-                </div>
+            <!-- [와이어프레임 일치] 캐릭터 밈 배너 -->
+            <div class="my-2 py-2.5 px-4 bg-amber-50/70 rounded-2xl border border-amber-200/80 flex items-center justify-center gap-2 shadow-sm">
+                <span id="characterMemeIcon" class="text-2xl">🐱</span>
+                <span id="characterMemeText" class="text-xs sm:text-[13px] font-black text-amber-950 tracking-tight">-</span>
+            </div>
 
-                <div class="space-y-1">
-                    <div class="flex justify-between items-center text-xs font-bold">
-                        <span class="text-slate-800 font-bold flex items-center gap-1"><span>🛡️</span> 멘탈 방어력</span>
-                        <span id="statMentalTxt" class="font-mono text-xs font-black text-slate-800">0점</span>
-                    </div>
-                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                        <div id="statMentalBar" class="h-full rounded-full" style="width: 0%"></div>
-                    </div>
+            <!-- [와이어프레임 일치] 📌 내 본캐 취급설명서 -->
+            <div class="space-y-2 text-left pt-3 pb-3 bg-slate-50/90 p-4 rounded-2xl border border-slate-200 mt-2 shadow-inner">
+                <div class="flex justify-between items-center pb-1.5 border-b border-slate-200/60">
+                    <span class="text-xs font-black text-slate-800 tracking-wider flex items-center gap-1">
+                        <span>📌</span> <span>내 본캐 취급설명서</span>
+                    </span>
+                    <span class="text-[9px] text-rose-500 font-bold">*사주 팩트 기반</span>
                 </div>
-
-                <div class="space-y-1">
-                    <div class="flex justify-between items-center text-xs font-bold">
-                        <span class="text-slate-800 font-bold flex items-center gap-1" id="statDriveLabel"><span>⚡</span> 기회 포착력</span>
-                        <span id="statDriveTxt" class="font-mono text-xs font-black text-slate-800">0점</span>
-                    </div>
-                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                        <div id="statDriveBar" class="h-full rounded-full" style="width: 0%"></div>
-                    </div>
+                <div id="manualBulletList" class="space-y-2 text-xs text-slate-700 leading-relaxed font-semibold pt-1">
+                    <!-- JS에서 3줄 자동 주입 -->
                 </div>
-
-                <div class="space-y-1">
-                    <div class="flex justify-between items-center text-xs font-bold">
-                        <span class="text-slate-800 font-bold flex items-center gap-1"><span>🤝</span> 인생 역전 귀인복</span>
-                        <span id="statNetworkTxt" class="font-mono text-xs font-black text-slate-800">0점</span>
-                    </div>
-                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                        <div id="statNetworkBar" class="h-full rounded-full" style="width: 0%"></div>
-                    </div>
-                </div>
+            </div>
             </div>
 
             <!-- [바이럴 치트키] 환상의 찰떡 깐부 vs 숨 막히는 상극 -->
@@ -890,22 +862,118 @@
         const OHENG_NAMES = { mok: '목(나무)', hwa: '화(불)', to: '토(흙)', geum: '금(쇠)', su: '수(물)' };
 
         const SAZU_CHARACTER_PROFILES = {
-            'INTJ': { title_T: '머릿속 계산은 1등, 행동은 0건인 완벽주의자', title_F: '남모를 깊은 고뇌 끝에 완벽한 길을 찾는 전략가', F_tags: ['#혼자시뮬레이션', '#완벽주의자책', '#도움요청못함'], T_tags: ['#머릿속계산1위', '#실행은0건', '#생각그만하고지르기'] },
-            'INTP': { title_T: '아이디어는 천재인데 침대에서 안 일어나는 게으른 뇌섹남녀', title_F: '세상에 없던 새로운 통찰을 품은 다정한 천재', F_tags: ['#깊은생각', '#혼자만의세계', '#정당한보상놓침'], T_tags: ['#아이디어100개', '#실행력0단', '#침대와한몸'] },
-            'ENTJ': { title_T: "답답하면 '내가 하고 만다'며 총대 메는 야망 보스", title_F: '모두를 위해 묵묵히 길을 터주는 든든한 등대', F_tags: ['#든든한리더', '#외로움숨김', '#번아웃주의'], T_tags: ['#성질좀죽여', '#독주하다고립', '#내가다하고만다'] },
-            'ENTP': { title_T: '말빨로 세계정복 해놓고 마무리는 흐지부지인 아가리파이터', title_F: '세상을 유쾌하게 뒤집을 반짝이는 아이디어 뱅크', F_tags: ['#아이디어부자', '#유쾌한반전', '#깊은속마음숨김'], T_tags: ['#말만청산유수', '#벌여놓은판20개', '#통장결과물0개'] },
-            'INFJ': { title_T: '겉으론 다 맞춰주다 속으로 조용히 손절각 재는 회피형', title_F: '남몰래 상처 입으면서도 사람을 놓지 못하는 치유자', F_tags: ['#조용한배려', '#혼자삭이다멍듦', '#에너지방전'], T_tags: ['#속으로손절각', '#꿍하지말고말해', '#갑자기셔터내림'] },
-            'INFP': { title_T: '남 눈치 보느라 거절 못 하고 집 가서 혼자 앓는 쿠쿠다스', title_F: '온 세상의 아픔을 다 품어주느라 멍든 따뜻한 예술가', F_tags: ['#남걱정1등', '#속으로삭임', '#완벽주의때매_시작못함'], T_tags: ['#감정과몰입', '#돈달란말도못함', '#동굴로도망'] },
-            'ENFJ': { title_T: '남 고민 상담해주느라 정작 지 통장은 털리는 무료 상담사', title_F: '만인에게 온기를 나눠주느라 정작 내 마음은 굶주린 수호자', F_tags: ['#온기나눔', '#남챙기다방전', '#내인생우선순위밀림'], T_tags: ['#오지랖태평양', '#남걱정할시간에', '#통장잔고걱정'] },
-            'ENFP': { title_T: '시작할 땐 텐션 폭발, 3일 뒤엔 흥미 잃는 프로 벌림러', title_F: '어디서나 사람들의 마음에 따스한 불꽃을 틔우는 비타민', F_tags: ['#긍정에너지', '#약속무리해서자책', '#체면유지비출혈'], T_tags: ['#시작만우주급', '#마무리는흐지부지', '#기분파충동쇼핑'] },
-            'ISTJ': { title_T: '계획 틀어지면 멘붕 와서 급발진하는 FM 인간', title_F: '누구보다 우직하게 신뢰와 약속을 지켜내는 든든한 나무', F_tags: ['#신뢰감원탑', '#스스로에게엄격', '#변화가두려움'], T_tags: ['#루틴깨지면_발작', '#머릿속엑셀켜짐', '#융통성제로꼰대'] },
-            'ISFJ': { title_T: "앞에선 '괜찮아' 해놓고 밤마다 이불킥 차는 착한아이 증후군", title_F: '남을 배려하느라 늘 자신을 맨 뒤에 두는 천사표 살림꾼', F_tags: ['#디테일수호자', '#거절못해끙끙', '#나를희생함'], T_tags: ['#앞에선말못함', '#밤마다이불킥', '#평생호구잡힘'] },
-            'ESTJ': { title_T: "팩폭으로 뼈 부러뜨리고 '내가 틀린 말 했어?' 하는 팩트 살인마", title_F: '뒤에서는 묵묵히 궂은일을 다 해결해주는 책임감 원탑', F_tags: ['#명확한가이드', '#약한모습숨김', '#감정의벽쌓임'], T_tags: ['#말투가흉기', '#팩트살인마', '#1초만기분생각해'] },
-            'ESFJ': { title_T: '남들 기분 맞춰주다 영혼이랑 통장 잔고 다 털리는 호구 인싸', title_F: '모두가 행복하길 바라며 분위기를 부드럽게 감싸는 조율사', F_tags: ['#분위기메이커', '#남의시선에방전', '#체면유지비과다'], T_tags: ['#보여주기식삶', '#남시선이밥먹여줌', '#인맥다이어트시급'] },
-            'ISTP': { title_T: '발등에 불 떨어져 활활 타야 겨우 움직이는 벼락치기 장인', title_F: '말보다 묵묵한 행동과 능력으로 증명하는 현실 해결사', F_tags: ['#침착한해결사', '#표현이서툼', '#귀차니즘에양보'], T_tags: ['#발등불타야뜀', '#귀차니즘끝판왕', '#인간관계파탄주의'] },
-            'ISFP': { title_T: "귀찮은 일 생기면 '카톡 안 읽씹'하고 침대로 숨는 잠수러", title_F: '갈등 없는 평화 속에서 조용히 내면을 가꾸는 감성 힐러', F_tags: ['#온화한심미안', '#갈등회피', '#침대에서후회'], T_tags: ['#카톡안읽씹', '#회피형끝판왕', '#침대에서좀일어나'] },
-            'ESTP': { title_T: '도파민 터지면 앞뒤 안 보고 지르고 다음 날 후회하는 기분파', title_F: '두려움 없이 시원하게 세상에 부딪치는 당당한 승부사', F_tags: ['#용기있는도전', '#순간충동에지침', '#장기플랜놓침'], T_tags: ['#도파민중독', '#앞뒤안보고지름', '#인생은한방아님'] },
-            'ESFP': { title_T: '신나면 자기가 쏜다며 지갑 열고 다음 날 잔고 보고 우는 분위기메이커', title_F: '존재 자체로 주변 사람들에게 웃음과 생기를 주는 햇살', F_tags: ['#분위기밝힘', '#혼자있을때공허', '#퍼주다가내실속빔'], T_tags: ['#골든벨그만울려', '#기분파돈지랄', '#잔고보고눈물'] }
+            'ESTJ': { 
+                title_T: '남들 싼 똥 혼자 다 치우는 프로 총대러', title_F: '남모르게 홀로 궂은일 다 떠안는 K-장녀',
+                memeIcon: '🐱', memeText: '덤덤하게 총대 메고 기강 잡는 고양이',
+                bullets_T: ['일 못하면서 핑계 늘어놓는 인간 보면 혈압 오름', '남한테 맡기면 복장 터져서 결국 내가 다 하고 만다'],
+                bullets_F: ['겉으로는 로봇처럼 강해 보여도 밤마다 혼자 방전됨', '책임감 때문에 싫은 소리 못 하고 혼자 앓는 스타일'],
+                best: 'ISFP', bestTag: '말없이 통하는 힐링 깐부', worst: 'INFP', worstTag: '쿠쿠다스 멘탈이라 조심'
+            },
+            'INTJ': { 
+                title_T: '머릿속 계산은 강남 빌딩주, 현실 실행은 0건', title_F: '남모를 고독 속에서 완벽한 길을 찾는 전략가',
+                memeIcon: '🦊', memeText: '머릿속 엑셀 켜고 인간 관찰하는 여우',
+                bullets_T: ['멍청한 질문 3번 들으면 마음속으로 이미 손절 침', '완벽한 타이밍만 재다가 남이 먼저 출시하는 거 지켜봄'],
+                bullets_F: ['속마음 털어놓을 사람 없어서 혼자 일기장에 삭임', '도움 요청하는 법을 몰라 끝까지 혼자 버티다 지침'],
+                best: 'ENFP', bestTag: '티키타카 영혼의 단짝', worst: 'ESFJ', worstTag: '기 빨리는 대화 불가'
+            },
+            'INTP': { 
+                title_T: '아이디어는 천재인데 침대에서 안 일어남', title_F: '세상에 없던 새로운 통찰을 품은 다정한 천재',
+                memeIcon: '🐨', memeText: '침대에 누워 우주 정복 중인 코알라',
+                bullets_T: ['벌여놓은 아이디어는 우주급인데 결과물은 0개', '관심 없는 분야 이야기 들으면 영혼 실시간 로그아웃'],
+                bullets_F: ['남들과 다른 독특한 생각 때문에 은근히 소외감 느낌', '정당한 보상을 달라고 당당히 요구하지 못하고 손해 봄'],
+                best: 'ENTJ', bestTag: '아이디어 실현 치트키', worst: 'ISFJ', worstTag: '서로 이해 못 할 외계인'
+            },
+            'ENTJ': { 
+                title_T: '답답해서 내가 판 짜고 기강 잡는 야망 보스', title_F: '모두를 위해 묵묵히 길을 터주는 든든한 등대',
+                memeIcon: '🦁', memeText: '눈빛으로 회의실 제압하는 사자',
+                bullets_T: ['징징댈 시간에 해결책부터 가져오라고 소리치고 싶음', '남들 느려터진 속도 못 기다려서 혼자 폭주하다 번아웃'],
+                bullets_F: ['약한 모습 보이면 무너질까 봐 늘 센 척하느라 외로움', '내 진심은 팀을 위한 건데 말 한마디에 오해받아 멍듦'],
+                best: 'INTP', bestTag: '전략적 황금 깐부', worst: 'ISFP', worstTag: '답답해서 복장 터짐'
+            },
+            'ENTP': { 
+                title_T: '말빨로 세계정복 해놓고 마무리는 흐지부지', title_F: '세상을 유쾌하게 뒤집을 반짝이는 아이디어 뱅크',
+                memeIcon: '🦜', memeText: '토론으로 영혼까지 털어버리는 앵무새',
+                bullets_T: ['시작할 땐 텐션 폭발, 3일 뒤엔 흥미 잃고 침대행', '맞는 말로 팩트 폭격 날려놓고 왜 삐졌는지 모름'],
+                bullets_F: ['장난기 넘치는 가면 뒤에 깊은 허무함이 도사리고 있음', '진지한 감정 표현이 서툴러서 장난으로 때우다 후회함'],
+                best: 'INFJ', bestTag: '새벽 감성 밤샘 수다', worst: 'ISTJ', worstTag: '숨 막히는 교장선생님'
+            },
+            'INFJ': { 
+                title_T: '겉으론 다 맞춰주다 속으로 조용히 손절각 재는 회피형', title_F: '남몰래 상처 입으면서도 사람을 놓지 못하는 치유자',
+                memeIcon: '🦉', memeText: '인간관계 셔터 내릴 각 재는 부엉이',
+                bullets_T: ['속으로 점수 깎다가 한계 넘으면 예고 없이 영구 차단', '불편한 티 하나도 안 내놓고 혼자 마음 정리 끝냄'],
+                bullets_F: ['상대의 미세한 말투 하나에도 밤새 가슴 졸이며 자책함', '남 고민 다 들어주느라 정작 내 마음 챙길 배터리 방전'],
+                best: 'ENTP', bestTag: '내 맘 다 알아주는 찐친', worst: 'ESTP', worstTag: '거리 두기 시급한 폭주족'
+            },
+            'INFP': { 
+                title_T: '남 눈치 보느라 거절 못 하고 집 와서 앓는 쿠쿠다스', title_F: '온 세상 아픔을 다 품어주느라 멍든 따뜻한 예술가',
+                memeIcon: '🐰', memeText: '이불 속에서 후회하며 눈물 훔치는 토끼',
+                bullets_T: ['싫은 소리 한마디 못 해놓고 혼자 방구석에서 이불킥', '돈 달란 말도 못 꺼내서 손해 보고 혼자 끙끙 앓음'],
+                bullets_F: ['상처받기 쉬운 여린 마음이지만 누구보다 따뜻하고 깊음', '내 소중한 진심을 알아주는 단 한 사람만 있어도 행복함'],
+                best: 'ENFJ', bestTag: '무조건적 힐링 지킴이', worst: 'ESTJ', worstTag: '뼈 맞고 눈물샘 폭발'
+            },
+            'ENFJ': { 
+                title_T: '남 고민 상담해주다 정작 지 통장은 털리는 호구 천사', title_F: '만인에게 온기 나눠주느라 정작 내 맘은 굶주린 수호자',
+                memeIcon: '🐶', memeText: '남 챙기느라 정작 지 밥그릇 놓친 댕댕이',
+                bullets_T: ['오지랖 부리느라 내 인생 우선순위는 저 뒤로 밀림', '고마워할 줄 모르는 인간들한테 진심 다 퍼주고 현타 옴'],
+                bullets_F: ['모두에게 사랑받고 싶어서 늘 밝은 척 연기하느라 지침', '정작 내가 힘들 땐 기댈 곳이 없어 혼자 울컥함'],
+                best: 'INFP', bestTag: '서로 안아주는 안식처', worst: 'ISTP', worstTag: '로봇 대화 벽창호'
+            },
+            'ENFP': { 
+                title_T: '도파민 터지면 앞뒤 안 보고 지르는 프로 벌림러', title_F: '어디서나 사람들의 마음에 따스한 불꽃을 틔우는 비타민',
+                memeIcon: '🐬', memeText: '기분파 쇼핑하고 카드값 보고 우는 돌고래',
+                bullets_T: ['벌여놓은 일 10개, 수습 가능한 일 1개', '기분 좋다고 골든벨 울려놓고 다음 날 통장 보고 후회'],
+                bullets_F: ['늘 웃고 있지만 혼자 있을 땐 극심한 공허함을 느낌', '남을 실망시키기 싫어서 무리한 약속 잡고 스스로 자책'],
+                best: 'INTJ', bestTag: '상부상조 도파민 듀오', worst: 'ISTJ', worstTag: '잔소리 폭격기'
+            },
+            'ISTJ': { 
+                title_T: '계획 틀어지면 멘붕 와서 급발진하는 FM 로봇', title_F: '누구보다 우직하게 신뢰와 약속을 지켜내는 든든한 나무',
+                memeIcon: '🦫', memeText: '루틴 깨지면 세상 무너지는 비버',
+                bullets_T: ['비효율적인 꼴 죽어도 못 보고 잔소리 폭격 날림', '변화가 두려워서 익숙하고 답답한 환경에 계속 갇혀 있음'],
+                bullets_F: ['스스로에게 너무 가혹한 잣대를 들이대며 쉼 없이 채찍질함', '표현이 서툴러서 차가워 보이지만 속은 누구보다 깊고 따뜻함'],
+                best: 'ESFP', bestTag: '인생의 활력 비타민', worst: 'ENFP', worstTag: '대환장 무계획 빌런'
+            },
+            'ISFJ': { 
+                title_T: "앞에선 '괜찮아' 해놓고 밤마다 이불킥 차는 호구", title_F: '남을 배려하느라 늘 자신을 맨 뒤에 두는 천사표 살림꾼',
+                memeIcon: '🐹', memeText: '부탁 거절 못 해서 짐 싸 짊어진 햄스터',
+                bullets_T: ['거절 한 번 못 해서 남의 궂은일 다 떠맡고 속으로 원망', '착한 사람 콤플렉스 때문에 평생 남 좋은 일만 시킴'],
+                bullets_F: ['남 챙기느라 정작 내 마음 곳간은 텅 비어버렸음', '사소한 배려를 알아봐 주는 다정한 말 한마디에 울컥함'],
+                best: 'ESTP', bestTag: '믿고 맡기는 든든 조합', worst: 'ENTP', worstTag: '멘탈 흔드는 팩폭러'
+            },
+            'ESFJ': { 
+                title_T: '남들 기분 맞춰주다 영혼이랑 지갑 다 털리는 핵인싸', title_F: '모두가 행복하길 바라며 분위기를 부드럽게 감싸는 조율사',
+                memeIcon: '🦭', memeText: '남들 시선 눈치 보느라 안절부절 물개',
+                bullets_T: ['남의 시선과 평판에 목매느라 체면 유지비 출혈 심각', '갈등 생길까 봐 무서워서 불합리한 상황도 그냥 참고 넘김'],
+                bullets_F: ['분위기 띄우느라 정작 집 오면 말 한마디 할 힘도 없음', '인정받지 못하면 내 존재 가치가 사라진 것 같아 불안함'],
+                best: 'ISTP', bestTag: '현실적인 상호 보완', worst: 'INTP', worstTag: '공감 제로 논쟁러'
+            },
+            'ISTP': { 
+                title_T: '발등에 불 떨어져 활활 타야 겨우 움직이는 귀차니즘 장인', title_F: '말보다 묵묵한 행동과 능력으로 증명하는 현실 해결사',
+                memeIcon: '🐱', memeText: '카톡 안 읽씹하고 침대에서 뒹굴거리는 고양이',
+                bullets_T: ['연락 귀찮아서 안 읽씹하다가 인간관계 자연 소멸각', '벼락치기로 대충 넘기려다 결정적 순간에 뒷심 부족'],
+                bullets_F: ['감정 표현이 서툴러서 무심해 보이지만 마음은 진심임', '복잡한 감정싸움에 지쳐 혼자만의 동굴로 숨고 싶음'],
+                best: 'ESFJ', bestTag: '알아서 챙겨주는 조력자', worst: 'ENFJ', worstTag: '과한 관심에 질식각'
+            },
+            'ISFP': { 
+                title_T: "귀찮은 일 생기면 '잠수' 타고 침대로 숨는 회피 만렙", title_F: '갈등 없는 평화 속에서 조용히 내면을 가꾸는 감성 힐러',
+                memeIcon: '🦥', memeText: '이불 밖은 위험해서 누워있는 나무늘보',
+                bullets_T: ['누워서 숏폼 보며 인생 낭비하다가 밤에 혼자 자책', '결정 장애 와서 차일피일 미루다 좋은 기회 다 날림'],
+                bullets_F: ['다투는 게 너무 싫어서 내 권리도 포기하고 양보해 옴', '내 고유한 취향과 감성을 온전히 존중해줄 사람을 갈망함'],
+                best: 'ESTJ', bestTag: '리드해 주는 든든한 보스', worst: 'ENTJ', worstTag: '기강 잡혀서 체함'
+            },
+            'ESTP': { 
+                title_T: '도파민 터지면 앞뒤 안 보고 지르고 다음 날 후회하는 기분파', title_F: '두려움 없이 시원하게 세상에 부딪치는 당당한 승부사',
+                memeIcon: '🐆', memeText: '도파민 냄새 맡고 풀악셀 밟는 표범',
+                bullets_T: ['생각 없이 질러놓고 수습하느라 돈과 에너지 배로 탕진', '진지한 대화 나오면 알레르기 반응 일으키며 화제 돌림'],
+                bullets_F: ['겉은 천하무적 같아도 실패했을 때 자존감 곤두박질침', '순간의 충동에 지쳐 가끔은 조용히 쉬고 싶음'],
+                best: 'ISFJ', bestTag: '뒤처리해 주는 천사표', worst: 'INFJ', worstTag: '속마음 모르겠는 복학생'
+            },
+            'ESFP': { 
+                title_T: '신나면 지갑 열고 다음 날 잔고 보고 우는 분위기메이커', title_F: '존재 자체로 주변 사람들에게 웃음과 생기를 주는 햇살',
+                memeIcon: '🐶', memeText: '신나서 꼬리 흔들다 통장 털린 비글',
+                bullets_T: ['남의 부탁 거절 못 하고 분위기 타서 돈 낭비 극심', '깊은 생각 회피하다가 인생의 중요한 타이밍 놓침'],
+                bullets_F: ['혼자 있는 정적을 견디지 못해 외로움에 자주 사무침', '남들에게 늘 유쾌한 모습만 보여줘야 한다는 강박이 있음'],
+                best: 'ISTJ', bestTag: '선 넘지 않는 든든한 축', worst: 'INTJ', worstTag: '눈빛만 봐도 얼어붙음'
+            }
         };
 
         const SAJU_COLORS = { mok: '그린/포레스트', hwa: '레드/코랄', to: '베이지/브라운', geum: '화이트/실버', su: '블랙/네이비' };
@@ -1989,25 +2057,54 @@
                 tagsWrapper.innerHTML = tags.map(tag => `<span class="px-2.5 py-1 rounded-full ${isT ? 'bg-sky-50 text-sky-600 border-sky-200' : 'bg-rose-50 text-rose-600 border-rose-200'} border text-[11px] font-extrabold tracking-tight shadow-sm">${tag}</span>`).join('');
             }
 
+            const mKey = data.mbtiKey || 'ESTJ';
+            const prof = SAZU_CHARACTER_PROFILES[mKey] || SAZU_CHARACTER_PROFILES['ESTJ'];
+            const lowest = getLowestStatInfo(data.stats);
+
+            // 1) 메인 타이틀
             const sazuTitle = document.getElementById('sazuCharacterTitle');
             if (sazuTitle) {
-                // 한자 사족(을목 등)을 떼고 깔끔한 볼드 타이틀만 노출
-                sazuTitle.innerText = isT ? data.profile.title_T : data.profile.title_F;
-                sazuTitle.className = "mobile-title font-black text-center w-full px-2 mt-2 mb-3 leading-snug text-slate-900";
+                sazuTitle.innerText = `"${isT ? prof.title_T : prof.title_F}"`;
+                sazuTitle.className = "mobile-title font-black text-center w-full px-2 mt-2 mb-1.5 leading-snug text-slate-900";
             }
 
-            // 환상의 찰떡 깐부 vs 상극 매핑
-            const mKey = data.mbtiKey || 'ISTJ';
-            const chem = MBTI_CHEMISTRY[mKey] || MBTI_CHEMISTRY['ISTJ'];
+            // 2) 캐릭터 밈 박스
+            const memeIconEl = document.getElementById('characterMemeIcon');
+            const memeTextEl = document.getElementById('characterMemeText');
+            if (memeIconEl) memeIconEl.innerText = prof.memeIcon;
+            if (memeTextEl) memeTextEl.innerText = prof.memeText;
+
+            // 3) 📌 내 본캐 취급설명서 3줄 불렛 주입
+            const bulletContainer = document.getElementById('manualBulletList');
+            if (bulletContainer) {
+                const bList = isT ? prof.bullets_T : prof.bullets_F;
+                const statBullet = `멘탈 방어력 ${data.stats.mental}점 · ${lowest.name} ${lowest.score}점 (집중 케어)`;
+                bulletContainer.innerHTML = `
+                    <div class="flex items-start gap-1.5">
+                        <span class="text-rose-500 font-bold shrink-0">•</span>
+                        <span>${bList[0]}</span>
+                    </div>
+                    <div class="flex items-start gap-1.5">
+                        <span class="text-rose-500 font-bold shrink-0">•</span>
+                        <span>${bList[1]}</span>
+                    </div>
+                    <div class="flex items-start gap-1.5 text-slate-900 font-bold">
+                        <span class="text-amber-500 font-bold shrink-0">•</span>
+                        <span>${statBullet}</span>
+                    </div>
+                `;
+            }
+
+            // 4) 💖 찰떡 깐부 vs 💣 상극
             const bestMbtiEl = document.getElementById('chemBestMbti');
             const bestTagEl = document.getElementById('chemBestTag');
             const worstMbtiEl = document.getElementById('chemWorstMbti');
             const worstTagEl = document.getElementById('chemWorstTag');
 
-            if (bestMbtiEl) bestMbtiEl.innerText = chem.best;
-            if (bestTagEl) bestTagEl.innerText = chem.bestTag;
-            if (worstMbtiEl) worstMbtiEl.innerText = chem.worst;
-            if (worstTagEl) worstTagEl.innerText = chem.worstTag;
+            if (bestMbtiEl) bestMbtiEl.innerText = prof.best;
+            if (bestTagEl) bestTagEl.innerText = prof.bestTag;
+            if (worstMbtiEl) worstMbtiEl.innerText = prof.worst;
+            if (worstTagEl) worstTagEl.innerText = prof.worstTag;
 
             // 공유 버튼 시인성
             const mainShareBtn = document.getElementById('mainShareBtn');
@@ -2434,35 +2531,20 @@
             const data = currentResultData;
             const userName = data.name || '당신';
             const isT = (data.currentMode === 'T');
-            const s = data.stats;
+            const mKey = data.mbtiKey || 'ESTJ';
+            const prof = SAZU_CHARACTER_PROFILES[mKey] || SAZU_CHARACTER_PROFILES['ESTJ'];
+            const lowest = getLowestStatInfo(data.stats);
+            const gradeInfo = calculateSazuGrade(data.elements || {}, data.stats);
 
-            // GA4: 인스타 스토리 이미지 저장 추적
             if (typeof gtag === 'function') gtag('event', 'share', { method: 'instagram_image_save', content_type: 'image' });
 
-            // 1. 클립보드 복사
             const shareUrl = (window.location.origin && window.location.origin !== 'null' && !window.location.origin.includes('file:')) 
-                ? window.location.origin 
-                : 'https://www.sajuft.com';
+                ? window.location.origin : 'https://www.sajuft.com';
 
             try {
-                if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(shareUrl);
-                } else {
-                    const tempInput = document.createElement('textarea');
-                    tempInput.value = shareUrl;
-                    tempInput.style.position = 'fixed';
-                    tempInput.style.opacity = '0';
-                    document.body.appendChild(tempInput);
-                    tempInput.focus();
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-                }
-            } catch (e) {
-                console.warn('클립보드 복사 대체 처리:', e);
-            }
+                if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(shareUrl);
+            } catch (e) {}
 
-            // 2. 순수 그래픽 캔버스 직접 렌더링 (전체 높이 꽉 차는 황금 밸런스 레이아웃)
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             const w = 600;
@@ -2470,252 +2552,174 @@
             canvas.width = w;
             canvas.height = h;
 
-            // 배경: 랜딩과 일치하는 뽀얀 크림 톤
+            // 배경: 크림 톤
             ctx.fillStyle = '#fcfaf7';
             ctx.fillRect(0, 0, w, h);
 
-            // 카드 메인 컨테이너 (화이트 카드 + 로즈 핑크 테두리)
+            // 메인 화이트 카드 컨테이너
             ctx.save();
             ctx.fillStyle = '#ffffff';
             ctx.strokeStyle = '#fecdd3';
             ctx.lineWidth = 2;
-            roundRect(ctx, 28, 24, w - 56, h - 48, 28);
+            roundRect(ctx, 24, 24, w - 48, h - 48, 28);
             ctx.fill();
             ctx.stroke();
             ctx.restore();
 
-            // 1) 상단 리포트 알약 뱃지 (Y: 52)
+            // 1) 상단 헤더: 🌸 100% 내 편 들어주는 [이름]의 사주 MBTI (Y: 60)
+            ctx.save();
+            ctx.fillStyle = isT ? '#0284c7' : '#e11d48';
+            ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const headerPrefix = isT ? '🧊 필터 없이 뼈 때리는 ' : '🌸 100% 내 편 들어주는 ';
+            ctx.fillText(`${headerPrefix}[${userName}]의 사주 MBTI`, w / 2, 60);
+            ctx.restore();
+
+            // 2) 사주 등급: 👑 S급 밸런스 확신형 리더 (Y: 105)
             ctx.save();
             ctx.fillStyle = isT ? '#f0f9ff' : '#fff1f2';
             ctx.strokeStyle = isT ? '#bae6fd' : '#fecdd3';
             ctx.lineWidth = 1.5;
-            roundRect(ctx, 85, 52, 430, 40, 20);
+            roundRect(ctx, w / 2 - 130, 88, 260, 34, 17);
             ctx.fill();
             ctx.stroke();
 
-            const prefix = isT ? '필터 없이 뼈 때리는 ' : '100% 내 편 들어주는 ';
-            const suffix = isT ? '님의 T 팩폭 리포트' : '님의 F 힐링 리포트';
-            const themeColor = isT ? '#0284c7' : '#e11d48';
-
-            ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textBaseline = 'middle';
-            ctx.textAlign = 'left';
-
-            const wPrefix = ctx.measureText(prefix).width;
-            const wName = ctx.measureText(userName).width;
-            const wSuffix = ctx.measureText(suffix).width;
-            const totalTextW = wPrefix + wName + wSuffix;
-            let startX = (w - totalTextW) / 2;
-
-            ctx.fillStyle = themeColor;
-            ctx.fillText(prefix, startX, 72);
-            ctx.fillStyle = '#0f172a';
-            ctx.fillText(userName, startX + wPrefix, 72);
-            ctx.fillStyle = themeColor;
-            ctx.fillText(suffix, startX + wPrefix + wName, 72);
-            ctx.restore();
-
-            // 2) 서브 타이틀: 🎭 사회적 가면을 벗은 내 진짜 사주 본캐 (Y: 122)
-            ctx.save();
-            ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textBaseline = 'middle';
-            ctx.textAlign = 'left';
-
-            const subPart1 = '🎭 사회적 가면을 벗은 ';
-            const subPart2 = '내 진짜 사주 본캐';
-            const wSub1 = ctx.measureText(subPart1).width;
-            const wSub2 = ctx.measureText(subPart2).width;
-            const totalSubW = wSub1 + wSub2;
-            const subStartX = (w - totalSubW) / 2;
-
-            ctx.fillStyle = '#64748b';
-            ctx.fillText(subPart1, subStartX, 122);
             ctx.fillStyle = '#d97706';
-            ctx.fillText(subPart2, subStartX + wSub1, 122);
+            ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${gradeInfo.grade}급 ${gradeInfo.title}`, w / 2, 105);
             ctx.restore();
 
-            // 3) MBTI 거대 글자 (Y: 195)
+            // 3) 거대 MBTI (Y: 180)
             ctx.save();
             ctx.fillStyle = isT ? '#0284c7' : '#e11d48';
-            ctx.font = '900 66px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            ctx.font = '900 68px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'center';
-            ctx.letterSpacing = '4px';
-            ctx.fillText(data.mbtiKey || 'ISTJ', w / 2, 195);
+            ctx.textBaseline = 'middle';
+            ctx.letterSpacing = '5px';
+            ctx.fillText(mKey, w / 2, 180);
             ctx.restore();
 
-            // 4) 해시태그 (Y: 240)
-            const tags = isT ? data.profile.T_tags : data.profile.F_tags;
-            ctx.save();
-            ctx.fillStyle = isT ? '#0369a1' : '#be123c';
-            ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(tags.join('   '), w / 2, 240);
-            ctx.restore();
-
-            // 5) 메인 타이틀 (Y: 280)
-            const mainTitle = (isT ? data.profile.title_T : data.profile.title_F);
+            // 4) 타이틀: "남들 싼 똥 혼자 다 치우는 K-장녀" (Y: 235)
+            const mainTitle = `"${isT ? prof.title_T : prof.title_F}"`;
             ctx.save();
             ctx.fillStyle = '#0f172a';
-            ctx.font = '900 20px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            ctx.font = '900 19px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'center';
-            drawWrappedTitle(ctx, mainTitle, w / 2, 280, 480, 30);
+            ctx.textBaseline = 'middle';
+            drawWrappedTitle(ctx, mainTitle, w / 2, 235, 490, 26);
             ctx.restore();
 
-            // 6) 4대 스탯 컨테이너 박스 (Y: 360 ~ 730)
+            // 5) 캐릭터 밈 배너 (Y: 295)
+            ctx.save();
+            ctx.fillStyle = '#fef3c7';
+            ctx.strokeStyle = '#fde68a';
+            ctx.lineWidth = 1;
+            roundRect(ctx, 80, 275, w - 160, 42, 16);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#78350f';
+            ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`[ ${prof.memeIcon} ${prof.memeText} ]`, w / 2, 296);
+            ctx.restore();
+
+            // 6) 📌 내 본캐 취급설명서 박스 (Y: 345 ~ 630)
             ctx.save();
             ctx.fillStyle = '#f8fafc';
             ctx.strokeStyle = '#e2e8f0';
             ctx.lineWidth = 1.5;
-            roundRect(ctx, 50, 360, w - 100, 370, 20);
+            roundRect(ctx, 45, 345, w - 90, 270, 22);
             ctx.fill();
             ctx.stroke();
 
-            // 스탯 헤더
-            ctx.fillStyle = '#1e293b';
-            ctx.font = '900 14px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            // 취급설명서 타이틀
+            ctx.fillStyle = '#0f172a';
+            ctx.font = '900 15px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'left';
-            ctx.fillText('내 타고난 본캐 4대 스탯', 72, 395);
+            ctx.textBaseline = 'middle';
+            ctx.fillText('📌 내 본캐 취급설명서', 68, 380);
 
-            // 공유 카드 우측 밸런스 등급 표기
-            const cardGrade = calculateSazuGrade(data.elements || {}, data.stats);
-            let gradeHex = '#7c3aed';
-            if (cardGrade.grade === 'S+') gradeHex = '#d97706';
-            else if (cardGrade.grade === 'S') gradeHex = '#e11d48';
-            else if (cardGrade.grade === 'A') gradeHex = '#0284c7';
-            else if (cardGrade.grade === '포텐') gradeHex = '#059669';
+            // 구분선
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(68, 405);
+            ctx.lineTo(w - 68, 405);
+            ctx.stroke();
 
-            ctx.fillStyle = gradeHex;
-            ctx.font = '900 14px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textAlign = 'right';
-            ctx.fillText(cardGrade.grade + '급 밸런스', w - 72, 395);
-            ctx.textAlign = 'left';
-
-            // 4대 수치 데이터 렌더링
-            const lowest = getLowestStatInfo(s);
-            const highest = getHighestStatInfo(s);
-            const statItems = [
-                { name: '돈 냄새 맡는 촉', cap: 'Wealth', score: s.wealth },
-                { name: '멘탈 방어력', cap: 'Mental', score: s.mental },
-                { name: '기회 포착력', cap: 'Drive', score: s.drive },
-                { name: '인생 역전 귀인복', cap: 'Network', score: s.network }
+            // 3줄 불렛 드로잉
+            const bList = isT ? prof.bullets_T : prof.bullets_F;
+            const bullets = [
+                `• ${bList[0]}`,
+                `• ${bList[1]}`,
+                `• 멘탈 방어력 ${data.stats.mental}점 / ${lowest.name} ${lowest.score}점`
             ];
 
-            let currY = 442;
-            statItems.forEach(item => {
-                ctx.textBaseline = 'middle';
-
-                // 라벨 텍스트
-                ctx.fillStyle = '#0f172a';
-                ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText(item.name, 72, currY);
-
-                const labelWidth = ctx.measureText(item.name).width;
-
-                // 뱃지
-                let badgeTxt = '';
-                let isHigh = (highest.cap === item.cap);
-                let isLow = (lowest.cap === item.cap);
-
-                if (isHigh) badgeTxt = isT ? '⚡ 사기급 주특기' : '👑 타고난 치트키';
-                else if (isLow) badgeTxt = isT ? '🚨 집중 케어' : '💔 혼자 속앓이';
-
-                if (badgeTxt) {
-                    ctx.fillStyle = isHigh ? '#d97706' : '#e11d48';
-                    ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-                    ctx.fillText(badgeTxt, 72 + labelWidth + 8, currY);
-                }
-
-                // 점수 텍스트
-                ctx.fillStyle = '#0f172a';
-                ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-                ctx.textAlign = 'right';
-                ctx.fillText(`${item.score}점`, w - 72, currY);
-
-                // 게이지 바 트랙
-                ctx.fillStyle = '#e2e8f0';
-                roundRect(ctx, 72, currY + 18, w - 144, 7, 3.5);
-                ctx.fill();
-
-                // 게이지 바 채우기
-                ctx.fillStyle = isT ? '#38bdf8' : '#fb7185';
-                const fillW = Math.max(7, ((w - 144) * item.score) / 100);
-                roundRect(ctx, 72, currY + 18, fillW, 7, 3.5);
-                ctx.fill();
-
-                currY += 72;
+            let currY = 445;
+            bullets.forEach((bText, idx) => {
+                ctx.font = (idx === 2) ? 'bold 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif' : '500 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+                ctx.fillStyle = (idx === 2) ? '#0f172a' : '#334155';
+                drawWrappedTitle(ctx, bText, 68, currY, 460, 22);
+                currY += 56;
             });
             ctx.restore();
 
-            // 7) 찰떡 깐부 vs 상극 바이럴 바 (Y: 742 ~ 788)
-            const mKeyCanvas = data.mbtiKey || 'ISTJ';
-            const chemCanvas = MBTI_CHEMISTRY[mKeyCanvas] || MBTI_CHEMISTRY['ISTJ'];
-            
+            // 7) 💖 찰떡 깐부 vs 💣 숨 막히는 상극 (Y: 645 ~ 720)
             ctx.save();
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = '#fff1f2';
             ctx.strokeStyle = '#fecdd3';
-            ctx.lineWidth = 1;
-            roundRect(ctx, 50, 742, w - 100, 44, 14);
+            ctx.lineWidth = 1.5;
+            roundRect(ctx, 45, 640, w - 90, 68, 18);
             ctx.fill();
             ctx.stroke();
 
-            ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textBaseline = 'middle';
+            ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'center';
-
+            ctx.textBaseline = 'middle';
             ctx.fillStyle = '#e11d48';
-            ctx.fillText(`💖 찰떡: ${chemCanvas.best} (${chemCanvas.bestTag})`, w / 2 - 120, 764);
-
-            ctx.fillStyle = '#64748b';
-            ctx.fillText('|', w / 2, 764);
-
+            ctx.fillText(`💖 잘 맞는 깐부: ${prof.best} (${prof.bestTag})`, w / 2, 663);
             ctx.fillStyle = '#475569';
-            ctx.fillText(`💣 상극: ${chemCanvas.worst} (${chemCanvas.worstTag})`, w / 2 + 120, 764);
+            ctx.fillText(`💣 숨 막히는 상극: ${prof.worst} (${prof.worstTag})`, w / 2, 688);
             ctx.restore();
 
-            // 8) 하단 인스타 링크 스티커 영역 (Y: 796 ~ 846)
+            // 8) 하단 링크 스티커 영역 (Y: 735 ~ 825)
             ctx.save();
-            ctx.setLineDash([5, 4]);
+            ctx.setLineDash([6, 4]);
             ctx.strokeStyle = isT ? '#7dd3fc' : '#fda4af';
             ctx.fillStyle = isT ? '#f0f9ff' : '#fff1f2';
             ctx.lineWidth = 1.5;
-            roundRect(ctx, 50, 796, w - 100, 50, 14);
+            roundRect(ctx, 45, 735, w - 90, 75, 16);
             ctx.fill();
             ctx.stroke();
 
             ctx.fillStyle = isT ? '#0284c7' : '#e11d48';
-            ctx.font = '900 12px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('🔗 [링크는 본문 / 스토리 스티커에 붙이기] 너도 본캐 까봐!', w / 2, 821);
+            ctx.fillText('🔗 [ 여기를 눌러서 내 본캐도 까보기 ]', w / 2, 765);
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+            ctx.fillText('인스타 스토리 링크 스티커를 여기에 붙여주세요', w / 2, 788);
             ctx.restore();
 
-            // 3. 파일 출력 및 모바일 뷰어 분기 (전체 SNS 범용 지원)
+            // 파일 출력
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
             canvas.toBlob(async (blob) => {
-                if (!blob) {
-                    showToast("이미지 생성에 실패했습니다.");
-                    return;
-                }
+                if (!blob) return;
                 const file = new File([blob], `${userName}_사주본캐카드.png`, { type: 'image/png' });
-
-                // 모바일 환경에서 Web Share API가 지원되는 경우 파일 및 링크 다이렉트 공유
                 if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
-                        await navigator.share({
-                            title: '내 진짜 사주 본캐 스탯',
-                            text: '너도 네 숨겨진 사주 본캐 스탯 확인해봐!',
-                            files: [file],
-                            url: shareUrl
-                        });
+                        await navigator.share({ title: '내 사주 MBTI 본캐 카드', files: [file], url: shareUrl });
                         return;
-                    } catch (err) {
-                        if (err.name !== 'AbortError') console.warn('공유 API 취소 또는 에러:', err);
-                    }
+                    } catch (err) {}
                 }
 
-                // 폴백: 이미지 다운로드 및 모달 뷰어
                 const imgData = canvas.toDataURL('image/png');
                 if (!isMobile) {
                     const link = document.createElement('a');
@@ -2724,7 +2728,7 @@
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    showToast("✨ 카드 저장 & 링크 복사 완료!");
+                    showToast("✨ 본캐 카드 저장 완료!");
                     return;
                 }
 
