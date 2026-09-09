@@ -1504,16 +1504,24 @@
 
         // 개별 아코디언 열기/닫기 이벤트 핸들러
         window.toggleAccordion = function(btn) {
+            if (!btn) return;
             const content = btn.nextElementSibling;
             const chevron = btn.querySelector('.chevron');
+            if (!content) return;
             
-            // 다른 열린 아코디언 닫기 (선택적 기능 - 원치 않으면 아래 3줄 삭제)
+            const isOpen = content.classList.contains('open');
+            
+            // 다른 열린 아코디언 닫기
             document.querySelectorAll('.accordion-content').forEach(el => {
-                if(el !== content) { el.classList.remove('open'); el.previousElementSibling.querySelector('.chevron').classList.remove('open'); }
+                el.classList.remove('open');
+                const ch = el.previousElementSibling ? el.previousElementSibling.querySelector('.chevron') : null;
+                if (ch) ch.classList.remove('open');
             });
 
-            content.classList.toggle('open');
-            chevron.classList.toggle('open');
+            if (!isOpen) {
+                content.classList.add('open');
+                if (chevron) chevron.classList.add('open');
+            }
         };
 
         // [핵심 4] 만세력 연산 엔진 (일간 오행 추출 기능 추가)
