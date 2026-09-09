@@ -448,10 +448,12 @@
                 <div id="outerTechRing" class="absolute inset-0 rounded-full border-2 border-rose-300/70 transition-all duration-300"></div>
                 <div class="absolute inset-2.5 rounded-full bg-gradient-to-b from-rose-50 to-pink-50/40"></div>
                 
-                <!-- 중앙 아이콘 & 퍼센트 (세로선 버그 없는 클린 레이아웃) -->
+                <!-- 중앙 네온 상태 뱃지 & 퍼센트 -->
                 <div class="relative flex flex-col items-center justify-center z-10 select-none">
-                    <div id="loadingCenterIcon" class="text-4xl anim-float transform hover:scale-110 transition-transform">🔍</div>
-                    <div class="flex items-center justify-center mt-1 select-none">
+                    <span id="loadingCenterBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-rose-100 text-rose-600 border border-rose-200 tracking-tight animate-pulse select-none">
+                        도파민 파밍 중
+                    </span>
+                    <div class="flex items-center justify-center mt-1.5 select-none">
                         <span id="loadingPercent" class="text-3xl font-black text-slate-800 tracking-tight select-none cursor-default" style="-webkit-user-select: none; user-select: none;">0%</span>
                     </div>
                 </div>
@@ -1849,29 +1851,43 @@
                     if (percentText) percentText.innerText = progress + "%";
                     if (progressFill) progressFill.style.width = progress + "%";
 
-                    const centerIcon = document.getElementById('loadingCenterIcon');
+                    const badge = document.getElementById('loadingCenterBadge');
                     if (mainStatus) {
-                        // 1. [0~1.3초] 가면 벗기기 단계
+                        // 1. [0~28%] 갓생 팩폭 & 파밍 구간
                         if (progress < 28) {
-                            if (centerIcon) centerIcon.innerText = '🎭';
-                            mainStatus.innerHTML = `<span class="text-slate-800 font-black">${name}</span>님의 사회적 가면 벗겨내는 중...`;
+                            if (badge) {
+                                badge.innerText = '도파민 파밍 중';
+                                badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-rose-100 text-rose-600 border border-rose-200 tracking-tight animate-pulse select-none';
+                            }
+                            mainStatus.innerHTML = `<span class="text-slate-900 font-black">${name}</span>님 갓생 살던 척 그만.. 찐 본캐 털어보는 중`;
                         }
-                        // 2. [1.3초~3.2초] 팩폭 찔림 / 과몰입 극대화 구간 (가장 오래 노출)
-                        else if (progress < 73) {
-                            if (centerIcon) centerIcon.innerText = '🚨';
-                            mainStatus.innerHTML = `어라? [${lowest.name}] <b class="text-rose-500 font-black">${lowest.score}점</b>... 여기서 멘탈 털렸네`;
+                        // 2. [28~72%] 기강 잡기 & 원영적 사고 불가 구간
+                        else if (progress < 72) {
+                            if (badge) {
+                                badge.innerText = '원영적 사고 불가';
+                                badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-700 border border-amber-200 tracking-tight animate-bounce select-none';
+                            }
+                            mainStatus.innerHTML = `[${lowest.name}] <b class="text-rose-600 font-black">${lowest.score}점</b>.. 멘탈 갈려서 기강 잡아야 됨`;
                         }
-                        // 3. [3.2초~4.3초] 선택한 F / T 모드별 기대감 고조
+                        // 3. [72~96%] F/T 모드별 맞춤 유행어
                         else if (progress < 96) {
-                            if (centerIcon) centerIcon.innerText = isT ? '🧊' : '🌸';
+                            if (badge) {
+                                badge.innerText = isT ? '팩폭 기강 타임' : '럭키비키 모드';
+                                badge.className = isT 
+                                    ? 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-sky-100 text-sky-700 border border-sky-200 tracking-tight select-none'
+                                    : 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-pink-100 text-pink-700 border border-pink-200 tracking-tight select-none';
+                            }
                             mainStatus.innerHTML = isT 
-                                ? `<span class="text-sky-600 font-black">정신 번쩍 들 현실 팩폭</span>으로 뼈 때릴 준비 완료!` 
-                                : `<span class="text-rose-500 font-black">눈물 쏙 빠질 다정함</span> 한 스푼 추가하는 중...`;
+                                ? `<span class="text-sky-600 font-black">뼈 맞고 도망칠 준비 완료?</span> 현실 팩폭 투하 직전` 
+                                : `<span class="text-pink-600 font-black">완전 럭키비키잖아🍀</span> 무조건 내 편 위로 풀충전 중`;
                         }
-                        // 4. [4.3초~4.5초] 본캐 완성
+                        // 4. [96~100%] 완료
                         else {
-                            if (centerIcon) centerIcon.innerText = '✨';
-                            mainStatus.innerHTML = `<span class="text-slate-900 font-black">본캐 해독 완료!</span> 결과 카드 여는 중...`;
+                            if (badge) {
+                                badge.innerText = '해독 완료';
+                                badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-slate-900 text-white border border-slate-900 tracking-tight select-none';
+                            }
+                            mainStatus.innerHTML = `<span class="text-slate-900 font-black">도파민 풀충전 완료!</span> 찐 본캐 결과 오픈 🚀`;
                         }
                     }
                     if (elapsed >= totalDuration && !isRendered) {
