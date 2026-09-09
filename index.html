@@ -45,8 +45,16 @@
         gtag('config', 'G-XZ9JH0P8P8');
     </script>
     
-    <!-- Tailwind CDN 로드 전 흰 화면 깜빡임(FOUC) 방지 -->
-    <style>html,body{background:#fcfaf7;color:#1e293b;}</style>
+    <!-- Tailwind CDN 로드 전 흰 화면 깜빡임(FOUC) 방지 및 삼성 인터넷 강제 반전 차단 -->
+    <meta name="color-scheme" content="light">
+    <style>
+        :root { color-scheme: light !important; }
+        html, body {
+            background-color: #fcfaf7 !important;
+            color: #1e293b !important;
+            -webkit-text-size-adjust: 100%;
+        }
+    </style>
     <!-- 인앱 브라우저 및 모바일 차단 방지용 Tailwind 설정 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -73,20 +81,28 @@
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
+        /* 삼성 인터넷 강제 다크모드 반전 방어 레이어 */
+        body {
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+
         .card-box { 
-            background: rgba(255, 255, 255, 0.98); 
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1px solid rgba(254, 205, 211, 0.6); 
-            box-shadow: 0 20px 40px rgba(225, 175, 185, 0.12);
+            background-color: #ffffff !important; 
+            border: 1px solid rgba(254, 205, 211, 0.8) !important; 
+            box-shadow: 0 10px 30px rgba(225, 175, 185, 0.15) !important;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
         }
         .input-box {
-            background: #ffffff;
-            border: 1px solid #f1f5f9;
-            color: #0f172a;
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            color: #0f172a !important;
             transition: all 0.2s ease;
             -webkit-appearance: none;
             appearance: none;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
         }
         .input-box:focus {
             border-color: #fb7185;
