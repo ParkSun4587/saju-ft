@@ -531,44 +531,11 @@
                 <h1 class="mobile-title font-black text-center w-full px-2 mt-0.5 mb-0.5 leading-snug" id="sazuCharacterTitle">-</h1>
             </div>
 
-            <!-- 사주 원국 (4주) -->
-            <div class="mt-2 mb-3">
-                <div class="text-center text-[11px] font-bold text-slate-400 mb-2" id="pillarSectionTitle">사주 원국</div>
-                <div class="grid grid-cols-4 gap-1.5" id="pillarGrid">
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-[10px] font-bold text-slate-500">시주(時)</span>
-                        <div id="pillarHourBox" class="w-full py-2 rounded-lg text-center bg-slate-50 border border-slate-200">
-                            <div id="pillarHourGZ" class="text-sm font-black text-slate-700">추정</div>
-                            <div class="text-[9px] text-slate-500 mt-0.5">시주 모름</div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-[10px] font-bold text-slate-500">일주(日)</span>
-                        <div id="pillarDayBox" class="w-full py-2 rounded-lg text-center bg-slate-50 border border-slate-200 relative">
-                            <span class="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded text-[8px] font-black bg-amber-400 text-slate-900">본인</span>
-                            <div id="pillarDayGZ" class="text-sm font-black text-slate-800">-</div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-[10px] font-bold text-slate-500">월주(月)</span>
-                        <div id="pillarMonthBox" class="w-full py-2 rounded-lg text-center bg-slate-50 border border-slate-200">
-                            <div id="pillarMonthGZ" class="text-sm font-black text-slate-700">-</div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-center gap-1">
-                        <span class="text-[10px] font-bold text-slate-500">년주(年)</span>
-                        <div id="pillarYearBox" class="w-full py-2 rounded-lg text-center bg-slate-50 border border-slate-200">
-                            <div id="pillarYearGZ" class="text-sm font-black text-slate-700">-</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4대 스탯 -->
-            <div class="space-y-2.5 text-left pt-1 bg-slate-50 p-3.5 sm:p-5 rounded-2xl border border-slate-200 mt-3">
+            <!-- 4대 스탯 (클린 룩) -->
+            <div class="space-y-2.5 text-left pt-1 bg-slate-50 p-3.5 sm:p-5 rounded-2xl border border-slate-200 mt-2">
                 <div class="flex justify-between items-center mb-0.5">
                     <span class="text-[11px] font-black text-slate-700 tracking-wider">내 타고난 본캐 4대 스탯</span>
-                    <span class="text-[9px] text-rose-500 font-bold">*60점 미만 집중 케어</span>
+                    <span class="text-[9px] text-rose-500 font-bold">*취약 구간 집중 케어</span>
                 </div>
                 
                 <div class="space-y-1">
@@ -610,9 +577,27 @@
                         <div id="statNetworkBar" class="h-full rounded-full" style="width: 0%"></div>
                     </div>
                 </div>
+            </div>
 
-                <div id="statWeakWarningBox" style="display: none;" class="mt-1 p-2.5 bg-rose-50 border border-rose-500/30 rounded-xl text-[11px] sm:text-xs text-rose-600 font-medium flex items-center gap-2">
-                    <span>⚠️</span> <span id="statWeakWarningTxt" class="leading-relaxed block"></span>
+            <!-- [바이럴 치트키] 환상의 찰떡 깐부 vs 숨 막히는 상극 -->
+            <div class="grid grid-cols-2 gap-2 mt-2 text-left">
+                <div class="p-3 rounded-2xl bg-rose-50/70 border border-rose-200/80 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="text-[10px] font-black text-rose-500 flex items-center gap-1 mb-0.5">
+                            <span>💖</span> <span>환상의 찰떡 깐부</span>
+                        </div>
+                        <div class="text-base font-black text-slate-900 font-mono tracking-wide" id="chemBestMbti">ENFP</div>
+                    </div>
+                    <div class="text-[10px] text-slate-500 font-semibold truncate mt-1" id="chemBestTag">영혼의 단짝</div>
+                </div>
+                <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="text-[10px] font-black text-slate-500 flex items-center gap-1 mb-0.5">
+                            <span>💣</span> <span>숨 막히는 상극</span>
+                        </div>
+                        <div class="text-base font-black text-slate-900 font-mono tracking-wide" id="chemWorstMbti">ISTJ</div>
+                    </div>
+                    <div class="text-[10px] text-slate-400 font-semibold truncate mt-1" id="chemWorstTag">거리 두기 시급</div>
                 </div>
             </div>
         </div>
@@ -927,6 +912,25 @@
         const SAJU_DIRS = { mok: '동쪽', hwa: '남쪽', to: '중앙/남서쪽', geum: '서쪽', su: '북쪽' };
         const SAJU_CONS = { mok: 'ㄱ, ㅋ', hwa: 'ㄴ, ㄷ, ㄹ, ㅌ', to: 'ㅇ, ㅎ', geum: 'ㅅ, ㅈ, ㅊ', su: 'ㅁ, ㅂ, ㅍ' };
         const SAJU_ITEMS = { mok: '작은 식물이나 우디향 디퓨저', hwa: '따뜻한 무드등이나 캔들', to: '도자기 소품이나 흙내음 향수', geum: '메탈 시계나 은 액세서리', su: '시원하고 맑은 아쿠아 향수' };
+        // 1020 과몰입 유발: MBTI 찰떡 깐부 & 상극 사전
+        const MBTI_CHEMISTRY = {
+            'INTJ': { best: 'ENFP', bestTag: '티키타카 영혼의 단짝', worst: 'ESFJ', worstTag: '기 빨리는 대화 불가' },
+            'INTP': { best: 'ENTJ', bestTag: '아이디어 실현 치트키', worst: 'ISFJ', worstTag: '서로 이해 못 할 외계인' },
+            'ENTJ': { best: 'INTP', bestTag: '전략적 황금 깐부', worst: 'ISFP', worstTag: '답답해서 복장 터짐' },
+            'ENTP': { best: 'INFJ', bestTag: '새벽 감성 밤샘 수다', worst: 'ISTJ', worstTag: '숨 막히는 교장선생님' },
+            'INFJ': { best: 'ENTP', bestTag: '내 맘 다 알아주는 찐친', worst: 'ESTP', worstTag: '거리 두기 시급한 폭주족' },
+            'INFP': { best: 'ENFJ', bestTag: '무조건적 힐링 지킴이', worst: 'ESTJ', worstTag: '뼈 맞고 눈물샘 폭발' },
+            'ENFJ': { best: 'INFP', bestTag: '서로 안아주는 안식처', worst: 'ISTP', worstTag: '로봇 대화 벽창호' },
+            'ENFP': { best: 'INTJ', bestTag: '상부상조 도파민 듀오', worst: 'ISTJ', worstTag: '잔소리 폭격기' },
+            'ISTJ': { best: 'ESFP', bestTag: '인생의 활력 비타민', worst: 'ENFP', worstTag: '대환장 무계획 빌런' },
+            'ISFJ': { best: 'ESTP', bestTag: '믿고 맡기는 든든 조합', worst: 'ENTP', worstTag: '멘탈 흔드는 팩폭러' },
+            'ESTJ': { best: 'ISFP', bestTag: '말없이 통하는 힐링 깐부', worst: 'INFP', worstTag: '쿠쿠다스 멘탈이라 조심' },
+            'ESFJ': { best: 'ISTP', bestTag: '현실적인 상호 보완', worst: 'INTP', worstTag: '공감 제로 논쟁러' },
+            'ISTP': { best: 'ESFJ', bestTag: '알아서 챙겨주는 조력자', worst: 'ENFJ', worstTag: '과한 관심에 질식각' },
+            'ISFP': { best: 'ESTJ', bestTag: '리드해 주는 든든한 보스', worst: 'ENTJ', worstTag: '기강 잡혀서 체함' },
+            'ESTP': { best: 'ISFJ', bestTag: '뒤처리해 주는 천사표', worst: 'INFJ', worstTag: '속마음 모르겠는 복학생' },
+            'ESFP': { best: 'ISTJ', bestTag: '선 넘지 않는 든든한 축', worst: 'INTJ', worstTag: '눈빛만 봐도 얼어붙음' }
+        };
         // 한글 받침 여부에 따라 알맞은 조사를 자동으로 결합하는 함수
         // 스탯별 핵심 심리 기제 — 여러 함수(getTrueBaziSolutions, generateDynamicDeepSolution)에서
         // 공통으로 참조하므로 반드시 전역에 둔다. 함수 안에 두면 다른 함수에서 ReferenceError가 발생함.
@@ -1987,32 +1991,23 @@
 
             const sazuTitle = document.getElementById('sazuCharacterTitle');
             if (sazuTitle) {
-                const dayGan = (data.pillars && data.pillars.day) ? data.pillars.day.gan : null;
-                const dmSuffix = (data.dayOheng && OHENG_NAMES[data.dayOheng])
-                    ? ` (${dayGan && HANJA_TO_KR[dayGan] ? HANJA_TO_KR[dayGan] : ''}${OHENG_NAMES[data.dayOheng][0]})`
-                    : '';
-                sazuTitle.innerText = (isT ? data.profile.title_T : data.profile.title_F) + dmSuffix;
-                sazuTitle.className = "mobile-title font-black text-center w-full px-2 mt-3 mb-5 leading-snug text-slate-900";
+                // 한자 사족(을목 등)을 떼고 깔끔한 볼드 타이틀만 노출
+                sazuTitle.innerText = isT ? data.profile.title_T : data.profile.title_F;
+                sazuTitle.className = "mobile-title font-black text-center w-full px-2 mt-2 mb-3 leading-snug text-slate-900";
             }
 
-            // 사주 원국 (4주) 렌더링
-            if (data.pillars) {
-                const gz = (p) => p ? `${HANJA_TO_KR[p.gan] || ''}${HANJA_TO_KR[p.zhi] || ''}` : null;
-                const yearEl = document.getElementById('pillarYearGZ');
-                const monthEl = document.getElementById('pillarMonthGZ');
-                const dayEl = document.getElementById('pillarDayGZ');
-                const hourEl = document.getElementById('pillarHourGZ');
-                const hourSubEl = document.querySelector('#pillarHourBox .text-\\[9px\\]');
-                if (yearEl) yearEl.innerText = gz(data.pillars.year) || '-';
-                if (monthEl) monthEl.innerText = gz(data.pillars.month) || '-';
-                if (dayEl) dayEl.innerText = gz(data.pillars.day) || '-';
-                if (data.pillars.hour) {
-                    if (hourEl) { hourEl.innerText = gz(data.pillars.hour); hourEl.className = "text-sm font-black text-slate-800"; }
-                    if (hourSubEl) hourSubEl.remove();
-                } else {
-                    if (hourEl) { hourEl.innerText = '추정'; hourEl.className = "text-sm font-black text-slate-500"; }
-                }
-            }
+            // 환상의 찰떡 깐부 vs 상극 매핑
+            const mKey = data.mbtiKey || 'ISTJ';
+            const chem = MBTI_CHEMISTRY[mKey] || MBTI_CHEMISTRY['ISTJ'];
+            const bestMbtiEl = document.getElementById('chemBestMbti');
+            const bestTagEl = document.getElementById('chemBestTag');
+            const worstMbtiEl = document.getElementById('chemWorstMbti');
+            const worstTagEl = document.getElementById('chemWorstTag');
+
+            if (bestMbtiEl) bestMbtiEl.innerText = chem.best;
+            if (bestTagEl) bestTagEl.innerText = chem.bestTag;
+            if (worstMbtiEl) worstMbtiEl.innerText = chem.worst;
+            if (worstTagEl) worstTagEl.innerText = chem.worstTag;
 
             // 공유 버튼 시인성
             const mainShareBtn = document.getElementById('mainShareBtn');
