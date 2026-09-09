@@ -2900,32 +2900,42 @@
             });
         } // <-- 이 닫는 중괄호(})가 누락되어 있었습니다.
 
-        // 인앱 브라우저 감지 및 외부 브라우저 탈출
+        // 인앱 브라우저 감지 및 외부 브라우저 안전 탈출
         function isInAppBrowser() {
-            return /kakaotalk|instagram|fbav|fb_iab|line|naver|daum|threads|band/i.test(navigator.userAgent);
+            const ua = navigator.userAgent.toLowerCase();
+            return /kakaotalk|instagram|fbav|fb_iab|line|naver|daum|threads|band/i.test(ua);
         }
+
         function escapeInAppBrowser() {
             const ua = navigator.userAgent.toLowerCase();
             const target = location.href;
 
-            // 1. 안드로이드: 특정 브라우저 강제 고정 없이, 유저가 설정한 기본 브라우저(삼성인터넷/크롬 등)로 자동 연결
+            // 1. 안드로이드: 무한 루프 방지 처리된 표준 인텐트
             if (/android/i.test(ua)) {
+                // 이미 탈출 시도를 한 경우 반복 실행 방지
+                if (sessionStorage.getItem('inapp_escaped')) return;
+                sessionStorage.setItem('inapp_escaped', 'true');
+
                 const cleanUrl = target.replace(/https?:\/\//i, '');
+                // 카카오톡/네이버/인스타 등에서 기본 브라우저(삼성인터넷/크롬) 선택창 또는 기본 브라우저 직행
                 location.href = 'intent://' + cleanUrl + '#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end';
                 return;
             }
 
-            // 2. iOS(아이폰): 카카오톡/라인 외부 브라우저(사파리) 호출 분기
+            // 2. iOS(아이폰): 카카오톡 및 라인은 다이렉트 사파리 호출
             if (ua.indexOf('kakaotalk') > -1) {
                 location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(target);
             } else if (ua.indexOf('line') > -1) {
                 location.href = target + (target.indexOf('?') > -1 ? '&' : '?') + 'openExternalBrowser=1';
             }
+            // ※ iOS 인스타그램/스레드는 시스템 보안상 JS 강제 탈출이 불가능하므로 인앱 내부에서 토스 결제가 정상 구동되도록 유지합니다.
         }    
 
         window.addEventListener('DOMContentLoaded', () => {
-            // 인앱 브라우저 접속 즉시 탈출 시도
-            if (isInAppBrowser()) escapeInAppBrowser();
+            // 인앱 브라우저 감지 시 안전하게 탈출 실행
+            if (isInAppBrowser()) {
+                escapeInAppBrowser();
+            }
 
             const urlParams = new URLSearchParams(window.location.search);
             
