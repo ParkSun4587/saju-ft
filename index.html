@@ -2898,13 +2898,14 @@
             const ua = navigator.userAgent.toLowerCase();
             const target = location.href;
 
-            // 1. 안드로이드는 앱 불문하고 OS 표준 intent로 크롬/기본 브라우저 최우선 탈출
+            // 1. 안드로이드: 특정 브라우저 강제 고정 없이, 유저가 설정한 기본 브라우저(삼성인터넷/크롬 등)로 자동 연결
             if (/android/i.test(ua)) {
-                location.href = 'intent://' + target.replace(/https?:\/\//i, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+                const cleanUrl = target.replace(/https?:\/\//i, '');
+                location.href = 'intent://' + cleanUrl + '#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end';
                 return;
             }
 
-            // 2. iOS(아이폰) 전용 외부 브라우저 호출 분기
+            // 2. iOS(아이폰): 카카오톡/라인 외부 브라우저(사파리) 호출 분기
             if (ua.indexOf('kakaotalk') > -1) {
                 location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(target);
             } else if (ua.indexOf('line') > -1) {
