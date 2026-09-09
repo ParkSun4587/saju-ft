@@ -616,31 +616,7 @@
                 </div>
             </div>
         </div>
-
-        <!-- 카드 2: 무료 요약 진단 (정보 축소, 궁금증 유발) -->
-        <div class="card-box p-5 sm:p-6 rounded-3xl space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
-                <h3 class="text-sm sm:text-base font-black" id="firstSectionTitle">
-                    [무료 요약 진단] 내 인생이 막힌 이유
-                </h3>
-            </div>
-
-            <div class="space-y-3 leading-relaxed">
-                <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50 shadow-md">
-                    <div class="text-xs sm:text-sm font-bold text-slate-800 mb-1.5" id="concernPreviewTitle">
-                        선택하신 고민 진단
-                    </div>
-                    <p class="text-slate-700 text-xs sm:text-sm leading-relaxed whitespace-pre-line break-keep" id="concernPreviewDesc">-</p>
-                </div>
-                
-                <div class="text-center pt-2 pb-1">
-                    <p class="text-[11px] sm:text-xs text-slate-400 font-medium">
-                        정확한 문제 원인과 2026-2027 대운 반등 타이밍은<br>
-                        아래 <span class="text-amber-600 font-bold">시크릿 처방전</span>에 잠겨 있습니다.
-                    </p>
-                </div>
-            </div>
-        </div>
+        
         <!-- [무료 바이럴 & 몰입 유지] 내 사주에 집중시키는 버튼 2개만 배치 -->
         <div class="space-y-2 pt-1 pb-1">
             <button type="button" id="mainShareBtn" onclick="openShareModal()" class="w-full py-3.5 px-3 bg-white border border-slate-200 text-slate-800 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-98 cursor-pointer">
@@ -2021,18 +1997,7 @@
                     ? "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-sky-600 drop-shadow-sm leading-none pt-1" 
                     : "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-rose-500 drop-shadow-sm leading-none pt-1";
             }
-
-            const firstSecTitle = document.getElementById('firstSectionTitle');
-            if (firstSecTitle) {
-                firstSecTitle.innerHTML = isT ? `<span class="text-sky-600 font-black text-sm sm:text-base break-keep">[무료 요약 진단] 내 스탯으로 까본 인생 막힌 이유</span>` : `<span class="text-rose-500 font-black text-sm sm:text-base break-keep">[무료 요약 진단] 남몰래 겪었던 내 고민의 시작점</span>`;
-            }
-
-            const concernPreviewTitle = document.getElementById('concernPreviewTitle');
-            if (concernPreviewTitle) concernPreviewTitle.innerHTML = `<span class="font-bold text-xs sm:text-sm text-slate-800 break-keep">선택하신 [${data.rawSolutionTemplate.label}] 막혀있는 핵심 이유</span>`;
-            
-            const concernPreviewDesc = document.getElementById('concernPreviewDesc');
-            if (concernPreviewDesc) concernPreviewDesc.innerHTML = template.preview();
-
+    
             // 아코디언 데이터 생성
             const accordionData = generateDynamicDeepSolution(data, mode);
             
