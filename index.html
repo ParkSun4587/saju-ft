@@ -16,8 +16,8 @@
     <!-- 소셜 공유(카카오톡/인스타/페이스북/트위터/스레드) 완전 일치 메타 태그 -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="사주FT">
-    <meta property="og:title" content="소름 돋게 다 맞히는 사주 MBTI">
-    <meta property="og:description" content="생일 8자리 치면 3초 만에 끝.">
+    <meta property="og:title" content="야 너 사주 몇 급이야? 본캐 MBTI 까봐">
+    <meta property="og:description" content="질문 60개 할 시간에 생일 8자리로 3초 컷 ㅋㅋㅋ">
     <link rel="canonical" href="https://www.sajuft.com">
     <meta property="og:image" content="https://www.sajuft.com/t1.png?v=6">
     <meta property="og:image:secure_url" content="https://www.sajuft.com/t1.png?v=6">
@@ -448,12 +448,10 @@
                 <div id="outerTechRing" class="absolute inset-0 rounded-full border-2 border-rose-300/70 transition-all duration-300"></div>
                 <div class="absolute inset-2.5 rounded-full bg-gradient-to-b from-rose-50 to-pink-50/40"></div>
                 
-                <!-- 중앙 네온 상태 뱃지 & 퍼센트 -->
+                <!-- 중앙 아이콘 & 퍼센트 (세로선 버그 없는 클린 레이아웃) -->
                 <div class="relative flex flex-col items-center justify-center z-10 select-none">
-                    <span id="loadingCenterBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-rose-100 text-rose-600 border border-rose-200 tracking-tight animate-pulse select-none">
-                        도파민 파밍 중
-                    </span>
-                    <div class="flex items-center justify-center mt-1.5 select-none">
+                    <div id="loadingCenterIcon" class="text-4xl anim-float transform hover:scale-110 transition-transform">🔍</div>
+                    <div class="flex items-center justify-center mt-1 select-none">
                         <span id="loadingPercent" class="text-3xl font-black text-slate-800 tracking-tight select-none cursor-default" style="-webkit-user-select: none; user-select: none;">0%</span>
                     </div>
                 </div>
@@ -1851,43 +1849,29 @@
                     if (percentText) percentText.innerText = progress + "%";
                     if (progressFill) progressFill.style.width = progress + "%";
 
-                    const badge = document.getElementById('loadingCenterBadge');
+                    const centerIcon = document.getElementById('loadingCenterIcon');
                     if (mainStatus) {
-                        // 1. [0~28%] 갓생 팩폭 & 파밍 구간
+                        // 1. [0~1.3초] 가면 벗기기 단계
                         if (progress < 28) {
-                            if (badge) {
-                                badge.innerText = '도파민 파밍 중';
-                                badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-rose-100 text-rose-600 border border-rose-200 tracking-tight animate-pulse select-none';
-                            }
-                            mainStatus.innerHTML = `<span class="text-slate-900 font-black">${name}</span>님 갓생 살던 척 그만.. 찐 본캐 털어보는 중`;
+                            if (centerIcon) centerIcon.innerText = '🎭';
+                            mainStatus.innerHTML = `<span class="text-slate-800 font-black">${name}</span>님의 사회적 가면 벗겨내는 중...`;
                         }
-                        // 2. [28~72%] 기강 잡기 & 원영적 사고 불가 구간
-                        else if (progress < 72) {
-                            if (badge) {
-                                badge.innerText = '원영적 사고 불가';
-                                badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-700 border border-amber-200 tracking-tight animate-bounce select-none';
-                            }
-                            mainStatus.innerHTML = `[${lowest.name}] <b class="text-rose-600 font-black">${lowest.score}점</b>.. 멘탈 갈려서 기강 잡아야 됨`;
+                        // 2. [1.3초~3.2초] 팩폭 찔림 / 과몰입 극대화 구간 (가장 오래 노출)
+                        else if (progress < 73) {
+                            if (centerIcon) centerIcon.innerText = '🚨';
+                            mainStatus.innerHTML = `어라? [${lowest.name}] <b class="text-rose-500 font-black">${lowest.score}점</b>... 여기서 멘탈 털렸네`;
                         }
-                        // 3. [72~96%] F/T 모드별 맞춤 유행어
+                        // 3. [3.2초~4.3초] 선택한 F / T 모드별 기대감 고조
                         else if (progress < 96) {
-                            if (badge) {
-                                badge.innerText = isT ? '팩폭 기강 타임' : '럭키비키 모드';
-                                badge.className = isT 
-                                    ? 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-sky-100 text-sky-700 border border-sky-200 tracking-tight select-none'
-                                    : 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-pink-100 text-pink-700 border border-pink-200 tracking-tight select-none';
-                            }
+                            if (centerIcon) centerIcon.innerText = isT ? '🧊' : '🌸';
                             mainStatus.innerHTML = isT 
-                                ? `<span class="text-sky-600 font-black">뼈 맞고 도망칠 준비 완료?</span> 현실 팩폭 투하 직전` 
-                                : `<span class="text-pink-600 font-black">완전 럭키비키잖아🍀</span> 무조건 내 편 위로 풀충전 중`;
+                                ? `<span class="text-sky-600 font-black">정신 번쩍 들 현실 팩폭</span>으로 뼈 때릴 준비 완료!` 
+                                : `<span class="text-rose-500 font-black">눈물 쏙 빠질 다정함</span> 한 스푼 추가하는 중...`;
                         }
-                        // 4. [96~100%] 완료
+                        // 4. [4.3초~4.5초] 본캐 완성
                         else {
-                            if (badge) {
-                                badge.innerText = '해독 완료';
-                                badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-slate-900 text-white border border-slate-900 tracking-tight select-none';
-                            }
-                            mainStatus.innerHTML = `<span class="text-slate-900 font-black">도파민 풀충전 완료!</span> 찐 본캐 결과 오픈 🚀`;
+                            if (centerIcon) centerIcon.innerText = '✨';
+                            mainStatus.innerHTML = `<span class="text-slate-900 font-black">본캐 해독 완료!</span> 결과 카드 여는 중...`;
                         }
                     }
                     if (elapsed >= totalDuration && !isRendered) {
@@ -3002,8 +2986,42 @@
             });
         } // <-- 이 닫는 중괄호(})가 누락되어 있었습니다.
 
+        // 인앱 브라우저 감지 및 외부 브라우저 안전 탈출
+        function isInAppBrowser() {
+            const ua = navigator.userAgent.toLowerCase();
+            return /kakaotalk|instagram|fbav|fb_iab|line|naver|daum|threads|band/i.test(ua);
+        }
+
+        function escapeInAppBrowser() {
+            const ua = navigator.userAgent.toLowerCase();
+            const target = location.href;
+
+            // 1. 안드로이드: 무한 루프 방지 처리된 표준 인텐트
+            if (/android/i.test(ua)) {
+                // 이미 탈출 시도를 한 경우 반복 실행 방지
+                if (sessionStorage.getItem('inapp_escaped')) return;
+                sessionStorage.setItem('inapp_escaped', 'true');
+
+                const cleanUrl = target.replace(/https?:\/\//i, '');
+                // 카카오톡/네이버/인스타 등에서 기본 브라우저(삼성인터넷/크롬) 선택창 또는 기본 브라우저 직행
+                location.href = 'intent://' + cleanUrl + '#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end';
+                return;
+            }
+
+            // 2. iOS(아이폰): 카카오톡 및 라인은 다이렉트 사파리 호출
+            if (ua.indexOf('kakaotalk') > -1) {
+                location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(target);
+            } else if (ua.indexOf('line') > -1) {
+                location.href = target + (target.indexOf('?') > -1 ? '&' : '?') + 'openExternalBrowser=1';
+            }
+            // ※ iOS 인스타그램/스레드는 시스템 보안상 JS 강제 탈출이 불가능하므로 인앱 내부에서 토스 결제가 정상 구동되도록 유지합니다.
+        }    
+
         window.addEventListener('DOMContentLoaded', () => {
-            // 외부 탈출 로직 제거: 모든 인앱 브라우저 내부에서 네이티브하게 처리
+            // 인앱 브라우저 감지 시 안전하게 탈출 실행
+            if (isInAppBrowser()) {
+                escapeInAppBrowser();
+            }
 
             const urlParams = new URLSearchParams(window.location.search);
             
