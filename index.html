@@ -1830,12 +1830,12 @@
         }
 
         function getLowestStatInfo(stats) {
-            const list = [ { type: 'wealth', name: '재물 그릇', score: stats.wealth, cap: 'Wealth' }, { type: 'mental', name: '멘탈 방어력', score: stats.mental, cap: 'Mental' }, { type: 'drive', name: '현실 돌파력', score: stats.drive, cap: 'Drive' }, { type: 'network', name: '인적 네트워크', score: stats.network, cap: 'Network' } ];
+            const list = [ { type: 'wealth', name: '돈 냄새 맡는 촉', score: stats.wealth, cap: 'Wealth' }, { type: 'mental', name: '멘탈 방어력', score: stats.mental, cap: 'Mental' }, { type: 'drive', name: '기회 포착력', score: stats.drive, cap: 'Drive' }, { type: 'network', name: '인생 역전 귀인복', score: stats.network, cap: 'Network' } ];
             list.sort((a, b) => a.score - b.score); return list[0];
         }
 
         function getHighestStatInfo(stats) {
-            const list = [ { type: 'wealth', name: '재물 그릇', score: stats.wealth, cap: 'Wealth' }, { type: 'mental', name: '멘탈 방어력', score: stats.mental, cap: 'Mental' }, { type: 'drive', name: '현실 돌파력', score: stats.drive, cap: 'Drive' }, { type: 'network', name: '인적 네트워크', score: stats.network, cap: 'Network' } ];
+            const list = [ { type: 'wealth', name: '돈 냄새 맡는 촉', score: stats.wealth, cap: 'Wealth' }, { type: 'mental', name: '멘탈 방어력', score: stats.mental, cap: 'Mental' }, { type: 'drive', name: '기회 포착력', score: stats.drive, cap: 'Drive' }, { type: 'network', name: '인생 역전 귀인복', score: stats.network, cap: 'Network' } ];
             list.sort((a, b) => b.score - a.score); return list[0];
         }
 
@@ -2597,10 +2597,10 @@
             const lowest = getLowestStatInfo(s);
             const highest = getHighestStatInfo(s);
             const statItems = [
-                { name: '재물 그릇', cap: 'Wealth', score: s.wealth },
+                { name: '돈 냄새 맡는 촉', cap: 'Wealth', score: s.wealth },
                 { name: '멘탈 방어력', cap: 'Mental', score: s.mental },
-                { name: '현실 돌파력', cap: 'Drive', score: s.drive },
-                { name: '인적 네트워크', cap: 'Network', score: s.network }
+                { name: '기회 포착력', cap: 'Drive', score: s.drive },
+                { name: '인생 역전 귀인복', cap: 'Network', score: s.network }
             ];
 
             let currY = 442;
