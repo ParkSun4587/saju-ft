@@ -2458,12 +2458,12 @@
                     const checkColor = isT ? 'text-sky-600' : 'text-rose-500';
                     return `
                     <div class="bg-white rounded-2xl p-4 sm:p-5 border border-amber-200/60 shadow-sm space-y-3 font-sans transition-all">
-                        <!-- 메모 상단 태그 & 번호 -->
-                        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
-                            <span class="text-[10px] font-mono font-black px-2 py-0.5 rounded-md border ${numColor}">
+                        <!-- 메모 상단 태그 & 번호 (모바일 깨짐 방지 flex-wrap 및 폰트 축소 적용) -->
+                        <div class="flex flex-wrap justify-between items-center gap-1.5 pb-2 border-b border-slate-100">
+                            <span class="text-[10px] font-mono font-black px-2 py-0.5 rounded-md border ${numColor} shrink-0">
                                 NOTE ${item.themeNum}
                             </span>
-                            <span class="text-[10px] text-slate-400 font-medium">
+                            <span class="text-[10px] text-slate-500 font-bold truncate max-w-[220px]">
                                 ${item.badge}
                             </span>
                         </div>
@@ -2473,7 +2473,7 @@
                             ${item.title}
                         </h4>
 
-                        <!-- 메모 본문 (충분한 분량 & 하이퍼리얼리즘 서술) -->
+                        <!-- 메모 본문 -->
                         <div class="text-[12px] sm:text-[13px] text-slate-700 leading-relaxed break-keep font-normal space-y-2">
                             ${item.desc}
                         </div>
