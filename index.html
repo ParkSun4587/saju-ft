@@ -2089,25 +2089,25 @@
 
                     const centerIcon = document.getElementById('loadingCenterIcon');
                     if (mainStatus) {
-                        // [1단계: 0.0~0.8초] 만세력 스캔 & 넵무새 털기
+                        // [1단계: 0.0~0.8초] 카톡 미리보기 & 미루기 패턴
                         if (elapsed < 800) {
                             if (centerIcon) centerIcon.innerText = '🔍';
-                            if (sysLogEl) sysLogEl.innerText = "만세력 8글자 오행 데이터 스캔 중...";
-                            mainStatus.innerHTML = `밖에서는 영혼 없는 <span class="text-slate-800 font-black">'넵'무새</span>, 집 오자마자 침대 다이빙한 거 추적 중...`;
+                            if (sysLogEl) sysLogEl.innerText = "생년월일 기반 만세력 원국(八字) 추출 중...";
+                            mainStatus.innerHTML = `카톡 미리보기로 읽고 <span class="text-slate-800 font-black">답장은 3일 뒤로</span> 미루는 패턴 분석 중...`;
                         }
-                        // [2단계: 0.8~2.8초] 십신 매트릭스 대조 & 이불킥 저격 (긴장감 최고조)
+                        // [2단계: 0.8~2.8초] 잔걱정 & 자기검열 팩폭 (가장 오래 머묾)
                         else if (elapsed < 2800) {
                             if (centerIcon) centerIcon.innerText = '🚨';
-                            if (sysLogEl) sysLogEl.innerText = "일간·억부·십신 매트릭스 정밀 대조 중...";
-                            mainStatus.innerHTML = `헐 잠깐만; <b class="text-rose-500 font-black">남 앞에서는 쿨한 척 다 해놓고</b> 혼자 이불킥 찬 거 딱 걸림;;`;
+                            if (sysLogEl) sysLogEl.innerText = "일간·용신 오행 밸런스 정밀 대조 중...";
+                            mainStatus.innerHTML = `<b class="text-rose-500 font-black">생각보다 잔걱정 많고</b> 스스로한테 제일 엄격한 타입이네`;
                         }
-                        // [3단계: 2.8~3.8초] 사주 개입 명시 & 공유 카드 사전 예고(Pre-framing)
+                        // [3단계: 2.8~3.8초] F/T 선택 모드별 현실 저격
                         else {
-                            if (centerIcon) centerIcon.innerText = isT ? '🥊' : '🌸';
-                            if (sysLogEl) sysLogEl.innerText = "인스타 박제용 본캐 처방전 굽는 중...";
+                            if (centerIcon) centerIcon.innerText = isT ? '🧊' : '🌸';
+                            if (sysLogEl) sysLogEl.innerText = "모드별 본캐 성향 및 취급설명서 매핑 중...";
                             mainStatus.innerHTML = isT 
-                                ? `<span class="text-sky-600 font-black">사주가 명치 때려서 순살 만들 예정</span> (도망갈 구멍 압수 🥊)` 
-                                : `<span class="text-rose-500 font-black">세상이 억까해도 사주만큼은 무조건 네 편</span> (휴지 한 장 챙겨 🧻)`;
+                                ? `<span class="text-sky-600 font-black">변명 빼고 팩트만 꽂는다.</span> 멘탈 꽉 잡아` 
+                                : `<span class="text-rose-500 font-black">착해서 손해 본 거 다 알아.</span> 오늘은 네 편만 들어줄게`;
                         }
                     }
 
