@@ -2334,67 +2334,82 @@
         function openShareModal() {
             if (!currentResultData) return;
             
-            // GA4: 결제 거절 후 공유 모달 진입 추적
             if (typeof gtag === 'function') gtag('event', 'view_share_modal');
 
             document.body.style.overflow = 'hidden';
             const data = currentResultData;
             const isT = (data.currentMode === 'T');
-            const gradeInfo = calculateSazuGrade(data.elements || {}, data.stats);
-            const s = data.stats;
+            const mKey = data.mbtiKey || 'ESTJ';
+            const prof = SAZU_CHARACTER_PROFILES[mKey] || SAZU_CHARACTER_PROFILES['ESTJ'];
 
+            // 1) 상단 알약 뱃지
             const modeBadge = document.getElementById('cardModeBadge');
-            const gradeText = document.getElementById('cardGradeText');
-            const gradeTitle = document.getElementById('cardGradeTitle');
-            
             if (modeBadge) {
-                modeBadge.innerHTML = isT ? `필터 없이 뼈 때리는 <span class="text-white">${data.name}</span>님의 T 팩폭 리포트` : `100% 내 편 들어주는 <span class="text-white">${data.name}</span>님의 F 힐링 리포트`;
-                modeBadge.className = isT ? "px-3 py-1 bg-sky-500/20 text-sky-300 border border-sky-400/50 rounded-full text-[10px] font-black tracking-wide" : "px-3 py-1 bg-rose-500/20 text-rose-300 border border-rose-400/50 rounded-full text-[10px] font-black tracking-wide";
+                modeBadge.innerHTML = isT 
+                    ? `🥊 핑계 원천 차단! <span class="text-sky-700 font-black">${data.name}</span> 자비 없는 팩폭 구역` 
+                    : `🌸 세상 억까 차단! <span class="text-rose-700 font-black">${data.name}</span> 무조건 내 편 구역`;
+                modeBadge.className = isT 
+                    ? "px-3.5 py-1.5 bg-sky-50 text-sky-600 border border-sky-200 rounded-full text-[11px] font-black tracking-tight inline-block shadow-sm" 
+                    : "px-3.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-[11px] font-black tracking-tight inline-block shadow-sm";
             }
-            if (gradeText) gradeText.innerText = gradeInfo.grade + '급';
-            if (gradeTitle) { gradeTitle.innerText = gradeInfo.title; gradeTitle.className = "text-slate-200"; }
 
-            const cardSubtitleEl = document.getElementById('cardMbtiSubtitle');
-            if (cardSubtitleEl) cardSubtitleEl.innerHTML = isT ? `<span class="text-sky-400 text-[10px] font-bold tracking-wider">🔍 사회적 가면 속 진짜 팩트 본성</span>` : `<span class="text-rose-300 text-[10px] font-bold tracking-wider">🌙 애써 감춰왔던 진짜 다정 본캐</span>`;
-
-            const mainTitle = document.getElementById('cardMainTitle');
+            // 2) 거대 MBTI & 메인 타이틀
             const bigMbti = document.getElementById('cardBigMbti');
+            const mainTitle = document.getElementById('cardMainTitle');
 
-            if (mainTitle) {
-                mainTitle.innerText = isT ? data.profile.title_T : data.profile.title_F;
-                mainTitle.className = isT ? "text-sky-400" : "text-rose-300";
-            }
             if (bigMbti) {
-                bigMbti.innerText = data.mbtiKey || 'ISTJ';
-                bigMbti.className = isT ? "font-mono drop-shadow-[0_0_12px_rgba(56,189,248,0.5)] text-sky-400" : "font-mono drop-shadow-[0_0_12px_rgba(253,164,175,0.5)] text-rose-300";
+                bigMbti.innerText = mKey;
+                bigMbti.className = isT ? "text-[52px] font-black tracking-widest font-mono text-sky-600 leading-none pt-1" : "text-[52px] font-black tracking-widest font-mono text-rose-500 leading-none pt-1";
+            }
+            if (mainTitle) {
+                mainTitle.innerText = `"${isT ? prof.title_T : prof.title_F}"`;
             }
 
-            const lowest = getLowestStatInfo(s);
-            const highest = getHighestStatInfo(s);
-            ['Wealth', 'Mental', 'Drive', 'Network'].forEach(cap => { const badge = document.getElementById(`cardBadge${cap}`); if (badge) badge.className = 'hidden'; });
+            // 3) 📌 내 본캐 취급설명서 3줄 불렛 주입
+            const bulletContainer = document.getElementById('cardManualBulletList');
+            if (bulletContainer) {
+                const bList = isT ? prof.bullets_T : prof.bullets_F;
+                const bulletColor = isT ? 'text-sky-500' : 'text-rose-500';
+                bulletContainer.innerHTML = `
+                    <div class="flex items-start gap-1.5">
+                        <span class="${bulletColor} font-black shrink-0">•</span>
+                        <span>${bList[0]}</span>
+                    </div>
+                    <div class="flex items-start gap-1.5">
+                        <span class="${bulletColor} font-black shrink-0">•</span>
+                        <span>${bList[1]}</span>
+                    </div>
+                    <div class="flex items-start gap-1.5">
+                        <span class="${bulletColor} font-black shrink-0">•</span>
+                        <span>${bList[2]}</span>
+                    </div>
+                `;
+            }
 
-            const highBadge = document.getElementById(`cardBadge${highest.cap}`);
-            if (highBadge) { highBadge.className = 'inline-block text-[10px] font-bold text-amber-300 ml-1.5 align-middle'; highBadge.innerText = isT ? '⚡ 사기급 주특기' : '👑 타고난 치트키'; }
-            const lowBadge = document.getElementById(`cardBadge${lowest.cap}`);
-            if (lowBadge) { lowBadge.className = 'inline-block text-[10px] font-bold text-rose-400 ml-1.5 align-middle'; lowBadge.innerText = isT ? '🚨 발목 잡는 주범' : '💔 혼자 속앓이'; }
+            // 4) 💖 찰떡 깐부 vs 💣 상극
+            const bestMbtiEl = document.getElementById('cardChemBestMbti');
+            const bestTagEl = document.getElementById('cardChemBestTag');
+            const worstMbtiEl = document.getElementById('cardChemWorstMbti');
+            const worstTagEl = document.getElementById('cardChemWorstTag');
 
-            const setupStat = (cap, score) => {
-                const txtEl = document.getElementById(`cardStat${cap}Txt`);
-                const barEl = document.getElementById(`cardStat${cap}Bar`);
-                if (txtEl) txtEl.innerText = `${score}점`;
-                if (barEl) { barEl.style.width = `${score}%`; barEl.style.backgroundColor = ''; barEl.className = isT ? 'h-full rounded-full transition-all card-stat-bar-t' : 'h-full rounded-full transition-all card-stat-bar-f'; }
-            };
-            setupStat('Wealth', s.wealth); setupStat('Mental', s.mental); setupStat('Drive', s.drive); setupStat('Network', s.network);
+            if (bestMbtiEl) bestMbtiEl.innerText = prof.best;
+            if (bestTagEl) bestTagEl.innerText = prof.bestTag;
+            if (worstMbtiEl) worstMbtiEl.innerText = prof.worst;
+            if (worstTagEl) worstTagEl.innerText = prof.worstTag;
 
+            // 5) 하단 링크 스티커 영역 스타일
             const stickerBox = document.getElementById('cardStickerBox');
             const stickerTxt = document.getElementById('cardStickerText');
             if (stickerBox && stickerTxt) {
-                stickerBox.className = isT ? "border-2 border-dashed border-sky-500/40 bg-sky-500/5 rounded-xl p-2 text-center relative z-10" : "border-2 border-dashed border-rose-400/40 bg-rose-500/5 rounded-xl p-2 text-center relative z-10";
-                stickerTxt.className = isT ? "text-[10px] font-black text-sky-300" : "text-[10px] font-black text-rose-300";
-                stickerTxt.innerText = "🔗 [링크는 본문 / 스토리 스티커에 붙이기]";
+                stickerBox.className = isT ? "border-2 border-dashed border-sky-300 bg-sky-50/50 rounded-xl p-2.5 text-center relative z-10" : "border-2 border-dashed border-rose-300 bg-rose-50/50 rounded-xl p-2.5 text-center relative z-10";
+                stickerTxt.className = isT ? "text-[10px] font-black text-sky-600" : "text-[10px] font-black text-rose-600";
             }
+
             const shareModal = document.getElementById('shareModal');
-            if (shareModal) { shareModal.classList.remove('hidden'); shareModal.style.display = 'flex'; }
+            if (shareModal) { 
+                shareModal.classList.remove('hidden'); 
+                shareModal.style.display = 'flex'; 
+            }
         }
 
         function closeShareModal() { 
