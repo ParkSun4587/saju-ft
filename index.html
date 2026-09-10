@@ -2134,8 +2134,13 @@
 
             const badge = document.getElementById('resultModeBadge');
             if (badge) {
-                badge.innerHTML = isT ? `필터 없이 뼈 때리는 <span class="text-sky-700">${data.name}</span>님의 T 팩폭 리포트` : `100% 내 편 들어주는 <span class="text-rose-700">${data.name}</span>님의 F 힐링 리포트`;
-                badge.className = isT ? "px-3.5 py-1 bg-sky-50 text-sky-600 border border-sky-200 rounded-full text-xs font-extrabold tracking-wide shadow-sm" : "px-3.5 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-xs font-extrabold tracking-wide shadow-sm";
+                const nameJosa = typeof attachJosa === 'function' ? attachJosa(data.name, '이/가') : `${data.name}이`;
+                badge.innerHTML = isT 
+                    ? `🧊 "T발 너 C야?" 소리 나오는 자비 없는 극딜 모드` 
+                    : `🌸 "우리 <span class="text-rose-700 font-black">${nameJosa}</span> 다 맞아" 극성 내 편 모드`;
+                badge.className = isT 
+                    ? "px-3.5 py-1.5 bg-sky-50 text-sky-600 border border-sky-200 rounded-full text-xs font-black tracking-tight shadow-sm" 
+                    : "px-3.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-xs font-black tracking-tight shadow-sm";
             }
             
             const mKey = data.mbtiKey || 'ESTJ';
@@ -2342,12 +2347,13 @@
             const mKey = data.mbtiKey || 'ESTJ';
             const prof = SAZU_CHARACTER_PROFILES[mKey] || SAZU_CHARACTER_PROFILES['ESTJ'];
 
-            // 1) 상단 알약 뱃지
+            // 1) 상단 알약 뱃지 (대체안 A 적용)
             const modeBadge = document.getElementById('cardModeBadge');
             if (modeBadge) {
+                const nameJosa = typeof attachJosa === 'function' ? attachJosa(data.name, '이/가') : `${data.name}이`;
                 modeBadge.innerHTML = isT 
-                    ? `🥊 핑계 원천 차단! <span class="text-sky-700 font-black">${data.name}</span> 자비 없는 팩폭 구역` 
-                    : `🌸 세상 억까 차단! <span class="text-rose-700 font-black">${data.name}</span> 무조건 내 편 구역`;
+                    ? `🧊 "T발 너 C야?" 소리 나오는 자비 없는 극딜 모드` 
+                    : `🌸 "우리 <span class="text-rose-700 font-black">${nameJosa}</span> 다 맞아" 극성 내 편 모드`;
                 modeBadge.className = isT 
                     ? "px-3.5 py-1.5 bg-sky-50 text-sky-600 border border-sky-200 rounded-full text-[11px] font-black tracking-tight inline-block shadow-sm" 
                     : "px-3.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-[11px] font-black tracking-tight inline-block shadow-sm";
