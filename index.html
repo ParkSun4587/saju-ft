@@ -2123,27 +2123,27 @@
 
                     const centerIcon = document.getElementById('loadingCenterIcon');
                     if (mainStatus) {
-                        // 1. [0~1.3초] 가면 벗기기 단계
+                        // 1. [0~1.3초] 일상 추적 단계
                         if (progress < 28) {
-                            if (centerIcon) centerIcon.innerText = '🎭';
-                            mainStatus.innerHTML = `<span class="text-slate-800 font-black">${name}</span>님의 사회적 가면 벗겨내는 중...`;
+                            if (centerIcon) centerIcon.innerText = '🔍';
+                            mainStatus.innerHTML = `<span class="text-slate-800 font-black">${name}</span>님의 침대 속 숏폼 시청 기록 털어보는 중...`;
                         }
-                        // 2. [1.3초~3.2초] 팩폭 찔림 / 과몰입 극대화 구간 (가장 오래 노출)
+                        // 2. [1.3초~3.2초] 속마음/CCTV 저격 구간 (스탯 명칭 완전 삭제)
                         else if (progress < 73) {
                             if (centerIcon) centerIcon.innerText = '🚨';
-                            mainStatus.innerHTML = `어라? [${lowest.name}] <b class="text-rose-500 font-black">${lowest.score}점</b>... 여기서 멘탈 털렸네`;
+                            mainStatus.innerHTML = `어라? <b class="text-rose-500 font-black">겉으론 세상 쿨한 척</b>해놓고 뒤에서 혼자 앓았네;`;
                         }
-                        // 3. [3.2초~4.3초] 선택한 F / T 모드별 기대감 고조
+                        // 3. [3.2초~4.3초] 선택한 F / T 모드별 극과 극 훅
                         else if (progress < 96) {
                             if (centerIcon) centerIcon.innerText = isT ? '🧊' : '🌸';
                             mainStatus.innerHTML = isT 
-                                ? `<span class="text-sky-600 font-black">정신 번쩍 들 현실 팩폭</span>으로 뼈 때릴 준비 완료!` 
-                                : `<span class="text-rose-500 font-black">눈물 쏙 빠질 다정함</span> 한 스푼 추가하는 중...`;
+                                ? `<span class="text-sky-600 font-black">핑계 차단 완료.</span> 자비 없는 팩폭으로 기강 잡으러 감` 
+                                : `<span class="text-rose-500 font-black">억지 미소 금지.</span> 오늘만큼은 무조건 네 편만 들어줄게`;
                         }
-                        // 4. [4.3초~4.5초] 본캐 완성
+                        // 4. [4.3초~4.5초] 본캐 소환 완료
                         else {
                             if (centerIcon) centerIcon.innerText = '✨';
-                            mainStatus.innerHTML = `<span class="text-slate-900 font-black">본캐 해독 완료!</span> 결과 카드 여는 중...`;
+                            mainStatus.innerHTML = `<span class="text-slate-900 font-black">본캐 강제 소환 완료!</span> 심장 부여잡고 확인하기`;
                         }
                     }
                     if (elapsed >= totalDuration && !isRendered) {
