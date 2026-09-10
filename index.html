@@ -2406,7 +2406,7 @@
                 notesContainer.innerHTML = buildNotesHTML(notesData);
             }
         }
-
+        
         function renderResultView(data) {
             isAnalyzing = false;
             document.getElementById('loadingSection').style.display = 'none';
@@ -2452,7 +2452,6 @@
                 } else {
                 if (overlay) overlay.style.display = 'flex';
                 if (wrapper) { wrapper.classList.add('premium-lock-mask'); wrapper.classList.add('pb-36'); }
-                paintPremiumArea();
                 if (vipBadge) {
                     vipBadge.className = "inline-block mt-1 text-[10px] sm:text-xs bg-amber-500/10 text-amber-400 px-3 py-0.5 rounded-full font-bold border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]";
                     vipBadge.innerText = "🔒 [비공개] 시크릿 솔루션 문서";
@@ -2685,7 +2684,6 @@
 
         function unlockFullReport(msg, skipScroll) {
             isUnlocked = true;
-            paintPremiumArea();
 
             if (currentResultData) {
                 const uniqueKey = getUserUniqueKey(currentResultData);
