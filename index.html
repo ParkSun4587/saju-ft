@@ -2695,7 +2695,6 @@
 
             const overlay = document.getElementById('lockedOverlay');
             const wrapper = document.getElementById('solutionWrapper');
-            const vipBadge = document.getElementById('vipBadge');
             const reAnalyzeBox = document.getElementById('reAnalyzeBox');
 
             if (overlay) overlay.style.display = 'none';
@@ -2704,19 +2703,12 @@
                 wrapper.classList.remove('premium-lock-mask');
                 wrapper.classList.remove('pb-36');
                 wrapper.classList.remove('min-h-[640px]');
-                
-                // 해금 직후 1번 탭을 자동으로 열어주는 효과 (옵션)
-                const firstAccordion = document.querySelector('#accordionContainer .accordion-content');
-                const firstChevron = document.querySelector('#accordionContainer .chevron');
-                if(firstAccordion) firstAccordion.classList.add('open');
-                if(firstChevron) firstChevron.classList.add('open');
 
                 if (!skipScroll) {
-                setTimeout(() => {
-                    const cardContainer = wrapper.closest('.card-box');
-                    if (cardContainer) cardContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    else wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
+                    setTimeout(() => {
+                        const cardContainer = wrapper.closest('.card-box');
+                        if (cardContainer) cardContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
                 }
             }
             
