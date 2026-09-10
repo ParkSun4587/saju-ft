@@ -2104,18 +2104,18 @@
 
                 const percentText = document.getElementById('loadingPercent');
                 const mainStatus = document.getElementById('loadingMainStatus');
-                const totalDuration = 3400; // 1020 숏폼 호흡에 맞춘 3.4초 황금 밸런스
+                const totalDuration = 3800; // 1020 황금 체감 시간 3.8초
                 const startTime = Date.now();
                 let isRendered = false;
 
                 const timer = setInterval(() => {
                     const elapsed = Date.now() - startTime;
                     let progress = 0;
-                    // 3.4초에 맞춘 매끄러운 진행 속도
-                    if (elapsed < 800) progress = Math.floor((elapsed / 800) * 30);
-                    else if (elapsed < 2000) progress = 30 + Math.floor(((elapsed - 800) / 1200) * 45);
-                    else if (elapsed < 3000) progress = 75 + Math.floor(((elapsed - 2000) / 1000) * 20);
-                    else if (elapsed < totalDuration) progress = 95 + Math.floor(((elapsed - 3000) / 400) * 5);
+                    
+                    // 3.8초 동안 매끄럽게 차오르는 게이지
+                    if (elapsed < 1200) progress = Math.floor((elapsed / 1200) * 35);
+                    else if (elapsed < 2600) progress = 35 + Math.floor(((elapsed - 1200) / 1400) * 45);
+                    else if (elapsed < totalDuration) progress = 80 + Math.floor(((elapsed - 2600) / 1200) * 20);
                     else progress = 100;
 
                     if (percentText) percentText.innerText = progress + "%";
@@ -2123,31 +2123,28 @@
 
                     const centerIcon = document.getElementById('loadingCenterIcon');
                     if (mainStatus) {
-                        // 1. [0~0.8초] 밖 vs 방구석 대비
-                        if (progress < 28) {
+                        // 1단계 (0.0초 ~ 1.2초): 일상 공감 털기
+                        if (elapsed < 1200) {
                             if (centerIcon) centerIcon.innerText = '🔍';
-                            mainStatus.innerHTML = `밖에서는 <span class="text-slate-800 font-black">'넵'봇</span>, 방구석에선 숏폼 중독인 거 역추적 중...`;
+                            mainStatus.innerHTML = `밖에서는 영혼 없는 <span class="text-slate-800 font-black">'넵'무새</span>, 집 오자마자 침대 다이빙한 거 추적 중...`;
                         }
-                        // 2. [0.8초~2.0초] 겉바속촉 멘탈 팩폭
-                        else if (progress < 73) {
+                        // 2단계 (1.2초 ~ 2.6초): 하이퍼리얼리즘 속마음 저격 (가장 오래 머묾)
+                        else if (elapsed < 2600) {
                             if (centerIcon) centerIcon.innerText = '🚨';
-                            mainStatus.innerHTML = `헐 잠깐만; <b class="text-rose-500 font-black">멘탈 갈렸는데 안 그런 척</b> 연기한 거 딱 걸림;;`;
+                            mainStatus.innerHTML = `헐 잠깐만; <b class="text-rose-500 font-black">남 앞에서는 쿨한 척 다 해놓고</b> 혼자 이불킥 찬 거 딱 걸림;;`;
                         }
-                        // 3. [2.0초~3.0초] F/T 극과 극 훅
-                        else if (progress < 96) {
+                        // 3단계 (2.6초 ~ 3.8초): 선택한 모드별 극과 극 훅 후 결과 오픈
+                        else {
                             if (centerIcon) centerIcon.innerText = isT ? '🧊' : '🌸';
                             mainStatus.innerHTML = isT 
-                                ? `<span class="text-sky-600 font-black">뼈 때려서 순살 만들 예정</span> (도망갈 구멍 압수 🥊)` 
-                                : `<span class="text-rose-500 font-black">세상이 억까해도</span> 오늘은 무조건 네 편 해줌 (휴지 챙겨 🧻)`;
-                        }
-                        // 4. [3.0초~3.4초] 강제 박제 완료
-                        else {
-                            if (centerIcon) centerIcon.innerText = '✨';
-                            mainStatus.innerHTML = `<span class="text-slate-900 font-black">본캐 강제 박제 완료!</span> 심장 잡고 까봐라`;
+                                ? `<span class="text-sky-600 font-black">뼈 때려서 순살 만들 예정</span> (도망갈 구멍 원천 차단 🥊)` 
+                                : `<span class="text-rose-500 font-black">세상이 억까해도</span> 오늘은 무조건 네 편 (휴지 한 장 챙겨 🧻)`;
                         }
                     }
+
                     if (elapsed >= totalDuration && !isRendered) {
-                        isRendered = true; clearInterval(timer);
+                        isRendered = true; 
+                        clearInterval(timer);
                         setTimeout(() => { renderResultView(currentResultData); }, 100);
                     }
                 }, 20);
