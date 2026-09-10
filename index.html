@@ -2627,9 +2627,10 @@
             ctx.font = '900 15px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
+            const nameJosa = typeof attachJosa === 'function' ? attachJosa(userName, '이/가') : `${userName}이`;
             const headerText = isT 
-                ? `🥊 핑계 원천 차단! [${userName}] 자비 없는 팩폭 구역` 
-                : `🌸 세상 억까 차단! [${userName}] 무조건 내 편 구역`;
+                ? '🧊 "T발 너 C야?" 소리 나오는 자비 없는 극딜 모드' 
+                : `🌸 "우리 ${nameJosa} 다 맞아" 극성 내 편 모드`;
             ctx.fillText(headerText, w / 2, 70);
             ctx.restore();
 
