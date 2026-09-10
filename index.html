@@ -3239,12 +3239,15 @@
     </div>
 </body>
 <style>
-/* PC 화면에서만 글씨와 화면 크기 확대 (모바일은 그대로 유지) */
+/* PC 화면에서 박스 크기는 건드리지 않고, 글씨만 보기 좋게 키우기 */
 @media (min-width: 768px) {
-    body { font-size: 16px !important; }
-    main.max-w-md, main.max-w-lg { max-width: 620px !important; }
-    .card-box p, .card-box span, .card-box div, #notesListContainer div { font-size: 14px !important; line-height: 1.6 !important; }
-    #notesListContainer h4 { font-size: 17px !important; }
+    .card-box p, .card-box span, .card-box div, #notesListContainer div { 
+        font-size: 15px !important; 
+        line-height: 1.6 !important; 
+    }
+    #notesListContainer h4 { 
+        font-size: 18px !important; 
+    }
 }
-</style>    
+</style> 
 </html>
