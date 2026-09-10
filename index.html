@@ -2422,13 +2422,14 @@
             const pSu  = Math.round((elements.su / total) * 100);
 
             const ohengList = [
-                { name: '목', pct: pMok, color: 'bg-emerald-400' },
-                { name: '화', pct: pHwa, color: 'bg-rose-400' },
-                { name: '토', pct: pTo,  color: 'bg-amber-400' },
-                { name: '금', pct: pGeum, color: 'bg-slate-400' },
-                { name: '수', pct: pSu,  color: 'bg-sky-400' }
+                { name: '목', pct: pMok, label: '나무', color: 'bg-emerald-400' },
+                { name: '화', pct: pHwa, label: '불', color: 'bg-rose-400' },
+                { name: '토', pct: pTo,  label: '흙', color: 'bg-amber-400' },
+                { name: '금', pct: pGeum, label: '쇠', color: 'bg-slate-400' },
+                { name: '수', pct: pSu,  label: '물', color: 'bg-sky-400' }
             ];
 
+            // 5개 막대 바 UI는 기존 디자인 규격 100% 유지
             container.innerHTML = ohengList.map(item => `
                 <div class="bg-white p-2 rounded-2xl border border-rose-100/80 flex flex-col items-center shadow-sm">
                     <span class="text-slate-500 font-bold mb-1.5 text-[11px]">${item.name}</span>
@@ -2439,20 +2440,21 @@
                 </div>
             `).join('');
 
-            const ohengKrMap = { mok: '목(나무)', hwa: '화(불)', to: '토(흙)', geum: '금(쇠)', su: '수(물)' };
-            if (dayMasterTag) dayMasterTag.innerText = `본원(일간): ${dayGan} (${ohengKrMap[dayOheng] || '토(흙)'})`;
+            // [개선 1] 한자(己 등)와 '본원(일간)' 전문용어 완전 제거 ➔ '내 타고난 본체'
+            const ohengFriendlyMap = { mok: '나무(목)', hwa: '불(화)', to: '흙(토)', geum: '쇠(금)', su: '물(수)' };
+            if (dayMasterTag) {
+                dayMasterTag.innerText = `내 타고난 본체: ${ohengFriendlyMap[dayOheng] || '흙(토)'}`;
+            }
 
             const maxOheng = ohengList.reduce((max, cur) => cur.pct > max.pct ? cur : max, ohengList[0]);
             const minOheng = ohengList.reduce((min, cur) => cur.pct < min.pct ? cur : min, ohengList[0]);
 
+            // [개선 2] '사주 원국' ➔ '내가 타고난 기운 중에' + 아래 메모장 유도 카피
             if (summaryTxt) {
-                summaryTxt.innerHTML = `💡 사주 원국에서 <b>${maxOheng.name} 기운(${maxOheng.pct}%)</b>이 가장 강해 특유의 주특기를 만들고, 상대적으로 부족한 <b>${minOheng.name} 기운(${minOheng.pct}%)</b>이 현재의 고민과 누수를 유발하는 원인입니다.`;
+                summaryTxt.innerHTML = `💡 내가 타고난 기운 중에 <b>${maxOheng.label}(${maxOheng.pct}%) 기운</b>이 가장 강해 특유의 주특기를 만들고, 상대적으로 부족한 <b>${minOheng.label}(${minOheng.pct}%) 기운</b>이 현재의 고민과 누수를 유발하는 원인입니다. (부족한 기운 채우는 룰은 아래 메모장 05번 확인)`;
             }
         }
-        
-
-        
-        
+                
         function renderResultView(data) {
             isAnalyzing = false;
             document.getElementById('loadingSection').style.display = 'none';
