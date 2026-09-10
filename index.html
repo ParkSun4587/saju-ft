@@ -568,7 +568,15 @@
                 </div>
             </div>
         </div>
-        
+        <!-- [내 사주 5대 오행 분포 카드] -->
+        <div class="card-box p-4 rounded-3xl text-left space-y-2.5">
+            <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+                <span class="text-xs font-black text-slate-800 tracking-wider">내 사주 5대 오행 분포</span>
+                <span id="dayMasterTag" class="text-[11px] font-extrabold text-slate-600"></span>
+            </div>
+            <div class="grid grid-cols-5 gap-1.5 text-center text-[10px] font-bold pt-1" id="ohengBarContainer"></div>
+            <p id="ohengSummaryTxt" class="text-[11px] text-slate-600 leading-relaxed break-keep pt-1"></p>
+        </div>
         <!-- [무료 바이럴 & 몰입 유지] 내 사주에 집중시키는 버튼 2개만 배치 -->
         <div class="space-y-2 pt-1 pb-1">
             <button type="button" id="mainShareBtn" onclick="openShareModal()" class="w-full py-3.5 px-3 bg-white border border-slate-200 text-slate-800 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-98 cursor-pointer">
