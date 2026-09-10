@@ -2277,6 +2277,7 @@
             const data = currentResultData;
             const lowestStat = getLowestStatInfo(data.stats);
             const template = data.rawSolutionTemplate[mode];
+            renderOhengDistribution(data.elements, (data.pillars && data.pillars.day) ? data.pillars.day.gan : '甲', data.dayOheng);
 
             const badge = document.getElementById('resultModeBadge');
             if (badge) {
@@ -2405,7 +2406,52 @@
             if (notesContainer) {
                 notesContainer.innerHTML = buildNotesHTML(notesData);
             }
+        } // <--- 바로 이 중괄호 밑에 엔터 치고 붙여넣기!
+
+        function renderOhengDistribution(elements, dayGan, dayOheng) {
+            const container = document.getElementById('ohengBarContainer');
+            const summaryTxt = document.getElementById('ohengSummaryTxt');
+            const dayMasterTag = document.getElementById('dayMasterTag');
+            if (!container || !elements) return;
+
+            const total = (elements.mok + elements.hwa + elements.to + elements.geum + elements.su) || 1;
+            const pMok = Math.round((elements.mok / total) * 100);
+            const pHwa = Math.round((elements.hwa / total) * 100);
+            const pTo  = Math.round((elements.to / total) * 100);
+            const pGeum= Math.round((elements.geum / total) * 100);
+            const pSu  = Math.round((elements.su / total) * 100);
+
+            const ohengList = [
+                { name: '목', pct: pMok, color: 'bg-emerald-400' },
+                { name: '화', pct: pHwa, color: 'bg-rose-400' },
+                { name: '토', pct: pTo,  color: 'bg-amber-400' },
+                { name: '금', pct: pGeum, color: 'bg-slate-400' },
+                { name: '수', pct: pSu,  color: 'bg-sky-400' }
+            ];
+
+            container.innerHTML = ohengList.map(item => `
+                <div class="bg-white p-2 rounded-2xl border border-rose-100/80 flex flex-col items-center shadow-sm">
+                    <span class="text-slate-500 font-bold mb-1.5 text-[11px]">${item.name}</span>
+                    <div class="w-full h-14 bg-slate-50 rounded-xl flex items-end overflow-hidden p-0.5 border border-slate-100">
+                        <div class="${item.color} w-full rounded-lg transition-all duration-500" style="height: ${Math.max(8, item.pct)}%"></div>
+                    </div>
+                    <span class="text-slate-800 font-black mt-1.5 text-[11px] font-mono">${item.pct}%</span>
+                </div>
+            `).join('');
+
+            const ohengKrMap = { mok: '목(나무)', hwa: '화(불)', to: '토(흙)', geum: '금(쇠)', su: '수(물)' };
+            if (dayMasterTag) dayMasterTag.innerText = `본원(일간): ${dayGan} (${ohengKrMap[dayOheng] || '토(흙)'})`;
+
+            const maxOheng = ohengList.reduce((max, cur) => cur.pct > max.pct ? cur : max, ohengList[0]);
+            const minOheng = ohengList.reduce((min, cur) => cur.pct < min.pct ? cur : min, ohengList[0]);
+
+            if (summaryTxt) {
+                summaryTxt.innerHTML = `💡 사주 원국에서 <b>${maxOheng.name} 기운(${maxOheng.pct}%)</b>이 가장 강해 특유의 주특기를 만들고, 상대적으로 부족한 <b>${minOheng.name} 기운(${minOheng.pct}%)</b>이 현재의 고민과 누수를 유발하는 원인입니다.`;
+            }
         }
+        
+
+        
         
         function renderResultView(data) {
             isAnalyzing = false;
