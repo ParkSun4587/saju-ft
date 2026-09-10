@@ -686,90 +686,55 @@
     <div id="shareModal" style="display: none;" class="fixed inset-0 z-50 items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
         <div class="w-full max-w-sm flex flex-col items-center">
             
-            <div id="storyCard" class="w-full bg-[#ffffff] border border-rose-200 rounded-3xl p-5 space-y-4 shadow-2xl text-left relative overflow-hidden">
-                                <div class="text-center space-y-1.5 relative z-10">
-                    <span id="cardModeBadge" class="px-3 py-1 rounded-full text-[10px] font-black tracking-wide"></span>                   
-                    <div id="cardMbtiSubtitle" class="pt-1"></div>
+            <!-- [최신 디자인 동기화] 인스타 스토리 프리뷰 카드 -->
+            <div id="storyCard" class="w-full bg-[#ffffff] border border-rose-200 rounded-3xl p-5 space-y-3.5 shadow-2xl text-left relative overflow-hidden">
+                <!-- 상단 알약 뱃지 -->
+                <div class="text-center relative z-10">
+                    <span id="cardModeBadge" class="px-3.5 py-1.5 rounded-full text-[11px] font-black tracking-tight inline-block shadow-sm"></span>
                 </div>
 
-                <div class="py-2 text-center relative z-10" style="font-family: 'Pretendard', sans-serif;">
-                    <!-- 상단 뱃지와 간격(mt-2.5) 및 MBTI와 간격(mb-2) 확보 -->
-                    <div class="text-[11px] font-bold text-slate-400 mt-2.5 mb-2 tracking-wide">
-                        🎭 사회적 가면을 벗은 <span class="text-amber-600">내 진짜 사주 본캐</span>
-                    </div>
-
-                    <div class="mb-2 flex flex-col items-center">
-                        <div id="cardBigMbti" style="font-size: 56px; font-weight: 900; letter-spacing: 0.08em; line-height: 1.1; display: inline-block;"></div>
-                    </div>
-                    
-                    <div id="cardTags" class="mb-3 text-xs font-bold tracking-wide space-x-2 text-center"></div>
-                    
-                    <h1 id="cardMainTitle" style="font-size: 17px; font-weight: 900; line-height: 1.4; word-break: keep-all; padding: 0 10px;"></h1>
+                <!-- 거대 MBTI & 타이틀 -->
+                <div class="text-center relative z-10 space-y-1">
+                    <div id="cardBigMbti" class="text-[52px] font-black tracking-widest font-mono leading-none pt-1"></div>
+                    <div class="text-[10px] text-slate-400 font-bold">※ 질문지 검사 말고, 내 진짜 사주 데이터로 까본 본캐 MBTI</div>
+                    <h1 id="cardMainTitle" class="text-[16px] font-black text-slate-900 leading-snug break-keep px-2 pt-1"></h1>
                 </div>
 
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 relative z-10" style="display: flex; flex-direction: column; gap: 14px;">
-                    <div class="text-[11px] font-black text-slate-700 tracking-wider">내 타고난 본캐 4대 스탯</div>
-                    
-                    <!-- 돈 냄새 맡는 촉 -->
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; line-height: 1.2;">
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <span class="text-slate-800" style="font-size: 11px; font-weight: 700;">💸 돈 냄새 맡는 촉</span>
-                                <span id="cardBadgeWealth" class="hidden px-1.5 py-0.5 rounded text-[8px] font-bold"></span>
-                            </div>
-                            <span id="cardStatWealthTxt" class="font-mono text-slate-800" style="font-size: 11px; font-weight: 700;">0점</span>
-                        </div>
-                        <div style="width: 100%; height: 6px; background-color: #e2e8f0; border-radius: 9999px; margin-top: 8px; overflow: hidden; position: relative;">
-                            <div id="cardStatWealthBar" class="h-full rounded-full transition-all"></div>
-                        </div>
+                <!-- 📌 내 본캐 취급설명서 3줄 불렛 -->
+                <div class="space-y-2 text-left bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 relative z-10">
+                    <div class="flex justify-between items-center pb-1 border-b border-slate-200/60">
+                        <span class="text-[11px] font-black text-slate-800 tracking-wider flex items-center gap-1">
+                            <span>📌</span> <span>내 본캐 취급설명서</span>
+                        </span>
+                        <span class="text-[9px] text-rose-500 font-bold">*사주 팩트 기반</span>
                     </div>
-
-                    <!-- 멘탈 방어력 -->
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; line-height: 1.2;">
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <span class="text-slate-800" style="font-size: 11px; font-weight: 700;">🛡️ 멘탈 방어력</span>
-                                <span id="cardBadgeMental" class="hidden px-1.5 py-0.5 rounded text-[8px] font-bold"></span>
-                            </div>
-                            <span id="cardStatMentalTxt" class="font-mono text-slate-800" style="font-size: 11px; font-weight: 700;">0점</span>
-                        </div>
-                        <div style="width: 100%; height: 6px; background-color: #e2e8f0; border-radius: 9999px; margin-top: 8px; overflow: hidden; position: relative;">
-                            <div id="cardStatMentalBar" class="h-full rounded-full transition-all"></div>
-                        </div>
-                    </div>
-
-                    <!-- 기회 포착력 -->
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; line-height: 1.2;">
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <span class="text-slate-800" style="font-size: 11px; font-weight: 700;">⚡ 기회 포착력</span>
-                                <span id="cardBadgeDrive" class="hidden px-1.5 py-0.5 rounded text-[8px] font-bold"></span>
-                            </div>
-                            <span id="cardStatDriveTxt" class="font-mono text-slate-800" style="font-size: 11px; font-weight: 700;">0점</span>
-                        </div>
-                        <div style="width: 100%; height: 6px; background-color: #e2e8f0; border-radius: 9999px; margin-top: 8px; overflow: hidden; position: relative;">
-                            <div id="cardStatDriveBar" class="h-full rounded-full transition-all"></div>
-                        </div>
-                    </div>
-
-                    <!-- 인생 역전 귀인복 -->
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; line-height: 1.2;">
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <span class="text-slate-800" style="font-size: 11px; font-weight: 700;">🤝 인생 역전 귀인복</span>
-                                <span id="cardBadgeNetwork" class="hidden px-1.5 py-0.5 rounded text-[8px] font-bold"></span>
-                            </div>
-                            <span id="cardStatNetworkTxt" class="font-mono text-slate-800" style="font-size: 11px; font-weight: 700;">0점</span>
-                        </div>
-                        <div style="width: 100%; height: 6px; background-color: #e2e8f0; border-radius: 9999px; margin-top: 8px; overflow: hidden; position: relative;">
-                            <div id="cardStatNetworkBar" class="h-full rounded-full transition-all"></div>
-                        </div>
+                    <div id="cardManualBulletList" class="space-y-1.5 text-xs text-slate-800 font-bold leading-relaxed pt-0.5">
+                        <!-- JS에서 3줄 자동 주입 -->
                     </div>
                 </div>
 
+                <!-- 💖 찰떡 깐부 vs 💣 상극 박스 -->
+                <div class="grid grid-cols-2 gap-2 text-left relative z-10">
+                    <div class="p-2.5 rounded-xl bg-rose-50 border border-rose-200/70 shadow-sm flex flex-col justify-between">
+                        <div class="text-[9px] font-black text-rose-500 flex items-center gap-0.5 mb-0.5">
+                            <span>💖</span> <span>잘 맞는 깐부</span>
+                        </div>
+                        <div class="text-sm font-black text-slate-900 font-mono tracking-wide" id="cardChemBestMbti"></div>
+                        <div class="text-[9px] text-slate-500 font-semibold truncate mt-0.5" id="cardChemBestTag"></div>
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                        <div class="text-[9px] font-black text-slate-500 flex items-center gap-0.5 mb-0.5">
+                            <span>💣</span> <span>숨 막히는 상극</span>
+                        </div>
+                        <div class="text-sm font-black text-slate-900 font-mono tracking-wide" id="cardChemWorstMbti"></div>
+                        <div class="text-[9px] text-slate-400 font-semibold truncate mt-0.5" id="cardChemWorstTag"></div>
+                    </div>
+                </div>
+
+                <!-- 하단 링크 스티커 영역 -->
                 <div id="cardStickerBox" class="border-2 border-dashed rounded-xl p-2.5 text-center relative z-10">
-                    <p id="cardStickerText" class="text-[10px] font-black">🔗 [링크는 본문 / 스토리 스티커에 붙이기]</p>
-                    <p class="text-[9px] text-slate-400 mt-0.5 font-medium">너도 네 숨겨진 사주 본캐 스탯 확인해봐 (터치)</p>
+                    <p id="cardStickerText" class="text-[10px] font-black">🔗 [ 여기를 눌러서 내 본캐도 까보기 ]</p>
+                    <p class="text-[9px] text-slate-400 mt-0.5 font-medium">인스타 스토리 링크 스티커를 여기에 붙여주세요</p>
                 </div>
             </div>
 
