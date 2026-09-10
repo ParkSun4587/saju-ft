@@ -2104,18 +2104,18 @@
 
                 const percentText = document.getElementById('loadingPercent');
                 const mainStatus = document.getElementById('loadingMainStatus');
-                const totalDuration = 4500; // 3.2초 ➔ 4.5초로 연장 (과몰입 빌드업 황금 시간)
+                const totalDuration = 3400; // 1020 숏폼 호흡에 맞춘 3.4초 황금 밸런스
                 const startTime = Date.now();
                 let isRendered = false;
 
                 const timer = setInterval(() => {
                     const elapsed = Date.now() - startTime;
                     let progress = 0;
-                    // 진행도(%) 오르는 속도 부드럽게 조정
-                    if (elapsed < 1000) progress = Math.floor((elapsed / 1000) * 35);
-                    else if (elapsed < 2500) progress = 35 + Math.floor(((elapsed - 1000) / 1500) * 35);
-                    else if (elapsed < 4000) progress = 70 + Math.floor(((elapsed - 2500) / 1500) * 25);
-                    else if (elapsed < totalDuration) progress = 95 + Math.floor(((elapsed - 4000) / 500) * 5);
+                    // 3.4초에 맞춘 매끄러운 진행 속도
+                    if (elapsed < 800) progress = Math.floor((elapsed / 800) * 30);
+                    else if (elapsed < 2000) progress = 30 + Math.floor(((elapsed - 800) / 1200) * 45);
+                    else if (elapsed < 3000) progress = 75 + Math.floor(((elapsed - 2000) / 1000) * 20);
+                    else if (elapsed < totalDuration) progress = 95 + Math.floor(((elapsed - 3000) / 400) * 5);
                     else progress = 100;
 
                     if (percentText) percentText.innerText = progress + "%";
@@ -2123,27 +2123,27 @@
 
                     const centerIcon = document.getElementById('loadingCenterIcon');
                     if (mainStatus) {
-                        // 1. [0~1.3초] 일상 추적 단계
+                        // 1. [0~0.8초] 밖 vs 방구석 대비
                         if (progress < 28) {
                             if (centerIcon) centerIcon.innerText = '🔍';
-                            mainStatus.innerHTML = `<span class="text-slate-800 font-black">${name}</span>님의 침대 속 숏폼 시청 기록 털어보는 중...`;
+                            mainStatus.innerHTML = `밖에서는 <span class="text-slate-800 font-black">'넵'봇</span>, 방구석에선 숏폼 중독인 거 역추적 중...`;
                         }
-                        // 2. [1.3초~3.2초] 속마음/CCTV 저격 구간 (스탯 명칭 완전 삭제)
+                        // 2. [0.8초~2.0초] 겉바속촉 멘탈 팩폭
                         else if (progress < 73) {
                             if (centerIcon) centerIcon.innerText = '🚨';
-                            mainStatus.innerHTML = `어라? <b class="text-rose-500 font-black">겉으론 세상 쿨한 척</b>해놓고 뒤에서 혼자 앓았네;`;
+                            mainStatus.innerHTML = `헐 잠깐만; <b class="text-rose-500 font-black">멘탈 갈렸는데 안 그런 척</b> 연기한 거 딱 걸림;;`;
                         }
-                        // 3. [3.2초~4.3초] 선택한 F / T 모드별 극과 극 훅
+                        // 3. [2.0초~3.0초] F/T 극과 극 훅
                         else if (progress < 96) {
                             if (centerIcon) centerIcon.innerText = isT ? '🧊' : '🌸';
                             mainStatus.innerHTML = isT 
-                                ? `<span class="text-sky-600 font-black">핑계 차단 완료.</span> 자비 없는 팩폭으로 기강 잡으러 감` 
-                                : `<span class="text-rose-500 font-black">억지 미소 금지.</span> 오늘만큼은 무조건 네 편만 들어줄게`;
+                                ? `<span class="text-sky-600 font-black">뼈 때려서 순살 만들 예정</span> (도망갈 구멍 압수 🥊)` 
+                                : `<span class="text-rose-500 font-black">세상이 억까해도</span> 오늘은 무조건 네 편 해줌 (휴지 챙겨 🧻)`;
                         }
-                        // 4. [4.3초~4.5초] 본캐 소환 완료
+                        // 4. [3.0초~3.4초] 강제 박제 완료
                         else {
                             if (centerIcon) centerIcon.innerText = '✨';
-                            mainStatus.innerHTML = `<span class="text-slate-900 font-black">본캐 강제 소환 완료!</span> 심장 부여잡고 확인하기`;
+                            mainStatus.innerHTML = `<span class="text-slate-900 font-black">본캐 강제 박제 완료!</span> 심장 잡고 까봐라`;
                         }
                     }
                     if (elapsed >= totalDuration && !isRendered) {
