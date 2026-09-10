@@ -1122,122 +1122,95 @@
         }
 
         // [핵심 1] 사주 일간(5종) × 6대 고민 십신 결합 '개별 분기' 골든타임 엔진
-                function getTrueBaziTiming(dayOheng, concern, gender, birthStr) {
+                function getTrueBaziTiming(dayOheng, concern, gender, birthStr, gyeokguk, gyeokStatus, realYeonun) {
             const validKeys = ['mok', 'hwa', 'to', 'geum', 'su'];
             const dk = validKeys.includes(dayOheng) ? dayOheng : 'to';
 
-            // [정확도 개선] 오행·고민·성별만으론 같은 조합의 유저 전원이 똑같은 시점을 받는다.
-            // 실제 생일(월+일)을 시드로 더해서, 오행이 같아도 사람마다 다른 시점이 나오게 만든다.
+            // 월/주차 표시는 여전히 추정 레이어다 — 절기 기준 월운(月運) 계산은 이번 범위 밖이라
+            // "2026년 O월 O주"까지는 진짜가 아니고, "2026년/2027년에 이런 흐름이다"까지가 진짜다.
+            // 그래도 이미 지나간 달을 보여주는 건 명백한 오류라, 올해(2026) 몫은 남은 달 안에서만 고른다.
             let birthSeed = 0;
             if (birthStr && birthStr.length === 8) {
                 const bMonth = parseInt(birthStr.substring(4, 6), 10) || 0;
                 const bDay = parseInt(birthStr.substring(6, 8), 10) || 0;
                 birthSeed = bMonth + bDay;
             }
-
-            const now = new Date();
-            const currentYear = now.getFullYear();
-            const currentMonth = now.getMonth() + 1; // 1~12
-            const currentDay = now.getDate();
-
-            // 1. 2026-27하반기 전용 십신 활성 오프셋 (연내 순차 완결을 위해 0~2개월로 조정)
-            const CONCERN_MONTH_OFFSETS = {
-                mok:   { money: 1, career: 1, love: 0, path: 1, people: 2, mental: 0 },
-                hwa:   { money: 2, career: 1, love: 1, path: 0, people: 1, mental: 2 },
-                to:    { money: 0, career: 2, love: 1, path: 1, people: 2, mental: 0 },
-                geum:  { money: 1, career: 0, love: 2, path: 1, people: 0, mental: 1 },
-                su:    { money: 1, career: 1, love: 0, path: 2, people: 1, mental: 1 }
-            };
-
-            const rawOffset = (CONCERN_MONTH_OFFSETS[dk] && CONCERN_MONTH_OFFSETS[dk][concern] !== undefined)
-                ? CONCERN_MONTH_OFFSETS[dk][concern]
-                : 1;
-
-                        // [수정] 절대 월 인덱스 기반 → 연말/연초에도 과거 날짜가 절대 나오지 않음
-            const WEEKS = ["초 (1주차)", "중순 (2~3주차)", "말 (4주차)"];
-            const baseIdx = currentYear * 12 + (currentMonth - 1);
-
-            // 성별에 따라 흐름을 다르게 배정 (남녀 결과 동일화 방지)
             const genderShift = (gender === 'female') ? 1 : 0;
-            // 이번 달 22일 이후 접속이면 1차 타이밍을 최소 다음 달로 밀어냄
-            const minStep = (currentDay >= 22) ? 1 : 0;
-            const step1 = Math.max(minStep, (rawOffset + genderShift + birthSeed) % 3);
+            const WEEKS = ["초 (1주차)", "중순 (2~3주차)", "말 (4주차)"];
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const remainMonths2026 = Math.max(1, 12 - currentMonth + 1); // 올해 남은 개월 수(최소 1)
+            const seed = (rawOffsetVal) => (rawOffsetVal + genderShift + birthSeed);
 
-            const idx1 = baseIdx + step1;
-            // 2차 골든타임을 3~4개월 뒤로 확장하여 2027년 상반기까지 도달하도록 계산
-            const gap = ((rawOffset + birthSeed) % 2 === 0) ? 3 : 4;
-            const idx2 = idx1 + gap;
+            const CONCERN_OFFSET = { money: 1, career: 1, love: 0, path: 1, people: 2, mental: 0 };
+            const rawOffset = CONCERN_OFFSET[concern] !== undefined ? CONCERN_OFFSET[concern] : 1;
 
-            const r1Year = Math.floor(idx1 / 12);
-            const r1Month = (idx1 % 12) + 1;
-            const r2Year = Math.floor(idx2 / 12);
-            const r2Month = (idx2 % 12) + 1;
+            const step1 = seed(rawOffset) % remainMonths2026;
+            const r1Month = currentMonth + step1;
+            const r1Week = WEEKS[step1 % 3];
 
-            const r1Week = (step1 === 0)
-                ? ((currentDay <= 12) ? WEEKS[1] : WEEKS[2])
-                : WEEKS[step1 % 2];
-            const r2Week = WEEKS[(step1 + 1) % 2];
+            const step2 = seed(rawOffset + 3) % 12;
+            const r2Month = step2 + 1;
+            const r2Week = WEEKS[(step1 + 1) % 3];
 
-            const r1Str = `${r1Year}년 ${r1Month}월 ${r1Week}`;
-            const r2Str = `${r2Year}년 ${r2Month}월 ${r2Week}`;
+            const r1Str = `2026년 ${r1Month}월 ${r1Week}`;
+            const r2Str = `2027년 ${r2Month}월 ${r2Week}`;
 
-            const REASON_MATRIX = {
-                mok: {
-                    money: '결실을 맺은 재물이 금고 안으로 안전하게 안착하는 흐름',
-                    career: '직장 명예운이 들어와 내 입지와 영향력이 확장되는 타이밍',
-                    love: '서로의 부족함을 온전히 채워주는 따뜻한 인연의 합(合)이 작용하는 시기',
-                    path: '숨겨둔 재능과 기획력이 대외적인 시선을 강력하게 끌어당기는 시점',
-                    people: '내 에너지를 갉아먹던 묵은 인연이 정리되고 맑은 기운이 순환하는 시기',
-                    mental: '과열된 뇌 회로를 식혀주는 맑은 물의 기운이 마음을 다독이는 타이밍'
+            // [자평진전 3단계] 2026/2027 실제 세운(60갑자)을 격의 상신·기신과 대조해서 길흉 판정.
+            const rule = (gyeokguk && GYEOK_RULE[gyeokguk.name]) ? GYEOK_RULE[gyeokguk.name] : null;
+            function judgeYear(entry) {
+                if (!entry || !entry.seyunGanSipsin || !rule) return 'neutral';
+                if (rule.sangsin.includes(entry.seyunGanSipsin)) return 'favorable';
+                if (rule.gisin.includes(entry.seyunGanSipsin)) return 'unfavorable';
+                return 'neutral';
+            }
+            const y2026 = realYeonun ? realYeonun.y2026 : null;
+            const y2027 = realYeonun ? realYeonun.y2027 : null;
+            const verdict1 = judgeYear(y2026);
+            const verdict2 = judgeYear(y2027);
+
+            const SEYUN_INTERPRETATION = {
+                favorable: {
+                    money: '재물의 흐름이 트이는 해', career: '자리를 잡거나 좋은 제안이 오는 해',
+                    love: '인연이 자연스럽게 이어지는 해', path: '방향이 뚜렷해지는 해',
+                    people: '진짜 내 편이 드러나는 해', mental: '마음이 한결 편해지는 해'
                 },
-                hwa: {
-                    money: '뜨거운 추진력이 금전적 실속과 구체적인 자산으로 치환되는 흐름',
-                    career: '조직과 외부 환경에서 내 실력을 필요로 하는 결정적 제안이 들어오는 시점',
-                    love: '나만의 당당한 매력이 주변에 어필되며 호감 인연이 자연스럽게 붙는 시기',
-                    path: '머릿속에 맴돌던 기획을 실체화하여 시장에 당당히 선보이기 가장 좋은 시기',
-                    people: '영양가 없는 관계의 거품이 걷히고 진짜 내 편이 명확히 가려지는 타이밍',
-                    mental: '방전된 영혼 배터리에 따뜻한 생명력이 공급되며 안정을 되찾는 시점'
+                unfavorable: {
+                    money: '지출·손실 관리에 특히 신경 써야 하는 해', career: '무리한 확장보다 다지기가 필요한 해',
+                    love: '오해나 엇갈림에 조심해야 하는 해', path: '방향 전환에 신중해야 하는 해',
+                    people: '사람 문제로 스트레스 받기 쉬운 해', mental: '유독 마음이 흔들리기 쉬운 해'
                 },
-                to: {
-                    money: '메말랐던 흐름에 풍요로운 재물의 기운이 물밀듯 유입되는 골든타임',
-                    career: '내 실력을 인정받아 유리한 조건으로 판을 옮길 수 있는 협상의 시기',
-                    love: '마음의 벽을 허물고 감정적으로 깊이 기댈 수 있는 귀인 인연이 다가오는 타이밍',
-                    path: '묵묵히 갈고닦은 결과물이 마침내 세상의 빛을 보고 성과를 내는 시점',
-                    people: '선 넘는 인간관계를 확실하게 차단하고 감정의 독립을 이루는 시기',
-                    mental: '끝없는 잡생각의 고리를 끊어내고 단단한 마음의 중심을 잡는 타이밍'
-                },
-                geum: {
-                    money: '냉철한 결단력으로 불필요한 누수를 막고 새로운 수익 파이프라인이 열리는 흐름',
-                    career: '내 가치를 높여 부를 수 있는 강력한 승부처와 시험대가 열리는 타이밍',
-                    love: '도화의 기운이 활성화되어 이성의 시선을 단숨에 사로잡는 로맨스 골든타임',
-                    path: '응축된 에너지가 시원하게 분출되며 독보적인 성과물을 뽑아내는 시기',
-                    people: '냉철한 이성으로 인맥의 옥석을 가려내어 실리적인 관계망을 구축하는 시점',
-                    mental: '과도하게 곤두서 있던 신경이 가라앉고 깊은 심리적 평온을 얻는 타이밍'
-                },
-                su: {
-                    money: '지혜와 통찰력이 현실적인 금전 성과와 실질적 이익으로 결실을 맺는 시기',
-                    career: '불안정했던 조직 내 위치가 확고해지며 명확한 주도권이 주어지는 타이밍',
-                    love: '감정의 결이 맑게 통하는 사람과 자연스럽게 스며드는 눈부신 인연의 시점',
-                    path: '탁월한 아이디어가 현실의 날개를 달고 폭발적인 반응을 얻는 타이밍',
-                    people: '나를 소모시키던 억지 인연들을 끊어내고 나만의 온전한 영역을 지키는 시기',
-                    mental: '흐트러졌던 마음의 물결이 잔잔해지며 맑고 명쾌한 직관을 회복하는 시점'
+                neutral: {
+                    money: '무리하지만 않으면 안정적인 해', career: '꾸준함이 답이 되는 해',
+                    love: '서두르지 않아도 되는 해', path: '내실을 다지기 좋은 해',
+                    people: '관계가 대체로 안정적인 해', mental: '무난하게 흘러가는 해'
                 }
             };
-
-            const reasonText = (REASON_MATRIX[dk] && REASON_MATRIX[dk][concern]) 
-                ? REASON_MATRIX[dk][concern] 
-                : '당신의 타고난 오행 기운이 가장 강력하게 힘을 발휘하는 시점';
+            function buildReason(entry, verdict) {
+                if (!entry) return '사주 데이터를 다시 확인해주세요.';
+                const base = SEYUN_INTERPRETATION[verdict][concern];
+                const sipsinLabel = entry.seyunGanSipsin || '해당 기운';
+                const gyeokLabel = gyeokguk ? gyeokguk.name : '사주 뼈대';
+                let tail;
+                if (verdict === 'favorable') tail = `${attachJosa(sipsinLabel, '이/가')} ${gyeokLabel}을 도와주는 해라 그렇습니다.`;
+                else if (verdict === 'unfavorable') tail = `${attachJosa(sipsinLabel, '이/가')} ${gyeokLabel}을 흔드는 해라 그렇습니다.`;
+                else tail = `세운(${entry.seyunGanZhi})이 ${gyeokLabel}에 큰 영향을 안 주는 평이한 해입니다.`;
+                return `${base}. ${tail}`;
+            }
 
             return {
                 targetElement: dk,
                 r1: r1Str,
                 r2: r2Str,
-                reason: reasonText
+                reason: buildReason(y2026, verdict1),
+                reasonR2: buildReason(y2027, verdict2),
+                verdict1: verdict1,
+                verdict2: verdict2
             };
         }
 
         // [핵심 2] 십신 타이밍 및 사주 일간·결핍 스탯·고민 정밀 결합 생성기
-        function getTrueBaziSolutions(name, lowestStat, yongshin, dayOheng, gender, mbtiKey, birthStr) {
+        function getTrueBaziSolutions(name, lowestStat, yongshin, dayOheng, gender, mbtiKey, birthStr, gyeokguk, gyeokStatus, realYeonun) {
             const validKeys = ['mok', 'hwa', 'to', 'geum', 'su'];
             const yk = validKeys.includes(yongshin) ? yongshin : 'mok';
             const dk = validKeys.includes(dayOheng) ? dayOheng : 'to';
@@ -1334,12 +1307,12 @@
             const myCause = STAT_CAUSES[lowestStat.type];
             const myLeak = LEAK_MATRIX;
 
-            const tMoney = getTrueBaziTiming(dk, 'money', gender, birthStr);
-            const tCareer = getTrueBaziTiming(dk, 'career', gender, birthStr);
-            const tLove = getTrueBaziTiming(dk, 'love', gender, birthStr);
-            const tPath = getTrueBaziTiming(dk, 'path', gender, birthStr);
-            const tPeople = getTrueBaziTiming(dk, 'people', gender, birthStr);
-            const tMental = getTrueBaziTiming(dk, 'mental', gender, birthStr);
+            const tMoney = getTrueBaziTiming(dk, 'money', gender, birthStr, gyeokguk, gyeokStatus, realYeonun);
+            const tCareer = getTrueBaziTiming(dk, 'career', gender, birthStr, gyeokguk, gyeokStatus, realYeonun);
+            const tLove = getTrueBaziTiming(dk, 'love', gender, birthStr, gyeokguk, gyeokStatus, realYeonun);
+            const tPath = getTrueBaziTiming(dk, 'path', gender, birthStr, gyeokguk, gyeokStatus, realYeonun);
+            const tPeople = getTrueBaziTiming(dk, 'people', gender, birthStr, gyeokguk, gyeokStatus, realYeonun);
+            const tMental = getTrueBaziTiming(dk, 'mental', gender, birthStr, gyeokguk, gyeokStatus, realYeonun);
 
             return {
                 money: {
@@ -1604,6 +1577,40 @@
             };
             const yGuide = yongshinWords[yong] || yongshinWords.mok;
 
+            // [자평진전 결과 반영] 격국(월지 기준 구조 분류) → 성격 키워드 매핑.
+            // 십신 자체의 전통적 성격 특성(정관=원칙/책임감, 편관=승부욕/카리스마 등)은 명리학 기본 상식 수준이라
+            // 여기서 직접 서술한다. 격국명(gyeokName)은 오늘 만든 determineGyeokguk() 결과를 그대로 쓴다.
+            const gyeokSipsinTraits = {
+                '비견': '자기 기준이 뚜렷하고 독립적이라, 남에게 기대기보다 스스로 해내야 직성이 풀리',
+                '겁재': '승부욕과 추진력이 강해서, 손에 쥔 걸 지키기보다 판을 키우는 데 에너지를 쓰',
+                '식신': '여유와 표현력이 좋아서, 스트레스도 취미나 말로 풀어내며 사',
+                '상관': '재능과 순발력은 뛰어난데, 틀에 갇히는 걸 못 참아서 곧잘 튀',
+                '정재': '성실하고 현실 감각이 좋아서, 한 걸음씩 착실하게 쌓아 올리',
+                '편재': '스케일이 크고 수완이 좋아서, 기회다 싶으면 크게 베팅하',
+                '정관': '원칙과 책임감이 강해서, 정해진 틀 안에서 인정받을 때 제일 안정감을 느끼',
+                '편관': '승부욕과 카리스마가 강해서, 위기 상황에서 오히려 진가를 발휘하',
+                '정인': '학구적이고 보호 본능이 강해서, 배우고 익히는 과정 자체에서 안정을 찾',
+                '편인': '독창적이고 예민한 감각을 가져서, 남들과 다른 시선으로 세상을 보'
+            };
+            const gyeokName = (data.gyeokguk && data.gyeokguk.name) ? data.gyeokguk.name : '미분류격';
+            const gyeokSipsinLabel = (data.gyeokguk && data.gyeokguk.sipsin) ? data.gyeokguk.sipsin : '비견';
+            const gyeokTrait = gyeokSipsinTraits[gyeokSipsinLabel] || gyeokSipsinTraits['비견'];
+
+            // [자평진전 2단계] 성격(成格)/파격(破格) 판정 결과를 한 줄로 풀어쓰기
+            const gStat = data.gyeokStatus;
+            let gyeokStatusLine = '';
+            if (gStat) {
+                if (gStat.status === '성격') {
+                    gyeokStatusLine = `게다가 이 격을 완성시키는 ${gStat.sangsinFound}까지 사주에 있어서, 이 기질이 온전하게 살아있는 구조입니다.`;
+                } else if (gStat.status === '성중유패') {
+                    gyeokStatusLine = `이 격을 완성시키는 ${attachJosa(gStat.sangsinFound, '은/는')} 있는데, 동시에 이걸 흔드는 ${gStat.gisinFound}도 같이 있어서 순탄하게만 흘러가진 않는 구조입니다.`;
+                } else if (gStat.status === '파격') {
+                    gyeokStatusLine = `다만 이 격을 흔드는 ${attachJosa(gStat.gisinFound, '이/가')} 사주에 있는데 그걸 막아줄 게 마땅치 않아서, 타고난 기질을 온전히 못 쓰고 있을 가능성이 있습니다.`;
+                } else {
+                    gyeokStatusLine = `이 격을 뚜렷하게 완성시키거나 흔드는 글자가 따로 없어서, 무난하게 흘러가는 구조입니다.`;
+                }
+            }
+
             // 극과 극 12개 아코디언 매핑
             const accordions = [
                 {
@@ -1625,13 +1632,13 @@
                         : `사주 오행의 결을 살펴보면 목(${elements.mok}), 화(${elements.hwa}), 토(${elements.to}), 금(${elements.geum}), 수(${elements.su})가 어우러져 있어요. 지금 지친 마음에 가장 필요한 치유의 온기는 바로 <b>${OHENG_NAMES[yong]}</b> 기운입니다. 힘들 땐 무리하지 말고 <b>[${yGuide.actF}]</b>로 지친 마음을 달래주세요.`
                 },
                 {
-                    sub: '일주와 십성', icon: '👤',
+                    sub: '일주와 격국(자평진전)', icon: '👤',
                     title: isT 
-                        ? `${HANJA_TO_KR[dayGan]}${HANJA_TO_KR[dayZhi]}일주의 고질병 : 겉멋 든 완벽주의` 
-                        : `${HANJA_TO_KR[dayGan]}${HANJA_TO_KR[dayZhi]}일주의 속마음 : 혼자 삭이다 멍든 진심`,
+                        ? `타고난 사주 뼈대는 <b>${gyeokName}</b> — 성향 이미 다 나왔습니다` 
+                        : `타고난 사주 뼈대는 <b>${gyeokName}</b> — 결이 원래 이렇습니다`,
                     desc: isT
-                        ? `태어난 날의 기둥(일주)이 ${HANJA_TO_KR[dayGan]}${HANJA_TO_KR[dayZhi]}입니다. 남들 앞에선 쿨한 척 다 해놓고 속으로는 손익 계산기만 굴리며 간 보는 성향이 있습니다. 재고 따지다 타이밍 놓치면 그건 신중함이 아니라 무능입니다. 밑천 드러나는 걸 두려워 마세요.`
-                        : `태어난 날의 기둥(일주)이 ${HANJA_TO_KR[dayGan]}${HANJA_TO_KR[dayZhi]}입니다. 남에게 폐 끼치기 싫어서 "괜찮아"를 입에 달고 살지만, 정작 방에 들어오면 공허함에 가슴이 저려오곤 하죠. 아무에게도 기대지 못하고 홀로 버텨온 그 시간을 안아드립니다.`
+                        ? `태어난 날의 기둥(일주)은 ${HANJA_TO_KR[dayGan]}${HANJA_TO_KR[dayZhi]}, 자평진전 방식으로 월지를 따져본 사주 뼈대(격국)는 <b>${gyeokName}</b>입니다. ${gyeokTrait}는 기질이 사주에 그대로 박혀 있습니다. ${gyeokStatusLine} 이걸 강점으로 못 쓰고 있다면 남 탓이 아니라 스스로 브레이크 건 겁니다. 재고 따지다 타이밍 놓치지 말고 타고난 결대로 밀어붙이세요.`
+                        : `태어난 날의 기둥(일주)은 ${HANJA_TO_KR[dayGan]}${HANJA_TO_KR[dayZhi]}, 자평진전 방식으로 월지를 따져본 사주 뼈대(격국)는 <b>${gyeokName}</b>입니다. ${gyeokTrait}는 결을 타고나셨어요. ${gyeokStatusLine} 그동안 이 기질을 억누르며 사느라 많이 지치셨을 텐데, 이제 그 결을 있는 그대로 인정해주셔도 괜찮습니다.`
                 },
                 {
                     sub: '쓴소리 좀 할게', icon: '⚔️',
@@ -1745,7 +1752,169 @@
         };
 
         // [핵심 4] 만세력 연산 엔진 (일간 오행 추출 기능 추가)
-        function calculateAccurateManse(year, month, day, hourZhi) {
+        // [자평진전 1단계] 월지 기준 격국 판정 엔진
+        // 원칙(자평진전): 격은 오직 월지(月支)로 정하며, 신강/신약이나 사주 전체 기세는 개입시키지 않는다.
+        // 규칙: 월지 지장간(라이브러리 배열 순서 = 정기 우선) 중 연간·월간·시간에 실제로 투출한 것을 격으로 잡는다.
+        //       아무것도 투출하지 않았으면 정기(본기)를 그대로 격으로 삼는다.
+        //       월지가 비견/겁재에 해당하면 정격 대신 건록격/양인격으로 대체한다(자평진전 십정격 규칙).
+        // 지장간·십신 계산 자체는 lunar-javascript 라이브러리의 getMonthHideGan()/getMonthShiShenZhi()를
+        // 그대로 사용한다 — 절기 경계일 계산까지 라이브러리가 이미 검증된 방식으로 처리하므로
+        // 지장간 일수 구간표를 직접 손으로 구현하는 것보다 안전하다.
+        // 주의: lunar-javascript 라이브러리는 간체자(简体字)로 십신을 반환한다 (예: 財 아닌 财, 傷官 아닌 伤官).
+        // 번체자로 매핑하면 조용히 매칭 실패해서 원본 한자가 그대로 노출되므로, 반드시 아래 간체자 키를 써야 한다.
+        const SHI_SHEN_KR = {
+            '比肩': '비견', '劫财': '겁재',
+            '食神': '식신', '伤官': '상관',
+            '正财': '정재', '偏财': '편재',
+            '正官': '정관', '七杀': '편관',
+            '正印': '정인', '偏印': '편인',
+            '日主': '일간'
+        };
+        function determineGyeokguk(baZi, candidateGans) {
+            const dGan = baZi.getDayGan();
+            const monthHideGan = baZi.getMonthHideGan();       // 예: ['甲','丙','戊'] (정기 우선 순서)
+            const monthShiShenZhi = baZi.getMonthShiShenZhi(); // 위 배열과 1:1 대응하는 십신(한자)
+
+            let useIndex = -1;
+            for (let i = 0; i < monthHideGan.length; i++) {
+                if (candidateGans.includes(monthHideGan[i])) { useIndex = i; break; }
+            }
+            const touchul = useIndex !== -1; // 실제로 천간에 투출했는지 여부
+            if (useIndex === -1) useIndex = 0; // 미투출 시 정기(본기)를 그대로 격으로 삼음
+
+            const rawSipsin = monthShiShenZhi[useIndex];
+            const sipsinKr = SHI_SHEN_KR[rawSipsin] || rawSipsin;
+            const gyeokGanChar = monthHideGan[useIndex];
+
+            let gyeokName;
+            if (sipsinKr === '비견') {
+                gyeokName = '건록격';
+            } else if (sipsinKr === '겁재') {
+                const isYangGan = ['甲','丙','戊','庚','壬'].includes(dGan);
+                gyeokName = isYangGan ? '양인격' : '겁재격';
+            } else {
+                gyeokName = sipsinKr + '격';
+            }
+
+            return { name: gyeokName, sipsin: sipsinKr, basisGan: gyeokGanChar, touchul: touchul };
+        }
+
+        // [자평진전 1단계 보강] 4주(년/월/일/시) 천간·지지 십신 계산 — 화면·해설 텍스트에 그대로 쓰기 위한 헬퍼.
+        // 지지 십신은 지장간이 1~3개라 배열로 나오는데, 여기서는 정기(배열의 첫 번째) 기준 대표값만 사용한다.
+        function getPillarSipsinSet(baZi, hourKnown) {
+            const toKr = (raw) => SHI_SHEN_KR[raw] || raw;
+            const result = {
+                year:  { gan: toKr(baZi.getYearShiShenGan()),  zhi: toKr(baZi.getYearShiShenZhi()[0]) },
+                month: { gan: toKr(baZi.getMonthShiShenGan()), zhi: toKr(baZi.getMonthShiShenZhi()[0]) },
+                day:   { gan: toKr(baZi.getDayShiShenGan()),   zhi: toKr(baZi.getDayShiShenZhi()[0]) },
+                hour:  hourKnown ? { gan: toKr(baZi.getTimeShiShenGan()), zhi: toKr(baZi.getTimeShiShenZhi()[0]) } : null
+            };
+            return result;
+        }
+
+        // [자평진전 2단계] 일간 대비 임의의 천간 하나의 십신을 직접 계산.
+        // 대운·세운 간지처럼 lunar-javascript가 전용 메서드를 안 주는 대상에 쓰기 위한 범용 함수.
+        // 십신 정의(오행 생극 + 음양 비교) 자체는 유파를 안 타는 명리학 기본 공식이라 직접 구현해도 안전하다.
+        // (검증: 갑목 일간 + 계수 → 정인, 갑목 + 갑목 → 비견, 갑목 + 경금 → 편관, 갑목 + 신금 → 정관.
+        //  전부 앞서 라이브러리로 검증한 결과와 일치함.)
+        function computeSipsin(dayGanChar, targetGanChar) {
+            const GENERATES = { mok: 'hwa', hwa: 'to', to: 'geum', geum: 'su', su: 'mok' };
+            const CONTROLS  = { mok: 'to', to: 'su', su: 'hwa', hwa: 'geum', geum: 'mok' };
+            const YANG_GANS = ['甲','丙','戊','庚','壬'];
+            const dm = OHENG_MAP[dayGanChar];
+            const t  = OHENG_MAP[targetGanChar];
+            if (!dm || !t) return null;
+            const sameYin = YANG_GANS.includes(dayGanChar) === YANG_GANS.includes(targetGanChar);
+            if (t === dm) return sameYin ? '비견' : '겁재';
+            if (GENERATES[dm] === t) return sameYin ? '식신' : '상관';
+            if (CONTROLS[dm] === t) return sameYin ? '편재' : '정재';
+            if (GENERATES[t] === dm) return sameYin ? '편인' : '정인';
+            if (CONTROLS[t] === dm) return sameYin ? '편관' : '정관';
+            return null;
+        }
+
+        // [자평진전 2단계] 격국별 순용/역용 + 상신(격을 완성시키는 십신) + 기신(격을 깨는 십신).
+        // 검색으로 교차검증한 결과, 상관격은 재성으로 설기(순용)하거나 인성으로 억제(역용)하는 두 갈래가
+        // 다 인정되는 격이라 flow를 '복합'으로 표기한다. 편인격의 순용/역용 여부는 출처마다 갈렸는데,
+        // 4길신(정관·재·인수·식신)/4흉신(칠살·상관·편인·양인) 구분이 더 널리 쓰이는 원칙이라 그걸 따랐다.
+        // 정인격·정재격처럼 상신 후보가 여럿인 격은, 실제로 있는 것 중 하나만 찾아도 성격으로 본다.
+        const GYEOK_RULE = {
+            '정관격': { flow: '순용', sangsin: ['정재', '편재', '정인'], gisin: ['상관'] },
+            '편관격': { flow: '역용', sangsin: ['식신', '정인'], gisin: ['편재'] },
+            '정재격': { flow: '순용', sangsin: ['식신', '상관', '정관'], gisin: ['비견', '겁재'] },
+            '편재격': { flow: '순용', sangsin: ['식신', '상관', '비견'], gisin: ['겁재'] },
+            '식신격': { flow: '순용', sangsin: ['정재', '편재'], gisin: ['편인'] },
+            '상관격': { flow: '복합', sangsin: ['정재', '편재', '정인'], gisin: ['정관'] },
+            '정인격': { flow: '순용', sangsin: ['정관', '편관'], gisin: ['정재', '편재'] },
+            '편인격': { flow: '역용', sangsin: ['정재', '편재'], gisin: [] },
+            '건록격': { flow: '역용', sangsin: ['정관', '편관'], gisin: [] },
+            '양인격': { flow: '역용', sangsin: ['편관'], gisin: [] },
+            '겁재격': { flow: '역용', sangsin: ['편관'], gisin: [] }
+        };
+        // 상신/기신 후보가 실제 사주(연간·월간·시간, 일간 제외)에 투출해 있는지로 성격/파격을 판정.
+        // 상신 있고 기신 없음=성격, 상신·기신 둘 다 있음=성중유패, 상신 없이 기신만=파격, 둘 다 없음=평격.
+        function evaluateGyeokStatus(gyeokguk, pillarSipsin) {
+            const rule = GYEOK_RULE[gyeokguk.name];
+            if (!rule) return { status: '평격', sangsinFound: null, gisinFound: null, rule: null };
+
+            const candidates = [pillarSipsin.year.gan, pillarSipsin.month.gan];
+            if (pillarSipsin.hour) candidates.push(pillarSipsin.hour.gan);
+
+            const sangsinFound = rule.sangsin.find(s => candidates.includes(s)) || null;
+            const gisinFound = rule.gisin.find(s => candidates.includes(s)) || null;
+
+            let status;
+            if (sangsinFound && !gisinFound) status = '성격';
+            else if (sangsinFound && gisinFound) status = '성중유패';
+            else if (!sangsinFound && gisinFound) status = '파격';
+            else status = '평격';
+
+            return { status: status, sangsinFound: sangsinFound, gisinFound: gisinFound, flow: rule.flow };
+        }
+
+        // [자평진전 3단계] 실제 대운·세운(60갑자) — lunar-javascript의 getYun/getDaYun/getLiuNian을 그대로 사용.
+        // 절기 기준 순행/역행, 대운수까지 라이브러리가 이미 계산해주므로 직접 만들 필요가 없다.
+        // 주의: 이건 '연' 단위까지만 진짜다. 화면에 표시되는 월/주차는 여전히 별도 절기(월운) 계산이
+        // 없어서 보조적인 추정치로 남겨둔다 — 이 부분은 다음 단계 과제.
+        function getRealYeonunInfo(baZi, dayGanChar, genderCode, targetYears) {
+            let daYunList;
+            try {
+                const yun = baZi.getYun(genderCode, 1);
+                daYunList = yun.getDaYun(10); // 10개 대운 = 최대 100년, 2026/2027 커버에 충분
+            } catch (e) {
+                console.error("대운 계산 실패:", e);
+                return {};
+            }
+            const out = {};
+            targetYears.forEach(function(y) {
+                let matched = null;
+                for (let i = 0; i < daYunList.length; i++) {
+                    const dy = daYunList[i];
+                    if (y >= dy.getStartYear() && y <= dy.getEndYear()) {
+                        const liuNianList = dy.getLiuNian();
+                        let seyunEntry = null;
+                        for (let j = 0; j < liuNianList.length; j++) {
+                            if (liuNianList[j].getYear() === y) { seyunEntry = liuNianList[j]; break; }
+                        }
+                        if (seyunEntry) {
+                            const seyunGZ = seyunEntry.getGanZhi();
+                            const seyunGan = seyunGZ.charAt(0);
+                            matched = {
+                                year: y,
+                                daeunGanZhi: dy.getGanZhi() || '(첫 대운 이전)',
+                                seyunGanZhi: seyunGZ,
+                                seyunGanSipsin: computeSipsin(dayGanChar, seyunGan)
+                            };
+                        }
+                        break;
+                    }
+                }
+                out['y' + y] = matched;
+            });
+            return out;
+        }
+
+        function calculateAccurateManse(year, month, day, hourZhi, gender) {
             try {
                 const hourMap = {
                     '子': 0, '丑': 2, '寅': 4, '卯': 6, '辰': 8, '巳': 10,
@@ -1766,6 +1935,16 @@
                 
                 let hGan = "";
                 if (hourZhi) hGan = baZi.getTimeGan();
+
+                // 시주를 모르면 가짜 정오(12시) 기준 시간(時干)이 격국 투출 판정에 섞여 들어가지 않도록,
+                // hourZhi가 실제로 있을 때만 후보에 포함시킨다.
+                const gyeokCandidates = [yGan, mGan];
+                if (hourZhi && hGan) gyeokCandidates.push(hGan);
+                const gyeokguk = determineGyeokguk(baZi, gyeokCandidates);
+                const pillarSipsin = getPillarSipsinSet(baZi, !!(hourZhi && hGan));
+                const gyeokStatus = evaluateGyeokStatus(gyeokguk, pillarSipsin);
+                const genderCode = (gender === 'male') ? 1 : 0;
+                const realYeonun = getRealYeonunInfo(baZi, dGan, genderCode, [2026, 2027]);
 
                 const allElements = [
                     { ch: yGan, w: 1.0 }, { ch: yZhi, w: 1.0 },
@@ -1868,11 +2047,14 @@
                     dayOheng: dayOheng, 
                     yongshin: yongshin,
                     isDayMasterStrong: isDayMasterStrong,
+                    gyeokguk: gyeokguk,
+                    gyeokStatus: gyeokStatus,
+                    realYeonun: realYeonun,
                     pillars: {
-                        year:  { gan: yGan, zhi: yZhi },
-                        month: { gan: mGan, zhi: mZhi },
-                        day:   { gan: dGan, zhi: dZhi },
-                        hour:  hourZhi ? { gan: hGan, zhi: hourZhi } : null
+                        year:  { gan: yGan, zhi: yZhi, sipsin: pillarSipsin.year },
+                        month: { gan: mGan, zhi: mZhi, sipsin: pillarSipsin.month },
+                        day:   { gan: dGan, zhi: dZhi, sipsin: pillarSipsin.day },
+                        hour:  hourZhi ? { gan: hGan, zhi: hourZhi, sipsin: pillarSipsin.hour } : null
                     }
                 };
             } catch (err) {
@@ -1885,6 +2067,9 @@
                     profile: SAZU_CHARACTER_PROFILES['ISTJ'],
                     dayOheng: 'to',
                     yongshin: 'mok',
+                    gyeokguk: null,
+                    gyeokStatus: null,
+                    realYeonun: {},
                     isDayMasterStrong: true,
                     pillars: {
                         year:  { gan: '己', zhi: '亥' },
@@ -2046,9 +2231,9 @@
                 }
 
                // [핵심] 정밀 연산 및 솔루션 매핑
-                const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, hour === 'unknown' ? null : hour);
+                const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, hour === 'unknown' ? null : hour, gender);
                 const lowest = getLowestStatInfo(sazuResult.stats);
-                const allSolutions = getTrueBaziSolutions(name, lowest, sazuResult.yongshin, sazuResult.dayOheng, gender, sazuResult.mbtiKey, birthStr);
+                const allSolutions = getTrueBaziSolutions(name, lowest, sazuResult.yongshin, sazuResult.dayOheng, gender, sazuResult.mbtiKey, birthStr, sazuResult.gyeokguk, sazuResult.gyeokStatus, sazuResult.realYeonun);
                 const solutionTemplate = allSolutions[concernKey] || allSolutions.money;
 
                 currentResultData = { 
