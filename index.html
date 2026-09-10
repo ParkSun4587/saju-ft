@@ -1663,7 +1663,44 @@
                 : (tTiming.verdict1 === 'unfavorable')
                 ? '기신이 사주의 격을 건드리는 시기로, 무리한 확장이나 섣부른 투자를 피하고 내실을 다지며 방어벽을 높여야 하는 시점'
                 : '급격한 굴곡 없이 내 노력의 결과가 정직하게 반영되는 평온한 시점';
+            // 1. 격국별 현실 모습 배지
+            const badgeGyeokMap = {
+                '정관격': '현실 모습: 겉은 멀쩡한 FM, 속은 방전 직전',
+                '편관격': '현실 모습: 덤덤하게 총대 메고 기강 잡는 보스',
+                '상관격': '현실 모습: 위선 꼴 못 보는 프로 팩폭러',
+                '식신격': '현실 모습: 한 놈만 패는 외길 장인 연구원',
+                '정재격': '현실 모습: 겉은 쿨한 척, 속은 계산기 풀가동',
+                '편재격': '현실 모습: 도파민 냄새 맡고 판 키우는 야망가',
+                '정인격': '현실 모습: 생각만 100만 번, 방구석 전략가',
+                '편인격': '현실 모습: 사람 속 다 꿰뚫어 보는 멘탈 외계인',
+                '건록격': '현실 모습: 남한테 기대기 싫은 마이웨이 독종',
+                '양인격': '현실 모습: 눈빛으로 기선 제압하는 승부사',
+                '겁재격': '현실 모습: 지고는 못 사는 질투의 화신'
+            };
+            const dynamicBadge01 = badgeGyeokMap[gyeokName] || '현실 모습: 겉은 멀쩡한 척, 속은 방전 직전';
 
+            // 2. 기신별 고질병 배지
+            const gisinName = gStat.gisinFound || '인성';
+            let dynamicBadge02 = '고질병: 누워서 릴스 보며 현실 도피하기';
+            if (['비견', '겁재'].includes(gisinName)) dynamicBadge02 = '고질병: 남 눈치 보고 퍼주다 털리기';
+            else if (['식신', '상관'].includes(gisinName)) dynamicBadge02 = '고질병: 생각 없이 지르고 다음 날 이불킥';
+            else if (['편재', '정재'].includes(gisinName)) dynamicBadge02 = '고질병: 뜬구름 대박 좇다 시드머니 삭제';
+            else if (['편관', '정관'].includes(gisinName)) dynamicBadge02 = '고질병: 누워서 남의 시선 곱씹으며 자책하기';
+
+            // 3. 상신 오행별 돈 버는 결 배지
+            const badgeWealthMap = {
+                mok: '돈 버는 결: 기획력으로 틈새 선점하기',
+                hwa: '돈 버는 결: 나를 브랜딩해서 몸값 띄우기',
+                to: '돈 버는 결: 흔들리지 않는 고정 수익 파이프',
+                geum: '돈 버는 결: 칼 같은 데이터와 전문 기술 독점',
+                su: '돈 버는 결: 빠른 정보력과 흐름 타기'
+            };
+            const dynamicBadge03 = badgeWealthMap[yong] || '돈 버는 결: 내 고유 주특기로 털어먹기';
+
+            // 6. 2026 세운 판정별 골든타임 배지
+            let dynamicBadge06 = '골든타임: 2026 페이스 유지 (기반 다지기)';
+            if (tTiming.verdict1 === 'favorable') dynamicBadge06 = '골든타임: 2026 직진 승부처 (풀악셀 구간)';
+            else if (tTiming.verdict1 === 'unfavorable') dynamicBadge06 = '골든타임: 2026 방어벽 구축 (실속 다지기)';
             return [
                 {
                     themeNum: '01',
@@ -2909,7 +2946,7 @@
             ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('※ 질문지 검사 말고, 내 진짜 사주 데이터로 까본 본캐 MBTI', w / 2, 215);
+            ctx.fillText('※ 질문지 검사 말고, 사주 데이터로 까본 내 진짜 MBTI', w / 2, 215);
             ctx.restore();
 
             // 4) 메인 타이틀 (Y: 260)
