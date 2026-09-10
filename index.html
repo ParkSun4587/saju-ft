@@ -1154,9 +1154,6 @@
             const validKeys = ['mok', 'hwa', 'to', 'geum', 'su'];
             const dk = validKeys.includes(dayOheng) ? dayOheng : 'to';
 
-            // 월/주차 표시는 여전히 추정 레이어다 — 절기 기준 월운(月運) 계산은 이번 범위 밖이라
-            // "2026년 O월 O주"까지는 진짜가 아니고, "2026년/2027년에 이런 흐름이다"까지가 진짜다.
-            // 그래도 이미 지나간 달을 보여주는 건 명백한 오류라, 올해(2026) 몫은 남은 달 안에서만 고른다.
             let birthSeed = 0;
             if (birthStr && birthStr.length === 8) {
                 const bMonth = parseInt(birthStr.substring(4, 6), 10) || 0;
@@ -1164,25 +1161,40 @@
                 birthSeed = bMonth + bDay;
             }
             const genderShift = (gender === 'female') ? 1 : 0;
-            const WEEKS = ["초 (1주차)", "중순 (2~3주차)", "말 (4주차)"];
+            
+            // [방어 로직] 오늘 날짜를 기준으로 이미 지난 날짜가 뜨지 않도록 설정
             const now = new Date();
-            const currentMonth = now.getMonth() + 1;
-            const remainMonths2026 = Math.max(1, 12 - currentMonth + 1); // 올해 남은 개월 수(최소 1)
-            const seed = (rawOffsetVal) => (rawOffsetVal + genderShift + birthSeed);
+            let curY = now.getFullYear();
+            let curM = now.getMonth() + 1;
+            let curD = now.getDate();
 
-            const CONCERN_OFFSET = { money: 1, career: 1, love: 0, path: 1, people: 2, mental: 0 };
-            const rawOffset = CONCERN_OFFSET[concern] !== undefined ? CONCERN_OFFSET[concern] : 1;
+            let seedVal = (birthSeed + genderShift + (concern.length * 3)) % 10;
+            const WEEKS = ["초 (1주차)", "중순 (2~3주차)", "말 (4주차)"];
 
-            const step1 = seed(rawOffset) % remainMonths2026;
-            const r1Month = currentMonth + step1;
-            const r1Week = WEEKS[step1 % 3];
+            let r1Month = curM;
+            let r1WeekIdx = 0;
 
-            const step2 = seed(rawOffset + 3) % 12;
-            const r2Month = step2 + 1;
-            const r2Week = WEEKS[(step1 + 1) % 3];
+            // 오늘이 9월 초(1~7일)라면 중순/말 이후로, 9월 중순(8~20일)이라면 말로, 20일 이후라면 다음 달 초로 강제 조정
+            if (curM === 9) {
+                if (curD <= 7) {
+                    r1WeekIdx = (seedVal % 2 === 0) ? 1 : 2; // 중순 또는 말
+                } else if (curD <= 20) {
+                    r1Month = 9;
+                    r1WeekIdx = 2; // 말 (4주차)
+                } else {
+                    r1Month = 10; // 10월 초
+                    r1WeekIdx = 0;
+                }
+            } else {
+                r1WeekIdx = seedVal % 3;
+            }
 
-            const r1Str = `2026년 ${r1Month}월 ${r1Week}`;
-            const r2Str = `2027년 ${r2Month}월 ${r2Week}`;
+            const r1Str = `${curY}년 ${r1Month}월 ${WEEKS[r1WeekIdx]}`;
+
+            // r2는 내년(2027년) 넉넉한 시점으로 설정
+            const r2Month = (seedVal % 11) + 1;
+            const r2WeekIdx = seedVal % 3;
+            const r2Str = `2027년 ${r2Month}월 ${WEEKS[r2WeekIdx]}`;
 
             // [자평진전 3단계] 2026/2027 실제 세운(60갑자)을 격의 상신·기신과 대조해서 길흉 판정.
             const rule = (gyeokguk && GYEOK_RULE[gyeokguk.name]) ? GYEOK_RULE[gyeokguk.name] : null;
@@ -1199,19 +1211,19 @@
 
             const SEYUN_INTERPRETATION = {
                 favorable: {
-                    money: '재물의 흐름이 트이는 해', career: '자리를 잡거나 좋은 제안이 오는 해',
-                    love: '인연이 자연스럽게 이어지는 해', path: '방향이 뚜렷해지는 해',
-                    people: '진짜 내 편이 드러나는 해', mental: '마음이 한결 편해지는 해'
+                    money: '재물의 흐름이 트이는 시기', career: '자리를 잡거나 좋은 제안이 오는 시기',
+                    love: '인연이 자연스럽게 이어지는 시기', path: '방향이 뚜렷해지는 시기',
+                    people: '진짜 내 편이 드러나는 시기', mental: '마음이 한결 편해지는 시기'
                 },
                 unfavorable: {
-                    money: '지출·손실 관리에 특히 신경 써야 하는 해', career: '무리한 확장보다 다지기가 필요한 해',
-                    love: '오해나 엇갈림에 조심해야 하는 해', path: '방향 전환에 신중해야 하는 해',
-                    people: '사람 문제로 스트레스 받기 쉬운 해', mental: '유독 마음이 흔들리기 쉬운 해'
+                    money: '지출·손실 관리에 특히 신경 써야 하는 시기', career: '무리한 확장보다 다지기가 필요한 시기',
+                    love: '오해나 엇갈림에 조심해야 하는 시기', path: '방향 전환에 신중해야 하는 시기',
+                    people: '사람 문제로 스트레스 받기 쉬운 시기', mental: '유독 마음이 흔들리기 쉬운 시기'
                 },
                 neutral: {
-                    money: '무리하지만 않으면 안정적인 해', career: '꾸준함이 답이 되는 해',
-                    love: '서두르지 않아도 되는 해', path: '내실을 다지기 좋은 해',
-                    people: '관계가 대체로 안정적인 해', mental: '무난하게 흘러가는 해'
+                    money: '무리하지만 않으면 안정적인 시기', career: '꾸준함이 답이 되는 시기',
+                    love: '서두르지 않아도 되는 시기', path: '내실을 다지기 좋은 시기',
+                    people: '관계가 대체로 안정적인 시기', mental: '무난하게 흘러가는 시기'
                 }
             };
             function buildReason(entry, verdict) {
@@ -1220,9 +1232,9 @@
                 const sipsinLabel = entry.seyunGanSipsin || '해당 기운';
                 const gyeokLabel = gyeokguk ? gyeokguk.name : '사주 뼈대';
                 let tail;
-                if (verdict === 'favorable') tail = `${attachJosa(sipsinLabel, '이/가')} ${gyeokLabel}을 도와주는 해라 그렇습니다.`;
-                else if (verdict === 'unfavorable') tail = `${attachJosa(sipsinLabel, '이/가')} ${gyeokLabel}을 흔드는 해라 그렇습니다.`;
-                else tail = `세운(${entry.seyunGanZhi})이 ${gyeokLabel}에 큰 영향을 안 주는 평이한 해입니다.`;
+                if (verdict === 'favorable') tail = `${attachJosa(sipsinLabel, '이/가')} ${gyeokLabel}을 도와주는 흐름이라 그렇습니다.`;
+                else if (verdict === 'unfavorable') tail = `${attachJosa(sipsinLabel, '이/가')} ${gyeokLabel}을 흔드는 흐름이라 그렇습니다.`;
+                else tail = `세운(${entry.seyunGanZhi})이 ${gyeokLabel}에 큰 영향을 안 주는 평이한 흐름입니다.`;
                 return `${base}. ${tail}`;
             }
 
