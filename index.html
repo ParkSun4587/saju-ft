@@ -3140,7 +3140,7 @@
                 showToast("결과 데이터를 불러오지 못했습니다. 고객센터로 문의해주세요.");
                 return;
             }
-            const allSolutions = getTrueBaziSolutions(restoredData.name, getLowestStatInfo(restoredData.stats), restoredData.yongshin, restoredData.dayOheng, restoredData.userGender, restoredData.mbtiKey, restoredData.userBirthStr);
+            const allSolutions = getTrueBaziSolutions(restoredData.name, getLowestStatInfo(restoredData.stats), restoredData.yongshin, restoredData.dayOheng, restoredData.userGender, restoredData.mbtiKey, restoredData.userBirthStr, restoredData.gyeokguk, restoredData.gyeokStatus, restoredData.realYeonun);
             restoredData.rawSolutionTemplate = allSolutions[restoredData.concernKey || 'money'] || allSolutions.money;
             currentResultData = restoredData;
 
@@ -3222,7 +3222,7 @@
             if (savedDataStr && savedToken) {
                 try {
                     const savedData = JSON.parse(savedDataStr);
-                    const allSolutions = getTrueBaziSolutions(savedData.name, getLowestStatInfo(savedData.stats), savedData.yongshin, savedData.dayOheng, savedData.userGender, savedData.mbtiKey, savedData.userBirthStr);
+                    const allSolutions = getTrueBaziSolutions(savedData.name, getLowestStatInfo(savedData.stats), savedData.yongshin, savedData.dayOheng, savedData.userGender, savedData.mbtiKey, savedData.userBirthStr, savedData.gyeokguk, savedData.gyeokStatus, savedData.realYeonun);
                     savedData.rawSolutionTemplate = allSolutions[savedData.concernKey || 'money'] || allSolutions.money;
                     currentResultData = savedData;
                     isUnlocked = false;
