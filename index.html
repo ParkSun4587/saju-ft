@@ -409,7 +409,7 @@
                 <div>
                     <label class="block text-[11px] font-bold text-slate-500 mb-0.5">태어난 시간</label>
                     <div class="relative">
-                        <select id="birthTimeSelect" class="input-box w-full h-[38px] px-3 pr-8 rounded-xl border border-slate-200 bg-slate-50/50 text-center font-bold text-xs cursor-pointer appearance-none text-slate-700 focus:bg-white">
+                        <select id="birthTimeSelect" onchange="window.scrollTo({ top: 0, behavior: 'smooth' });" class="input-box w-full h-[38px] px-3 pr-8 rounded-xl border border-slate-200 bg-slate-50/50 text-center font-bold text-xs cursor-pointer appearance-none text-slate-700 focus:bg-white">
                             <option value="" selected disabled>태어난 시간 선택</option>
                             <option value="unknown">시간 모름 (정밀 추정)</option>
                             <option value="子">자시 (23:30 ~ 01:29)</option>
@@ -2125,6 +2125,7 @@
                 document.getElementById('landingSection').style.display = 'none';
                 document.getElementById('resultSection').style.display = 'none';
                 document.getElementById('loadingSection').style.display = 'flex';
+                window.scrollTo(0, 0); // 로딩 화면 진입 즉시 맨 위로 화면 이동
 
                 // 뒤로 가기 시 사이트 이탈 대신 랜딩으로 복귀시키기 위한 히스토리 등록
                 try { history.pushState({ view: 'result' }, '', location.pathname + location.search); } catch (e) {}
