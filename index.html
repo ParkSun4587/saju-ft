@@ -471,6 +471,14 @@
                 </div>
             </div>
 
+            <!-- 사주 만세력 시스템 연산 로그 (전문성 & 신뢰도 착시 부여) -->
+            <div class="flex justify-center items-center">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100/90 border border-slate-200/80 text-[10px] font-mono font-bold text-slate-500 shadow-inner">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="loadingSysLog">만세력 8글자 오행 데이터 스캔 중...</span>
+                </div>
+            </div>
+
             <!-- 1020 도파민 상태 텍스트 -->
             <div class="min-h-[52px] flex items-center justify-center px-2">
                 <h2 id="loadingMainStatus" class="text-xs sm:text-[13px] font-extrabold text-slate-700 tracking-tight transition-all duration-150 break-keep text-center leading-relaxed">
@@ -2051,41 +2059,55 @@
 
                 const percentText = document.getElementById('loadingPercent');
                 const mainStatus = document.getElementById('loadingMainStatus');
-                const totalDuration = 3800; // 1020 황금 체감 시간 3.8초
+                const totalDuration = 3800; // 3.8초 최적화 텐션 곡선
                 const startTime = Date.now();
                 let isRendered = false;
+                const sysLogEl = document.getElementById('loadingSysLog');
 
                 const timer = setInterval(() => {
                     const elapsed = Date.now() - startTime;
                     let progress = 0;
                     
-                    // 3.8초 동안 매끄럽게 차오르는 게이지
-                    if (elapsed < 1200) progress = Math.floor((elapsed / 1200) * 35);
-                    else if (elapsed < 2600) progress = 35 + Math.floor(((elapsed - 1200) / 1400) * 45);
-                    else if (elapsed < totalDuration) progress = 80 + Math.floor(((elapsed - 2600) / 1200) * 20);
-                    else progress = 100;
+                    // [비선형 텐션 게이지 곡선] 
+                    // 1) 0.0~0.8초: 0% -> 55% 급발진 가속 (시선 강제 고정)
+                    if (elapsed < 800) {
+                        progress = Math.floor((elapsed / 800) * 55);
+                    }
+                    // 2) 0.8~2.8초: 55% -> 82% 긴장감 유발 의도적 버퍼링 (가장 오래 몰입)
+                    else if (elapsed < 2800) {
+                        progress = 55 + Math.floor(((elapsed - 800) / 2000) * 27);
+                    }
+                    // 3) 2.8~3.8초: 82% -> 100% 튕기듯 넘어가며 결과창 오픈
+                    else if (elapsed < totalDuration) {
+                        progress = 82 + Math.floor(((elapsed - 2800) / 1000) * 18);
+                    } else {
+                        progress = 100;
+                    }
 
                     if (percentText) percentText.innerText = progress + "%";
                     if (progressFill) progressFill.style.width = progress + "%";
 
                     const centerIcon = document.getElementById('loadingCenterIcon');
                     if (mainStatus) {
-                        // 1단계 (0.0초 ~ 1.2초): 일상 공감 털기
-                        if (elapsed < 1200) {
+                        // [1단계: 0.0~0.8초] 만세력 스캔 & 넵무새 털기
+                        if (elapsed < 800) {
                             if (centerIcon) centerIcon.innerText = '🔍';
+                            if (sysLogEl) sysLogEl.innerText = "만세력 8글자 오행 데이터 스캔 중...";
                             mainStatus.innerHTML = `밖에서는 영혼 없는 <span class="text-slate-800 font-black">'넵'무새</span>, 집 오자마자 침대 다이빙한 거 추적 중...`;
                         }
-                        // 2단계 (1.2초 ~ 2.6초): 하이퍼리얼리즘 속마음 저격 (가장 오래 머묾)
-                        else if (elapsed < 2600) {
+                        // [2단계: 0.8~2.8초] 십신 매트릭스 대조 & 이불킥 저격 (긴장감 최고조)
+                        else if (elapsed < 2800) {
                             if (centerIcon) centerIcon.innerText = '🚨';
+                            if (sysLogEl) sysLogEl.innerText = "일간·억부·십신 매트릭스 정밀 대조 중...";
                             mainStatus.innerHTML = `헐 잠깐만; <b class="text-rose-500 font-black">남 앞에서는 쿨한 척 다 해놓고</b> 혼자 이불킥 찬 거 딱 걸림;;`;
                         }
-                        // 3단계 (2.6초 ~ 3.8초): 선택한 모드별 극과 극 훅 후 결과 오픈
+                        // [3단계: 2.8~3.8초] 사주 개입 명시 & 공유 카드 사전 예고(Pre-framing)
                         else {
-                            if (centerIcon) centerIcon.innerText = isT ? '🧊' : '🌸';
+                            if (centerIcon) centerIcon.innerText = isT ? '🥊' : '🌸';
+                            if (sysLogEl) sysLogEl.innerText = "인스타 박제용 본캐 처방전 굽는 중...";
                             mainStatus.innerHTML = isT 
-                                ? `<span class="text-sky-600 font-black">뼈 때려서 순살 만들 예정</span> (도망갈 구멍 원천 차단 🥊)` 
-                                : `<span class="text-rose-500 font-black">세상이 억까해도</span> 오늘은 무조건 네 편 (휴지 한 장 챙겨 🧻)`;
+                                ? `<span class="text-sky-600 font-black">사주가 명치 때려서 순살 만들 예정</span> (도망갈 구멍 압수 🥊)` 
+                                : `<span class="text-rose-500 font-black">세상이 억까해도 사주만큼은 무조건 네 편</span> (휴지 한 장 챙겨 🧻)`;
                         }
                     }
 
