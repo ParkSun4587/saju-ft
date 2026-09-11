@@ -1287,16 +1287,27 @@
                 const w = pick ? pick.entry : null;
                 const sipsinLabel = w && w.sipsin ? w.sipsin : '해당 기운';
                 const gyeokLabel = gyeokguk ? gyeokguk.name : '사주 뼈대';
+                
+                const ACTION_BY_CONCERN = {
+                    money: '뜻밖의 부수입이나 재물 운이 열리는 결정적 승부처이니 놓치지 말고 잡으세요.',
+                    career: '이직이나 스카우트, 서류 합격 등 현실적인 커리어 제안을 적극적으로 낚아채야 합니다.',
+                    love: '자존심을 내려놓고 솔직하게 다가가면 깊은 인연으로 발전하는 결정적 타이밍입니다.',
+                    path: '망설이던 시험이나 프로젝트가 있다면 결과물을 세상에 던져야 하는 승부처입니다.',
+                    people: '나를 갉아먹는 관계는 정리되고 진짜 내 편이 되어줄 인연이 들어오는 시점입니다.',
+                    mental: '지긋지긋한 멘탈 방전이 끝나고 생체 에너지가 리셋되는 확실한 회복기입니다.'
+                };
+                const actMsg = ACTION_BY_CONCERN[concern] || ACTION_BY_CONCERN.money;
+
                 if (momentum === 'passed') {
-                    return `이미 지나간 해라 짚어드릴 시기가 없습니다. 다음 기회를 함께 확인해보세요.`;
+                    return `이미 지나간 시기입니다. 다음 기회를 함께 확인해보세요.`;
                 } else if (momentum === 'strong') {
-                    return `이 시기에는 ${attachJosa(sipsinLabel, '이/가')} ${gyeokLabel}을 돕는 흐름과 겹치며 오랫동안 정체되었던 운의 물꼬가 트입니다. 현실적인 제안이나 기회가 들어오면 망설이지 말고 붙잡아야 하는 승부처입니다.`;
+                    return `이 시기에는 ${attachJosa(sipsinLabel, '이/가')} ${gyeokLabel}을 돕는 흐름과 맞물려 정체되었던 운의 물꼬가 트입니다. ${actMsg}`;
                 } else if (momentum === 'mixed') {
-                    return `해 전체로 보면 무리한 확장보다 방어가 필요한 시기지만, 이 시기만큼은 ${attachJosa(sipsinLabel, '이/가')} 도움이 되는 기운으로 들어옵니다. 이때를 좁은 창구로 보고 필요한 결정만 집중해서 처리하세요.`;
+                    return `해 전체로 보면 무리한 확장보다 방어가 필요하지만, 이 시기만큼은 ${attachJosa(sipsinLabel, '이/가')} 유리하게 작용합니다. 중요한 결정은 이때 집중적으로 처리하세요.`;
                 } else if (momentum === 'caution') {
-                    return `이 시기는 뚜렷한 호재 없이 흘러가는 구간입니다. 새 판을 벌이기보다 이미 벌여둔 일을 다지고 지키는 데 집중해야 하는 시점입니다.`;
+                    return `이 시기는 뚜렷한 호재 없이 흘러가는 구간입니다. 판을 벌이기보다 내실을 다지고 지키는 데 집중하세요.`;
                 } else {
-                    return `이 시기는 극단적인 부침 없이 평이하게 흘러갑니다. 무리하게 승부를 보려 하기보다 꾸준한 루틴을 지키는 쪽이 유리합니다.`;
+                    return `이 시기는 극단적인 부침 없이 평이하게 흘러갑니다. 일상의 루틴을 흔들림 없이 유지하는 쪽이 유리합니다.`;
                 }
             }
 
@@ -1814,12 +1825,17 @@
                         ? `나이 50 넘어서 잘 풀린다는 뻔한 위로는 아무 의미 없습니다. 10년 대운 환경과 2026-2027년 흐름을 당신 사주의 뼈대와 정밀 대조한 결과, <b>${tTiming.reason}</b> 판정이 확정되었습니다. 2026년은 <b>[${seyunStrategy2026}]</b>입니다. 특히 <b>[${tTiming.r1}]</b> 무렵, ${tTiming.fullSentence} 이어 <b>[${tTiming.r2}]</b>에는 ${tTiming.fullSentenceR2}`
                         : `그동안 끝이 보이지 않는 터널 속에서 홀로 버텨내느라 정말 고생 많으셨습니다. 먼 미래의 막연한 행운이 아니라, 사주의 10년 대운 환경과 2026-2027년 흐름을 대조한 결과 <b>${tTiming.reason}</b> 기운이 깃드는 시기입니다. 2026년은 <b>[${seyunStrategy2026}]</b>의 의미를 지닙니다. 특히 <b>[${tTiming.r1}]</b>에는, ${tTiming.fullSentence} 이어 <b>[${tTiming.r2}]</b>에는 ${tTiming.fullSentenceR2}`,
                     checklist: isT 
-                        ? ((tTiming.momentum1 === 'caution' || tTiming.momentum1 === 'mild' || tTiming.momentum1 === 'passed')
-                            ? `2027년 [${tTiming.r2}] 전까지 무리한 확장 대신 기존 일의 완성도부터 끌어올리기`
-                            : `2026년 [${tTiming.r1}] 승부 타이밍에 맞춰 이력서/포트폴리오 사전 세팅`)
-                        : ((tTiming.momentum1 === 'caution' || tTiming.momentum1 === 'mild' || tTiming.momentum1 === 'passed')
-                            ? `2027년 [${tTiming.r2}]까지는 무리하지 말고 지금의 루틴을 편안하게 지켜나가기`
-                            : `다가올 2026년 [${tTiming.r1}] 반등기를 기대하며 지친 몸과 마음 푹 쉬어주기`)
+                        checklist: (() => {
+                        const CK_MAP = {
+                            money: isT ? `[${tTiming.r1}] 돈맥 타이밍 전까지 충동 소비 통제하고 시드머니 확보` : `[${tTiming.r1}] 반등기를 기다리며 통장 걱정 내려놓고 마음 채우기`,
+                            career: isT ? `[${tTiming.r1}] 승부 타이밍에 맞춰 이력서/포트폴리오 사전 세팅` : `[${tTiming.r1}] 이직 기회를 편안하게 맞이할 수 있도록 멘탈 충전하기`,
+                            love: isT ? `[${tTiming.r1}] 전까지 쓸데없는 자존심 버리고 솔직해지는 연습하기` : `[${tTiming.r1}] 다가올 따뜻한 인연을 위해 상처받은 마음 먼저 안아주기`,
+                            path: isT ? `[${tTiming.r1}] 전까지 60% 완성도 상태로 빠르게 세상에 결과물 던지기` : `[${tTiming.r1}] 성과를 기대하며 나만의 고유한 속도로 차분히 나아가기`,
+                            people: isT ? `[${tTiming.r1}] 전까지 기 빨아먹는 악연 3진 아웃으로 정리하기` : `[${tTiming.r1}] 전까지 감정 쓰레기통 자처하지 말고 내 마음 1순위 두기`,
+                            mental: isT ? `[${tTiming.r1}] 리셋 구간에 맞춰 수면 루틴과 디지털 디톡스 실행` : `[${tTiming.r1}] 전까지 아무것도 하지 않고 온전히 쉬는 연습하기`
+                        };
+                        return CK_MAP[data.concernKey || 'money'] || CK_MAP.money;
+                    })()
                 }
             ];
         }
