@@ -1710,13 +1710,43 @@
 
             const tTiming = getTrueBaziTiming(dm, data.concernKey || 'money', data.userGender, data.userBirthStr, data.gyeokguk, data.gyeokStatus, data.realYeonun);
 
-            const seyunStrategy2026 = (tTiming.verdict1 === 'favorable')
-                ? '내 사주의 흐름을 돕는 길한 운으로, 망설이던 프로젝트나 이직·도전에 풀악셀을 밟아야 하는 시점'
-                : (tTiming.verdict1 === 'unfavorable')
-                ? '흐름이 다소 흔들리는 시기로, 무리한 확장이나 섣부른 투자를 피하고 내실을 다지며 방어벽을 높여야 하는 시점'
-                : '급격한 굴곡 없이 내 노력의 결과가 정직하게 반영되는 평온한 시점';
+            // 고민별 2026 세운 전략 매핑 (연애, 돈, 이직 등 100% 일치)
+            const STRATEGY_BY_CONCERN = {
+                money: {
+                    fav: '사주에 잠자던 재물운이 트이며 확실한 자산 증식의 발판을 마련하는 시점',
+                    unfav: '지출과 손실의 위험이 숨어 있어 무리한 투자보다 시드머니를 안전하게 지켜야 하는 시점',
+                    neu: '급격한 등락 없이 평온하게 고정 수입을 차곡차곡 쌓아가는 시점'
+                },
+                career: {
+                    fav: '그동안의 노력을 인정받아 이직이나 승진 등 커리어 도약의 기회가 열리는 시점',
+                    unfav: '성급한 퇴사나 이직보다 현재 자리에서 내실을 다지고 실력을 쌓아야 하는 시점',
+                    neu: '큰 변동 없이 성실하게 맡은 몫을 해내며 역량을 다져가는 시점'
+                },
+                love: {
+                    fav: '묵은 관계가 정리되고 마음 깊이 통하는 소중한 인연의 문이 활짝 열리는 시점',
+                    unfav: '사소한 오해로 감정이 상하기 쉬우니 섣부른 판단을 피하고 마음의 여유를 가져야 하는 시점',
+                    neu: '조급하게 애태우지 않아도 자연스럽고 편안한 흐름 속에서 관계가 이어지는 시점'
+                },
+                path: {
+                    fav: '나만의 잠재력이 빛을 발하며 새로운 도전과 목표를 향해 힘차게 나아갈 시점',
+                    unfav: '방향 전환에 신중을 기하고 준비가 덜 된 상태에서의 무리수를 경계해야 하는 시점',
+                    neu: '차분하게 기초를 다지며 앞으로 나아갈 준비를 탄탄히 하는 시점'
+                },
+                people: {
+                    fav: '나를 소모시키던 악연은 정리되고 진짜 내 편이 되어줄 귀인이 찾아오는 시점',
+                    unfav: '주변의 감정 쓰레기통 역할을 경계하고 내 마음의 건강한 경계선을 세워야 하는 시점',
+                    neu: '불필요한 갈등 없이 주변과 원만한 거리를 유지하는 평온한 시점'
+                },
+                mental: {
+                    fav: '오랫동안 짓누르던 불안과 번아웃이 걷히고 몸과 마음의 생체 에너지가 리셋되는 시점',
+                    unfav: '스스로를 가혹하게 몰아세우지 말고 온전한 휴식과 마음 관리에 집중해야 하는 시점',
+                    neu: '일상의 일정한 루틴을 지키며 안정된 마음 상태를 유지하는 시점'
+                }
+            };
+            const curConcernKey = data.concernKey || 'money';
+            const stratObj = STRATEGY_BY_CONCERN[curConcernKey] || STRATEGY_BY_CONCERN.money;
+            const seyunStrategy2026 = (tTiming.verdict1 === 'favorable') ? stratObj.fav : (tTiming.verdict1 === 'unfavorable' ? stratObj.unfav : stratObj.neu);
 
-            // 수식어를 모두 배제한 가장 직관적인 정석 타이틀
             const dynamicBadge01 = '핵심 성향';
             const dynamicBadge02 = '나의 취약점';
             const dynamicBadge03 = '재물운';
@@ -1783,14 +1813,14 @@
                     badge: dynamicBadge06,
                     title: isT 
                         ? ((tTiming.momentum1 === 'caution' || tTiming.momentum1 === 'passed')
-                            ? `초년·말년 뜬구름 잡는 소리 집어치우고, 2026-2027 방어부터 다지는 리얼 타임라인`
-                            : `초년·말년 뜬구름 잡는 소리 집어치우고, 2026-2027 터지는 정확한 골든타임`)
+                            ? `2026-2027 리스크를 선제 방어하는 현실 타임라인`
+                            : `2026-2027 운의 흐름이 집중되는 핵심 타이밍`)
                         : ((tTiming.momentum1 === 'caution' || tTiming.momentum1 === 'passed')
                             ? `조급해하지 않아도 괜찮은, 2026-2027 내실을 다지는 시간`
                             : `기나긴 정체기가 끝나고 마침내 운의 물꼬가 트이는 2026-2027 반등의 계절`),
                     desc: isT
-                        ? `나이 50 넘어서 잘 풀린다는 뻔한 위로는 아무 의미 없습니다. 10년 대운 환경과 2026-2027년 흐름을 당신 사주의 뼈대와 정밀 대조한 결과, <b>${tTiming.reason}</b> 판정이 확정되었습니다. 2026년은 <b>[${seyunStrategy2026}]</b>입니다. 특히 <b>[${tTiming.r1}]</b> 무렵, ${tTiming.fullSentence} 이어 <b>[${tTiming.r2}]</b>에는 ${tTiming.fullSentenceR2}`
-                        : `그동안 끝이 보이지 않는 터널 속에서 홀로 버텨내느라 정말 고생 많으셨습니다. 먼 미래의 막연한 행운이 아니라, 사주의 10년 대운 환경과 2026-2027년 흐름을 대조한 결과 <b>${tTiming.reason}</b> 기운이 깃드는 시기입니다. 2026년은 <b>[${seyunStrategy2026}]</b>의 의미를 지닙니다. 특히 <b>[${tTiming.r1}]</b>에는, ${tTiming.fullSentence} 이어 <b>[${tTiming.r2}]</b>에는 ${tTiming.fullSentenceR2}`,
+                        ? `먼 미래의 막연한 소리 대신, 사주의 대운 환경과 2026-2027년 흐름을 정밀 대조한 결과입니다. 현재 운의 큰 흐름은 <b>[${tTiming.reason}]</b> 국면에 들어섰으며, 2026년은 <b>[${seyunStrategy2026}]</b>입니다. 특히 <b>[${tTiming.r1}]</b> 전후로는 ${tTiming.fullSentence} 이어 <b>[${tTiming.r2}]</b>에는 ${tTiming.fullSentenceR2}`
+                        : `그동안 끝이 보이지 않는 터널 속에서 홀로 버텨내느라 정말 고생 많으셨습니다. 먼 미래의 막연한 행운이 아니라, 사주의 대운 환경과 2026-2027년 흐름을 정밀 대조한 결과 <b>[${tTiming.reason}]</b> 흐름이 본격적으로 열리고 있어요. 2026년은 <b>[${seyunStrategy2026}]</b> 의미를 가집니다. 특히 <b>[${tTiming.r1}]</b> 전후로는 ${tTiming.fullSentence} 이어 <b>[${tTiming.r2}]</b>에는 ${tTiming.fullSentenceR2}`,
                     checklist: (() => {
                         const CK_MAP = {
                             money: isT ? `[${tTiming.r1}] 돈맥 타이밍 전까지 충동 소비 통제하고 시드머니 확보` : `[${tTiming.r1}] 반등기를 기다리며 통장 걱정 내려놓고 마음 채우기`,
