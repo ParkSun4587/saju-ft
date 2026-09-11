@@ -545,25 +545,25 @@
                 </div>
             </div>
 
-            <!-- [바이럴 치트키] 환상의 찰떡 깐부 vs 숨 막히는 상극 (하이대비 트렌디 버전) -->
+            <!-- [바이럴 치트키] 환상의 찰떡 깐부 vs 숨 막히는 상극 (조화로운 소프트 톤) -->
             <div class="grid grid-cols-2 gap-2 mt-2 text-left">
-                <div class="p-3 rounded-2xl bg-emerald-50/90 border-2 border-emerald-300/80 shadow-sm flex flex-col justify-between">
+                <div class="p-3 rounded-2xl bg-rose-50/80 border border-rose-200 shadow-sm flex flex-col justify-between">
                     <div>
-                        <div class="text-[10px] font-black text-emerald-600 flex items-center gap-1 mb-0.5">
-                            <span>💚</span> <span>환상의 찰떡 깐부</span>
+                        <div class="text-[10px] font-black text-rose-500 flex items-center gap-1 mb-0.5">
+                            <span>💖</span> <span>환상의 찰떡 깐부</span>
                         </div>
-                        <div class="text-base font-black text-emerald-950 font-mono tracking-wide" id="chemBestMbti">ENFP</div>
+                        <div class="text-base font-black text-slate-900 font-mono tracking-wide" id="chemBestMbti">ENFP</div>
                     </div>
-                    <div class="text-[10px] text-emerald-700 font-semibold truncate mt-1" id="chemBestTag">영혼의 단짝</div>
+                    <div class="text-[10px] text-slate-500 font-semibold truncate mt-1" id="chemBestTag">영혼의 단짝</div>
                 </div>
-                <div class="p-3 rounded-2xl bg-slate-900 border-2 border-slate-800 shadow-md flex flex-col justify-between">
+                <div class="p-3 rounded-2xl bg-slate-100/90 border border-slate-200 shadow-sm flex flex-col justify-between">
                     <div>
-                        <div class="text-[10px] font-black text-rose-400 flex items-center gap-1 mb-0.5">
-                            <span>🚨</span> <span>숨 막히는 상극</span>
+                        <div class="text-[10px] font-black text-slate-600 flex items-center gap-1 mb-0.5">
+                            <span>💣</span> <span>숨 막히는 상극</span>
                         </div>
-                        <div class="text-base font-black text-white font-mono tracking-wide" id="chemWorstMbti">ISTJ</div>
+                        <div class="text-base font-black text-slate-900 font-mono tracking-wide" id="chemWorstMbti">ISTJ</div>
                     </div>
-                    <div class="text-[10px] text-slate-400 font-semibold truncate mt-1" id="chemWorstTag">거리 두기 시급</div>
+                    <div class="text-[10px] text-slate-500 font-semibold truncate mt-1" id="chemWorstTag">거리 두기 시급</div>
                 </div>
             </div>
         </div>
@@ -743,21 +743,21 @@
                     </div>
                 </div>
 
-                <!-- 💖 깐부 vs 💣 상극 박스 (공유 모달용 트렌디 버전) -->
+                <!-- 💖 깐부 vs 💣 상극 박스 (공유 모달용 정돈 버전) -->
                 <div class="grid grid-cols-2 gap-2 text-left relative z-10">
-                    <div class="p-2.5 rounded-xl bg-emerald-50/90 border-2 border-emerald-300/80 shadow-sm flex flex-col justify-between">
-                        <div class="text-[9px] font-black text-emerald-600 flex items-center gap-0.5 mb-0.5">
-                            <span>💚</span> <span>잘 맞는 깐부</span>
+                    <div class="p-2.5 rounded-xl bg-rose-50/80 border border-rose-200 shadow-sm flex flex-col justify-between">
+                        <div class="text-[9px] font-black text-rose-500 flex items-center gap-0.5 mb-0.5">
+                            <span>💖</span> <span>잘 맞는 깐부</span>
                         </div>
-                        <div class="text-sm font-black text-emerald-950 font-mono tracking-wide" id="cardChemBestMbti"></div>
-                        <div class="text-[9px] text-emerald-700 font-semibold truncate mt-0.5" id="cardChemBestTag"></div>
+                        <div class="text-sm font-black text-slate-900 font-mono tracking-wide" id="cardChemBestMbti"></div>
+                        <div class="text-[9px] text-slate-500 font-semibold truncate mt-0.5" id="cardChemBestTag"></div>
                     </div>
-                    <div class="p-2.5 rounded-xl bg-slate-900 border-2 border-slate-800 shadow-md flex flex-col justify-between">
-                        <div class="text-[9px] font-black text-rose-400 flex items-center gap-0.5 mb-0.5">
-                            <span>🚨</span> <span>숨 막히는 상극</span>
+                    <div class="p-2.5 rounded-xl bg-slate-100/90 border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="text-[9px] font-black text-slate-600 flex items-center gap-0.5 mb-0.5">
+                            <span>💣</span> <span>숨 막히는 상극</span>
                         </div>
-                        <div class="text-sm font-black text-white font-mono tracking-wide" id="cardChemWorstMbti"></div>
-                        <div class="text-[9px] text-slate-400 font-semibold truncate mt-0.5" id="cardChemWorstTag"></div>
+                        <div class="text-sm font-black text-slate-900 font-mono tracking-wide" id="cardChemWorstMbti"></div>
+                        <div class="text-[9px] text-slate-500 font-semibold truncate mt-0.5" id="cardChemWorstTag"></div>
                     </div>
                 </div>
 
@@ -2759,19 +2759,20 @@
             const pGeum= Math.round((elements.geum / total) * 100);
             const pSu  = Math.round((elements.su / total) * 100);
 
+            // label 속성(나무, 불, 토 등)을 추가하여 undefined 에러 원인 완벽 차단
             const ohengList = [
-                { name: '목', pct: pMok, count: realCounts.mok, color: 'bg-emerald-400' },
-                { name: '화', pct: pHwa, count: realCounts.hwa, color: 'bg-rose-400' },
-                { name: '토', pct: pTo,  count: realCounts.to,  color: 'bg-amber-400' },
-                { name: '금', pct: pGeum, count: realCounts.geum, color: 'bg-slate-400' },
-                { name: '수', pct: pSu,  count: realCounts.su,  color: 'bg-sky-400' }
+                { name: '목', pct: pMok, count: realCounts.mok, label: '나무', color: 'bg-emerald-400' },
+                { name: '화', pct: pHwa, count: realCounts.hwa, label: '불', color: 'bg-rose-400' },
+                { name: '토', pct: pTo,  count: realCounts.to,  label: '흙', color: 'bg-amber-400' },
+                { name: '금', pct: pGeum, count: realCounts.geum, label: '쇠', color: 'bg-slate-400' },
+                { name: '수', pct: pSu,  count: realCounts.su,  label: '물', color: 'bg-sky-400' }
             ];
 
             container.innerHTML = ohengList.map(item => `
                 <div class="bg-white p-2 rounded-2xl border border-rose-100/80 flex flex-col items-center shadow-sm">
                     <div class="text-slate-600 font-extrabold mb-1.5 text-[11px] flex items-center justify-center gap-0.5">
                         <span>${item.name}</span>
-                        <span class="text-[10px] text-rose-500 font-bold font-mono">(${item.count}개)</span>
+                        <span class="text-[10px] text-slate-400 font-semibold font-mono">(${item.count}개)</span>
                     </div>
                     <div class="w-full h-14 bg-slate-50 rounded-xl flex items-end overflow-hidden p-0.5 border border-slate-100">
                         <div class="${item.color} w-full rounded-lg transition-all duration-500" style="height: ${Math.max(8, item.pct)}%"></div>
