@@ -2618,7 +2618,7 @@
             const data = currentResultData;
             const lowestStat = getLowestStatInfo(data.stats);
             const template = data.rawSolutionTemplate[mode];
-            renderOhengDistribution(data.elements, (data.pillars && data.pillars.day) ? data.pillars.day.gan : '甲', data.dayOheng);
+            renderOhengDistribution(data.elements, (data.pillars && data.pillars.day) ? data.pillars.day.gan : '甲', data.dayOheng, data.pillars);
 
             const badge = document.getElementById('resultModeBadge');
             if (badge) {
@@ -2749,11 +2749,24 @@
             }
         } // <--- 바로 이 중괄호 밑에 엔터 치고 붙여넣기!
 
-        function renderOhengDistribution(elements, dayGan, dayOheng) {
+        function renderOhengDistribution(elements, dayGan, dayOheng, pillars) {
             const container = document.getElementById('ohengBarContainer');
             const summaryTxt = document.getElementById('ohengSummaryTxt');
             const dayMasterTag = document.getElementById('dayMasterTag');
             if (!container || !elements) return;
+
+            const rawChars = [];
+            if (pillars) {
+                if (pillars.year) rawChars.push(pillars.year.gan, pillars.year.zhi);
+                if (pillars.month) rawChars.push(pillars.month.gan, pillars.month.zhi);
+                if (pillars.day) rawChars.push(pillars.day.gan, pillars.day.zhi);
+                if (pillars.hour) rawChars.push(pillars.hour.gan, pillars.hour.zhi);
+            }
+            const realCounts = { mok: 0, hwa: 0, to: 0, geum: 0, su: 0 };
+            rawChars.forEach(ch => {
+                const t = OHENG_MAP[ch];
+                if (t) realCounts[t]++;
+            });
 
             const total = (elements.mok + elements.hwa + elements.to + elements.geum + elements.su) || 1;
             const pMok = Math.round((elements.mok / total) * 100);
@@ -2763,17 +2776,19 @@
             const pSu  = Math.round((elements.su / total) * 100);
 
             const ohengList = [
-                { name: '목', pct: pMok, label: '나무', color: 'bg-emerald-400' },
-                { name: '화', pct: pHwa, label: '불', color: 'bg-rose-400' },
-                { name: '토', pct: pTo,  label: '흙', color: 'bg-amber-400' },
-                { name: '금', pct: pGeum, label: '쇠', color: 'bg-slate-400' },
-                { name: '수', pct: pSu,  label: '물', color: 'bg-sky-400' }
+                { name: '목', pct: pMok, count: realCounts.mok, color: 'bg-emerald-400' },
+                { name: '화', pct: pHwa, count: realCounts.hwa, color: 'bg-rose-400' },
+                { name: '토', pct: pTo,  count: realCounts.to,  color: 'bg-amber-400' },
+                { name: '금', pct: pGeum, count: realCounts.geum, color: 'bg-slate-400' },
+                { name: '수', pct: pSu,  count: realCounts.su,  color: 'bg-sky-400' }
             ];
 
-            // 5개 막대 바 UI는 기존 디자인 규격 100% 유지
             container.innerHTML = ohengList.map(item => `
                 <div class="bg-white p-2 rounded-2xl border border-rose-100/80 flex flex-col items-center shadow-sm">
-                    <span class="text-slate-500 font-bold mb-1.5 text-[11px]">${item.name}</span>
+                    <div class="text-slate-600 font-extrabold mb-1.5 text-[11px] flex items-center justify-center gap-0.5">
+                        <span>${item.name}</span>
+                        <span class="text-[10px] text-rose-500 font-bold font-mono">(${item.count}개)</span>
+                    </div>
                     <div class="w-full h-14 bg-slate-50 rounded-xl flex items-end overflow-hidden p-0.5 border border-slate-100">
                         <div class="${item.color} w-full rounded-lg transition-all duration-500" style="height: ${Math.max(8, item.pct)}%"></div>
                     </div>
