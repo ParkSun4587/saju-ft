@@ -2792,9 +2792,20 @@
             const minItems = ohengList.filter(o => o.count === minCount);
             const minStr = minItems.map(o => `${o.label}(${o.count}개)`).join(', ');
 
-            if (summaryTxt) {
-                summaryTxt.innerHTML = `💡 내 사주는 <b>${maxOheng.label}(${maxOheng.pct}%)</b> 기운이 제일 세서 이 성향이 뚜렷한 반면, <b>${minStr}</b> 기운이 부족해서 이 부분이 자꾸 고민이나 누수로 이어지고 있어요.`;
-            }
+            // 오행별 가장 강할 때 나타나는 고유 성향 사전
+        const maxTraitMap = {
+            '목': '앞만 보고 곧게 뻗어나가려는 강한 자존심과 승부욕이 너무 짙은 반면',
+            '화': '순간적으로 확 타오르는 뜨거운 열정과 충동성이 지나치게 뚜렷한 반면',
+            '토': '묵묵히 참아내며 꾹꾹 눌러담는 고집과 방어적인 성향이 강한 반면',
+            '금': '칼같이 예리한 완벽주의와 타협 없는 잣대가 지나치게 센 반면',
+            '수': '깊은 생각과 불안에 침잠하여 결정을 쉽게 내리지 못하는 성향이 짙은 반면'
+        };
+
+        const traitText = maxTraitMap[maxOheng.name] || '이 성향이 겉으로 강하게 드러나는 반면';
+
+        if (summaryTxt) {
+            summaryTxt.innerHTML = `💡 내 사주는 <b>${maxOheng.label}(${maxOheng.pct}%)</b> 기운이 너무 세서 ${traitText}, <b>${minStr}</b> 기운이 부족해서 이 공백이 자꾸 고민과 누수로 이어져요.`;
+        }
         }
                 
         function renderResultView(data) {
