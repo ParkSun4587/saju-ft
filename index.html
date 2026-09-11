@@ -1281,14 +1281,12 @@
             const momentum1 = judgeMomentum(pick1, verdict1);
             const momentum2 = judgeMomentum(pick2, verdict2);
 
-            // NOTE 06 등에서 그대로 꽂아 쓸 수 있는 완결 문장. momentum별로 서로 모순되지 않게
-            // "이 시기가 왜 좋은지/조심해야 하는지"와 "그래서 뭘 해야 하는지"를 한 세트로 묶는다.
+            // F/T 모드 및 고민별 완결 문장 생성기
             function buildFullSentence(pick, momentum, isTMode) {
                 const w = pick ? pick.entry : null;
                 const sipsinLabel = w && w.sipsin ? w.sipsin : '해당 기운';
                 const gyeokLabel = gyeokguk ? gyeokguk.name : '사주 뼈대';
                 
-                // 고민별 F/T 모드 완벽 분기 지침
                 const ACTION_BY_MODE = {
                     T: {
                         money: '뜻밖의 기회나 돈맥이 들어올 때 머뭇거리지 말고 확실하게 실속을 낚아채야 합니다.',
@@ -1340,8 +1338,10 @@
                 reasonR2: buildReasonPhrase(verdict2),
                 detail: buildMonthDetail(pick1, verdict1),
                 detailR2: buildMonthDetail(pick2, verdict2),
-                fullSentence: (isTMode) => buildFullSentence(pick1, momentum1, isTMode),
-                fullSentenceR2: (isTMode) => buildFullSentence(pick2, momentum2, isTMode),
+                fullSentenceT: buildFullSentence(pick1, momentum1, true),
+                fullSentenceF: buildFullSentence(pick1, momentum1, false),
+                fullSentenceR2T: buildFullSentence(pick2, momentum2, true),
+                fullSentenceR2F: buildFullSentence(pick2, momentum2, false),
                 momentum1: momentum1,
                 momentum2: momentum2,
                 verdict1: verdict1,
