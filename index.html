@@ -1716,44 +1716,17 @@
                 ? '흐름이 다소 흔들리는 시기로, 무리한 확장이나 섣부른 투자를 피하고 내실을 다지며 방어벽을 높여야 하는 시점'
                 : '급격한 굴곡 없이 내 노력의 결과가 정직하게 반영되는 평온한 시점';
 
-            const badgeGyeokMap = {
-                '정관격': '현실 모습: 겉은 멀쩡한 FM, 속은 방전 직전',
-                '편관격': '현실 모습: 덤덤하게 총대 메고 기강 잡는 보스',
-                '상관격': '현실 모습: 위선 꼴 못 보는 프로 팩폭러',
-                '식신격': '현실 모습: 한 놈만 패는 외길 장인 연구원',
-                '정재격': '현실 모습: 겉은 쿨한 척, 속은 계산기 풀가동',
-                '편재격': '현실 모습: 도파민 냄새 맡고 판 키우는 야망가',
-                '정인격': '현실 모습: 생각만 100만 번, 방구석 전략가',
-                '편인격': '현실 모습: 사람 속 다 꿰뚫어 보는 멘탈 외계인',
-                '건록격': '현실 모습: 남한테 기대기 싫은 마이웨이 독종',
-                '양인격': '현실 모습: 눈빛으로 기선 제압하는 승부사',
-                '겁재격': '현실 모습: 지고는 못 사는 질투의 화신'
-            };
-            const dynamicBadge01 = badgeGyeokMap[gyeokName] || '현실 모습: 겉은 멀쩡한 척, 속은 방전 직전';
+            // NOTE 01: 본캐 성향 분석
+            const dynamicBadge01 = '내 본캐 성향 & 무의식 행동';
 
-            // gisinFound가 없으면(파격이 아니라 성격·평격 등 기신이 실제로 없는 사주) 격국 자체의
-            // 특성(gisinName 분기 4종 어디에도 안 걸리는 값)을 fallback으로 써서, 아래 if 사슬을
-            // 모두 지나쳐도 '누워서 릴스 보며 현실 도피하기'라는 무난한 기본값으로 자연스럽게 떨어지게 한다.
-            const gisinName = gStat.gisinFound || null;
-            let dynamicBadge02 = '고질병: 누워서 릴스 보며 현실 도피하기';
-            if (['비견', '겁재'].includes(gisinName)) dynamicBadge02 = '고질병: 남 눈치 보고 퍼주다 털리기';
-            else if (['식신', '상관'].includes(gisinName)) dynamicBadge02 = '고질병: 생각 없이 지르고 다음 날 이불킥';
-            else if (['편재', '정재'].includes(gisinName)) dynamicBadge02 = '고질병: 뜬구름 대박 좇다 시드머니 삭제';
-            else if (['편관', '정관'].includes(gisinName)) dynamicBadge02 = '고질병: 누워서 남의 시선 곱씹으며 자책하기';
-            else if (['편인', '정인'].includes(gisinName)) dynamicBadge02 = '고질병: 사람 의심하다 혼자 맘의 벽 쌓기';
+            // NOTE 02: 현실 도피 패턴
+            const dynamicBadge02 = '무의식적 현실 도피 패턴';
 
-            const badgeWealthMap = {
-              mok: '돈 버는 결: 나만의 틈새 아이디어 공략',
-              hwa: '돈 버는 결: 내 이름값 키워 몸값 올리기',
-              to: '돈 버는 결: 흔들리지 않는 고정수익 루트',
-              geum: '돈 버는 결: 칼 같은 전문 기술로 독점',
-              su: '돈 버는 결: 트렌드 읽고 타이밍 탑승'
-          };
-            const dynamicBadge03 = badgeWealthMap[yong] || '돈 버는 결: 내 고유 주특기로 털어먹기';
+            // NOTE 03: 재물운 및 돈맥
+            const dynamicBadge03 = '타고난 사주 재물운 & 돈맥';
 
-            let dynamicBadge06 = '골든타임: 2026 평정심 유지 & 내실 다지기';
-            if (tTiming.verdict1 === 'favorable') dynamicBadge06 = '골든타임: 2026 대운 터지는 풀악셀 구간';
-            else if (tTiming.verdict1 === 'unfavorable') dynamicBadge06 = '골든타임: 2026 지출·인간관계 방어 타이밍';
+            // NOTE 06: 현실 타임라인
+            const dynamicBadge06 = '2026-2027 운세 & 핵심 타이밍';
 
             return [
                 {
@@ -1791,7 +1764,7 @@
                 },
                 {
                    themeNum: '04',
-                   badge: isT ? '연애 블랙박스: 자존심 세우다 후회하기' : '연애 블랙박스: 상처받을까 봐 벽 치기',
+                   badge: '반복되는 연애 패턴 & 주의점',
                    title: isT 
                         ? `좋아할수록 쿨한 척 선 긋다 망하는 연애 블랙박스 & 똥차 감별법`
                         : `상처받기 두려워 마음 문 닫아걸고 혼자 눈물 삼키던 연애의 상처`,
@@ -1802,7 +1775,7 @@
                 },
                 {
                     themeNum: '05',
-                    badge: '인간관계 손절 기준',
+                    badge: '인간관계 필터 & 손절 기준',
                     title: isT 
                         ? `앞에선 다 맞춰주고 뒤에서 셔터 내리는 손절 방어벽`
                         : `온 세상 감정 쓰레기통 자처하다 상처투성이로 돌아선 인간관계`,
