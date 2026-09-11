@@ -1283,31 +1283,52 @@
 
             // NOTE 06 등에서 그대로 꽂아 쓸 수 있는 완결 문장. momentum별로 서로 모순되지 않게
             // "이 시기가 왜 좋은지/조심해야 하는지"와 "그래서 뭘 해야 하는지"를 한 세트로 묶는다.
-            function buildFullSentence(pick, momentum) {
+            function buildFullSentence(pick, momentum, isTMode) {
                 const w = pick ? pick.entry : null;
                 const sipsinLabel = w && w.sipsin ? w.sipsin : '해당 기운';
                 const gyeokLabel = gyeokguk ? gyeokguk.name : '사주 뼈대';
                 
-                const ACTION_BY_CONCERN = {
-                    money: '뜻밖의 부수입이나 재물 운이 열리는 결정적 승부처이니 놓치지 말고 잡으세요.',
-                    career: '이직이나 스카우트, 서류 합격 등 현실적인 커리어 제안을 적극적으로 낚아채야 합니다.',
-                    love: '자존심을 내려놓고 솔직하게 다가가면 깊은 인연으로 발전하는 결정적 타이밍입니다.',
-                    path: '망설이던 시험이나 프로젝트가 있다면 결과물을 세상에 던져야 하는 승부처입니다.',
-                    people: '나를 갉아먹는 관계는 정리되고 진짜 내 편이 되어줄 인연이 들어오는 시점입니다.',
-                    mental: '지긋지긋한 멘탈 방전이 끝나고 생체 에너지가 리셋되는 확실한 회복기입니다.'
+                // 고민별 F/T 모드 완벽 분기 지침
+                const ACTION_BY_MODE = {
+                    T: {
+                        money: '뜻밖의 기회나 돈맥이 들어올 때 머뭇거리지 말고 확실하게 실속을 낚아채야 합니다.',
+                        career: '이직이나 스카우트 제안이 오면 재지 말고 확실한 수치와 조건으로 승부 보십시오.',
+                        love: '괜한 자존심 세우며 간 보지 말고, 확실하게 직진해서 내 사람으로 판을 굳히세요.',
+                        path: '완벽한 때 기다리며 미루지 말고 준비된 상태에서 빠르게 결과물을 던져야 합니다.',
+                        people: '선 넘는 인간들은 단호하게 손절 치고, 내게 실질적 도움이 되는 인맥만 남기세요.',
+                        mental: '누워서 숏폼 보며 멘탈 낭비하지 말고 취침 전 스마트폰부터 끄는 루틴을 지키십시오.'
+                    },
+                    F: {
+                        money: '그동안 돈 때문에 마음고생 많으셨죠. 슬슬 숨통이 트이며 포근한 보상이 찾아올 거예요.',
+                        career: '혼자 모든 짐을 지고 버텨온 시간들이 빛을 발하며 내 진가를 알아주는 곳이 나타납니다.',
+                        love: '상처받을까 봐 두려워 닫아두었던 마음의 문을 열면, 나를 있는 그대로 안아줄 다정한 인연이 다가옵니다.',
+                        path: '남들의 속도에 조급해하지 마세요. 당신만의 섬세한 발걸음이 예쁜 꽃을 피우는 계절입니다.',
+                        people: '내 마음을 갉아먹던 버거운 인연은 자연스럽게 정리되고, 묵묵히 내 편이 되어줄 따뜻한 사람이 스며들어요.',
+                        mental: '지친 나를 다그치지 말고 온전히 쉬어가도 괜찮아요. 마음에 따뜻한 온기가 차오르는 회복기입니다.'
+                    }
                 };
-                const actMsg = ACTION_BY_CONCERN[concern] || ACTION_BY_CONCERN.money;
+
+                const modeKey = isTMode ? 'T' : 'F';
+                const actMsg = ACTION_BY_MODE[modeKey][concern] || ACTION_BY_MODE[modeKey].money;
 
                 if (momentum === 'passed') {
-                    return `이미 지나간 시기입니다. 다음 기회를 함께 확인해보세요.`;
+                    return isTMode ? '이미 지나간 시기입니다. 다음 기회를 차분히 공략하세요.' : '이미 지나간 계절이에요. 다가올 더 좋은 기회를 함께 기대해 봐요.';
                 } else if (momentum === 'strong') {
-                    return `이 시기에는 ${attachJosa(sipsinLabel, '이/가')} ${gyeokLabel}을 돕는 흐름과 맞물려 정체되었던 운의 물꼬가 트입니다. ${actMsg}`;
+                    return isTMode 
+                        ? `이 시기에는 ${attachJosa(sipsinLabel, '이/가')} ${gyeokLabel}을 뒷받침하며 정체되었던 물꼬가 확실히 터집니다. ${actMsg}`
+                        : `이 시기에는 ${attachJosa(sipsinLabel, '이/가')} 지친 나를 따뜻하게 돕는 기운으로 감싸줍니다. ${actMsg}`;
                 } else if (momentum === 'mixed') {
-                    return `해 전체로 보면 무리한 확장보다 방어가 필요하지만, 이 시기만큼은 ${attachJosa(sipsinLabel, '이/가')} 유리하게 작용합니다. 중요한 결정은 이때 집중적으로 처리하세요.`;
+                    return isTMode 
+                        ? `해 전체로는 방어가 우선이나, 이 시기만큼은 ${attachJosa(sipsinLabel, '이/가')} 유리하게 작용합니다. 중요한 결정은 이때 몰아서 끝내세요.`
+                        : `마음의 여유를 갖고 차분히 지켜보아야 할 해이지만, 이 시기만큼은 다정한 바람이 불어옵니다. 용기 내어 한 걸음 내딛어보세요.`;
                 } else if (momentum === 'caution') {
-                    return `이 시기는 뚜렷한 호재 없이 흘러가는 구간입니다. 판을 벌이기보다 내실을 다지고 지키는 데 집중하세요.`;
+                    return isTMode 
+                        ? `호재 없이 리스크가 숨어 있는 구간입니다. 판을 벌이지 말고 멘탈과 통장 방어벽부터 높이세요.`
+                        : `조금은 쉬어가며 내 마음을 먼저 안아주어야 하는 구간이에요. 무리하지 말고 나를 1순위로 아껴주세요.`;
                 } else {
-                    return `이 시기는 극단적인 부침 없이 평이하게 흘러갑니다. 일상의 루틴을 흔들림 없이 유지하는 쪽이 유리합니다.`;
+                    return isTMode 
+                        ? `급격한 부침 없이 흘러가는 시기입니다. 요행 바라지 말고 기본 루틴을 엄격히 수호하세요.`
+                        : `잔잔하고 평온하게 흘러가는 시간입니다. 조급해하지 말고 나만의 따뜻한 일상을 편안하게 지켜나가세요.`;
                 }
             }
 
@@ -1319,8 +1340,8 @@
                 reasonR2: buildReasonPhrase(verdict2),
                 detail: buildMonthDetail(pick1, verdict1),
                 detailR2: buildMonthDetail(pick2, verdict2),
-                fullSentence: buildFullSentence(pick1, momentum1),
-                fullSentenceR2: buildFullSentence(pick2, momentum2),
+                fullSentence: (isTMode) => buildFullSentence(pick1, momentum1, isTMode),
+                fullSentenceR2: (isTMode) => buildFullSentence(pick2, momentum2, isTMode),
                 momentum1: momentum1,
                 momentum2: momentum2,
                 verdict1: verdict1,
