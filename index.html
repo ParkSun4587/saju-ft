@@ -2782,7 +2782,7 @@
             `).join('');
 
             // [개선 1] 한자(己 등)와 '본원(일간)' 전문용어 완전 제거 ➔ '내 타고난 본체'
-            const ohengFriendlyMap = { mok: '목(나무)', hwa: '화(불)', to: '토(흙)', geum: '금(쇠)', su: '수(물)' };[cite: 2]
+            const ohengFriendlyMap = { mok: '목(나무)', hwa: '화(불)', to: '토(흙)', geum: '금(쇠)', su: '수(물)' };
             if (dayMasterTag) {
                 dayMasterTag.innerText = `내 타고난 본체: ${ohengFriendlyMap[dayOheng] || '흙(토)'}`;
             }
