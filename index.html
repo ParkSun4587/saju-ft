@@ -2480,8 +2480,8 @@
                     ? `🧊 "T발 너 C야?" 소리 나오는 자비 없는 극딜 모드` 
                     : `🌸 "우리 <span class="text-rose-700 font-black">${nameJosa}</span> 다 맞아" 극성 내 편 모드`;
                 badge.className = isT 
-                    ? "px-3.5 py-1.5 bg-sky-50 text-sky-600 border border-sky-200 rounded-full text-xs font-black tracking-tight shadow-sm" 
-                    : "px-3.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-xs font-black tracking-tight shadow-sm";
+                    ? "px-3.5 py-1.5 bg-sky-50 text-sky-600 border border-sky-200 rounded-full text-xs font-black tracking-tight shadow-sm break-keep inline-block text-center" 
+                    : "px-3.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-xs font-black tracking-tight shadow-sm break-keep inline-block text-center";
             }
             
             const mKey = data.mbtiKey || 'ESTJ';
@@ -2495,23 +2495,23 @@
                 sazuTitle.className = "mobile-title font-black text-center w-full px-2 mt-2 mb-1.5 leading-snug text-slate-900";
             }
 
-            // 2) 📌 내 본캐 취급설명서 3줄 불렛 주입 (CCTV급 일상 디테일 3줄)
+            // 2) 📌 핵심 성향 3줄 불렛 주입 (모바일 균형 줄바꿈 최적화)
             const bulletContainer = document.getElementById('manualBulletList');
             if (bulletContainer) {
                 const bList = isT ? prof.bullets_T : prof.bullets_F;
                 const bulletColor = isT ? 'text-sky-500' : 'text-rose-500';
                 bulletContainer.innerHTML = `
                     <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0">•</span>
-                        <span class="text-slate-800 font-bold leading-relaxed">${bList[0]}</span>
+                        <span class="${bulletColor} font-black shrink-0 mt-0.5">•</span>
+                        <span class="text-slate-800 font-bold leading-relaxed flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[0]}</span>
                     </div>
                     <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0">•</span>
-                        <span class="text-slate-800 font-bold leading-relaxed">${bList[1]}</span>
+                        <span class="${bulletColor} font-black shrink-0 mt-0.5">•</span>
+                        <span class="text-slate-800 font-bold leading-relaxed flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[1]}</span>
                     </div>
                     <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0">•</span>
-                        <span class="text-slate-800 font-bold leading-relaxed">${bList[2]}</span>
+                        <span class="${bulletColor} font-black shrink-0 mt-0.5">•</span>
+                        <span class="text-slate-800 font-bold leading-relaxed flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[2]}</span>
                     </div>
                 `;
             }
@@ -2575,8 +2575,8 @@
                             </span>
                         </div>
 
-                        <!-- 메모 타이틀 -->
-                        <h4 class="text-[14px] sm:text-[15px] font-black text-slate-900 leading-snug break-keep">
+                        <!-- 메모 타이틀 (외톨이 단어 방지 균형 줄바꿈) -->
+                        <h4 class="text-[14px] sm:text-[15px] font-black text-slate-900 leading-snug break-keep" style="text-wrap: balance;">
                             ${item.title}
                         </h4>
 
@@ -2588,7 +2588,7 @@
                         <!-- 메모 하단 실전 체크리스트 박스 -->
                         <div class="mt-2.5 pt-2.5 border-t border-dashed border-amber-200/60 flex items-start gap-2 bg-amber-50/40 p-2.5 rounded-xl text-left">
                             <span class="${checkColor} font-black text-xs shrink-0 mt-0.5">☑️</span>
-                            <div class="text-[11px] font-bold text-slate-800 leading-relaxed break-keep">
+                            <div class="text-[11px] font-bold text-slate-800 leading-relaxed break-keep flex-1 min-w-0" style="text-wrap: balance;">
                                 <span class="text-amber-800 font-extrabold">[실전 룰]</span> ${item.checklist}
                             </div>
                         </div>
@@ -2767,23 +2767,23 @@
                 mainTitle.innerText = `"${isT ? prof.title_T : prof.title_F}"`;
             }
 
-            // 3) 📌 내 본캐 취급설명서 3줄 불렛 주입
+            // 3) 📌 공유 카드 3줄 불렛 주입 (줄바꿈 최적화)
             const bulletContainer = document.getElementById('cardManualBulletList');
             if (bulletContainer) {
                 const bList = isT ? prof.bullets_T : prof.bullets_F;
                 const bulletColor = isT ? 'text-sky-500' : 'text-rose-500';
                 bulletContainer.innerHTML = `
                     <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0">•</span>
-                        <span>${bList[0]}</span>
+                        <span class="${bulletColor} font-black shrink-0 mt-0.5">•</span>
+                        <span class="flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[0]}</span>
                     </div>
                     <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0">•</span>
-                        <span>${bList[1]}</span>
+                        <span class="${bulletColor} font-black shrink-0 mt-0.5">•</span>
+                        <span class="flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[1]}</span>
                     </div>
                     <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0">•</span>
-                        <span>${bList[2]}</span>
+                        <span class="${bulletColor} font-black shrink-0 mt-0.5">•</span>
+                        <span class="flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[2]}</span>
                     </div>
                 `;
             }
