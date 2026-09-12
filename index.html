@@ -312,21 +312,21 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (친한 언니 갠톡 바이브 & 반말 답장형 UI) -->
+<!-- 0. 화면분할 인트로 (유료 전환율 극대화: 신뢰도 뱃지 + CTA 강조) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950">
     <style>
-        @keyframes typing-dot {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
-            30% { transform: translateY(-4px); opacity: 1; }
+        /* 버튼 펄스(숨쉬기) 애니메이션으로 터치 유도 */
+        @keyframes buttonGlowRoa {
+            0%, 100% { box-shadow: 0 4px 14px rgba(244,63,94,0.2), 0 0 0 0 rgba(244,63,94,0.3); }
+            50% { box-shadow: 0 4px 14px rgba(244,63,94,0.2), 0 0 0 5px rgba(244,63,94,0); }
         }
-        .t-dot-1 { animation: typing-dot 1.2s infinite ease-in-out 0s; }
-        .t-dot-2 { animation: typing-dot 1.2s infinite ease-in-out 0.2s; }
-        .t-dot-3 { animation: typing-dot 1.2s infinite ease-in-out 0.4s; }
-        @keyframes bubblePop {
-            0% { transform: scale(0.85); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        .btn-glow-roa { animation: buttonGlowRoa 2s infinite; }
+        
+        @keyframes buttonGlowSeoa {
+            0%, 100% { box-shadow: 0 4px 14px rgba(2,132,199,0.35), 0 0 0 0 rgba(2,132,199,0.4); }
+            50% { box-shadow: 0 4px 14px rgba(2,132,199,0.35), 0 0 0 5px rgba(2,132,199,0); }
         }
-        .bubble-pop { animation: bubblePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .btn-glow-seoa { animation: buttonGlowSeoa 2s infinite; }
     </style>
     
     <!-- 모바일 크기 고정 컨테이너 -->
@@ -335,7 +335,7 @@
         <!-- 중앙 미니멀 구분선 -->
         <div class="absolute top-1/2 left-0 w-full h-px bg-white/50 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.6)]"></div>
 
-        <!-- 최상단 헤더: 사주 데이터 해석 선택 훅킹 캡슐 -->
+        <!-- 최상단 헤더: 이모티콘 수정 👇 -->
         <div id="splitTitle" class="absolute left-0 w-full z-[70] pointer-events-none px-4 flex justify-center" style="top: calc(env(safe-area-inset-top, 0px) + 12px);">
             <div id="topTitleBox" class="bg-slate-900/90 backdrop-blur-xl px-5 py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-700 flex items-center justify-center">
                 <span class="text-[11.5px] sm:text-[12px] font-black text-amber-300 tracking-tight text-center">똑같은 사주 데이터, 어떤 언니한테 해석 맡길래? 👇</span>
@@ -343,66 +343,89 @@
         </div>
 
         <!-- F 패널 (로아: 따뜻한 공감 언니) -->
-        <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden">
-            <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-105">
+        <!-- flex-col justify-end를 주어 하단 여백 관리를 용이하게 함 -->
+        <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden flex flex-col justify-end">
+            
+            <!-- 인물 포지션 조정 (얼굴이 덜 가려지도록) -->
+            <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_15%] transition-transform duration-700 group-hover:scale-105">
 
-            <!-- 바닥 그라데이션 -->
-            <div class="absolute inset-x-0 bottom-0 h-[28%] bg-gradient-to-t from-rose-100/60 via-transparent to-transparent pointer-events-none"></div>
+            <!-- 텍스트 가독성을 위한 그라데이션 강화 -->
+            <div class="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-rose-100/90 via-rose-100/40 to-transparent pointer-events-none"></div>
 
             <!-- 대화 묶음 -->
-            <div class="absolute inset-x-0 bottom-0 pb-3.5 px-3.5 flex flex-col gap-1.5 pointer-events-none">
+            <div class="relative z-10 pb-4 px-3.5 flex flex-col gap-1.5 pointer-events-none w-full">
+                
+                <!-- 1. 전문성 신뢰 뱃지 (Trust Mark) -->
+                <div class="flex mb-0.5">
+                    <span class="ml-1 bg-white/95 backdrop-blur text-rose-600 px-2 py-0.5 rounded text-[9.5px] font-black tracking-tight border border-rose-200 shadow-sm">
+                        정통 만세력 기반 · 감정 케어 특화
+                    </span>
+                </div>
+
                 <div class="flex items-center gap-1.5 pl-1">
                     <img src="./로아.png" alt="로아 프로필" class="w-6 h-6 rounded-full object-cover object-[center_15%] border-2 border-white shadow-sm">
-                    <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">로아</span>
+                    <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">로아</span>
                 </div>
 
                 <!-- 언니 말풍선 -->
-                <div class="relative bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[90%] ml-1 border border-rose-200">
+                <div class="relative bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[92%] ml-1 border border-rose-200">
                     <span class="absolute -left-[5px] top-0 w-3 h-3 bg-white" style="clip-path: polygon(100% 0, 0 0, 100% 100%);"></span>
                     <p class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-800 leading-snug break-keep">
-                        "사주 결과가 어떻든 무조건 네 편할 거니까 걱정 마. 힘든 거 있으면 다 기대도 돼."
+                        사주 결과가 어떻든 무조건 네 편할 거니까 걱정 마. 힘든 거 있으면 다 기대도 돼.
                     </p>
                 </div>
 
-                <!-- 친한 바이브의 유저 답장형 CTA -->
-                <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
-                    <div class="relative bg-[#ffe4e6] text-[#9f1239] border border-[#fda4af] px-4 py-2.5 rounded-2xl rounded-tr-none shadow-md flex items-center gap-2 active:scale-95 transition-transform">
-                        <span class="text-[12px] font-black tracking-tight">"응, 나 진짜 힘드니까 무조건 내 편부터 들어줘"</span>
-                        <span class="text-sm font-black leading-none text-[#e11d48]">›</span>
-                        <span class="absolute -right-[5px] top-0 w-3 h-3 bg-[#ffe4e6] border-t border-r border-[#fda4af]" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
+                <!-- 2. 시인성과 터치 유도를 극대화한 CTA -->
+                <div class="w-full flex justify-end mt-1.5 pr-1 pointer-events-auto">
+                    <!-- 테두리(border-2)와 애니메이션(btn-glow-roa) 추가 -->
+                    <div class="relative bg-[#fff1f2] text-rose-700 border-2 border-rose-300 px-4 py-2.5 rounded-2xl rounded-tr-none flex items-center gap-2 active:scale-95 transition-transform btn-glow-roa">
+                        <span class="text-[12px] font-black tracking-tight">응, 나 진짜 힘드니까 무조건 내 편부터 들어줘</span>
+                        <span class="text-sm font-black leading-none text-rose-500">›</span>
+                        <span class="absolute -right-[6px] top-[-2px] w-3 h-3 bg-[#fff1f2] border-t-2 border-r-2 border-rose-300" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- T 패널 (서아: 팩폭 직구 언니) -->
-        <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden">
-            <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
+        <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden flex flex-col justify-end">
+            
+            <!-- 인물 포지션 위로 조정 (가슴과 헤드폰 답답함 해소) -->
+            <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_10%] transition-transform duration-700 group-hover:scale-105">
 
-            <!-- 바닥 그라데이션 -->
-            <div class="absolute inset-x-0 bottom-0 h-[28%] bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none"></div>
+            <!-- 텍스트 가독성을 위한 그라데이션 강화 -->
+            <div class="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-slate-950/90 via-slate-900/50 to-transparent pointer-events-none"></div>
 
             <!-- 대화 묶음 -->
-            <div class="absolute inset-x-0 bottom-0 pb-3.5 px-3.5 flex flex-col gap-1.5 pointer-events-none">
+            <div class="relative z-10 pb-4 px-3.5 flex flex-col gap-1.5 pointer-events-none w-full">
+                
+                <!-- 1. 전문성 신뢰 뱃지 (Trust Mark) -->
+                <div class="flex mb-0.5">
+                    <span class="ml-1 bg-slate-800/95 backdrop-blur text-sky-300 px-2 py-0.5 rounded text-[9.5px] font-black tracking-tight border border-slate-600 shadow-sm">
+                        십신/신살 정밀 분석 · 팩트 분석 특화
+                    </span>
+                </div>
+
                 <div class="flex items-center gap-1.5 pl-1">
                     <img src="./서아.png" alt="서아 프로필" class="w-6 h-6 rounded-full object-cover object-[center_15%] border-2 border-white shadow-sm">
-                    <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">서아</span>
+                    <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">서아</span>
                 </div>
 
                 <!-- 언니 말풍선 -->
-                <div class="relative bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[90%] ml-1 border border-slate-700">
+                <div class="relative bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[92%] ml-1 border border-slate-700">
                     <span class="absolute -left-[5px] top-0 w-3 h-3 bg-slate-900" style="clip-path: polygon(100% 0, 0 0, 100% 100%);"></span>
                     <p class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-100 leading-snug break-keep">
-                        "사주 원국에 뚫린 구멍부터 팩트로 막아줄 테니까 징징대지 말고 와."
+                        사주 원국에 뚫린 구멍부터 팩트로 막아줄 테니까 징징대지 말고 와.
                     </p>
                 </div>
 
-                <!-- 친한 바이브의 유저 답장형 CTA -->
-                <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
-                    <div class="relative bg-[#0284c7] text-white px-4 py-2.5 rounded-2xl rounded-tr-none shadow-md flex items-center gap-2 active:scale-95 transition-transform">
-                        <span class="text-[12px] font-black tracking-tight">"징징 안 댈게. 필터링 다 빼고 날것 그대로 까줘"</span>
+                <!-- 2. 시인성과 터치 유도를 극대화한 CTA -->
+                <div class="w-full flex justify-end mt-1.5 pr-1 pointer-events-auto">
+                    <!-- 테두리(border-2)와 애니메이션(btn-glow-seoa) 추가 -->
+                    <div class="relative bg-[#0284c7] text-white border-2 border-sky-400 px-4 py-2.5 rounded-2xl rounded-tr-none flex items-center gap-2 active:scale-95 transition-transform btn-glow-seoa">
+                        <span class="text-[12px] font-black tracking-tight">징징 안 댈게. 필터링 다 빼고 날것 그대로 까줘</span>
                         <span class="text-sm font-black leading-none text-sky-200">›</span>
-                        <span class="absolute -right-[5px] top-0 w-3 h-3 bg-[#0284c7]" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
+                        <span class="absolute -right-[6px] top-[-2px] w-3 h-3 bg-[#0284c7] border-t-2 border-r-2 border-sky-400" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
                     </div>
                 </div>
             </div>
