@@ -312,7 +312,7 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (타이핑 도트 깜빡임 후 말풍선 팝업 연출) -->
+<!-- 0. 화면분할 인트로 (실시간 카톡 타이핑 릴레이 연출 적용) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950">
     <style>
         @keyframes typing-dot {
@@ -323,10 +323,10 @@
         .t-dot-2 { animation: typing-dot 1.2s infinite ease-in-out 0.2s; }
         .t-dot-3 { animation: typing-dot 1.2s infinite ease-in-out 0.4s; }
         @keyframes bubblePop {
-            0% { transform: scale(0.9); opacity: 0; }
+            0% { transform: scale(0.85); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        .bubble-pop { animation: bubblePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .bubble-pop { animation: bubblePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
     </style>
     
     <!-- 모바일 크기 고정 컨테이너 -->
@@ -335,15 +335,10 @@
         <!-- 중앙 미니멀 빛 구분선 -->
         <div class="absolute top-1/2 left-0 w-full h-px bg-white/40 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.5)]"></div>
 
-        <!-- 최상단 헤더: 타이핑 도트 -> 훅킹 캡슐 -->
+        <!-- 최상단 헤더: 언니 선택 유도 훅킹 캡슐 -->
         <div id="splitTitle" class="absolute left-0 w-full z-[70] pointer-events-none px-4 flex justify-center" style="top: calc(env(safe-area-inset-top, 0px) + 12px);">
             <div id="topTitleBox" class="bg-white/90 backdrop-blur-xl px-5 py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-white/80 flex items-center justify-center min-h-[34px]">
-                <div id="topTypingDots" class="flex items-center gap-1 py-0.5">
-                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full t-dot-1"></span>
-                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full t-dot-2"></span>
-                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full t-dot-3"></span>
-                </div>
-                <span id="topTitleText" class="text-[11.5px] sm:text-[12px] font-black text-slate-800 tracking-tight text-center hidden">"요즘 무슨 일 있어? 언니가 사주로 다 봐줄게"</span>
+                <span id="topTitleText" class="text-[11.5px] sm:text-[12px] font-black text-slate-800 tracking-tight text-center">"내 사주를 봐줄 언니를 골라봐 👇"</span>
             </div>
         </div>
 
@@ -351,7 +346,7 @@
         <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden">
             <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-105">
 
-            <!-- 바닥 초미니 그라데이션 -->
+            <!-- 바닥 그라데이션 -->
             <div class="absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-t from-rose-100/50 via-transparent to-transparent pointer-events-none"></div>
 
             <!-- 카톡 스타일 말풍선 묶음 -->
@@ -362,18 +357,13 @@
                     <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">로아</span>
                 </div>
 
-                <!-- 말풍선 1 -->
+                <!-- 말풍선 1 (첫 번째 마디) -->
                 <div class="relative bg-white px-3.5 py-2 rounded-2xl shadow-[0_3px_10px_rgba(0,0,0,0.12)] max-w-[65%] ml-1 min-h-[32px] flex items-center">
                     <span class="absolute -left-[5px] top-2.5 w-3 h-3 bg-white" style="clip-path: polygon(100% 0, 100% 100%, 0 50%);"></span>
-                    <div id="roaBubble1Dots" class="flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 bg-rose-400 rounded-full t-dot-1"></span>
-                        <span class="w-1.5 h-1.5 bg-rose-400 rounded-full t-dot-2"></span>
-                        <span class="w-1.5 h-1.5 bg-rose-400 rounded-full t-dot-3"></span>
-                    </div>
-                    <p id="roaBubble1Text" class="text-[12px] font-bold text-slate-800 leading-snug break-keep hidden">혼자 끙끙 앓지 마 🥺</p>
+                    <p class="text-[12px] font-bold text-slate-800 leading-snug break-keep">혼자 끙끙 앓지 마 🥺</p>
                 </div>
 
-                <!-- 말풍선 2 -->
+                <!-- 말풍선 2 (두 번째 마디 - 타이핑 딜레이 적용) -->
                 <div class="relative bg-white px-3.5 py-2 rounded-2xl shadow-[0_3px_10px_rgba(0,0,0,0.12)] max-w-[85%] ml-1 min-h-[32px] flex items-center">
                     <span class="absolute -left-[5px] top-2.5 w-3 h-3 bg-white" style="clip-path: polygon(100% 0, 100% 100%, 0 50%);"></span>
                     <div id="roaBubble2Dots" class="flex items-center gap-1">
@@ -396,7 +386,7 @@
         <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden">
             <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
 
-            <!-- 바닥 초미니 그라데이션 -->
+            <!-- 바닥 그라데이션 -->
             <div class="absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-t from-slate-900/50 via-transparent to-transparent pointer-events-none"></div>
 
             <!-- 카톡 스타일 말풍선 묶음 (다크) -->
@@ -407,18 +397,13 @@
                     <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">서아</span>
                 </div>
 
-                <!-- 말풍선 1 -->
+                <!-- 말풍선 1 (첫 번째 마디) -->
                 <div class="relative bg-slate-900 px-3.5 py-2 rounded-2xl shadow-[0_3px_10px_rgba(0,0,0,0.3)] max-w-[70%] ml-1 min-h-[32px] flex items-center">
                     <span class="absolute -left-[5px] top-2.5 w-3 h-3 bg-slate-900" style="clip-path: polygon(100% 0, 100% 100%, 0 50%);"></span>
-                    <div id="seoBubble1Dots" class="flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 bg-sky-400 rounded-full t-dot-1"></span>
-                        <span class="w-1.5 h-1.5 bg-sky-400 rounded-full t-dot-2"></span>
-                        <span class="w-1.5 h-1.5 bg-sky-400 rounded-full t-dot-3"></span>
-                    </div>
-                    <p id="seoBubble1Text" class="text-[12px] font-bold text-slate-100 leading-snug break-keep hidden">혼자 고민해 봤자 답 안 나와</p>
+                    <p class="text-[12px] font-bold text-slate-100 leading-snug break-keep">혼자 고민해 봤자 답 안 나와</p>
                 </div>
 
-                <!-- 말풍선 2 -->
+                <!-- 말풍선 2 (두 번째 마디 - 타이핑 딜레이 적용) -->
                 <div class="relative bg-slate-900 px-3.5 py-2 rounded-2xl shadow-[0_3px_10px_rgba(0,0,0,0.3)] max-w-[90%] ml-1 min-h-[32px] flex items-center">
                     <span class="absolute -left-[5px] top-2.5 w-3 h-3 bg-slate-900" style="clip-path: polygon(100% 0, 100% 100%, 0 50%);"></span>
                     <div id="seoBubble2Dots" class="flex items-center gap-1">
@@ -441,26 +426,8 @@
 </main>
 
 <script>
-    // 타이핑 도트 재생 후 말풍선 텍스트 순차 등장 연출
+    // 두 번째 말풍선만 타이핑 도트 연출 후 팝업되도록 제어
     window.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-            const topDots = document.getElementById('topTypingDots');
-            const topText = document.getElementById('topTitleText');
-            if (topDots) topDots.classList.add('hidden');
-            if (topText) { topText.classList.remove('hidden'); topText.classList.add('bubble-pop'); }
-        }, 500);
-
-        setTimeout(() => {
-            const r1Dots = document.getElementById('roaBubble1Dots');
-            const r1Text = document.getElementById('roaBubble1Text');
-            const s1Dots = document.getElementById('seoBubble1Dots');
-            const s1Text = document.getElementById('seoBubble1Text');
-            if (r1Dots) r1Dots.classList.add('hidden');
-            if (r1Text) { r1Text.classList.remove('hidden'); r1Text.classList.add('bubble-pop'); }
-            if (s1Dots) s1Dots.classList.add('hidden');
-            if (s1Text) { s1Text.classList.remove('hidden'); s1Text.classList.add('bubble-pop'); }
-        }, 900);
-
         setTimeout(() => {
             const r2Dots = document.getElementById('roaBubble2Dots');
             const r2Text = document.getElementById('roaBubble2Text');
@@ -470,7 +437,7 @@
             if (r2Text) { r2Text.classList.remove('hidden'); r2Text.classList.add('bubble-pop'); }
             if (s2Dots) s2Dots.classList.add('hidden');
             if (s2Text) { s2Text.classList.remove('hidden'); s2Text.classList.add('bubble-pop'); }
-        }, 1300);
+        }, 900); // 0.9초 뒤 두 번째 마디가 입력되어 튀어나옴
     });
 </script>
     
