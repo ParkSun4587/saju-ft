@@ -367,207 +367,266 @@
     </div>
 </main>
     
-<!-- 1. 랜딩 페이지 (모바일 1화면 완벽 핏) -->
-    <main id="landingSection" style="display:none;" class="max-w-md w-full flex flex-col justify-center min-h-[100dvh] py-3 space-y-2.5">
-        <!-- 선택한 언니와의 대화형 웰컴 헤더 영역 -->
-        <div id="landingHeader" class="flex flex-col items-center text-center pb-2 transition-all duration-300">
-            <div class="relative mb-2">
-                <img id="welcomeSisterImg" src="./로아.png" alt="선택한 언니" class="w-16 h-16 rounded-full object-cover border-2 border-rose-300 shadow-md">
-                <span id="welcomeSisterBadge" class="absolute -bottom-1 -right-1 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm">F 로아</span>
+<!-- 1. 카톡 인터뷰형 사주 정보 입력 (몰입형 1:1 대화 UI) -->
+    <main id="landingSection" style="display:none;" class="fixed inset-0 z-50 flex flex-col bg-[#abc1d1] w-full h-[100dvh] overflow-hidden">
+        
+        <!-- 카톡 상단 헤더 바 -->
+        <header class="bg-[#abc1d1]/95 backdrop-blur-md px-4 py-2.5 flex items-center justify-between border-b border-black/5 shrink-0 z-20" style="padding-top: calc(env(safe-area-inset-top, 0px) + 8px);">
+            <div class="flex items-center gap-2.5">
+                <button type="button" onclick="startFreshAnalysis()" class="text-slate-800 text-lg font-bold p-1 bg-transparent border-0 cursor-pointer">←</button>
+                <div class="relative">
+                    <img id="welcomeSisterImg" src="./로아.png" alt="프로필" class="w-9 h-9 rounded-full object-cover border border-white/60 shadow-sm">
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white"></span>
+                </div>
+                <div>
+                    <h2 id="welcomeSisterBadge" class="text-xs font-extrabold text-slate-900 leading-tight">로아 언니</h2>
+                    <span class="text-[10px] text-slate-600 font-medium">실시간 사주 상담 중</span>
+                </div>
             </div>
-            <div id="welcomeSisterBubble" class="bg-rose-50 border border-rose-200 px-4 py-2 rounded-2xl max-w-[290px] shadow-sm">
-                <p id="welcomeSisterText" class="text-xs font-bold text-slate-800 leading-snug break-keep">
-                    반가워! 네 사주 꼼꼼하게 봐줄게.<br>우선 네 <b class="text-rose-600">이름(닉네임)</b>부터 알려줘 💕
-                </p>
+            <div class="bg-black/10 text-slate-800 px-2.5 py-1 rounded-full text-[10px] font-bold">🔒 1:1 비밀 상담</div>
+        </header>
+
+        <!-- 카톡 대화 및 인터랙티브 폼 리스트 (스크롤 영역) -->
+        <div class="flex-1 overflow-y-auto p-3.5 space-y-3 scroll-smooth">
+            
+            <!-- 오늘 날짜 구분선 -->
+            <div class="flex justify-center my-1">
+                <span class="bg-black/10 text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full">오늘</span>
             </div>
-        </div>
-        <div class="card-box p-3.5 sm:p-4 rounded-[24px] space-y-2.5 border border-rose-100 bg-white/95 shadow-sm">
-            <form id="sazuForm" class="space-y-2.5" onsubmit="event.preventDefault();">
-                <!-- 이름 & 성별 (1020 여성 타깃에 맞춰 '여'를 기본 선택으로 설정) -->
-                <div class="grid grid-cols-2 gap-2 items-end">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 mb-0.5">내 이름</label>
-                        <input type="text" id="nameInput" maxlength="10" placeholder="이름" class="input-box w-full h-[38px] px-3 rounded-xl border border-slate-200 bg-slate-50/50 font-bold placeholder-slate-400 text-xs focus:bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 mb-0.5">성별</label>
-                        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/60 h-[40px] items-center">
-                            <button type="button" id="btnFemale" onclick="setGender('female')" class="toggle-tab-btn active h-full text-xs font-bold rounded-lg">여</button>
-                            <button type="button" id="btnMale" onclick="setGender('male')" class="toggle-tab-btn inactive h-full text-xs font-bold rounded-lg">남</button>
-                        </div>
-                        <input type="hidden" id="genderValue" value="female">
-                    </div>
-                </div>
 
-                <!-- 고민 선택 (이모지 통일 & 서브텍스트 명도 개선) -->
+            <!-- 1) 언니 인사 말풍선 -->
+            <div class="flex items-start gap-2 max-w-[88%]">
+                <img id="chatBubbleProfileMini" src="./로아.png" class="w-8 h-8 rounded-full object-cover shrink-0 mt-0.5">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-500 mb-1">
-                        지금 제일 답답한 문제는?
-                    </label>
-                    <input type="hidden" id="selectedConcernKey" value="money">
-                    <div class="grid grid-cols-2 gap-1.5" id="concernGrid">
-                        <button type="button" onclick="selectConcern('money', this)" class="concern-chip selected p-2 rounded-xl flex items-center gap-2">
-                            <span class="text-base shrink-0">💸</span>
-                            <div class="truncate text-left">
-                                <div class="chip-title text-xs font-bold leading-tight">돈복 · 텅장</div>
-                                <div class="text-[10px] text-slate-500 truncate mt-0.5">언제쯤 돈 모일까?</div>
-                            </div>
-                        </button>
-                        <button type="button" onclick="selectConcern('career', this)" class="concern-chip p-2 rounded-xl flex items-center gap-2">
-                            <span class="text-base shrink-0">💼</span>
-                            <div class="truncate text-left">
-                                <div class="chip-title text-xs font-bold leading-tight">취업 · 이직</div>
-                                <div class="text-[10px] text-slate-500 truncate mt-0.5">서류 합격 & 퇴사 타이밍</div>
-                            </div>
-                        </button>
-                        <button type="button" onclick="selectConcern('love', this)" class="concern-chip p-2 rounded-xl flex items-center gap-2">
-                            <span class="text-base shrink-0">💖</span>
-                            <div class="truncate text-left">
-                                <div class="chip-title text-xs font-bold leading-tight">연애 · 썸</div>
-                                <div class="text-[10px] text-slate-500 truncate mt-0.5">내 찐인연 언제 나타남?</div>
-                            </div>
-                        </button>
-                        <button type="button" onclick="selectConcern('path', this)" class="concern-chip p-2 rounded-xl flex items-center gap-2">
-                            <span class="text-base shrink-0">🧭</span>
-                            <div class="truncate text-left">
-                                <div class="chip-title text-xs font-bold leading-tight">진로 · 미래</div>
-                                <div class="text-[10px] text-slate-500 truncate mt-0.5">내 적성과 평생 먹고살 길</div>
-                            </div>
-                        </button>
-                        <button type="button" onclick="selectConcern('people', this)" class="concern-chip p-2 rounded-xl flex items-center gap-2">
-                            <span class="text-base shrink-0">✂️</span>
-                            <div class="truncate text-left">
-                                <div class="chip-title text-xs font-bold leading-tight">인간관계 · 손절</div>
-                                <div class="text-[10px] text-slate-500 truncate mt-0.5">선 넘는 인간 손절각</div>
-                            </div>
-                        </button>
-                        <button type="button" onclick="selectConcern('mental', this)" class="concern-chip p-2 rounded-xl flex items-center gap-2">
-                            <span class="text-base shrink-0">🔋</span>
-                            <div class="truncate text-left">
-                                <div class="chip-title text-xs font-bold leading-tight">번아웃 · 멘탈</div>
-                                <div class="text-[10px] text-slate-500 truncate mt-0.5">개복치 멘탈 회복기</div>
-                            </div>
-                        </button>
+                    <span id="chatSenderNameTitle" class="text-[11px] text-slate-700 font-bold block mb-1">로아 언니</span>
+                    <div id="welcomeSisterBubble" class="bg-white text-slate-900 text-xs sm:text-[12.5px] font-medium p-3 rounded-2xl rounded-tl-none shadow-sm leading-relaxed border border-white/40">
+                        <p id="welcomeSisterText">반가워! 네 사주 꼼꼼하게 봐줄게.<br>우선 네 <b class="text-rose-600">이름(닉네임)</b>부터 알려줘 💕</p>
                     </div>
                 </div>
+            </div>
 
-                <!-- 생년월일 (높이 컴팩트 최적화) -->
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 mb-0.5">생년월일</label>
-                    <input type="hidden" id="calendarSelect" value="solar">
-                    <div class="flex gap-1.5 items-center">
-                        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200/50 w-[95px] shrink-0 h-[38px] items-center">
-                            <button type="button" id="btnSolar" onclick="setCalendar('solar')" class="toggle-tab-btn active text-xs font-bold h-full rounded-lg">양력</button>
-                            <button type="button" id="btnLunar" onclick="setCalendar('lunar')" class="toggle-tab-btn inactive text-xs font-bold h-full rounded-lg">음력</button>
-                        </div>
-                        <input type="tel" id="birthDateInput" maxlength="10" inputmode="numeric" placeholder="8자리 (예: 20010524)" oninput="formatBirthDate(this)" class="input-box flex-1 min-w-0 h-[38px] px-3 rounded-xl border border-slate-200 bg-slate-50/50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white">
-                    </div>
-                </div>
+            <!-- 2) 카톡형 사주 입력 카드 말풍선 -->
+            <div class="flex items-start gap-2 max-w-[95%] pt-1">
+                <div class="w-8 shrink-0"></div>
+                <div class="bg-white p-3.5 rounded-2xl rounded-tl-none shadow-sm border border-white/40 w-full space-y-3">
+                    <p class="text-[11.5px] font-extrabold text-slate-800 border-b border-slate-100 pb-2">
+                        📋 정확한 만세력 원국 조회를 위해 적어줘
+                    </p>
 
-                <!-- 태어난 시간 -->
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 mb-0.5">태어난 시간</label>
-                    <div class="relative">
-                        <select id="birthTimeSelect" onchange="window.scrollTo({ top: 0, behavior: 'smooth' });" class="input-box w-full h-[38px] px-3 pr-8 rounded-xl border border-slate-200 bg-slate-50/50 text-center font-bold text-xs cursor-pointer appearance-none text-slate-700 focus:bg-white">
-                            <option value="" selected disabled>태어난 시간 선택</option>
-                            <option value="unknown">시간 모름 (정밀 추정)</option>
-                            <option value="子">자시 (23:30 ~ 01:29)</option>
-                            <option value="丑">축시 (01:30 ~ 03:29)</option>
-                            <option value="寅">인시 (03:30 ~ 05:29)</option>
-                            <option value="卯">묘시 (05:30 ~ 07:29)</option>
-                            <option value="辰">진시 (07:30 ~ 09:29)</option>
-                            <option value="巳">사시 (09:30 ~ 11:29)</option>
-                            <option value="午">오시 (11:30 ~ 13:29)</option>
-                            <option value="未">미시 (13:30 ~ 15:29)</option>
-                            <option value="申">신시 (15:30 ~ 17:29)</option>
-                            <option value="酉">유시 (17:30 ~ 19:29)</option>
-                            <option value="戌">술시 (19:30 ~ 21:29)</option>
-                            <option value="亥">해시 (21:30 ~ 23:29)</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                            </svg>
+                    <form id="sazuForm" class="space-y-2.5" onsubmit="event.preventDefault();">
+                        
+                        <!-- 이름 & 성별 -->
+                        <div class="grid grid-cols-2 gap-2 items-end">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-0.5">내 이름</label>
+                                <input type="text" id="nameInput" maxlength="10" placeholder="이름" class="w-full h-[36px] px-3 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs focus:bg-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-0.5">성별</label>
+                                <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 h-[36px] items-center">
+                                    <button type="button" id="btnFemale" onclick="setGender('female')" class="toggle-tab-btn active h-full text-xs font-bold rounded-lg">여</button>
+                                    <button type="button" id="btnMale" onclick="setGender('male')" class="toggle-tab-btn inactive h-full text-xs font-bold rounded-lg">남</button>
+                                </div>
+                                <input type="hidden" id="genderValue" value="female">
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- 실행 버튼 (이모지 제거 및 세련된 타이포그래피 정돈) -->
-                <div id="originalFTButtons" class="pt-1 grid grid-cols-2 gap-2">
-                    <button type="button" onclick="startAnalysis('F')" class="btn-action-f py-2.5 px-2 rounded-2xl text-center flex flex-col items-center justify-center">
-                        <div class="text-rose-600 font-black text-sm leading-tight flex items-center gap-1.5">
-                            <span class="bg-rose-100 text-rose-600 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md">F</span>
-                            <span>공감받을래</span>
+                        <!-- 고민 선택 -->
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1">지금 제일 답답한 문제는?</label>
+                            <input type="hidden" id="selectedConcernKey" value="money">
+                            <div class="grid grid-cols-2 gap-1.5" id="concernGrid">
+                                <button type="button" onclick="selectConcern('money', this)" class="concern-chip selected p-1.5 rounded-xl flex items-center gap-1.5">
+                                    <span class="text-sm shrink-0">💸</span>
+                                    <div class="truncate text-left">
+                                        <div class="chip-title text-[11px] font-bold leading-tight">돈복 · 텅장</div>
+                                        <div class="text-[9px] text-slate-500 truncate">언제 돈 모일까?</div>
+                                    </div>
+                                </button>
+                                <button type="button" onclick="selectConcern('career', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
+                                    <span class="text-sm shrink-0">💼</span>
+                                    <div class="truncate text-left">
+                                        <div class="chip-title text-[11px] font-bold leading-tight">취업 · 이직</div>
+                                        <div class="text-[9px] text-slate-500 truncate">서류 합격·퇴사각</div>
+                                    </div>
+                                </button>
+                                <button type="button" onclick="selectConcern('love', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
+                                    <span class="text-sm shrink-0">💖</span>
+                                    <div class="truncate text-left">
+                                        <div class="chip-title text-[11px] font-bold leading-tight">연애 · 썸</div>
+                                        <div class="text-[9px] text-slate-500 truncate">내 찐인연 시점</div>
+                                    </div>
+                                </button>
+                                <button type="button" onclick="selectConcern('path', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
+                                    <span class="text-sm shrink-0">🧭</span>
+                                    <div class="truncate text-left">
+                                        <div class="chip-title text-[11px] font-bold leading-tight">진로 · 미래</div>
+                                        <div class="text-[9px] text-slate-500 truncate">적성과 평생 갈 길</div>
+                                    </div>
+                                </button>
+                                <button type="button" onclick="selectConcern('people', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
+                                    <span class="text-sm shrink-0">✂️</span>
+                                    <div class="truncate text-left">
+                                        <div class="chip-title text-[11px] font-bold leading-tight">인간관계</div>
+                                        <div class="text-[9px] text-slate-500 truncate">선 넘는 인간 손절</div>
+                                    </div>
+                                </button>
+                                <button type="button" onclick="selectConcern('mental', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
+                                    <span class="text-sm shrink-0">🔋</span>
+                                    <div class="truncate text-left">
+                                        <div class="chip-title text-[11px] font-bold leading-tight">번아웃·멘탈</div>
+                                        <div class="text-[9px] text-slate-500 truncate">멘탈 회복 타이밍</div>
+                                    </div>
+                                </button>
+                            </div>
                         </div>
-                        <div class="text-[10px] text-rose-500/80 font-medium mt-0.5">내 편이 되어주는 위로</div>
-                    </button>
-                    <button type="button" onclick="startAnalysis('T')" class="btn-action-t py-2.5 px-2 rounded-2xl text-center flex flex-col items-center justify-center">
-                        <div class="text-sky-600 font-black text-sm leading-tight flex items-center gap-1.5">
-                            <span class="bg-sky-100 text-sky-600 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md">T</span>
-                            <span>팩폭받을래</span>
+
+                        <!-- 생년월일 -->
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-0.5">생년월일</label>
+                            <input type="hidden" id="calendarSelect" value="solar">
+                            <div class="flex gap-1.5 items-center">
+                                <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 w-[90px] shrink-0 h-[36px] items-center">
+                                    <button type="button" id="btnSolar" onclick="setCalendar('solar')" class="toggle-tab-btn active text-xs font-bold h-full rounded-lg">양력</button>
+                                    <button type="button" id="btnLunar" onclick="setCalendar('lunar')" class="toggle-tab-btn inactive text-xs font-bold h-full rounded-lg">음력</button>
+                                </div>
+                                <input type="tel" id="birthDateInput" maxlength="10" inputmode="numeric" placeholder="8자리 (예: 20010524)" oninput="formatBirthDate(this)" class="flex-1 min-w-0 h-[36px] px-3 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white focus:outline-none">
+                            </div>
                         </div>
-                        <div class="text-[10px] text-sky-500/80 font-medium mt-0.5">뼈 때리는 현실 조언</div>
-                    </button>
+
+                        <!-- 태어난 시간 -->
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-0.5">태어난 시간</label>
+                            <div class="relative">
+                                <select id="birthTimeSelect" class="w-full h-[36px] px-3 pr-8 rounded-xl border border-slate-200 bg-slate-50 text-center font-bold text-xs cursor-pointer appearance-none text-slate-700 focus:bg-white focus:outline-none">
+                                    <option value="" selected disabled>태어난 시간 선택</option>
+                                    <option value="unknown">시간 모름 (정밀 추정)</option>
+                                    <option value="子">자시 (23:30 ~ 01:29)</option>
+                                    <option value="丑">축시 (01:30 ~ 03:29)</option>
+                                    <option value="寅">인시 (03:30 ~ 05:29)</option>
+                                    <option value="卯">묘시 (05:30 ~ 07:29)</option>
+                                    <option value="辰">진시 (07:30 ~ 09:29)</option>
+                                    <option value="巳">사시 (09:30 ~ 11:29)</option>
+                                    <option value="午">오시 (11:30 ~ 13:29)</option>
+                                    <option value="未">미시 (13:30 ~ 15:29)</option>
+                                    <option value="申">신시 (15:30 ~ 17:29)</option>
+                                    <option value="酉">유시 (17:30 ~ 19:29)</option>
+                                    <option value="戌">술시 (19:30 ~ 21:29)</option>
+                                    <option value="亥">해시 (21:30 ~ 23:29)</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 전송 버튼 영역 (기존 스크립트가 F/T에 맞춰 주입) -->
+                        <div id="originalFTButtons" class="pt-1" style="display:none;"></div>
+                        <div id="splitNextButton" class="pt-1"></div>
+                    </form>
                 </div>
-                <div id="splitNextButton" class="pt-1" style="display:none;"></div>
-            </form>
+            </div>
         </div>
     </main>
 
-    <!-- 2. 로딩 섹션 -->
-    <main id="loadingSection" style="display: none;" class="max-w-lg w-full flex flex-col justify-center min-h-[100dvh] space-y-4 px-3">
-        <div class="card-box p-6 sm:p-8 rounded-[32px] text-center space-y-5 relative overflow-hidden bg-white/95 border border-rose-200/80 shadow-[0_10px_35px_rgba(244,63,94,0.08)]">
-            <div id="loadingGlowBg" class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full blur-3xl pointer-events-none"></div>
+    <!-- 2. 카톡 실시간 분석 로딩 섹션 (1:1 메신저 상담 대기 UI) -->
+    <main id="loadingSection" style="display: none;" class="fixed inset-0 z-50 flex flex-col bg-[#abc1d1] w-full h-[100dvh] overflow-hidden">
+        
+        <!-- 카톡 상단 헤더 바 -->
+        <header class="bg-[#abc1d1]/95 backdrop-blur-md px-4 py-2.5 flex items-center justify-between border-b border-black/5 shrink-0" style="padding-top: calc(env(safe-area-inset-top, 0px) + 8px);">
+            <div class="flex items-center gap-2.5">
+                <div class="relative">
+                    <img id="loadingSisterProfile" src="./로아.png" alt="프로필" class="w-9 h-9 rounded-full object-cover border border-white/60 shadow-sm">
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white"></span>
+                </div>
+                <div>
+                    <h2 id="loadingSisterName" class="text-xs font-extrabold text-slate-900 leading-tight">로아 언니</h2>
+                    <span class="text-[10px] text-slate-600 font-bold flex items-center gap-1">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                        입력 중...
+                    </span>
+                </div>
+            </div>
+            <div class="bg-black/10 text-slate-800 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                <span id="loadingPercent">0%</span> 분석 중
+            </div>
+        </header>
+
+        <!-- 채팅 본문 영역 -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col justify-center max-w-sm mx-auto w-full">
             
-            <div class="relative w-40 h-40 mx-auto flex items-center justify-center my-2">
-                <!-- 통통 튀는 파스텔 테두리 -->
-                <div id="outerTechRing" class="absolute inset-0 rounded-full border-2 border-rose-300/70 transition-all duration-300"></div>
-                <div class="absolute inset-2.5 rounded-full bg-gradient-to-b from-rose-50 to-pink-50/40"></div>
-                
-                <!-- 중앙 아이콘 & 퍼센트 (세로선 버그 없는 클린 레이아웃) -->
-                <div class="relative flex flex-col items-center justify-center z-10 select-none">
-                    <div id="loadingCenterIcon" class="text-4xl anim-float transform hover:scale-110 transition-transform">🔍</div>
-                    <div class="flex items-center justify-center mt-1 select-none">
-                        <span id="loadingPercent" class="text-3xl font-black text-slate-800 tracking-tight select-none cursor-default" style="-webkit-user-select: none; user-select: none;">0%</span>
+            <!-- 내 전송 말풍선 (내가 보낸 사주 정보) -->
+            <div class="flex justify-end items-end gap-1.5">
+                <span class="text-[9px] text-slate-500 font-semibold mb-1">읽음</span>
+                <div class="bg-[#fee500] text-slate-900 text-xs font-bold px-3.5 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[220px] leading-snug">
+                    언니 내 사주 분석해줘! 💌
+                </div>
+            </div>
+
+            <!-- 언니의 실시간 분석 말풍선 카드 -->
+            <div class="flex items-start gap-2.5">
+                <img id="loadingBubbleProfile" src="./로아.png" class="w-9 h-9 rounded-full object-cover shrink-0 mt-0.5 shadow-sm">
+                <div class="space-y-2 w-full">
+                    <span id="loadingSenderTitle" class="text-[11px] text-slate-700 font-bold block">로아 언니</span>
+                    
+                    <!-- 실시간 타이핑 대사 -->
+                    <div class="bg-white text-slate-900 text-xs sm:text-[13px] font-bold p-3.5 rounded-2xl rounded-tl-none shadow-sm leading-relaxed border border-white/40 space-y-2.5">
+                        <!-- 시스템 로그 한 줄 -->
+                        <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-[10px] font-mono font-bold text-slate-500">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span id="loadingSysLog">만세력 원국 추출 중...</span>
+                        </div>
+
+                        <!-- 핵심 멘트 변화 구간 -->
+                        <p id="loadingMainStatus" class="text-slate-800 font-extrabold leading-snug transition-all duration-150">
+                            잠깐만 기다려봐, 만세력 열어보는 중이야...
+                        </p>
+                    </div>
+
+                    <!-- 슬림 카톡 프로그레스 바 -->
+                    <div class="w-full bg-black/10 rounded-full h-1.5 overflow-hidden p-0.5">
+                        <div id="loadingProgressFill" class="h-full rounded-full bg-rose-500 transition-all duration-75" style="width: 0%;"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- 사주 만세력 시스템 연산 로그 (전문성 & 신뢰도 착시 부여) -->
-            <div class="flex justify-center items-center">
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100/90 border border-slate-200/80 text-[10px] font-mono font-bold text-slate-500 shadow-inner">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span id="loadingSysLog">만세력 8글자 오행 데이터 스캔 중...</span>
-                </div>
-            </div>
-
-            <!-- 1020 도파민 상태 텍스트 -->
-            <div class="min-h-[52px] flex items-center justify-center px-2">
-                <h2 id="loadingMainStatus" class="text-xs sm:text-[13px] font-extrabold text-slate-700 tracking-tight transition-all duration-150 break-keep text-center leading-relaxed">
-                    사회적 가면 벗겨내는 중...
-                </h2>
-            </div>
-
-            <!-- 파스텔 젤리 프로그레스 바 -->
-            <div class="pt-1 max-w-[240px] mx-auto w-full">
-                <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-rose-100 shadow-inner">
-                    <div id="loadingProgressFill" class="h-full rounded-full transition-all duration-75 bg-rose-400" style="width: 0%;"></div>
-                </div>
-            </div>
         </div>
     </main>
 
     <!-- 3. 결과 섹션 -->
         <main id="resultSection" style="display: none;" class="max-w-lg w-full py-8 space-y-4">
 
-        <!-- 결과 화면 상단 복귀 바 -->
-        <div class="flex items-center px-1 pb-1">
-            <button type="button" onclick="startFreshAnalysis()" class="flex items-center gap-1 text-slate-500 hover:text-slate-700 text-xs font-medium bg-transparent border-0 p-0 cursor-pointer transition-colors">
-                <span class="text-sm leading-none">←</span> 처음으로
-            </button>
+        <!-- 결과 화면 카톡 상단 네비게이션 & 언니의 실시간 총평 말풍선 -->
+        <div class="space-y-3 pb-1">
+            <!-- 상단 뒤로가기 & 상담 상태 바 -->
+            <div class="flex items-center justify-between px-1">
+                <button type="button" onclick="startFreshAnalysis()" class="flex items-center gap-1 text-slate-600 hover:text-slate-900 text-xs font-bold bg-transparent border-0 p-0 cursor-pointer transition-colors">
+                    <span class="text-sm leading-none">←</span> 상담 종료하고 처음으로
+                </button>
+                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    ● 상담 완료
+                </span>
+            </div>
+
+            <!-- 언니의 1:1 카톡 상담 최종 요약 말풍선 -->
+            <div class="flex items-start gap-2.5 text-left bg-white/95 p-3.5 rounded-2xl border border-rose-200/80 shadow-sm">
+                <img id="resultSisterProfile" src="./로아.png" alt="언니 프로필" class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 shadow-sm mt-0.5">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-1.5">
+                        <span id="resultSisterName" class="text-xs font-extrabold text-slate-900">로아 언니</span>
+                        <span id="resultModeBadge" class="px-2 py-0.5 rounded-full text-[9.5px] font-black tracking-tight"></span>
+                    </div>
+                    <p id="resultSisterGreeting" class="text-xs text-slate-700 leading-snug font-medium break-keep">
+                        <!-- JS에서 F/T 모드에 맞춰 실시간 멘트 주입 -->
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- 카드 1: 프로필 & 세부 스탯 -->
+        <div class="card-box p-4 sm:p-6 rounded-3xl space-y-2.5 relative overflow-hidden text-center">
         <div class="card-box p-4 sm:p-6 rounded-3xl space-y-2.5 relative overflow-hidden text-center">
             
             <div class="space-y-1">
@@ -1180,7 +1239,7 @@
             'ESFP': { best: 'ISTJ', bestTag: '주변을 밝혀주는 꿀조합', worst: 'INTJ', worstTag: '지나치게 진지한 사이' }
         };
 
-        // 화면 분할 인트로 클릭 시 대화형 브릿지 세팅 및 폼 화면 렌더링
+        // 화면 분할 인트로 클릭 시 카톡 대화형 브릿지 세팅 및 폼 화면 렌더링
         function selectSplitMode(mode) {
             selectedSplitMode = mode;
             const introSection = document.getElementById('splitIntroSection');
@@ -1188,80 +1247,59 @@
             const originalButtons = document.getElementById('originalFTButtons');
             const nextButtonContainer = document.getElementById('splitNextButton');
             
-            // 1. 선택한 언니별 프로필 사진, 뱃지, 웰컴 대사 세팅
+            // 카톡 UI 요소들
             const sisterImg = document.getElementById('welcomeSisterImg');
             const sisterBadge = document.getElementById('welcomeSisterBadge');
-            const sisterBubble = document.getElementById('welcomeSisterBubble');
             const sisterText = document.getElementById('welcomeSisterText');
+            const miniProfile = document.getElementById('chatBubbleProfileMini');
+            const senderTitle = document.getElementById('chatSenderNameTitle');
 
             if (mode === 'F') {
-                if (sisterImg) {
-                    sisterImg.src = './로아.png';
-                    sisterImg.className = 'w-16 h-16 rounded-full object-cover border-2 border-rose-300 shadow-md';
-                }
-                if (sisterBadge) {
-                    sisterBadge.textContent = 'F 로아';
-                    sisterBadge.className = 'absolute -bottom-1 -right-1 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm';
-                }
-                if (sisterBubble) {
-                    sisterBubble.className = 'bg-rose-50 border border-rose-200 px-4 py-2 rounded-2xl max-w-[290px] shadow-sm';
-                }
+                if (sisterImg) sisterImg.src = './로아.png';
+                if (miniProfile) miniProfile.src = './로아.png';
+                if (sisterBadge) sisterBadge.textContent = '로아 언니 (F)';
+                if (senderTitle) senderTitle.textContent = '로아 언니';
                 if (sisterText) {
-                    sisterText.innerHTML = '반가워! 네 사주 꼼꼼하게 봐줄게.<br>우선 네 <b class="text-rose-600">이름(닉네임)</b>부터 알려줘 💕';
+                    sisterText.innerHTML = '자기야 반가워! 오늘 속마음이랑 연애운 싹 털어줄게 🌸<br>우선 정확하게 봐줄 테니까 <b class="text-rose-600">이름이랑 생일</b> 적어봐!';
                 }
             } else {
-                if (sisterImg) {
-                    sisterImg.src = './서아.png';
-                    sisterImg.className = 'w-16 h-16 rounded-full object-cover border-2 border-sky-300 shadow-md';
-                }
-                if (sisterBadge) {
-                    sisterBadge.textContent = 'T 서아';
-                    sisterBadge.className = 'absolute -bottom-1 -right-1 bg-sky-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm';
-                }
-                if (sisterBubble) {
-                    sisterBubble.className = 'bg-sky-50 border border-sky-200 px-4 py-2 rounded-2xl max-w-[290px] shadow-sm';
-                }
+                if (sisterImg) sisterImg.src = './서아.png';
+                if (miniProfile) miniProfile.src = './서아.png';
+                if (sisterBadge) sisterBadge.textContent = '서아 언니 (T)';
+                if (senderTitle) senderTitle.textContent = '서아 언니';
                 if (sisterText) {
-                    sisterText.innerHTML = '왔어? 팩폭 맞을 준비 단단히 하고,<br>네 <b class="text-sky-600">본캐 이름</b>부터 적어봐.';
+                    sisterText.innerHTML = '왔어? 시간 낭비 말고 본론부터 가자 ⚡<br>사주 원국 깔 테니까 <b class="text-sky-600">이름이랑 생년월일시</b> 똑바로 찍어.';
                 }
             }
 
-            // 2. 선택한 모드 하단 실행 버튼 세팅
+            // 카톡 전송형 액션 버튼 세팅
             if (originalButtons) originalButtons.style.display = 'none';
             if (nextButtonContainer) {
                 nextButtonContainer.style.display = 'block';
                 if (mode === 'F') {
                     nextButtonContainer.innerHTML = `
-                        <button type="button" onclick="startAnalysis('F')" class="btn-action-f w-full py-4 px-4 rounded-2xl text-center flex flex-col items-center justify-center shadow-md active:scale-98 transition-all">
-                            <div class="text-rose-600 font-black text-[15px] sm:text-base leading-tight flex items-center gap-1.5">
-                                <span class="bg-rose-100 text-rose-600 text-[11px] font-extrabold px-1.5 py-0.5 rounded-md">F</span>
-                                <span>로아 언니에게 공감 위로받기 →</span>
-                            </div>
-                            <div class="text-xs text-rose-500/80 font-medium mt-1">내 편이 되어주는 따뜻한 사주 풀이 시작</div>
+                        <button type="button" onclick="startAnalysis('F')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
+                            <span>로아 언니한테 사주 정보 보내기</span>
+                            <span>💌</span>
                         </button>
                     `;
                 } else {
                     nextButtonContainer.innerHTML = `
-                        <button type="button" onclick="startAnalysis('T')" class="btn-action-t w-full py-4 px-4 rounded-2xl text-center flex flex-col items-center justify-center shadow-md active:scale-98 transition-all">
-                            <div class="text-sky-600 font-black text-[15px] sm:text-base leading-tight flex items-center gap-1.5">
-                                <span class="bg-sky-100 text-sky-600 text-[11px] font-extrabold px-1.5 py-0.5 rounded-md">T</span>
-                                <span>서아 언니에게 뼈 맞고 정신 차리기 →</span>
-                            </div>
-                            <div class="text-xs text-sky-500/80 font-medium mt-1">망설임 없이 꽂아버리는 팩폭 사주 풀이 시작</div>
+                        <button type="button" onclick="startAnalysis('T')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
+                            <span>서아 언니한테 사주 정보 보내기</span>
+                            <span>⚡</span>
                         </button>
                     `;
                 }
             }
             
-            // 3. 화면 전환
+            // 화면 전환
             if (introSection) introSection.style.display = 'none';
             if (landingSection) {
                 landingSection.style.display = 'flex';
                 landingSection.classList.add('fade-in-up');
             }
             window.scrollTo({ top: 0, behavior: 'instant' });
-            
-            // [모바일 키보드 덮임 방지] nameInput.focus()를 제거하여 키보드가 화면을 가리지 않게 유지
         }
         
         // 한글 받침 여부에 따라 알맞은 조사를 자동으로 결합하는 함수
@@ -2631,14 +2669,24 @@
                 const progressFill = document.getElementById('loadingProgressFill');
                 const glowBg = document.getElementById('loadingGlowBg');
 
+                // 로딩 화면 언니 프로필 동기화
+                const loadProfile = document.getElementById('loadingSisterProfile');
+                const loadBubbleProf = document.getElementById('loadingBubbleProfile');
+                const loadName = document.getElementById('loadingSisterName');
+                const loadSender = document.getElementById('loadingSenderTitle');
+                
                 if (isT) {
-                    if (glowBg) glowBg.className = "absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-sky-400/20 rounded-full blur-3xl pointer-events-none";
-                    if (progressFill) { progressFill.className = "h-full rounded-full transition-all duration-75"; progressFill.style.backgroundColor = '#38bdf8'; }
-                    if (outerRing) outerRing.className = "absolute inset-0 rounded-full border-2 border-sky-300 shadow-[0_0_18px_rgba(56,189,248,0.3)] transition-all duration-300";
+                    if (loadProfile) loadProfile.src = './서아.png';
+                    if (loadBubbleProf) loadBubbleProf.src = './서아.png';
+                    if (loadName) loadName.textContent = '서아 언니 (T)';
+                    if (loadSender) loadSender.textContent = '서아 언니';
+                    if (progressFill) progressFill.style.backgroundColor = '#0284c7';
                 } else {
-                    if (glowBg) glowBg.className = "absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-rose-400/20 rounded-full blur-3xl pointer-events-none";
-                    if (progressFill) { progressFill.className = "h-full rounded-full transition-all duration-75"; progressFill.style.backgroundColor = '#fb7185'; }
-                    if (outerRing) outerRing.className = "absolute inset-0 rounded-full border-2 border-rose-300 shadow-[0_0_18px_rgba(251,113,133,0.3)] transition-all duration-300";
+                    if (loadProfile) loadProfile.src = './로아.png';
+                    if (loadBubbleProf) loadBubbleProf.src = './로아.png';
+                    if (loadName) loadName.textContent = '로아 언니 (F)';
+                    if (loadSender) loadSender.textContent = '로아 언니';
+                    if (progressFill) progressFill.style.backgroundColor = '#f43f5e';
                 }
 
                 let calcYear = year, calcMonth = month, calcDay = day;
@@ -2647,7 +2695,7 @@
                         const lunarObj = Lunar.fromYmd(year, month, day);
                         const solarObj = lunarObj.getSolar();
                         calcYear = solarObj.getYear(); calcMonth = solarObj.getMonth(); calcDay = solarObj.getDay();
-                                        } catch (err) {
+                    } catch (err) {
                         console.warn("음력 변환 에러:", err);
                         showToast('입력하신 음력 날짜를 변환할 수 없습니다. 날짜를 다시 확인해주세요.');
                         document.getElementById('loadingSection').style.display = 'none';
@@ -2657,14 +2705,14 @@
                     }
                 }
 
-               // [핵심] 정밀 연산 및 솔루션 매핑
+                // [핵심] 정밀 연산 및 솔루션 매핑
                 const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, hour === 'unknown' ? null : hour, gender);
                 const lowest = getLowestStatInfo(sazuResult.stats);
                 const allSolutions = getTrueBaziSolutions(name, lowest, sazuResult.yongshin, sazuResult.dayOheng, gender, sazuResult.mbtiKey, birthStr, sazuResult.gyeokguk, sazuResult.gyeokStatus, sazuResult.realYeonun);
                 const solutionTemplate = allSolutions[concernKey] || allSolutions.money;
 
                 currentResultData = { 
-                                        name: name, userName: name, userBirthStr: birthStr, userTimeKey: hour, userGender: gender,
+                    name: name, userName: name, userBirthStr: birthStr, userTimeKey: hour, userGender: gender,
                     userCalendar: isLunar ? 'lunar' : 'solar',
                     currentMode: mode, concernKey: concernKey, ...sazuResult, rawSolutionTemplate: solutionTemplate 
                 };
@@ -2680,17 +2728,11 @@
                     const elapsed = Date.now() - startTime;
                     let progress = 0;
                     
-                    // [비선형 텐션 게이지 곡선] 
-                    // 1) 0.0~0.8초: 0% -> 55% 급발진 가속 (시선 강제 고정)
                     if (elapsed < 800) {
                         progress = Math.floor((elapsed / 800) * 55);
-                    }
-                    // 2) 0.8~2.8초: 55% -> 82% 긴장감 유발 의도적 버퍼링 (가장 오래 몰입)
-                    else if (elapsed < 2800) {
+                    } else if (elapsed < 2800) {
                         progress = 55 + Math.floor(((elapsed - 800) / 2000) * 27);
-                    }
-                    // 3) 2.8~3.8초: 82% -> 100% 튕기듯 넘어가며 결과창 오픈
-                    else if (elapsed < totalDuration) {
+                    } else if (elapsed < totalDuration) {
                         progress = 82 + Math.floor(((elapsed - 2800) / 1000) * 18);
                     } else {
                         progress = 100;
@@ -2699,27 +2741,27 @@
                     if (percentText) percentText.innerText = progress + "%";
                     if (progressFill) progressFill.style.width = progress + "%";
 
-                    const centerIcon = document.getElementById('loadingCenterIcon');
                     if (mainStatus) {
-                        // [1단계: 0.0~0.8초] 카톡 미리보기 & 미루기 패턴
+                        // 1단계: 만세력 조회 대화
                         if (elapsed < 800) {
-                            if (centerIcon) centerIcon.innerText = '🔍';
-                            if (sysLogEl) sysLogEl.innerText = "생년월일 기반 만세력 원국(八字) 추출 중...";
-                            mainStatus.innerHTML = `카톡 미리보기로 읽고 <span class="text-slate-800 font-black">답장은 3일 뒤로</span> 미루는 패턴 분석 중...`;
-                        }
-                        // [2단계: 0.8~2.8초] 잔걱정 & 자기검열 팩폭 (가장 오래 머묾)
-                        else if (elapsed < 2800) {
-                            if (centerIcon) centerIcon.innerText = '🚨';
-                            if (sysLogEl) sysLogEl.innerText = "일간·용신 오행 밸런스 정밀 대조 중...";
-                            mainStatus.innerHTML = `<b class="text-rose-500 font-black">생각보다 잔걱정 많고</b> 스스로한테 제일 엄격한 타입이네`;
-                        }
-                        // [3단계: 2.8~3.8초] F/T 선택 모드별 현실 저격
-                        else {
-                            if (centerIcon) centerIcon.innerText = isT ? '🧊' : '🌸';
-                            if (sysLogEl) sysLogEl.innerText = "모드별 본캐 성향 및 취급설명서 매핑 중...";
+                            if (sysLogEl) sysLogEl.innerText = "만세력 8글자 오행 데이터 대조 중...";
                             mainStatus.innerHTML = isT 
-                                ? `<span class="text-sky-600 font-black">변명 빼고 팩트만 꽂는다.</span> 멘탈 꽉 잡아` 
-                                : `<span class="text-rose-500 font-black">착해서 손해 본 거 다 알아.</span> 오늘은 네 편만 들어줄게`;
+                                ? `잠깐, 태어난 날짜 기운부터 까보는 중이야...` 
+                                : `자기야 잠깐만 기다려봐! 언니가 만세력 펼쳐볼게 🌸`;
+                        }
+                        // 2단계: 핵심 뼈대 파악 대화
+                        else if (elapsed < 2800) {
+                            if (sysLogEl) sysLogEl.innerText = "일간·용신 오행 밸런스 정밀 연산 중...";
+                            mainStatus.innerHTML = isT 
+                                ? `<b class="text-sky-600 font-black">너 사주에 고집이랑 잡생각</b> 꽤 많이 들어있네?` 
+                                : `<b class="text-rose-500 font-black">세상에... 겉으론 괜찮은 척하면서</b> 혼자 다 참아왔구나 🥺`;
+                        }
+                        // 3단계: 결과 도출 직전 긴장감
+                        else {
+                            if (sysLogEl) sysLogEl.innerText = "상세 사주 리포트 작성 완료!";
+                            mainStatus.innerHTML = isT 
+                                ? `<span class="text-sky-600 font-black">분석 다 끝났어.</span> 뼈 맞을 각오하고 열어봐.` 
+                                : `<span class="text-rose-500 font-black">분석 끝났어 자기야!</span> 이제 언니 얘기 잘 들어봐 💕`;
                         }
                     }
 
@@ -2767,18 +2809,34 @@
             const template = data.rawSolutionTemplate[mode];
             renderOhengDistribution(data.elements, (data.pillars && data.pillars.day) ? data.pillars.day.gan : '甲', data.dayOheng, data.pillars);
 
+            // 카톡 상담 결과 헤더 언니 프로필 및 맞춤 대사 연동 (무료 이벤트 모드 완벽 호환)
+            const resSisterProfile = document.getElementById('resultSisterProfile');
+            const resSisterName = document.getElementById('resultSisterName');
+            const resGreeting = document.getElementById('resultSisterGreeting');
             const badge = document.getElementById('resultModeBadge');
-            if (badge) {
-                const nameJosa = typeof attachJosa === 'function' ? attachJosa(data.name, '이/가') : `${data.name}이`;
-                badge.innerHTML = isT 
-                    ? `🧊 "T발 너 C야?" 소리 나오는 자비 없는 극딜 모드` 
-                    : `🌸 "우리 <span class="text-rose-700 font-black">${nameJosa}</span> 다 맞아" 극성 내 편 모드`;
-                badge.className = isT 
-                    ? "px-3.5 py-1.5 bg-sky-50 text-sky-600 border border-sky-200 rounded-full text-xs font-black tracking-tight shadow-sm break-keep inline-block text-center" 
-                    : "px-3.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-xs font-black tracking-tight shadow-sm break-keep inline-block text-center";
+            const nameJosa = typeof attachJosa === 'function' ? attachJosa(data.name, '이/가') : `${data.name}이`;
+
+            if (isT) {
+                if (resSisterProfile) resSisterProfile.src = './서아.png';
+                if (resSisterName) resSisterName.textContent = '서아 언니 (T)';
+                if (badge) {
+                    badge.innerHTML = `🧊 팩폭 모드`;
+                    badge.className = "px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full text-[10px] font-black";
+                }
+                if (resGreeting) {
+                    resGreeting.innerHTML = `사주 원국 다 깠어. 결론부터 말하면 <b>${nameJosa}</b>는 머릿속 계산기만 두드리다 중요한 타이밍 다 날려먹는 타입이야. 아래 메모장에 적어뒀으니 정신 똑바로 차리고 읽어봐.`;
+                }
+            } else {
+                if (resSisterProfile) resSisterProfile.src = './로아.png';
+                if (resSisterName) resSisterName.textContent = '로아 언니 (F)';
+                if (badge) {
+                    badge.innerHTML = `🌸 무조건 내 편 모드`;
+                    badge.className = "px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full text-[10px] font-black";
+                }
+                if (resGreeting) {
+                    resGreeting.innerHTML = `우리 <b>${nameJosa}</b> 사주 보니까 겉으론 쿨한 척 다 참아주면서 혼자 집 와서 속앓이하는 타입이네 🥺 언니가 네 편에서 6가지 비밀 메모 꼼꼼히 정리해 뒀어!`;
+                }
             }
-            
-            const mKey = data.mbtiKey || 'ESTJ';
             const prof = SAZU_CHARACTER_PROFILES[mKey] || SAZU_CHARACTER_PROFILES['ESTJ'];
             const lowest = getLowestStatInfo(data.stats);
 
