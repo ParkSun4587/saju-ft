@@ -1295,7 +1295,7 @@
                 }, 400);
             }
         }
-        };
+        
         // 한글 받침 여부에 따라 알맞은 조사를 자동으로 결합하는 함수
         // 스탯별 핵심 심리 기제 — 여러 함수(getTrueBaziSolutions, generateDynamicDeepSolution)에서
         // 공통으로 참조하므로 반드시 전역에 둔다. 함수 안에 두면 다른 함수에서 ReferenceError가 발생함.
@@ -2608,23 +2608,6 @@
 
         let isAnalyzing = false;
         let selectedSplitMode = null;
-        function selectSplitMode(mode) {
-            selectedSplitMode = mode;
-            document.getElementById('splitIntroSection').style.display = 'none';
-            document.getElementById('landingSection').style.display = 'flex';
-            // 이미 화면분할에서 F/T를 골랐으므로, 폼 하단의 F/T 재확인 버튼은 숨기고
-            // "다음" 버튼 하나로 대체해 곧바로 startAnalysis(mode)를 호출한다.
-            document.getElementById('originalFTButtons').style.display = 'none';
-            const nextBtn = document.getElementById('splitNextButton');
-            nextBtn.style.display = 'grid';
-            const label = mode === 'F' ? '로아 언니에게 물어보기' : '서아 언니에게 물어보기';
-            const colorClass = mode === 'F' ? 'btn-action-f' : 'btn-action-t';
-            nextBtn.innerHTML = `<button type="button" onclick="startAnalysis('${mode}')" class="${colorClass} py-2.5 px-2 rounded-2xl text-center flex flex-col items-center justify-center w-full">
-                <span class="font-black text-sm">${label}</span>
-                <span class="text-[10px] font-medium mt-0.5 opacity-80">입력을 마치면 바로 분석이 시작돼요</span>
-            </button>`;
-            window.scrollTo({ top: 0 });
-        }
 
         function startAnalysis(mode) {
             if (isAnalyzing) return;
