@@ -312,7 +312,7 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (글래스모피즘 반투명 유리알 카드 룩) -->
+<!-- 0. 화면분할 인트로 (스마트 글래스 말풍선 카드 최종 마감) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950">
     
     <!-- 모바일 크기 고정 컨테이너 -->
@@ -323,7 +323,7 @@
 
         <!-- 최상단 헤더: 1:1 상담 훅킹 캡슐 -->
         <div id="splitTitle" class="absolute left-0 w-full z-[70] pointer-events-none px-4 flex justify-center" style="top: calc(env(safe-area-inset-top, 0px) + 12px);">
-            <div class="bg-white/80 backdrop-blur-xl px-5 py-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-white/60 flex items-center justify-center">
+            <div class="bg-white/85 backdrop-blur-xl px-5 py-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-white/60 flex items-center justify-center">
                 <span class="text-[11.5px] sm:text-[12px] font-black text-slate-800 tracking-tight text-center">"요즘 무슨 일 있어? 언니가 사주로 다 봐줄게"</span>
             </div>
         </div>
@@ -332,22 +332,23 @@
         <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden">
             <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-105">
             
-            <!-- 바닥 초미니 그라데이션 -->
+            <!-- 바닥 그라데이션 -->
             <div class="absolute inset-x-0 bottom-0 h-[28%] bg-gradient-to-t from-rose-100/40 via-transparent to-transparent pointer-events-none"></div>
             
-            <!-- 반투명 유리알 글래스 카드 -->
+            <!-- 글래스 말풍선 카드 -->
             <div class="absolute inset-x-0 bottom-0 pb-3 px-3.5 flex justify-center pointer-events-none">
-                <div class="w-full max-w-[285px] bg-white/70 backdrop-blur-xl p-3 rounded-2xl shadow-[0_8px_32px_rgba(244,63,94,0.12)] border border-white/80 flex flex-col gap-2 pointer-events-auto transition-transform active:scale-98">
+                <div class="w-full max-w-[285px] bg-white/75 backdrop-blur-2xl p-3.5 rounded-2xl shadow-[0_10px_30px_rgba(244,63,94,0.1)] border border-white/90 flex flex-col gap-2.5 pointer-events-auto transition-transform active:scale-98">
                     <div class="space-y-1 text-left">
                         <div class="flex items-center gap-1.5">
-                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-600 font-mono">F</span>
-                            <span class="text-[11px] font-black text-slate-800">로아</span>
+                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-rose-500/10 text-rose-600 font-mono">F</span>
+                            <span class="text-[11px] font-black text-slate-800 tracking-tight">로아</span>
                         </div>
                         <p class="text-[11.5px] font-bold text-slate-800 leading-snug break-keep">
                             "혼자 끙끙 앓지 마. 속상했던 거 언니가 다 들어주고 다 봐줄게 🥺"
                         </p>
                     </div>
-                    <div class="w-full bg-rose-500 text-white py-2 px-3 rounded-xl flex items-center justify-between shadow-sm hover:bg-rose-600 transition-colors">
+                    <!-- 가볍고 세련된 액션 바 -->
+                    <div class="w-full bg-rose-500 text-white py-2 px-3 rounded-xl flex items-center justify-between shadow-[0_4px_12px_rgba(244,63,94,0.25)] hover:bg-rose-600 transition-colors">
                         <span class="text-[11.5px] font-extrabold tracking-tight">따뜻한 공감 받기</span>
                         <span class="text-sm font-black text-white leading-none">›</span>
                     </div>
@@ -359,22 +360,23 @@
         <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden">
             <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
             
-            <!-- 바닥 초미니 그라데이션 -->
+            <!-- 바닥 그라데이션 -->
             <div class="absolute inset-x-0 bottom-0 h-[28%] bg-gradient-to-t from-slate-900/40 via-transparent to-transparent pointer-events-none"></div>
             
-            <!-- 다크 반투명 유리알 글래스 카드 -->
+            <!-- 다크 글래스 말풍선 카드 -->
             <div class="absolute inset-x-0 bottom-0 pb-3 px-3.5 flex justify-center pointer-events-none">
-                <div class="w-full max-w-[285px] bg-slate-900/70 backdrop-blur-xl p-3 rounded-2xl shadow-[0_8px_32px_rgba(15,23,42,0.25)] border border-slate-700/60 flex flex-col gap-2 pointer-events-auto transition-transform active:scale-98">
+                <div class="w-full max-w-[285px] bg-slate-900/75 backdrop-blur-2xl p-3.5 rounded-2xl shadow-[0_10px_30px_rgba(15,23,42,0.25)] border border-slate-700/70 flex flex-col gap-2.5 pointer-events-auto transition-transform active:scale-98">
                     <div class="space-y-1 text-left">
                         <div class="flex items-center gap-1.5">
-                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-sky-400/20 text-sky-400 font-mono">T</span>
-                            <span class="text-[11px] font-black text-slate-100">서아</span>
+                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-sky-400/15 text-sky-400 font-mono">T</span>
+                            <span class="text-[11px] font-black text-slate-100 tracking-tight">서아</span>
                         </div>
                         <p class="text-[11.5px] font-bold text-slate-100 leading-snug break-keep">
                             "혼자 고민해 봤자 답 안 나와. 네 사주 원국 다 까서 팩트로 다 봐줄 테니까 와."
                         </p>
                     </div>
-                    <div class="w-full bg-sky-600 text-white py-2 px-3 rounded-xl flex items-center justify-between shadow-sm hover:bg-sky-500 transition-colors">
+                    <!-- 가볍고 세련된 다크 액션 바 -->
+                    <div class="w-full bg-sky-600 text-white py-2 px-3 rounded-xl flex items-center justify-between shadow-[0_4px_12px_rgba(2,132,199,0.3)] hover:bg-sky-500 transition-colors">
                         <span class="text-[11.5px] font-extrabold tracking-tight">자비 없는 팩폭 받기</span>
                         <span class="text-sm font-black text-white leading-none">›</span>
                     </div>
