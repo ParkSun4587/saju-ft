@@ -312,129 +312,167 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (기존 구조 유지 + 실시간 톡 타이핑 및 순차 팝업) -->
-<main id="splitIntroSection" class="fixed inset-0 z-[60] flex flex-col sm:flex-row w-full h-[100dvh] overflow-hidden bg-slate-900">
-    <!-- 상단 질문 타이틀 -->
-    <div id="splitTitle" class="absolute top-[6%] sm:top-[8%] left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-full px-4 text-center">
-        <h1 class="bg-black/60 backdrop-blur-md px-5 py-2.5 rounded-full text-white font-bold text-[13px] sm:text-sm shadow-xl inline-block">
-            <span class="text-rose-400 font-bold">"돈·일·사람"</span> 때문에 치이냐? 언니가 다 털어줄게
-        </h1>
-    </div>
-
-    <!-- 인트로 전용 타이핑 및 말풍선 애니메이션 CSS -->
+<!-- 0. 화면분할 인트로 (타이핑 도트 깜빡임 후 말풍선 팝업 연출) -->
+<main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950">
     <style>
-        .intro-bubble {
-            position: absolute;
-            z-index: 20;
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 12px 16px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #1e293b;
-            line-height: 1.4;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: max-content;
-            max-width: 85%;
-            top: 20%;
-            left: 50%;
-            opacity: 0;
-            transform: translateX(-50%) translateY(10px);
-            animation: bubblePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        @keyframes typing-dot {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+            30% { transform: translateY(-4px); opacity: 1; }
         }
-        .intro-bubble::after {
-            content: "";
-            position: absolute;
-            bottom: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 7px solid transparent;
-            border-top-color: #ffffff;
-        }
+        .t-dot-1 { animation: typing-dot 1.2s infinite ease-in-out 0s; }
+        .t-dot-2 { animation: typing-dot 1.2s infinite ease-in-out 0.2s; }
+        .t-dot-3 { animation: typing-dot 1.2s infinite ease-in-out 0.4s; }
         @keyframes bubblePop {
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
-
-        .intro-typing {
-            position: absolute;
-            z-index: 15;
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 14px 18px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            display: flex;
-            gap: 5px;
-            align-items: center;
-            top: 20%;
-            left: 50%;
-            opacity: 0;
-            transform: translateX(-50%);
-            animation: fadeTyping 0.6s ease forwards;
-        }
-        .intro-typing span {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #cbd5e1;
-            animation: typingDot 1.4s infinite ease-in-out both;
-        }
-        .intro-typing span:nth-child(1) { animation-delay: -0.32s; }
-        .intro-typing span:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes typingDot {
-            0%, 80%, 100% { transform: scale(0.6); background: #e2e8f0; }
-            40% { transform: scale(1); background: #94a3b8; }
-        }
-        @keyframes fadeTyping {
-            0% { opacity: 0; }
-            20% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        @media (min-width: 640px) {
-            .intro-bubble, .intro-typing { top: 35%; }
-        }
+        .bubble-pop { animation: bubblePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
     </style>
-
-    <!-- F 패널 (로아 언니) -->
-    <div onclick="selectSplitMode('F')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full border-b sm:border-b-0 sm:border-r border-rose-200/30 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer group">
-        <img src="./로아.png" alt="로아 언니" class="absolute inset-0 w-full h-full object-cover object-top pointer-events-none group-hover:scale-105 transition-transform duration-700">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+    
+    <!-- 모바일 크기 고정 컨테이너 -->
+    <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col overflow-hidden bg-white shadow-2xl">
         
-        <!-- F 타이핑 & 말풍선 -->
-        <div class="intro-typing" style="animation-delay: 0.2s;">
-            <span></span><span></span><span></span>
-        </div>
-        <div class="intro-bubble" style="animation-delay: 0.8s;">
-            고민 생겨서 혼자 앓지 마 🥺<br>속상했던 거 언니가 다 들어줄게
+        <!-- 중앙 미니멀 빛 구분선 -->
+        <div class="absolute top-1/2 left-0 w-full h-px bg-white/40 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.5)]"></div>
+
+        <!-- 최상단 헤더: 타이핑 도트 -> 훅킹 캡슐 -->
+        <div id="splitTitle" class="absolute left-0 w-full z-[70] pointer-events-none px-4 flex justify-center" style="top: calc(env(safe-area-inset-top, 0px) + 12px);">
+            <div id="topTitleBox" class="bg-white/90 backdrop-blur-xl px-5 py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-white/80 flex items-center justify-center min-h-[34px]">
+                <div id="topTypingDots" class="flex items-center gap-1 py-0.5">
+                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full t-dot-1"></span>
+                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full t-dot-2"></span>
+                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full t-dot-3"></span>
+                </div>
+                <span id="topTitleText" class="text-[11.5px] sm:text-[12px] font-black text-slate-800 tracking-tight text-center hidden">"요즘 무슨 일 있어? 언니가 사주로 다 봐줄게"</span>
+            </div>
         </div>
 
-        <div class="absolute bottom-6 sm:bottom-12 text-center z-10 space-y-1.5 w-full pointer-events-none">
-            <h2 class="text-white font-black text-2xl sm:text-3xl tracking-tight drop-shadow-lg">로아 언니</h2>
-            <p class="text-rose-600 text-[11px] sm:text-xs font-bold bg-white/95 px-3 py-1 rounded-full shadow-lg inline-block">F · 무조건 내 편 힐링 모드</p>
+        <!-- F 패널 (로아) -->
+        <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden">
+            <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-105">
+
+            <!-- 바닥 초미니 그라데이션 -->
+            <div class="absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-t from-rose-100/50 via-transparent to-transparent pointer-events-none"></div>
+
+            <!-- 카톡 스타일 말풍선 묶음 -->
+            <div class="absolute inset-x-0 bottom-0 pb-3.5 px-3.5 flex flex-col items-start gap-1 pointer-events-none">
+                <!-- 프로필 + 이름 -->
+                <div class="flex items-center gap-1.5 mb-1 pl-1">
+                    <img src="./로아.png" alt="로아 프로필" class="w-6 h-6 rounded-full object-cover object-[center_15%] border-2 border-white shadow-sm">
+                    <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">로아</span>
+                </div>
+
+                <!-- 말풍선 1 -->
+                <div class="relative bg-white px-3.5 py-2 rounded-2xl shadow-[0_3px_10px_rgba(0,0,0,0.12)] max-w-[65%] ml-1 min-h-[32px] flex items-center">
+                    <span class="absolute -left-[5px] top-2.5 w-3 h-3 bg-white" style="clip-path: polygon(100% 0, 100% 100%, 0 50%);"></span>
+                    <div id="roaBubble1Dots" class="flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-rose-400 rounded-full t-dot-1"></span>
+                        <span class="w-1.5 h-1.5 bg-rose-400 rounded-full t-dot-2"></span>
+                        <span class="w-1.5 h-1.5 bg-rose-400 rounded-full t-dot-3"></span>
+                    </div>
+                    <p id="roaBubble1Text" class="text-[12px] font-bold text-slate-800 leading-snug break-keep hidden">혼자 끙끙 앓지 마 🥺</p>
+                </div>
+
+                <!-- 말풍선 2 -->
+                <div class="relative bg-white px-3.5 py-2 rounded-2xl shadow-[0_3px_10px_rgba(0,0,0,0.12)] max-w-[85%] ml-1 min-h-[32px] flex items-center">
+                    <span class="absolute -left-[5px] top-2.5 w-3 h-3 bg-white" style="clip-path: polygon(100% 0, 100% 100%, 0 50%);"></span>
+                    <div id="roaBubble2Dots" class="flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-rose-400 rounded-full t-dot-1"></span>
+                        <span class="w-1.5 h-1.5 bg-rose-400 rounded-full t-dot-2"></span>
+                        <span class="w-1.5 h-1.5 bg-rose-400 rounded-full t-dot-3"></span>
+                    </div>
+                    <p id="roaBubble2Text" class="text-[12px] font-bold text-slate-800 leading-snug break-keep hidden">속상했던 거 언니가 다 들어주고 다 봐줄게</p>
+                </div>
+
+                <!-- CTA 버튼 -->
+                <button class="pointer-events-auto mt-2.5 ml-1 bg-rose-500 text-white py-2.5 px-5 rounded-full flex items-center gap-2 shadow-[0_6px_18px_rgba(244,63,94,0.4)] active:scale-95 transition-transform">
+                    <span class="text-[13px] font-extrabold tracking-tight">따뜻한 공감 받기</span>
+                    <span class="text-base font-black leading-none">›</span>
+                </button>
+            </div>
         </div>
+
+        <!-- T 패널 (서아) -->
+        <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden">
+            <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
+
+            <!-- 바닥 초미니 그라데이션 -->
+            <div class="absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-t from-slate-900/50 via-transparent to-transparent pointer-events-none"></div>
+
+            <!-- 카톡 스타일 말풍선 묶음 (다크) -->
+            <div class="absolute inset-x-0 bottom-0 pb-3.5 px-3.5 flex flex-col items-start gap-1 pointer-events-none">
+                <!-- 프로필 + 이름 -->
+                <div class="flex items-center gap-1.5 mb-1 pl-1">
+                    <img src="./서아.png" alt="서아 프로필" class="w-6 h-6 rounded-full object-cover object-[center_15%] border-2 border-white shadow-sm">
+                    <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">서아</span>
+                </div>
+
+                <!-- 말풍선 1 -->
+                <div class="relative bg-slate-900 px-3.5 py-2 rounded-2xl shadow-[0_3px_10px_rgba(0,0,0,0.3)] max-w-[70%] ml-1 min-h-[32px] flex items-center">
+                    <span class="absolute -left-[5px] top-2.5 w-3 h-3 bg-slate-900" style="clip-path: polygon(100% 0, 100% 100%, 0 50%);"></span>
+                    <div id="seoBubble1Dots" class="flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-sky-400 rounded-full t-dot-1"></span>
+                        <span class="w-1.5 h-1.5 bg-sky-400 rounded-full t-dot-2"></span>
+                        <span class="w-1.5 h-1.5 bg-sky-400 rounded-full t-dot-3"></span>
+                    </div>
+                    <p id="seoBubble1Text" class="text-[12px] font-bold text-slate-100 leading-snug break-keep hidden">혼자 고민해 봤자 답 안 나와</p>
+                </div>
+
+                <!-- 말풍선 2 -->
+                <div class="relative bg-slate-900 px-3.5 py-2 rounded-2xl shadow-[0_3px_10px_rgba(0,0,0,0.3)] max-w-[90%] ml-1 min-h-[32px] flex items-center">
+                    <span class="absolute -left-[5px] top-2.5 w-3 h-3 bg-slate-900" style="clip-path: polygon(100% 0, 100% 100%, 0 50%);"></span>
+                    <div id="seoBubble2Dots" class="flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-sky-400 rounded-full t-dot-1"></span>
+                        <span class="w-1.5 h-1.5 bg-sky-400 rounded-full t-dot-2"></span>
+                        <span class="w-1.5 h-1.5 bg-sky-400 rounded-full t-dot-3"></span>
+                    </div>
+                    <p id="seoBubble2Text" class="text-[12px] font-bold text-slate-100 leading-snug break-keep hidden">네 사주 원국 다 까서 팩트로 다 봐줄 테니까 와</p>
+                </div>
+
+                <!-- CTA 버튼 -->
+                <button class="pointer-events-auto mt-2.5 ml-1 bg-sky-600 text-white py-2.5 px-5 rounded-full flex items-center gap-2 shadow-[0_6px_18px_rgba(2,132,199,0.45)] active:scale-95 transition-transform">
+                    <span class="text-[13px] font-extrabold tracking-tight">자비 없는 팩폭 받기</span>
+                    <span class="text-base font-black leading-none">›</span>
+                </button>
+            </div>
+        </div>
+
     </div>
-
-    <!-- T 패널 (서아 언니) -->
-    <div onclick="selectSplitMode('T')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full flex flex-col items-center justify-center relative overflow-hidden cursor-pointer group">
-        <img src="./서아.png" alt="서아 언니" class="absolute inset-0 w-full h-full object-cover object-top pointer-events-none group-hover:scale-105 transition-transform duration-700">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-        
-        <!-- T 타이핑 & 말풍선 -->
-        <div class="intro-typing" style="animation-delay: 1.4s;">
-            <span></span><span></span><span></span>
-        </div>
-        <div class="intro-bubble" style="animation-delay: 2.0s;">
-            고민해 봤자 답 안 나와.<br>사주 원국 까서 팩트로 다 털어줄게 ⚡
-        </div>
-
-        <div class="absolute bottom-6 sm:bottom-12 text-center z-10 space-y-1.5 w-full pointer-events-none">
-            <h2 class="text-white font-black text-2xl sm:text-3xl tracking-tight drop-shadow-lg">서아 언니</h2>
-            <p class="text-sky-600 text-[11px] sm:text-xs font-bold bg-white/95 px-3 py-1 rounded-full shadow-lg inline-block">T · 뼈 때리는 팩폭 모드</p>
-        </div>
-    </div>    
 </main>
+
+<script>
+    // 타이핑 도트 재생 후 말풍선 텍스트 순차 등장 연출
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            const topDots = document.getElementById('topTypingDots');
+            const topText = document.getElementById('topTitleText');
+            if (topDots) topDots.classList.add('hidden');
+            if (topText) { topText.classList.remove('hidden'); topText.classList.add('bubble-pop'); }
+        }, 500);
+
+        setTimeout(() => {
+            const r1Dots = document.getElementById('roaBubble1Dots');
+            const r1Text = document.getElementById('roaBubble1Text');
+            const s1Dots = document.getElementById('seoBubble1Dots');
+            const s1Text = document.getElementById('seoBubble1Text');
+            if (r1Dots) r1Dots.classList.add('hidden');
+            if (r1Text) { r1Text.classList.remove('hidden'); r1Text.classList.add('bubble-pop'); }
+            if (s1Dots) s1Dots.classList.add('hidden');
+            if (s1Text) { s1Text.classList.remove('hidden'); s1Text.classList.add('bubble-pop'); }
+        }, 900);
+
+        setTimeout(() => {
+            const r2Dots = document.getElementById('roaBubble2Dots');
+            const r2Text = document.getElementById('roaBubble2Text');
+            const s2Dots = document.getElementById('seoBubble2Dots');
+            const s2Text = document.getElementById('seoBubble2Text');
+            if (r2Dots) r2Dots.classList.add('hidden');
+            if (r2Text) { r2Text.classList.remove('hidden'); r2Text.classList.add('bubble-pop'); }
+            if (s2Dots) s2Dots.classList.add('hidden');
+            if (s2Text) { s2Text.classList.remove('hidden'); s2Text.classList.add('bubble-pop'); }
+        }, 1300);
+    });
+</script>
     
 <!-- 1. 카톡 인터뷰형 사주 정보 입력 (몰입형 1:1 대화 UI) -->
     <main id="landingSection" style="display:none;" class="fixed inset-0 z-50 flex flex-col bg-[#abc1d1] w-full h-[100dvh] overflow-hidden">
