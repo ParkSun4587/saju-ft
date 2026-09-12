@@ -312,13 +312,13 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (정상적인 태그 구조 & 모바일 스마트폰 뷰) -->
+<!-- 0. 화면분할 인트로 (정상적인 50:50 구조 & 모바일 최적화 뷰) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950">
     
     <!-- 모바일 크기 고정 컨테이너 (PC에서는 중앙 스마트폰 뷰, 모바일에서는 꽉 찬 화면) -->
     <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col overflow-hidden bg-white shadow-2xl">
         
-        <!-- 중앙 미니멀 빛 구분선 (촌스러운 글자 뱃지 제거) -->
+        <!-- 중앙 미니멀 빛 구분선 -->
         <div class="absolute top-1/2 left-0 w-full h-px bg-white/40 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.5)]"></div>
 
         <!-- 최상단 헤더: 상황 질문 캡슐 -->
@@ -333,46 +333,54 @@
         <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden">
             <img src="./로아.png" alt="로아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-105">
             
-            <!-- 바닥 초미니 그라데이션 (선명한 일러스트 유지) -->
+            <!-- 바닥 초미니 그라데이션 -->
             <div class="absolute inset-x-0 bottom-0 h-[28%] bg-gradient-to-t from-white/90 via-white/40 to-transparent pointer-events-none"></div>
             
-            <!-- F 모드 텍스트 및 액션 버튼 (트렌디 챗버블 & 글래스 버튼) -->
-            <div class="absolute inset-x-0 bottom-0 pb-5 px-4 flex flex-col items-center gap-3 pointer-events-none">
-                <!-- 1:1 메시지 도착 느낌의 말풍선 -->
-                <div class="bg-white/95 backdrop-blur-md px-4 py-3 rounded-[20px] rounded-bl-none shadow-xl border border-rose-100 max-w-[290px] w-full text-left">
-                    <p class="text-[12.5px] font-bold text-slate-800 leading-snug break-keep">
-                        <span class="text-rose-500 font-black mr-0.5">로아 언니</span><br>
-                        "헐 3일이나..? 🥺 자기야 혼자 얼마나 속앓이했을까 ㅠㅠ 언니가 얘기 다 들어줄게!"
+            <!-- F 모드 텍스트 및 액션 버튼 -->
+            <div class="absolute inset-x-0 bottom-0 pb-3.5 px-3.5 flex flex-col items-center gap-2 pointer-events-none">
+                <!-- 2줄 슬림 카톡 말풍선 -->
+                <div class="bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-2xl rounded-bl-none shadow-lg border border-rose-100 max-w-[275px] w-full text-left">
+                    <p class="text-[11.5px] font-bold text-slate-800 leading-snug break-keep">
+                        <span class="text-rose-500 font-black">로아 언니</span> "헐 3일이나? 🥺 혼자 속앓이하지 말고 언니한테 다 털어놔!"
                     </p>
                 </div>
-                <!-- 힙한 그라데이션 버튼 -->
-                <div class="w-full max-w-[290px] bg-gradient-to-r from-rose-400 to-rose-500 text-white py-3.5 rounded-full shadow-[0_8px_24px_rgba(244,63,94,0.35)] flex justify-between items-center px-5 pointer-events-auto transition-transform active:scale-95">
-                    <div class="flex items-center gap-2">
-                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-white/25 text-[10px] font-black">F</span>
-                        <span class="font-extrabold text-[14px] tracking-tight">톡 시작하기</span>
+                <!-- 슬림 글래스 버튼 -->
+                <div class="w-full max-w-[275px] bg-gradient-to-r from-rose-400 to-rose-500 text-white py-2.5 rounded-full shadow-[0_6px_18px_rgba(244,63,94,0.3)] flex justify-between items-center px-4 pointer-events-auto transition-transform active:scale-95">
+                    <div class="flex items-center gap-1.5">
+                        <span class="flex items-center justify-center w-4 h-4 rounded-full bg-white/25 text-[9px] font-black">F</span>
+                        <span class="font-extrabold text-[12.5px] tracking-tight">로아 언니랑 톡하기</span>
                     </div>
-                    <span class="font-bold text-white/90 text-lg leading-none">›</span>
+                    <span class="font-bold text-white/90 text-sm leading-none">›</span>
                 </div>
             </div>
+        </div>
 
-        <!-- T 모드 텍스트 및 액션 버튼 (트렌디 챗버블 & 글래스 버튼) -->
-            <div class="absolute inset-x-0 bottom-0 pb-5 px-4 flex flex-col items-center gap-3 pointer-events-none">
-                <!-- 1:1 메시지 도착 느낌의 다크 말풍선 -->
-                <div class="bg-slate-900/90 backdrop-blur-md px-4 py-3 rounded-[20px] rounded-bl-none shadow-xl border border-slate-700 max-w-[290px] w-full text-left">
-                    <p class="text-[12.5px] font-bold text-white/95 leading-snug break-keep">
-                        <span class="text-sky-400 font-black mr-0.5">서아 언니</span><br>
-                        "3일 씹혔는데 아직도 기다려? 감정 낭비 그만해. 팩트로 뼈 때려줄 테니까."
+        <!-- T 패널 (아래쪽 50%: 서아 언니) -->
+        <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden">
+            <img src="./서아.png" alt="서아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
+            
+            <!-- 바닥 초미니 그라데이션 -->
+            <div class="absolute inset-x-0 bottom-0 h-[28%] bg-gradient-to-t from-white/90 via-white/40 to-transparent pointer-events-none"></div>
+            
+            <!-- T 모드 텍스트 및 액션 버튼 -->
+            <div class="absolute inset-x-0 bottom-0 pb-3.5 px-3.5 flex flex-col items-center gap-2 pointer-events-none">
+                <!-- 2줄 슬림 다크 말풍선 -->
+                <div class="bg-slate-900/90 backdrop-blur-md px-3.5 py-2 rounded-2xl rounded-bl-none shadow-lg border border-slate-700 max-w-[275px] w-full text-left">
+                    <p class="text-[11.5px] font-bold text-white/95 leading-snug break-keep">
+                        <span class="text-sky-400 font-black">서아 언니</span> "3일 씹혔으면 끝난 거야. 시간 낭비 말고 팩폭 처방받아."
                     </p>
                 </div>
-                <!-- 힙한 그라데이션 버튼 -->
-                <div class="w-full max-w-[290px] bg-gradient-to-r from-sky-500 to-blue-600 text-white py-3.5 rounded-full shadow-[0_8px_24px_rgba(14,165,233,0.35)] flex justify-between items-center px-5 pointer-events-auto transition-transform active:scale-95">
-                    <div class="flex items-center gap-2">
-                        <span class="flex items-center justify-center w-5 h-5 rounded-full bg-white/25 text-[10px] font-black">T</span>
-                        <span class="font-extrabold text-[14px] tracking-tight">팩폭 맞기</span>
+                <!-- 슬림 글래스 버튼 -->
+                <div class="w-full max-w-[275px] bg-gradient-to-r from-sky-500 to-blue-600 text-white py-2.5 rounded-full shadow-[0_6px_18px_rgba(14,165,233,0.3)] flex justify-between items-center px-4 pointer-events-auto transition-transform active:scale-95">
+                    <div class="flex items-center gap-1.5">
+                        <span class="flex items-center justify-center w-4 h-4 rounded-full bg-white/25 text-[9px] font-black">T</span>
+                        <span class="font-extrabold text-[12.5px] tracking-tight">서아 언니 팩폭받기</span>
                     </div>
-                    <span class="font-bold text-white/90 text-lg leading-none">›</span>
+                    <span class="font-bold text-white/90 text-sm leading-none">›</span>
                 </div>
             </div>
+        </div>
+
     </div>
 </main>
     
