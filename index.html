@@ -317,11 +317,11 @@
             </h1>
         </div>
 
-        <style>
-            /* 공통: 말풍선/타이핑 기본 스타일 (좌표는 아래에서 반응형으로 분리) */
-            .split-bubble{position:absolute;z-index:15;background:#fff;border-radius:18px;padding:11px 14px;font-size:13px;font-weight:700;color:#2A2A2A;max-width:78%;line-height:1.42;box-shadow:0 6px 18px rgba(0,0,0,0.2);opacity:0;transform:translateY(8px) scale(0.92);animation:splitBubbleIn .5s cubic-bezier(.34,1.56,.64,1) forwards;}
+                <style>
+            .split-bubble{position:absolute;z-index:15;background:#fff;border-radius:18px;padding:11px 14px;font-size:13px;font-weight:700;color:#2A2A2A;line-height:1.42;box-shadow:0 6px 18px rgba(0,0,0,0.2);opacity:0;}
             .split-bubble::after{content:"";position:absolute;width:0;height:0;border:7px solid transparent;}
-            @keyframes splitBubbleIn{to{opacity:1;transform:translateY(0) scale(1);}}
+            @keyframes splitBubbleInMobile{to{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}}
+            @keyframes splitBubbleInDesktop{to{opacity:1;transform:translateY(0) scale(1);}}
 
             .split-typing{position:absolute;z-index:15;background:#fff;border-radius:18px;padding:10px 16px;box-shadow:0 6px 18px rgba(0,0,0,0.18);display:flex;gap:4px;align-items:center;opacity:0;}
             .split-typing span{width:6px;height:6px;border-radius:50%;background:#B7B7B7;animation:splitTypingBounce 1s infinite ease-in-out;}
@@ -330,27 +330,45 @@
             @keyframes splitTypingBounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-4px);}}
             @keyframes splitFadeInOut{0%{opacity:0;}15%{opacity:1;}85%{opacity:1;}100%{opacity:0;}}
 
-            /* ===== 모바일 (flex-col, 위: 로아 / 아래: 서아) ===== */
-            /* 각 패널 높이의 안전 범위 안에서만 배치 + 이름표(하단 pb-6)와 안 겹치게 위쪽에 배치 */
-            .bubble-f{top:14%;left:50%;transform:translateX(-50%) translateY(8px) scale(0.92);right:auto;max-width:80%;animation-delay:.5s;}
-            .bubble-f::after{bottom:-12px;left:50%;transform:translateX(-50%);border-top-color:#fff;}
-            .bubble-t{top:14%;left:50%;transform:translateX(-50%) translateY(8px) scale(0.92);right:auto;max-width:80%;animation-delay:1.0s;}
-            .bubble-t::after{bottom:-12px;left:50%;transform:translateX(-50%);border-top-color:#fff;}
-            @keyframes splitBubbleIn{to{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}}
+            .bubble-f, .bubble-t{
+                top:16%;
+                left:50%;
+                right:auto;
+                max-width:82%;
+                transform:translateX(-50%) translateY(8px) scale(0.92);
+                animation-name:splitBubbleInMobile;
+                animation-duration:.5s;
+                animation-timing-function:cubic-bezier(.34,1.56,.64,1);
+                animation-fill-mode:forwards;
+            }
+            .bubble-f{animation-delay:.5s;}
+            .bubble-t{animation-delay:1.0s;}
+            .bubble-f::after, .bubble-t::after{bottom:-12px;left:50%;right:auto;transform:translateX(-50%);border-top-color:#fff;}
 
-            .typing-f{top:14%;left:50%;transform:translateX(-50%);right:auto;animation:splitFadeInOut .5s ease forwards;}
-            .typing-t{top:14%;left:50%;transform:translateX(-50%);right:auto;animation:splitFadeInOut .5s ease forwards;animation-delay:.6s;}
+            .typing-f, .typing-t{
+                top:16%;
+                left:50%;
+                right:auto;
+                transform:translateX(-50%);
+                animation:splitFadeInOut .5s ease forwards;
+            }
+            .typing-t{animation-delay:.6s;}
 
-            /* ===== 데스크톱 (sm:flex-row, 좌: 로아 / 우: 서아) — 기존 좌우 배치 유지 ===== */
             @media (min-width: 640px){
-                .bubble-f{top:40%;right:6%;left:auto;max-width:72%;transform:translateY(8px) scale(0.92);}
+                .bubble-f, .bubble-t{
+                    top:40%;
+                    max-width:72%;
+                    transform:translateY(8px) scale(0.92);
+                    animation-name:splitBubbleInDesktop;
+                }
+                .bubble-f{right:6%;left:auto;}
+                .bubble-t{left:6%;right:auto;}
                 .bubble-f::after{bottom:-12px;right:26px;left:auto;transform:none;}
-                .bubble-t{top:40%;left:6%;right:auto;max-width:72%;transform:translateY(8px) scale(0.92);}
                 .bubble-t::after{bottom:-12px;left:26px;right:auto;transform:none;}
-                @keyframes splitBubbleIn{to{opacity:1;transform:translateY(0) scale(1);}}
 
-                .typing-f{top:40%;right:6%;left:auto;transform:none;}
-                .typing-t{top:40%;left:6%;right:auto;transform:none;}
+                .typing-f, .typing-t{top:40%;transform:none;}
+                .typing-f{right:6%;left:auto;}
+                .typing-t{left:6%;right:auto;}
             }
         </style>
 
