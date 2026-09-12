@@ -312,7 +312,7 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (실시간 1:1 톡 연출: 좌측 언니 메시지 + 우측 유저 답장형 CTA) -->
+<!-- 0. 화면분할 인트로 (F/T 맞춤형 컬러 감성 커스텀 버전) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950">
     <style>
         @keyframes typing-dot {
@@ -342,7 +342,7 @@
             </div>
         </div>
 
-        <!-- F 패널 (로아) -->
+        <!-- F 패널 (로아: 따뜻한 핑크·코랄 무드) -->
         <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden">
             <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-105">
 
@@ -374,19 +374,19 @@
                     <p id="roaBubble2Text" class="text-[12px] font-bold text-slate-800 leading-snug break-keep hidden">속상했던 거 언니가 다 들어주고 다 봐줄게</p>
                 </div>
 
-                <!-- 우측 정렬된 유저의 대답형 CTA 말풍선 (카톡 유저 보낸 메시지 스타일) -->
+                <!-- 우측 정렬된 유저의 대답형 CTA 말풍선 (F 전용 소프트 코랄 핑크 톤) -->
                 <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
-                    <div class="relative bg-[#fee500] text-slate-950 px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_14px_rgba(0,0,0,0.15)] flex items-center gap-2 active:scale-95 transition-transform">
+                    <div class="relative bg-[#ffe4e6] text-[#9f1239] border border-[#fda4af]/60 px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_14px_rgba(244,63,94,0.15)] flex items-center gap-2 active:scale-95 transition-transform">
                         <span class="text-[12px] font-black tracking-tight">"네, 언니한테 다 털어놓을래요"</span>
-                        <span class="text-sm font-black leading-none text-slate-800">›</span>
+                        <span class="text-sm font-black leading-none text-[#e11d48]">›</span>
                         <!-- 우측 상단 말풍선 꼬리 -->
-                        <span class="absolute -right-[5px] top-0 w-3 h-3 bg-[#fee500]" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
+                        <span class="absolute -right-[5px] top-0 w-3 h-3 bg-[#ffe4e6] border-t border-r border-[#fda4af]/60" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- T 패널 (서아) -->
+        <!-- T 패널 (서아: 시크한 다크 & 일렉트릭 블루 무드) -->
         <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden">
             <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
 
@@ -418,13 +418,13 @@
                     <p id="seoBubble2Text" class="text-[12px] font-bold text-slate-100 leading-snug break-keep hidden">네 사주 원국 다 까서 팩트로 다 봐줄 테니까 와</p>
                 </div>
 
-                <!-- 우측 정렬된 유저의 대답형 CTA 말풍선 (다크 톡 유저 보낸 메시지 스타일) -->
+                <!-- 우측 정렬된 유저의 대답형 CTA 말풍선 (T 전용 일렉트릭 블루 톤) -->
                 <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
-                    <div class="relative bg-sky-600 text-white px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_14px_rgba(2,132,199,0.35)] flex items-center gap-2 active:scale-95 transition-transform">
+                    <div class="relative bg-[#0284c7] text-white px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_14px_rgba(2,132,199,0.35)] flex items-center gap-2 active:scale-95 transition-transform">
                         <span class="text-[12px] font-black tracking-tight">"네, 정신 번쩍 차릴게요"</span>
                         <span class="text-sm font-black leading-none text-sky-200">›</span>
                         <!-- 우측 상단 말풍선 꼬리 -->
-                        <span class="absolute -right-[5px] top-0 w-3 h-3 bg-sky-600" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
+                        <span class="absolute -right-[5px] top-0 w-3 h-3 bg-[#0284c7]" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
                     </div>
                 </div>
             </div>
@@ -434,7 +434,7 @@
 </main>
 
 <script>
-    // 0.4초(400ms)만 빠르게 딜레이 주어 답답함 없이 빠릿한 카톡 릴레이 연출
+    // 0.4초(400ms) 딜레이로 빠릿한 카톡 릴레이 연출
     window.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             const r2Dots = document.getElementById('roaBubble2Dots');
