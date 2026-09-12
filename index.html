@@ -315,15 +315,20 @@
 <!-- 0. 화면분할 인트로 (화사한 원본 색감 + 0.3초 패스트 팝업 적용) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex flex-col sm:flex-row w-full h-[100dvh] overflow-hidden bg-slate-900">
     
-    <!-- 상단 질문 헤더 바 (투명하고 세련된 글래스모피즘) -->
-    <div id="splitTitle" class="absolute top-2 sm:top-5 left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-full px-3 text-center" style="top: calc(env(safe-area-inset-top, 0px) + 8px);">
-        <div class="bg-black/45 backdrop-blur-md px-3.5 py-1.5 sm:py-2 rounded-full border border-white/20 text-white shadow-xl inline-flex items-center gap-1.5">
+    <!-- 상단 질문 & 1020 행동 유도(CTA) 헤더 바 -->
+    <div id="splitTitle" class="absolute top-2 sm:top-5 left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-full px-3 text-center flex flex-col items-center gap-1" style="top: calc(env(safe-area-inset-top, 0px) + 6px);">
+        <!-- 1) 상황 질문 바 -->
+        <div class="bg-black/50 backdrop-blur-md px-3.5 py-1 sm:py-1.5 rounded-full border border-white/20 text-white shadow-xl inline-flex items-center gap-1.5">
             <span class="text-rose-400 font-black text-xs">Q.</span>
             <span class="text-[11.5px] sm:text-[13px] font-bold tracking-tight text-white/95">"썸남이 3일째 답장이 늦어요"</span>
             <span class="text-[10px] sm:text-xs text-white/60 font-medium ml-0.5">라고 물어보면?</span>
         </div>
+        <!-- 2) 직관적 행동 유도 넛지 뱃지 -->
+        <div class="inline-flex items-center gap-1 bg-white/90 backdrop-blur-md text-slate-900 px-3 py-0.5 rounded-full shadow-lg border border-white/40">
+            <span class="text-[10.5px] sm:text-[11.5px] font-black tracking-tight">내 사주를 봐줄 언니를 골라봐</span>
+            <span class="text-xs">👇</span>
+        </div>
     </div>
-
     <!-- 1020 스피드 팝업 CSS (대기시간 제거 및 통통 튀는 모션) -->
     <style>
         .intro-bubble {
