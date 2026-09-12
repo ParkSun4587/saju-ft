@@ -3807,15 +3807,28 @@
         }
 
         function startFreshAnalysis() {
-            // [수정] 구매 복원 키는 유지 — 결제자가 재방문 시 리포트 복구 가능하도록
+            // 구매 복원 키는 유지 — 결제자가 재방문 시 리포트 복구 가능하도록
             isUnlocked = false;
             premiumBuffer = null;
             const form = document.getElementById('sazuForm'); if (form) form.reset();
             document.getElementById('nameInput').value = ''; document.getElementById('birthDateInput').value = ''; document.getElementById('birthTimeSelect').selectedIndex = 0;
             setGender('female'); setCalendar('solar'); selectConcern('money', document.querySelector('#concernGrid .concern-chip'));
-            document.getElementById('resultSection').style.display = 'none'; document.getElementById('loadingSection').style.display = 'none'; document.getElementById('landingSection').style.display = 'flex';
+            
+            // 모든 결과 및 폼 화면 숨김
+            document.getElementById('resultSection').style.display = 'none'; 
+            document.getElementById('loadingSection').style.display = 'none'; 
+            document.getElementById('landingSection').style.display = 'none'; 
+            
+            // 인트로 화면으로 복귀
+            const introSection = document.getElementById('splitIntroSection');
+            if (introSection) {
+                introSection.style.display = 'flex';
+                introSection.style.opacity = '1';
+            } else {
+                document.getElementById('landingSection').style.display = 'flex';
+            }
+            
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            setTimeout(() => { document.getElementById('nameInput').focus(); }, 100);
         }
     </script>
 <!-- 6. 약관 및 개인정보처리방침 팝업 모달 (최상위 독립 배치) -->
