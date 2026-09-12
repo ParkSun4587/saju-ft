@@ -35,6 +35,9 @@
     
     <!-- 파비콘 (브라우저 탭 아이콘) -->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- 카카오톡 인앱 브라우저 광속 로딩용 이미지 프리로드 -->
+    <link rel="preload" as="image" href="./로아.png" fetchpriority="high">
+    <link rel="preload" as="image" href="./서아.png" fetchpriority="high">
 
     <!-- 구글 애널리틱스 (GA4) 트래킹 코드 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZ9JH0P8P8"></script>
@@ -387,7 +390,7 @@
 
     <!-- F 패널 (로아 언니) -->
     <div onclick="selectSplitMode('F')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full border-b sm:border-b-0 sm:border-r border-white/20 flex flex-col justify-between items-center relative overflow-hidden cursor-pointer group select-none">
-        <img src="./로아.png" alt="로아 언니" class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none group-hover:scale-105 transition-transform duration-700">
+        <img src="./로아.png" alt="로아 언니" fetchpriority="high" loading="eager" decoding="async" class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none group-hover:scale-105 transition-transform duration-700">
         
         <!-- 하단 텍스트 보호용 최소 그라데이션만 배치 (얼굴은 100% 본래 색감) -->
         <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
@@ -414,7 +417,7 @@
 
     <!-- T 패널 (서아 언니) -->
     <div onclick="selectSplitMode('T')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full flex flex-col justify-between items-center relative overflow-hidden cursor-pointer group select-none">
-        <img src="./서아.png" alt="서아 언니" class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none group-hover:scale-105 transition-transform duration-700">
+        <img src="./서아.png" alt="서아 언니" fetchpriority="high" loading="eager" decoding="async" class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none group-hover:scale-105 transition-transform duration-700">
         
         <!-- 하단 텍스트 보호용 최소 그라데이션만 배치 (얼굴은 100% 본래 색감) -->
         <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
