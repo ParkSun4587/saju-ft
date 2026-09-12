@@ -312,137 +312,139 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (화사한 원본 색감 + 0.3초 패스트 팝업 적용) -->
-<main id="splitIntroSection" class="fixed inset-0 z-[60] flex flex-col sm:flex-row w-full h-[100dvh] overflow-hidden bg-slate-900">
+<!-- 0. 화면분할 인트로 (로아/서아 선택) -->
+<main id="splitIntroSection" class="fixed inset-0 z-[60] flex flex-col sm:flex-row w-full h-[100dvh] overflow-hidden bg-slate-950">
     
-    <!-- 상단 질문 & 1020 행동 유도(CTA) 헤더 바 -->
-    <div id="splitTitle" class="absolute top-2 sm:top-5 left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-full px-3 text-center flex flex-col items-center gap-1" style="top: calc(env(safe-area-inset-top, 0px) + 6px);">
-        <!-- 1) 상황 질문 바 -->
-        <div class="bg-black/50 backdrop-blur-md px-3.5 py-1 sm:py-1.5 rounded-full border border-white/20 text-white shadow-xl inline-flex items-center gap-1.5">
-            <span class="text-rose-400 font-black text-xs">Q.</span>
-            <span class="text-[11.5px] sm:text-[13px] font-bold tracking-tight text-white/95">"썸남이 3일째 답장이 늦어요"</span>
-            <span class="text-[10px] sm:text-xs text-white/60 font-medium ml-0.5">라고 물어보면?</span>
-        </div>
-        <!-- 2) 직관적 행동 유도 넛지 뱃지 -->
-        <div class="inline-flex items-center gap-1 bg-white/90 backdrop-blur-md text-slate-900 px-3 py-0.5 rounded-full shadow-lg border border-white/40">
-            <span class="text-[10.5px] sm:text-[11.5px] font-black tracking-tight">내 사주를 봐줄 언니를 골라봐</span>
-            <span class="text-xs">👇</span>
+    <!-- 최상단 헤더: 상황 질문 + 선택 유도 일체형 캡슐 -->
+    <div id="splitTitle" class="absolute top-2.5 sm:top-5 left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-full px-3 text-center" style="top: calc(env(safe-area-inset-top, 0px) + 6px);">
+        <div class="bg-slate-900/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 text-white shadow-2xl inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2">
+            <div class="flex items-center gap-1.5">
+                <span class="text-rose-400 font-black text-[11px] sm:text-xs">Q.</span>
+                <span class="text-[11px] sm:text-xs font-semibold text-white/95">"썸남이 3일째 답장이 늦어요"</span>
+            </div>
+            <span class="text-[10px] sm:text-[11px] text-amber-300 font-extrabold bg-amber-400/10 px-2 py-0.2 rounded-full border border-amber-300/30">👇 내 사주 봐줄 언니 터치!</span>
         </div>
     </div>
-    <!-- 1020 스피드 팝업 CSS (대기시간 제거 및 통통 튀는 모션) -->
+
+    <!-- 중앙 VS 포인트 뱃지 (화면 정중앙에 위치하여 선택 구조 명확화) -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[65] pointer-events-none">
+        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-900/95 border-2 border-white/30 text-white flex items-center justify-center font-black text-[11px] sm:text-xs shadow-[0_0_15px_rgba(0,0,0,0.6)]">
+            VS
+        </div>
+    </div>
+
+    <!-- 인트로 최적화 CSS -->
     <style>
         .intro-bubble {
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 18px;
-            padding: 9px 15px;
-            font-size: 12px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 8px 14px;
+            font-size: 11.5px;
             font-weight: 700;
-            color: #0f172a;
-            line-height: 1.38;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+            color: #1e293b;
+            line-height: 1.35;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             text-align: center;
             opacity: 0;
-            transform: translateY(8px) scale(0.92);
-            animation: bubblePopFast 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            transform: translateY(6px);
+            animation: bubblePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
             position: relative;
         }
         .intro-bubble::after {
             content: "";
             position: absolute;
-            bottom: -8px;
+            bottom: -7px;
             left: 50%;
             transform: translateX(-50%);
             border: 5px solid transparent;
-            border-top-color: rgba(255, 255, 255, 0.98);
+            border-top-color: #ffffff;
         }
-        @keyframes bubblePopFast {
-            to { opacity: 1; transform: translateY(0) scale(1); }
+        @keyframes bubblePop {
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .intro-typing {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255,255,255,0.9);
             border-radius: 14px;
-            padding: 8px 12px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            padding: 8px 14px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
             display: inline-flex;
-            gap: 3.5px;
+            gap: 4px;
             align-items: center;
             justify-content: center;
             opacity: 0;
-            animation: fadeTypingFast 0.35s ease forwards;
+            animation: fadeTyping 0.6s ease forwards;
         }
         .intro-typing span {
-            width: 4.5px;
-            height: 4.5px;
+            width: 5px;
+            height: 5px;
             border-radius: 50%;
             background: #94a3b8;
-            animation: typingDot 1s infinite ease-in-out both;
+            animation: typingDot 1.4s infinite ease-in-out both;
         }
-        .intro-typing span:nth-child(1) { animation-delay: -0.25s; }
-        .intro-typing span:nth-child(2) { animation-delay: -0.12s; }
+        .intro-typing span:nth-child(1) { animation-delay: -0.32s; }
+        .intro-typing span:nth-child(2) { animation-delay: -0.16s; }
         
         @keyframes typingDot {
             0%, 80%, 100% { transform: scale(0.6); background: #cbd5e1; }
-            40% { transform: scale(1.15); background: #64748b; }
+            40% { transform: scale(1.1); background: #64748b; }
         }
-        @keyframes fadeTypingFast {
-            0% { opacity: 0; transform: scale(0.9); }
-            20% { opacity: 1; transform: scale(1); }
+        @keyframes fadeTyping {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
             80% { opacity: 1; }
             100% { opacity: 0; }
         }
     </style>
 
     <!-- F 패널 (로아 언니) -->
-    <div onclick="selectSplitMode('F')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full border-b sm:border-b-0 sm:border-r border-white/20 flex flex-col justify-between items-center relative overflow-hidden cursor-pointer group select-none">
-        <img src="./로아.png" alt="로아 언니" fetchpriority="high" loading="eager" decoding="async" class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none group-hover:scale-105 transition-transform duration-700">
+    <div onclick="selectSplitMode('F')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full border-b sm:border-b-0 sm:border-r border-white/10 flex flex-col justify-between items-center relative overflow-hidden cursor-pointer group select-none">
+        <img src="./로아.png" alt="로아 언니" class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none group-hover:scale-105 transition-transform duration-700">
         
-        <!-- 하단 텍스트 보호용 최소 그라데이션만 배치 (얼굴은 100% 본래 색감) -->
-        <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/75 pointer-events-none"></div>
         
-        <!-- 상단: 로아 말풍선 (0.1초 타이핑 -> 0.35초 즉각 오픈) -->
-        <div class="relative z-10 w-full flex flex-col items-center pt-[50px] sm:pt-20 px-4">
-            <div class="intro-typing absolute" style="animation-delay: 0.05s;">
+        <!-- 상단: 로아 말풍선 (헤더 아래 넉넉한 여백 확보) -->
+        <div class="relative z-10 w-full flex flex-col items-center pt-[54px] sm:pt-20 px-4">
+            <div class="intro-typing absolute" style="animation-delay: 0.2s;">
                 <span></span><span></span><span></span>
             </div>
-            <div class="intro-bubble" style="animation-delay: 0.35s;">
+            <div class="intro-bubble" style="animation-delay: 0.8s;">
                 요즘 <b class="text-rose-500">바빠서</b> 그런 걸 수도 있어<br>너무 불안해하지 마, 곧 연락 올 거야 🥺
             </div>
         </div>
 
-        <!-- 하단: 이름 & 모드 뱃지 -->
-        <div class="relative z-10 w-full pb-3.5 sm:pb-8 text-center space-y-1 pointer-events-none">
-            <h2 class="text-white font-black text-xl sm:text-2xl tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">로아 언니</h2>
-            <div class="inline-flex items-center gap-1.5 bg-white/95 text-rose-600 px-3.5 py-1.5 rounded-full shadow-xl">
-                <span class="text-[10px] font-black bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded-md">F</span>
-                <span class="text-[11.5px] font-bold tracking-tight">무조건 내 편 힐링 모드 →</span>
+        <!-- 하단: 이름 & 터치 선택 버튼 -->
+        <div class="relative z-10 w-full pb-3 sm:pb-8 text-center space-y-1 pointer-events-none">
+            <h2 class="text-white font-black text-xl sm:text-2xl tracking-tight drop-shadow-md">로아 언니</h2>
+            <div class="inline-flex items-center gap-1.5 bg-white text-rose-600 px-3.5 py-1 rounded-full shadow-lg">
+                <span class="text-[10px] font-black bg-rose-100 text-rose-600 px-1.5 py-0.2 rounded-md">F</span>
+                <span class="text-[11px] font-bold">무조건 내 편 힐링 모드 선택 →</span>
             </div>
         </div>
     </div>
 
     <!-- T 패널 (서아 언니) -->
     <div onclick="selectSplitMode('T')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full flex flex-col justify-between items-center relative overflow-hidden cursor-pointer group select-none">
-        <img src="./서아.png" alt="서아 언니" fetchpriority="high" loading="eager" decoding="async" class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none group-hover:scale-105 transition-transform duration-700">
+        <img src="./서아.png" alt="서아 언니" class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none group-hover:scale-105 transition-transform duration-700">
         
-        <!-- 하단 텍스트 보호용 최소 그라데이션만 배치 (얼굴은 100% 본래 색감) -->
-        <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/75 pointer-events-none"></div>
         
-        <!-- 상단: 서아 말풍선 (0.35초 타이핑 -> 0.65초 연달아 팝업) -->
-        <div class="relative z-10 w-full flex flex-col items-center pt-2 sm:pt-20 px-4">
-            <div class="intro-typing absolute" style="animation-delay: 0.35s;">
+        <!-- 상단: 서아 말풍선 -->
+        <div class="relative z-10 w-full flex flex-col items-center pt-5 sm:pt-20 px-4">
+            <div class="intro-typing absolute" style="animation-delay: 1.4s;">
                 <span></span><span></span><span></span>
             </div>
-            <div class="intro-bubble" style="animation-delay: 0.65s;">
+            <div class="intro-bubble" style="animation-delay: 2.0s;">
                 3일 씹힘 = <b class="text-sky-600">관심 없음</b>.<br>기다리지 말고 다른 사람 알아봐.
             </div>
         </div>
 
-        <!-- 하단: 이름 & 모드 뱃지 -->
-        <div class="relative z-10 w-full pb-3.5 sm:pb-8 text-center space-y-1 pointer-events-none">
-            <h2 class="text-white font-black text-xl sm:text-2xl tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">서아 언니</h2>
-            <div class="inline-flex items-center gap-1.5 bg-white/95 text-sky-600 px-3.5 py-1.5 rounded-full shadow-xl">
-                <span class="text-[10px] font-black bg-sky-100 text-sky-600 px-1.5 py-0.5 rounded-md">T</span>
-                <span class="text-[11.5px] font-bold tracking-tight">뼈 때리는 팩폭 모드 →</span>
+        <!-- 하단: 이름 & 터치 선택 버튼 -->
+        <div class="relative z-10 w-full pb-3 sm:pb-8 text-center space-y-1 pointer-events-none">
+            <h2 class="text-white font-black text-xl sm:text-2xl tracking-tight drop-shadow-md">서아 언니</h2>
+            <div class="inline-flex items-center gap-1.5 bg-white text-sky-600 px-3.5 py-1 rounded-full shadow-lg">
+                <span class="text-[10px] font-black bg-sky-100 text-sky-600 px-1.5 py-0.2 rounded-md">T</span>
+                <span class="text-[11px] font-bold">뼈 때리는 팩폭 모드 선택 →</span>
             </div>
         </div>
     </div>
