@@ -312,8 +312,8 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (쌍따옴표 제거 & 로아 CTA 시인성 강화 버전) -->
-<main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950">
+<!-- 0. 화면분할 인트로 (모바일 바운스 스크롤 & 하단 흰색 여백 원천 차단 버전) -->
+<main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950 select-none" style="touch-action: none; overscroll-behavior: none; -webkit-overflow-scrolling: auto;">
     <style>
         @keyframes typing-dot {
             0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
@@ -329,8 +329,8 @@
         .bubble-pop { animation: bubblePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
     </style>
 
-    <!-- 모바일 크기 고정 컨테이너 -->
-    <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col overflow-hidden bg-white shadow-2xl">
+    <!-- 모바일 크기 고정 컨테이너 (하단 흰색 누수 방지를 위해 bg-slate-950 적용) -->
+    <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col overflow-hidden bg-slate-950 shadow-2xl" style="touch-action: none; overscroll-behavior: none;">
 
         <!-- 중앙 미니멀 구분선 -->
         <div class="absolute top-1/2 left-0 w-full h-px bg-white/50 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.6)]"></div>
@@ -354,7 +354,7 @@
                     <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">로아</span>
                 </div>
 
-                <!-- 언니 말풍선 (쌍따옴표 제거) -->
+                <!-- 언니 말풍선 -->
                 <div class="relative bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[90%] ml-1 border border-rose-200">
                     <span class="absolute -left-[5px] top-0 w-3 h-3 bg-white" style="clip-path: polygon(100% 0, 0 0, 100% 100%);"></span>
                     <p class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-800 leading-snug break-keep">
@@ -362,7 +362,7 @@
                     </p>
                 </div>
 
-                <!-- 유저 답장형 CTA (로아 니트색 대비 시인성 강화 + 쌍따옴표 제거) -->
+                <!-- 유저 답장형 CTA -->
                 <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
                     <div class="relative bg-[#fff0f3] text-[#9f1239] border-2 border-[#fb7185] px-3.5 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_12px_rgba(244,63,94,0.22)] flex items-center gap-1.5 active:scale-95 transition-transform max-w-full">
                         <span class="text-[10.5px] sm:text-[12px] font-black tracking-tighter whitespace-nowrap">응, 나 진짜 힘드니까 무조건 내 편부터 들어줘</span>
@@ -374,7 +374,7 @@
         </div>
 
         <!-- T 패널 (서아) -->
-        <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden flex flex-col justify-end">
+        <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-slate-950 overflow-hidden flex flex-col justify-end">
             <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
             
             <div class="absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none"></div>
@@ -385,7 +385,7 @@
                     <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">서아</span>
                 </div>
 
-                <!-- 언니 말풍선 (쌍따옴표 제거) -->
+                <!-- 언니 말풍선 -->
                 <div class="relative bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[90%] ml-1 border border-slate-700">
                     <span class="absolute -left-[5px] top-0 w-3 h-3 bg-slate-900" style="clip-path: polygon(100% 0, 0 0, 100% 100%);"></span>
                     <p class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-100 leading-snug break-keep">
@@ -393,7 +393,7 @@
                     </p>
                 </div>
 
-                <!-- 유저 답장형 CTA (쌍따옴표 제거) -->
+                <!-- 유저 답장형 CTA -->
                 <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
                     <div class="relative bg-[#0284c7] text-white border-2 border-sky-400 px-3.5 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_12px_rgba(2,132,199,0.3)] flex items-center gap-1.5 active:scale-95 transition-transform max-w-full">
                         <span class="text-[10.5px] sm:text-[12px] font-black tracking-tighter whitespace-nowrap">징징 안 댈게. 필터링 다 빼고 날것 그대로 까줘</span>
@@ -406,7 +406,7 @@
 
     </div>
 </main>
-
+    
 <script>
     // 0.4초(400ms) 딜레이로 빠릿한 카톡 릴레이 연출
     window.addEventListener('DOMContentLoaded', () => {
