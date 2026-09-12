@@ -312,9 +312,10 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (모바일 바운스 스크롤 & 하단 흰색 여백 원천 차단 버전) -->
+<!-- 0. 화면분할 인트로 (모바일 캐릭터 선택창 플로팅 & 브리딩 모션 탑재) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950 select-none" style="touch-action: none; overscroll-behavior: none; -webkit-overflow-scrolling: auto;">
     <style>
+        /* 기본 타이핑 모션 */
         @keyframes typing-dot {
             0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
             30% { transform: translateY(-4px); opacity: 1; }
@@ -322,14 +323,37 @@
         .t-dot-1 { animation: typing-dot 1.2s infinite ease-in-out 0s; }
         .t-dot-2 { animation: typing-dot 1.2s infinite ease-in-out 0.2s; }
         .t-dot-3 { animation: typing-dot 1.2s infinite ease-in-out 0.4s; }
-        @keyframes bubblePop {
-            0% { transform: scale(0.85); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+
+        /* 캐릭터 살아 숨쉬는 브리딩 모션 (모바일 호버 대체) */
+        @keyframes charBreathingRoa {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.035) translateY(-3px); }
         }
-        .bubble-pop { animation: bubblePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .char-alive-roa {
+            animation: charBreathingRoa 4.5s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        @keyframes charBreathingSeoa {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.035) translateY(-3px); }
+        }
+        .char-alive-seoa {
+            animation: charBreathingSeoa 4.5s ease-in-out infinite 0.6s; /* 로아와 엇박자로 움직여 자연스러움 극대화 */
+            will-change: transform;
+        }
+
+        /* 톡 버블 은은한 플로팅 */
+        @keyframes bubbleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2.5px); }
+        }
+        .bubble-floating {
+            animation: bubbleFloat 3s ease-in-out infinite;
+        }
     </style>
 
-    <!-- 모바일 크기 고정 컨테이너 (하단 흰색 누수 방지를 위해 bg-slate-950 적용) -->
+    <!-- 모바일 크기 고정 컨테이너 -->
     <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col overflow-hidden bg-slate-950 shadow-2xl" style="touch-action: none; overscroll-behavior: none;">
 
         <!-- 중앙 미니멀 구분선 -->
@@ -343,12 +367,13 @@
         </div>
 
         <!-- F 패널 (로아) -->
-        <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden flex flex-col justify-end">
-            <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-105">
+        <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden flex flex-col justify-end active:scale-[0.985] transition-transform duration-150">
+            <!-- 모바일 자동 브리딩 모션 장착 -->
+            <img src="./로아.png" alt="로아" class="char-alive-roa absolute inset-0 w-full h-full object-cover object-[center_18%]">
             
             <div class="absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-rose-100/80 via-transparent to-transparent pointer-events-none"></div>
 
-            <div class="relative z-10 pb-3.5 px-3 flex flex-col gap-1.5 pointer-events-none">
+            <div class="bubble-floating relative z-10 pb-3.5 px-3 flex flex-col gap-1.5 pointer-events-none">
                 <div class="flex items-center gap-1.5 pl-1">
                     <img src="./로아.png" alt="로아 프로필" class="w-6 h-6 rounded-full object-cover object-[center_15%] border-2 border-white shadow-sm">
                     <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">로아</span>
@@ -374,12 +399,13 @@
         </div>
 
         <!-- T 패널 (서아) -->
-        <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-slate-950 overflow-hidden flex flex-col justify-end">
-            <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
+        <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-slate-950 overflow-hidden flex flex-col justify-end active:scale-[0.985] transition-transform duration-150">
+            <!-- 모바일 자동 브리딩 모션 장착 (엇박자 루프) -->
+            <img src="./서아.png" alt="서아" class="char-alive-seoa absolute inset-0 w-full h-full object-cover object-[center_20%]">
             
             <div class="absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none"></div>
 
-            <div class="relative z-10 pb-3.5 px-3 flex flex-col gap-1.5 pointer-events-none">
+            <div class="bubble-floating relative z-10 pb-3.5 px-3 flex flex-col gap-1.5 pointer-events-none">
                 <div class="flex items-center gap-1.5 pl-1">
                     <img src="./서아.png" alt="서아 프로필" class="w-6 h-6 rounded-full object-cover object-[center_15%] border-2 border-white shadow-sm">
                     <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">서아</span>
