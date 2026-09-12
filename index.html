@@ -315,16 +315,13 @@
 <!-- 0. 화면분할 인트로 (로아/서아 선택) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex flex-col sm:flex-row w-full h-[100dvh] overflow-hidden bg-slate-100">
     
-    <!-- 최상단 헤더: 세련된 반투명 글래스 캡슐 (여성향 미니멀 디자인) -->
-    <div id="splitTitle" class="absolute top-2 sm:top-5 left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-full px-3 text-center" style="top: calc(env(safe-area-inset-top, 0px) + 6px);">
-        <div class="bg-white/85 backdrop-blur-md px-4 py-1.5 rounded-full border border-slate-200/80 text-slate-800 shadow-md inline-flex items-center gap-2">
-            <span class="text-rose-500 font-bold text-xs">💬</span>
-            <span class="text-[11.5px] sm:text-xs font-semibold text-slate-700">"썸남이 3일째 답장이 없다면?"</span>
+    <!-- 최상단 헤더: 최상단 상태바 바로 아래 깔끔하게 안착하는 2단 타이틀 캡슐 -->
+    <div id="splitTitle" class="absolute left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-full px-4 text-center" style="top: calc(env(safe-area-inset-top, 0px) + 8px);">
+        <div class="bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200/90 text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.12)] inline-flex flex-col items-center gap-0.5 max-w-[90%]">
+            <span class="text-[11.5px] sm:text-xs font-bold text-slate-700 tracking-tight">"썸남이 3일째 답장 없으면?"</span>
+            <span class="text-[10.5px] sm:text-[11px] text-rose-600 font-black">👇 내 사주를 봐줄 언니를 골라봐</span>
         </div>
     </div>
-
-    <!-- 중앙 분할선: 촌스러운 VS 뱃지 대신 은은하고 세련된 글래스 라인 배치 -->
-    <div class="absolute top-1/2 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent z-[65] pointer-events-none hidden sm:hidden"></div>
 
     <!-- 인트로 감성 CSS -->
     <style>
@@ -394,11 +391,10 @@
     <div onclick="selectSplitMode('F')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full border-b sm:border-b-0 sm:border-r border-rose-100/60 flex flex-col justify-between items-center relative overflow-hidden cursor-pointer group select-none bg-rose-50">
         <img src="./로아.png" alt="로아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_35%] pointer-events-none group-hover:scale-105 transition-transform duration-700">
         
-        <!-- 화사함을 살리는 은은한 핑크 톤 필터 (검은 어둠 제거) -->
         <div class="absolute inset-0 bg-gradient-to-b from-rose-950/15 via-transparent to-rose-950/40 pointer-events-none"></div>
         
-        <!-- 상단: 로아 말풍선 -->
-        <div class="relative z-10 w-full flex flex-col items-center pt-[46px] sm:pt-16 px-4">
+        <!-- 상단: 로아 말풍선 (상단 헤더와 겹치지 않게 여유 패딩 확보) -->
+        <div class="relative z-10 w-full flex flex-col items-center pt-[62px] sm:pt-20 px-4">
             <div class="intro-typing absolute" style="animation-delay: 0.2s;">
                 <span></span><span></span><span></span>
             </div>
@@ -423,11 +419,10 @@
     <div onclick="selectSplitMode('T')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full flex flex-col justify-between items-center relative overflow-hidden cursor-pointer group select-none bg-sky-50">
         <img src="./서아.png" alt="서아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_25%] pointer-events-none group-hover:scale-105 transition-transform duration-700">
         
-        <!-- 세련된 쿨톤을 살리는 블루 톤 필터 (검은 어둠 제거) -->
         <div class="absolute inset-0 bg-gradient-to-b from-slate-950/15 via-transparent to-slate-950/45 pointer-events-none"></div>
         
         <!-- 상단: 서아 말풍선 -->
-        <div class="relative z-10 w-full flex flex-col items-center pt-3 sm:pt-16 px-4">
+        <div class="relative z-10 w-full flex flex-col items-center pt-3 sm:pt-20 px-4">
             <div class="intro-typing absolute" style="animation-delay: 1.4s;">
                 <span></span><span></span><span></span>
             </div>
