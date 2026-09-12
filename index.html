@@ -485,51 +485,53 @@
         return dialogueSets[idx];
     }
 
-    function showTurn(dots, textEl, p, text, cb) {
-        dots.classList.remove('hidden');
-        textEl.classList.add('hidden');
+    // 교체
+function showTurn(dots, textEl, p, text, cb) {
+    dots.classList.remove('hidden');
+    textEl.classList.add('hidden');
+    setTimeout(function() {
+        if (stopped) return;
+        dots.classList.add('hidden');
+        p.textContent = text;
+        textEl.classList.remove('hidden');
+        textEl.classList.remove('bubble-pop');
+        void textEl.offsetWidth;
+        textEl.classList.add('bubble-pop');
+        if (cb) cb();
+    }, 900); // 타이핑 도트 노출 시간 늘림 (700 → 900)
+}
+
+function playSet(set, onDone) {
+    showTurn(roaDots, roaText, roaP, set[0].t, function() {
         setTimeout(function() {
             if (stopped) return;
-            dots.classList.add('hidden');
-            p.textContent = text;
-            textEl.classList.remove('hidden');
-            textEl.classList.remove('bubble-pop');
-            void textEl.offsetWidth;
-            textEl.classList.add('bubble-pop');
-            if (cb) cb();
-        }, 700);
-    }
+            showTurn(seoDots, seoText, seoP, set[1].t, function() {
+                setTimeout(function() {
+                    if (stopped) return;
+                    showTurn(roaDots, roaText, roaP, set[2].t, function() {
+                        setTimeout(function() {
+                            if (stopped) return;
+                            showTurn(seoDots, seoText, seoP, set[3].t, onDone);
+                        }, 1200); // 500 → 1200, 읽을 시간 확보
+                    });
+                }, 1200);
+            });
+        }, 1200);
+    });
+}
 
-    function playSet(set, onDone) {
-        showTurn(roaDots, roaText, roaP, set[0].t, function() {
-            setTimeout(function() {
-                if (stopped) return;
-                showTurn(seoDots, seoText, seoP, set[1].t, function() {
-                    setTimeout(function() {
-                        if (stopped) return;
-                        showTurn(roaDots, roaText, roaP, set[2].t, function() {
-                            setTimeout(function() {
-                                if (stopped) return;
-                                showTurn(seoDots, seoText, seoP, set[3].t, onDone);
-                            }, 500);
-                        });
-                    }, 500);
-                });
-            }, 500);
-        });
-    }
-
-    function runCycle() {
-        if (stopped || cycleCount >= MAX_CYCLES) return;
-        cycleCount++;
-        playSet(pickSet(), function() {
-            if (cycleCount === 1) {
-                roaCta.classList.remove('hidden');
-                seoCta.classList.remove('hidden');
-            }
-            if (cycleCount < MAX_CYCLES) setTimeout(runCycle, 4000);
-        });
-    }
+function runCycle() {
+    if (stopped || cycleCount >= MAX_CYCLES) return;
+    cycleCount++;
+    playSet(pickSet(), function() {
+        // null 체크 추가 — CTA 요소 못 찾아도 전체 로직 안 죽게
+        if (cycleCount === 1) {
+            if (roaCta) roaCta.classList.remove('hidden');
+            if (seoCta) seoCta.classList.remove('hidden');
+        }
+        if (cycleCount < MAX_CYCLES) setTimeout(runCycle, 6000); // 4000 → 6000, 사이클 간격도 늘림
+    });
+}
 
     window.stopIntroDialogueLoop = function() { stopped = true; };
     window.addEventListener('DOMContentLoaded', runCycle);
