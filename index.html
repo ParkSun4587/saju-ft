@@ -421,166 +421,158 @@
     });
 </script>
     
-<!-- 1. 카톡 인터뷰형 사주 정보 입력 (몰입형 1:1 대화 UI) -->
+<!-- 1. 카톡 인터뷰형 사주 정보 입력 (모바일 1화면 무스크롤 완벽 압축 버전) -->
     <main id="landingSection" style="display:none;" class="fixed inset-0 z-50 flex flex-col bg-[#abc1d1] w-full h-[100dvh] overflow-hidden">
         
-        <!-- 카톡 상단 헤더 바 -->
-        <header class="bg-[#abc1d1]/95 backdrop-blur-md px-4 py-2.5 flex items-center justify-between border-b border-black/5 shrink-0 z-20" style="padding-top: calc(env(safe-area-inset-top, 0px) + 8px);">
-            <div class="flex items-center gap-2.5">
-                <button type="button" onclick="startFreshAnalysis()" class="text-slate-800 text-lg font-bold p-1 bg-transparent border-0 cursor-pointer">←</button>
+        <!-- 카톡 상단 헤더 바 (컴팩트 슬림화) -->
+        <header class="bg-[#abc1d1]/95 backdrop-blur-md px-3.5 py-2 flex items-center justify-between border-b border-black/5 shrink-0 z-20" style="padding-top: calc(env(safe-area-inset-top, 0px) + 6px);">
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="startFreshAnalysis()" class="text-slate-800 text-base font-bold p-1 bg-transparent border-0 cursor-pointer">←</button>
                 <div class="relative">
-                    <img id="welcomeSisterImg" src="./로아.png" alt="프로필" class="w-9 h-9 rounded-full object-cover border border-white/60 shadow-sm">
-                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white"></span>
+                    <img id="welcomeSisterImg" src="./로아.png" alt="프로필" class="w-8 h-8 rounded-full object-cover border border-white/60 shadow-sm">
+                    <span class="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white"></span>
                 </div>
                 <div>
-                    <h2 id="welcomeSisterBadge" class="text-xs font-extrabold text-slate-900 leading-tight">로아 언니</h2>
-                    <span class="text-[10px] text-slate-600 font-medium">실시간 사주 상담 중</span>
+                    <h2 id="welcomeSisterBadge" class="text-[11px] font-extrabold text-slate-900 leading-tight">로아 언니</h2>
+                    <span class="text-[9px] text-slate-600 font-medium">실시간 사주 상담 중</span>
                 </div>
             </div>
-            <div class="bg-black/10 text-slate-800 px-2.5 py-1 rounded-full text-[10px] font-bold">🔒 1:1 비밀 상담</div>
+            <div class="bg-black/10 text-slate-800 px-2 py-0.5 rounded-full text-[9.5px] font-bold">🔒 1:1 비밀 상담</div>
         </header>
 
-        <!-- 카톡 대화 및 인터랙티브 폼 리스트 (스크롤 영역) -->
-        <div class="flex-1 overflow-y-auto p-3.5 space-y-3 scroll-smooth">
+        <!-- 카톡 대화 및 인터랙티브 폼 리스트 (h-full 맞춤 무스크롤 패딩) -->
+        <div class="flex-1 overflow-y-auto px-3 py-1 space-y-1.5 flex flex-col justify-between max-w-[430px] mx-auto w-full">
             
-            <!-- 오늘 날짜 구분선 -->
-            <div class="flex justify-center my-1">
-                <span class="bg-black/10 text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full">오늘</span>
-            </div>
-
-            <!-- 1) 언니 인사 말풍선 -->
-            <div class="flex items-start gap-2 max-w-[88%]">
-                <img id="chatBubbleProfileMini" src="./로아.png" class="w-8 h-8 rounded-full object-cover shrink-0 mt-0.5">
+            <!-- 1) 언니 인사 말풍선 (컴팩트 압축) -->
+            <div class="flex items-start gap-1.5 max-w-[90%] pt-0.5">
+                <img id="chatBubbleProfileMini" src="./로아.png" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
                 <div>
-                    <span id="chatSenderNameTitle" class="text-[11px] text-slate-700 font-bold block mb-1">로아 언니</span>
-                    <div id="welcomeSisterBubble" class="bg-white text-slate-900 text-xs sm:text-[12.5px] font-medium p-3 rounded-2xl rounded-tl-none shadow-sm leading-relaxed border border-white/40">
+                    <span id="chatSenderNameTitle" class="text-[10px] text-slate-700 font-bold block mb-0.5">로아 언니</span>
+                    <div id="welcomeSisterBubble" class="bg-white text-slate-900 text-[11px] font-medium p-2 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40">
                         <p id="welcomeSisterText">반가워! 네 사주 꼼꼼하게 봐줄게.<br>우선 네 <b class="text-rose-600">이름(닉네임)</b>부터 알려줘 💕</p>
                     </div>
                 </div>
             </div>
 
-            <!-- 2) 카톡형 사주 입력 카드 말풍선 -->
-            <div class="flex items-start gap-2 max-w-[95%] pt-1">
-                <div class="w-8 shrink-0"></div>
-                <div class="bg-white p-3.5 rounded-2xl rounded-tl-none shadow-sm border border-white/40 w-full space-y-3">
-                    <p class="text-[11.5px] font-extrabold text-slate-800 border-b border-slate-100 pb-2">
-                        📋 정확한 만세력 원국 조회를 위해 적어줘
-                    </p>
+            <!-- 2) 카톡형 사주 입력 카드 말풍선 (상하 마진/패딩 전면 다이어트) -->
+            <div class="bg-white p-2.5 rounded-2xl shadow-sm border border-white/40 w-full mb-1">
+                <p class="text-[10.5px] font-extrabold text-slate-800 border-b border-slate-100 pb-1 mb-1.5 flex items-center gap-1">
+                    <span>📋</span> 정확한 만세력 원국 조회를 위해 적어줘
+                </p>
 
-                    <form id="sazuForm" class="space-y-2.5" onsubmit="event.preventDefault();">
-                        
-                        <!-- 이름 & 성별 -->
-                        <div class="grid grid-cols-2 gap-2 items-end">
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-0.5">내 이름</label>
-                                <input type="text" id="nameInput" maxlength="10" placeholder="이름" class="w-full h-[36px] px-3 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs focus:bg-white focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-600 mb-0.5">성별</label>
-                                <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 h-[36px] items-center">
-                                    <button type="button" id="btnFemale" onclick="setGender('female')" class="toggle-tab-btn active h-full text-xs font-bold rounded-lg">여</button>
-                                    <button type="button" id="btnMale" onclick="setGender('male')" class="toggle-tab-btn inactive h-full text-xs font-bold rounded-lg">남</button>
-                                </div>
-                                <input type="hidden" id="genderValue" value="female">
-                            </div>
-                        </div>
-
-                        <!-- 고민 선택 -->
+                <form id="sazuForm" class="space-y-1.5" onsubmit="event.preventDefault();">
+                    
+                    <!-- 이름 & 성별 -->
+                    <div class="grid grid-cols-2 gap-2 items-end">
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">지금 제일 답답한 문제는?</label>
-                            <input type="hidden" id="selectedConcernKey" value="money">
-                            <div class="grid grid-cols-2 gap-1.5" id="concernGrid">
-                                <button type="button" onclick="selectConcern('money', this)" class="concern-chip selected p-1.5 rounded-xl flex items-center gap-1.5">
-                                    <span class="text-sm shrink-0">💸</span>
-                                    <div class="truncate text-left">
-                                        <div class="chip-title text-[11px] font-bold leading-tight">돈복 · 텅장</div>
-                                        <div class="text-[9px] text-slate-500 truncate">언제 돈 모일까?</div>
-                                    </div>
-                                </button>
-                                <button type="button" onclick="selectConcern('career', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
-                                    <span class="text-sm shrink-0">💼</span>
-                                    <div class="truncate text-left">
-                                        <div class="chip-title text-[11px] font-bold leading-tight">취업 · 이직</div>
-                                        <div class="text-[9px] text-slate-500 truncate">서류 합격·퇴사각</div>
-                                    </div>
-                                </button>
-                                <button type="button" onclick="selectConcern('love', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
-                                    <span class="text-sm shrink-0">💖</span>
-                                    <div class="truncate text-left">
-                                        <div class="chip-title text-[11px] font-bold leading-tight">연애 · 썸</div>
-                                        <div class="text-[9px] text-slate-500 truncate">내 찐인연 시점</div>
-                                    </div>
-                                </button>
-                                <button type="button" onclick="selectConcern('path', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
-                                    <span class="text-sm shrink-0">🧭</span>
-                                    <div class="truncate text-left">
-                                        <div class="chip-title text-[11px] font-bold leading-tight">진로 · 미래</div>
-                                        <div class="text-[9px] text-slate-500 truncate">적성과 평생 갈 길</div>
-                                    </div>
-                                </button>
-                                <button type="button" onclick="selectConcern('people', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
-                                    <span class="text-sm shrink-0">✂️</span>
-                                    <div class="truncate text-left">
-                                        <div class="chip-title text-[11px] font-bold leading-tight">인간관계</div>
-                                        <div class="text-[9px] text-slate-500 truncate">선 넘는 인간 손절</div>
-                                    </div>
-                                </button>
-                                <button type="button" onclick="selectConcern('mental', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
-                                    <span class="text-sm shrink-0">🔋</span>
-                                    <div class="truncate text-left">
-                                        <div class="chip-title text-[11px] font-bold leading-tight">번아웃·멘탈</div>
-                                        <div class="text-[9px] text-slate-500 truncate">멘탈 회복 타이밍</div>
-                                    </div>
-                                </button>
-                            </div>
+                            <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">내 이름</label>
+                            <input type="text" id="nameInput" maxlength="10" placeholder="이름" class="w-full h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs focus:bg-white focus:outline-none">
                         </div>
-
-                        <!-- 생년월일 -->
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-0.5">생년월일</label>
-                            <input type="hidden" id="calendarSelect" value="solar">
-                            <div class="flex gap-1.5 items-center">
-                                <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 w-[90px] shrink-0 h-[36px] items-center">
-                                    <button type="button" id="btnSolar" onclick="setCalendar('solar')" class="toggle-tab-btn active text-xs font-bold h-full rounded-lg">양력</button>
-                                    <button type="button" id="btnLunar" onclick="setCalendar('lunar')" class="toggle-tab-btn inactive text-xs font-bold h-full rounded-lg">음력</button>
+                            <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">성별</label>
+                            <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 h-[32px] items-center">
+                                <button type="button" id="btnFemale" onclick="setGender('female')" class="toggle-tab-btn active h-full text-xs font-bold rounded-lg">여</button>
+                                <button type="button" id="btnMale" onclick="setGender('male')" class="toggle-tab-btn inactive h-full text-xs font-bold rounded-lg">남</button>
+                            </div>
+                            <input type="hidden" id="genderValue" value="female">
+                        </div>
+                    </div>
+
+                    <!-- 고민 선택 (6종 슬림 패딩) -->
+                    <div>
+                        <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">지금 제일 답답한 문제는?</label>
+                        <input type="hidden" id="selectedConcernKey" value="money">
+                        <div class="grid grid-cols-2 gap-1" id="concernGrid">
+                            <button type="button" onclick="selectConcern('money', this)" class="concern-chip selected p-1 rounded-xl flex items-center gap-1">
+                                <span class="text-xs shrink-0">💸</span>
+                                <div class="truncate text-left leading-none">
+                                    <div class="chip-title text-[10.5px] font-bold leading-tight">돈복 · 텅장</div>
+                                    <div class="text-[8px] text-slate-400 truncate">언제 돈 모일까?</div>
                                 </div>
-                                <input type="tel" id="birthDateInput" maxlength="10" inputmode="numeric" placeholder="8자리 (예: 20010524)" oninput="formatBirthDate(this)" class="flex-1 min-w-0 h-[36px] px-3 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white focus:outline-none">
+                            </button>
+                            <button type="button" onclick="selectConcern('career', this)" class="concern-chip p-1 rounded-xl flex items-center gap-1">
+                                <span class="text-xs shrink-0">💼</span>
+                                <div class="truncate text-left leading-none">
+                                    <div class="chip-title text-[10.5px] font-bold leading-tight">취업 · 이직</div>
+                                    <div class="text-[8px] text-slate-400 truncate">서류 합격·퇴사각</div>
+                                </div>
+                            </button>
+                            <button type="button" onclick="selectConcern('love', this)" class="concern-chip p-1 rounded-xl flex items-center gap-1">
+                                <span class="text-xs shrink-0">💖</span>
+                                <div class="truncate text-left leading-none">
+                                    <div class="chip-title text-[10.5px] font-bold leading-tight">연애 · 썸</div>
+                                    <div class="text-[8px] text-slate-400 truncate">내 찐인연 시점</div>
+                                </div>
+                            </button>
+                            <button type="button" onclick="selectConcern('path', this)" class="concern-chip p-1 rounded-xl flex items-center gap-1">
+                                <span class="text-xs shrink-0">🧭</span>
+                                <div class="truncate text-left leading-none">
+                                    <div class="chip-title text-[10.5px] font-bold leading-tight">진로 · 미래</div>
+                                    <div class="text-[8px] text-slate-400 truncate">적성과 평생 갈 길</div>
+                                </div>
+                            </button>
+                            <button type="button" onclick="selectConcern('people', this)" class="concern-chip p-1 rounded-xl flex items-center gap-1">
+                                <span class="text-xs shrink-0">✂️</span>
+                                <div class="truncate text-left leading-none">
+                                    <div class="chip-title text-[10.5px] font-bold leading-tight">인간관계</div>
+                                    <div class="text-[8px] text-slate-400 truncate">선 넘는 사람 손절</div>
+                                </div>
+                            </button>
+                            <button type="button" onclick="selectConcern('mental', this)" class="concern-chip p-1 rounded-xl flex items-center gap-1">
+                                <span class="text-xs shrink-0">🔋</span>
+                                <div class="truncate text-left leading-none">
+                                    <div class="chip-title text-[10.5px] font-bold leading-tight">번아웃·멘탈</div>
+                                    <div class="text-[8px] text-slate-400 truncate">멘탈 회복 타이밍</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 생년월일 -->
+                    <div>
+                        <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">생년월일</label>
+                        <input type="hidden" id="calendarSelect" value="solar">
+                        <div class="flex gap-1.5 items-center">
+                            <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 w-[84px] shrink-0 h-[32px] items-center">
+                                <button type="button" id="btnSolar" onclick="setCalendar('solar')" class="toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg">양력</button>
+                                <button type="button" id="btnLunar" onclick="setCalendar('lunar')" class="toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg">음력</button>
+                            </div>
+                            <input type="tel" id="birthDateInput" maxlength="10" inputmode="numeric" placeholder="8자리 (예: 20010524)" oninput="formatBirthDate(this)" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- 태어난 시간 -->
+                    <div>
+                        <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">태어난 시간</label>
+                        <div class="relative">
+                            <select id="birthTimeSelect" class="w-full h-[32px] px-2.5 pr-8 rounded-xl border border-slate-200 bg-slate-50 text-center font-bold text-xs cursor-pointer appearance-none text-slate-700 focus:bg-white focus:outline-none">
+                                <option value="" selected disabled>태어난 시간 선택</option>
+                                <option value="unknown">시간 모름 (정밀 추정)</option>
+                                <option value="子">자시 (23:30 ~ 01:29)</option>
+                                <option value="丑">축시 (01:30 ~ 03:29)</option>
+                                <option value="寅">인시 (03:30 ~ 05:29)</option>
+                                <option value="卯">묘시 (05:30 ~ 07:29)</option>
+                                <option value="辰">진시 (07:30 ~ 09:29)</option>
+                                <option value="巳">사시 (09:30 ~ 11:29)</option>
+                                <option value="午">오시 (11:30 ~ 13:29)</option>
+                                <option value="未">미시 (13:30 ~ 15:29)</option>
+                                <option value="申">신시 (15:30 ~ 17:29)</option>
+                                <option value="酉">유시 (17:30 ~ 19:29)</option>
+                                <option value="戌">술시 (19:30 ~ 21:29)</option>
+                                <option value="亥">해시 (21:30 ~ 23:29)</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                </svg>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- 태어난 시간 -->
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-0.5">태어난 시간</label>
-                            <div class="relative">
-                                <select id="birthTimeSelect" class="w-full h-[36px] px-3 pr-8 rounded-xl border border-slate-200 bg-slate-50 text-center font-bold text-xs cursor-pointer appearance-none text-slate-700 focus:bg-white focus:outline-none">
-                                    <option value="" selected disabled>태어난 시간 선택</option>
-                                    <option value="unknown">시간 모름 (정밀 추정)</option>
-                                    <option value="子">자시 (23:30 ~ 01:29)</option>
-                                    <option value="丑">축시 (01:30 ~ 03:29)</option>
-                                    <option value="寅">인시 (03:30 ~ 05:29)</option>
-                                    <option value="卯">묘시 (05:30 ~ 07:29)</option>
-                                    <option value="辰">진시 (07:30 ~ 09:29)</option>
-                                    <option value="巳">사시 (09:30 ~ 11:29)</option>
-                                    <option value="午">오시 (11:30 ~ 13:29)</option>
-                                    <option value="未">미시 (13:30 ~ 15:29)</option>
-                                    <option value="申">신시 (15:30 ~ 17:29)</option>
-                                    <option value="酉">유시 (17:30 ~ 19:29)</option>
-                                    <option value="戌">술시 (19:30 ~ 21:29)</option>
-                                    <option value="亥">해시 (21:30 ~ 23:29)</option>
-                                </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 전송 버튼 영역 (기존 스크립트가 F/T에 맞춰 주입) -->
-                        <div id="originalFTButtons" class="pt-1" style="display:none;"></div>
-                        <div id="splitNextButton" class="pt-1"></div>
-                    </form>
-                </div>
+                    <!-- 전송 버튼 영역 (스크립트 자동 주입) -->
+                    <div id="originalFTButtons" style="display:none;"></div>
+                    <div id="splitNextButton" class="pt-1"></div>
+                </form>
             </div>
         </div>
     </main>
