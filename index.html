@@ -312,7 +312,7 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (일체형 스마트 메시지 카드 & 노-이모티콘 미니멀 룩) -->
+<!-- 0. 화면분할 인트로 (1:1 밀착 상담 텐션 확정 버전) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950">
     
     <!-- 모바일 크기 고정 컨테이너 -->
@@ -321,21 +321,21 @@
         <!-- 중앙 미니멀 빛 구분선 -->
         <div class="absolute top-1/2 left-0 w-full h-px bg-white/40 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.5)]"></div>
 
-        <!-- 최상단 헤더: 사주 정체성을 명시한 질문 캡슐 -->
+        <!-- 최상단 헤더: 1:1 상담 훅킹 캡슐 -->
         <div id="splitTitle" class="absolute left-0 w-full z-[70] pointer-events-none px-4 flex justify-center" style="top: calc(env(safe-area-inset-top, 0px) + 12px);">
-            <div class="bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-slate-200 flex items-center justify-center">
-                <span class="text-[12px] font-black text-slate-800 tracking-tight">"내 사주에 똥차가 꼬인 걸까? 극F vs 극T 사주 처방"</span>
+            <div class="bg-white/95 backdrop-blur-md px-5 py-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-slate-200/90 flex items-center justify-center">
+                <span class="text-[11.5px] sm:text-[12px] font-black text-slate-800 tracking-tight text-center">"요즘 무슨 일 있어? 언니가 사주로 다 봐줄게"</span>
             </div>
         </div>
 
-        <!-- F 패널 (로아: 감성 공감) -->
+        <!-- F 패널 (로아) -->
         <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden">
             <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-105">
             
             <!-- 바닥 초미니 그라데이션 -->
             <div class="absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-t from-white/90 via-white/20 to-transparent pointer-events-none"></div>
             
-            <!-- 일체형 통합 액션 카드 -->
+            <!-- 일체형 통합 카드 -->
             <div class="absolute inset-x-0 bottom-0 pb-3 px-3.5 flex justify-center pointer-events-none">
                 <div class="w-full max-w-[285px] bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-rose-100 flex flex-col gap-2 pointer-events-auto transition-transform active:scale-98">
                     <div class="space-y-1 text-left">
@@ -344,25 +344,25 @@
                             <span class="text-[11px] font-black text-slate-800">로아</span>
                         </div>
                         <p class="text-[11.5px] font-bold text-slate-700 leading-snug break-keep">
-                            "3일이나 연락이 없다고? 속상해하지 말고 언니한테 와, 다 들어줄게."
+                            "혼자 끙끙 앓지 마. 속상했던 거 언니가 다 들어주고 다 봐줄게 🥺"
                         </p>
                     </div>
                     <div class="w-full bg-gradient-to-r from-rose-500 to-rose-600 text-white py-2 px-3 rounded-xl flex items-center justify-between shadow-md">
-                        <span class="text-[11.5px] font-extrabold tracking-tight">따뜻한 공감 사주 보기</span>
-                        <span class="text-xs font-bold text-white/80">→</span>
+                        <span class="text-[11.5px] font-extrabold tracking-tight">따뜻한 공감 받기</span>
+                        <span class="text-sm font-black text-white leading-none">›</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- T 패널 (서아: 현실 팩폭) -->
+        <!-- T 패널 (서아) -->
         <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden">
             <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
             
             <!-- 바닥 초미니 그라데이션 -->
             <div class="absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-t from-white/90 via-white/20 to-transparent pointer-events-none"></div>
             
-            <!-- 일체형 통합 액션 카드 -->
+            <!-- 일체형 통합 카드 -->
             <div class="absolute inset-x-0 bottom-0 pb-3 px-3.5 flex justify-center pointer-events-none">
                 <div class="w-full max-w-[285px] bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-slate-700 flex flex-col gap-2 pointer-events-auto transition-transform active:scale-98">
                     <div class="space-y-1 text-left">
@@ -371,12 +371,12 @@
                             <span class="text-[11px] font-black text-slate-100">서아</span>
                         </div>
                         <p class="text-[11.5px] font-bold text-slate-200 leading-snug break-keep">
-                            "3일 씹혔으면 안중에도 없는 거야. 시간 낭비 말고 뼈 맞아."
+                            "혼자 고민해 봤자 답 안 나와. 네 사주 원국 다 까서 팩트로 다 봐줄 테니까 와."
                         </p>
                     </div>
                     <div class="w-full bg-gradient-to-r from-slate-800 to-sky-900 text-white py-2 px-3 rounded-xl flex items-center justify-between shadow-md border border-slate-700">
-                        <span class="text-[11.5px] font-extrabold tracking-tight text-sky-300">자비 없는 팩폭 사주 보기</span>
-                        <span class="text-xs font-bold text-sky-300/80">→</span>
+                        <span class="text-[11.5px] font-extrabold tracking-tight text-sky-300">자비 없는 팩폭 받기</span>
+                        <span class="text-sm font-black text-sky-300 leading-none">›</span>
                     </div>
                 </div>
             </div>
