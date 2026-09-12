@@ -1246,21 +1246,54 @@
             'ESFP': { best: 'ISTJ', bestTag: '주변을 밝혀주는 꿀조합', worst: 'INTJ', worstTag: '지나치게 진지한 사이' }
         };
 
-        // 화면 분할 인트로 클릭 시 폼 화면으로 매끄럽게 전환
+        // 화면 분할 인트로 클릭 시 폼 화면으로 매끄럽게 전환 및 버튼 동적 렌더링
         function selectSplitMode(mode) {
             const introSection = document.getElementById('splitIntroSection');
             const landingSection = document.getElementById('landingSection');
+            const originalButtons = document.getElementById('originalFTButtons');
+            const nextButtonContainer = document.getElementById('splitNextButton');
             
-            // 부드러운 페이드아웃 애니메이션 적용
-            introSection.style.transition = 'opacity 0.4s ease';
-            introSection.style.opacity = '0';
+            // 1. 선택한 모드에 맞춰 하단 실행 버튼을 하나만 풀너비(Full-width)로 렌더링
+            if (originalButtons) originalButtons.style.display = 'none';
+            if (nextButtonContainer) {
+                nextButtonContainer.style.display = 'block';
+                if (mode === 'F') {
+                    nextButtonContainer.innerHTML = `
+                        <button type="button" onclick="startAnalysis('F')" class="btn-action-f w-full py-4 px-4 rounded-2xl text-center flex flex-col items-center justify-center shadow-md active:scale-98 transition-all">
+                            <div class="text-rose-600 font-black text-[15px] sm:text-base leading-tight flex items-center gap-1.5">
+                                <span class="bg-rose-100 text-rose-600 text-[11px] font-extrabold px-1.5 py-0.5 rounded-md">F</span>
+                                <span>로아 언니에게 공감 위로받기 →</span>
+                            </div>
+                            <div class="text-xs text-rose-500/80 font-medium mt-1">내 편이 되어주는 따뜻한 사주 풀이 시작</div>
+                        </button>
+                    `;
+                } else {
+                    nextButtonContainer.innerHTML = `
+                        <button type="button" onclick="startAnalysis('T')" class="btn-action-t w-full py-4 px-4 rounded-2xl text-center flex flex-col items-center justify-center shadow-md active:scale-98 transition-all">
+                            <div class="text-sky-600 font-black text-[15px] sm:text-base leading-tight flex items-center gap-1.5">
+                                <span class="bg-sky-100 text-sky-600 text-[11px] font-extrabold px-1.5 py-0.5 rounded-md">T</span>
+                                <span>서아 언니에게 뼈 맞고 정신 차리기 →</span>
+                            </div>
+                            <div class="text-xs text-sky-500/80 font-medium mt-1">망설임 없이 꽂아버리는 팩폭 사주 풀이 시작</div>
+                        </button>
+                    `;
+                }
+            }
             
-            setTimeout(() => {
-                introSection.style.display = 'none';
-                landingSection.style.display = 'flex';
-                window.scrollTo(0, 0); // 화면 최상단으로 이동
-                document.getElementById('nameInput').focus(); // 입력 유도
-            }, 400);
+            // 2. 부드러운 페이드아웃 애니메이션 적용
+            if(introSection) {
+                introSection.style.transition = 'opacity 0.4s ease';
+                introSection.style.opacity = '0';
+                
+                setTimeout(() => {
+                    introSection.style.display = 'none';
+                    if (landingSection) landingSection.style.display = 'flex';
+                    window.scrollTo(0, 0); // 화면 최상단으로 이동
+                    
+                    const nameInput = document.getElementById('nameInput');
+                    if(nameInput) nameInput.focus(); // 자연스럽게 이름 입력 유도
+                }, 400);
+            }
         }
         };
         // 한글 받침 여부에 따라 알맞은 조사를 자동으로 결합하는 함수
