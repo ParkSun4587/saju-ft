@@ -313,132 +313,64 @@
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
 <!-- 0. 화면분할 인트로 (로아/서아 선택) -->
-<main id="splitIntroSection" class="fixed inset-0 z-[60] flex flex-col sm:flex-row w-full h-[100dvh] overflow-hidden bg-slate-100">
+<main id="splitIntroSection" class="fixed inset-0 z-[60] flex flex-col sm:flex-row w-full h-[100dvh] overflow-hidden bg-slate-900">
     
-    <!-- 최상단 헤더: 최상단 상태바 바로 아래 깔끔하게 안착하는 2단 타이틀 캡슐 -->
+    <!-- 최상단 헤더: 슬림 글래스 1줄 바 (노치 여백 완벽 대응) -->
     <div id="splitTitle" class="absolute left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-full px-4 text-center" style="top: calc(env(safe-area-inset-top, 0px) + 8px);">
-        <div class="bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200/90 text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.12)] inline-flex flex-col items-center gap-0.5 max-w-[90%]">
-            <span class="text-[11.5px] sm:text-xs font-bold text-slate-700 tracking-tight">"썸남이 3일째 답장 없으면?"</span>
-            <span class="text-[10.5px] sm:text-[11px] text-rose-600 font-black">👇 내 사주를 봐줄 언니를 골라봐</span>
+        <div class="bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 text-white shadow-xl inline-flex items-center gap-2">
+            <span class="text-[11.5px] sm:text-xs font-semibold text-white/95">"썸남이 3일째 답장 없으면?"</span>
+            <span class="text-[10px] sm:text-[11px] text-amber-300 font-extrabold bg-amber-400/15 px-2 py-0.5 rounded-full border border-amber-300/30">👇 내 사주 봐줄 언니는?</span>
         </div>
     </div>
 
-    <!-- 인트로 감성 CSS -->
-    <style>
-        .intro-bubble {
-            background: #ffffff;
-            border-radius: 15px;
-            padding: 7px 13px;
-            font-size: 11px;
-            font-weight: 700;
-            color: #1e293b;
-            line-height: 1.35;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-            text-align: center;
-            opacity: 0;
-            transform: translateY(4px);
-            animation: bubblePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            position: relative;
-        }
-        .intro-bubble::after {
-            content: "";
-            position: absolute;
-            bottom: -6px;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 4px solid transparent;
-            border-top-color: #ffffff;
-        }
-        @keyframes bubblePop {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .intro-typing {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 6px 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            display: inline-flex;
-            gap: 3px;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            animation: fadeTyping 0.6s ease forwards;
-        }
-        .intro-typing span {
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: #cbd5e1;
-            animation: typingDot 1.4s infinite ease-in-out both;
-        }
-        .intro-typing span:nth-child(1) { animation-delay: -0.32s; }
-        .intro-typing span:nth-child(2) { animation-delay: -0.16s; }
+    <!-- F 패널 (로아 언니): 뽀샤시 핑크 무드 -->
+    <div onclick="selectSplitMode('F')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full border-b sm:border-b-0 sm:border-r border-white/10 flex flex-col justify-end items-center relative overflow-hidden cursor-pointer group select-none bg-rose-50">
+        <img src="./로아.png" alt="로아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_15%] pointer-events-none group-hover:scale-105 transition-transform duration-700">
         
-        @keyframes typingDot {
-            0%, 80%, 100% { transform: scale(0.6); background: #e2e8f0; }
-            40% { transform: scale(1.1); background: #94a3b8; }
-        }
-        @keyframes fadeTyping {
-            0% { opacity: 0; }
-            20% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-    </style>
+        <!-- 은은한 핑크 비네팅 그라데이션 -->
+        <div class="absolute inset-0 bg-gradient-to-t from-rose-950/80 via-transparent to-black/30 pointer-events-none"></div>
 
-    <!-- F 패널 (로아 언니): 뽀샤시 핑크 파스텔 무드 -->
-    <div onclick="selectSplitMode('F')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full border-b sm:border-b-0 sm:border-r border-rose-100/60 flex flex-col justify-between items-center relative overflow-hidden cursor-pointer group select-none bg-rose-50">
-        <img src="./로아.png" alt="로아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_35%] pointer-events-none group-hover:scale-105 transition-transform duration-700">
-        
-        <div class="absolute inset-0 bg-gradient-to-b from-rose-950/15 via-transparent to-rose-950/40 pointer-events-none"></div>
-        
-        <!-- 상단: 로아 말풍선 (상단 헤더와 겹치지 않게 여유 패딩 확보) -->
-        <div class="relative z-10 w-full flex flex-col items-center pt-[62px] sm:pt-20 px-4">
-            <div class="intro-typing absolute" style="animation-delay: 0.2s;">
-                <span></span><span></span><span></span>
-            </div>
-            <div class="intro-bubble border border-rose-100" style="animation-delay: 0.8s;">
-                요즘 <b class="text-rose-500">바빠서</b> 그런 걸 수도 있어<br>너무 불안해하지 마, 연락 올 거야 🥺
-            </div>
-        </div>
-
-        <!-- 하단: 러블리 화이트 글래스 버튼 -->
-        <div class="relative z-10 w-full pb-3 sm:pb-8 px-5 flex justify-center pointer-events-none">
-            <div class="w-full max-w-[270px] bg-white/95 backdrop-blur-md border border-rose-200/90 py-2.5 px-3.5 rounded-2xl shadow-[0_4px_20px_rgba(244,63,94,0.15)] flex items-center justify-between">
-                <div class="flex items-center gap-1.5">
-                    <span class="bg-rose-100 text-rose-600 text-[10px] font-black px-1.5 py-0.5 rounded-md">F</span>
-                    <span class="text-slate-900 font-black text-[13px]">로아 언니</span>
+        <!-- 하단: [대사 + 선택 액션] 일체형 글래스 카드 -->
+        <div class="relative z-10 w-full pb-3 sm:pb-8 px-4 flex justify-center pointer-events-none">
+            <div class="w-full max-w-[320px] bg-white/95 backdrop-blur-md border border-rose-200/90 p-2.5 sm:p-3 rounded-2xl shadow-[0_8px_25px_rgba(244,63,94,0.25)] space-y-2">
+                <!-- 로아 대사 -->
+                <p class="text-[11.5px] sm:text-xs font-bold text-slate-800 text-center leading-tight">
+                    "요즘 <b class="text-rose-500">바빠서</b> 그런 걸 수도 있어... 연락 올 거야 🥺"
+                </p>
+                <!-- 로아 선택 바 -->
+                <div class="flex items-center justify-between bg-rose-50/80 px-3 py-1.5 rounded-xl border border-rose-100">
+                    <div class="flex items-center gap-1.5">
+                        <span class="bg-rose-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-md shadow-sm">F</span>
+                        <span class="text-slate-900 font-extrabold text-[12.5px] sm:text-[13px]">로아 언니</span>
+                    </div>
+                    <span class="text-rose-600 text-[11px] font-extrabold flex items-center gap-0.5">무조건 내 편 힐링 선택 →</span>
                 </div>
-                <span class="text-rose-500 text-[11px] font-extrabold flex items-center gap-0.5">무조건 내 편 힐링 →</span>
             </div>
         </div>
     </div>
 
-    <!-- T 패널 (서아 언니): 힙한 쿨톤 아이스블루 무드 -->
-    <div onclick="selectSplitMode('T')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full flex flex-col justify-between items-center relative overflow-hidden cursor-pointer group select-none bg-sky-50">
-        <img src="./서아.png" alt="서아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_25%] pointer-events-none group-hover:scale-105 transition-transform duration-700">
+    <!-- T 패널 (서아 언니): 힙한 쿨톤 무드 -->
+    <div onclick="selectSplitMode('T')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full flex flex-col justify-end items-center relative overflow-hidden cursor-pointer group select-none bg-sky-50">
+        <img src="./서아.png" alt="서아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_15%] pointer-events-none group-hover:scale-105 transition-transform duration-700">
         
-        <div class="absolute inset-0 bg-gradient-to-b from-slate-950/15 via-transparent to-slate-950/45 pointer-events-none"></div>
-        
-        <!-- 상단: 서아 말풍선 -->
-        <div class="relative z-10 w-full flex flex-col items-center pt-3 sm:pt-20 px-4">
-            <div class="intro-typing absolute" style="animation-delay: 1.4s;">
-                <span></span><span></span><span></span>
-            </div>
-            <div class="intro-bubble border border-sky-100" style="animation-delay: 2.0s;">
-                3일 씹힘 = <b class="text-sky-600">관심 없음</b>.<br>기다리지 말고 딴 사람 알아봐.
-            </div>
-        </div>
+        <!-- 은은한 블루 비네팅 그라데이션 -->
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-transparent pointer-events-none"></div>
 
-        <!-- 하단: 힙한 화이트 글래스 버튼 -->
-        <div class="relative z-10 w-full pb-3 sm:pb-8 px-5 flex justify-center pointer-events-none">
-            <div class="w-full max-w-[270px] bg-white/95 backdrop-blur-md border border-sky-200/90 py-2.5 px-3.5 rounded-2xl shadow-[0_4px_20px_rgba(14,165,233,0.15)] flex items-center justify-between">
-                <div class="flex items-center gap-1.5">
-                    <span class="bg-sky-100 text-sky-600 text-[10px] font-black px-1.5 py-0.5 rounded-md">T</span>
-                    <span class="text-slate-900 font-black text-[13px]">서아 언니</span>
+        <!-- 하단: [대사 + 선택 액션] 일체형 글래스 카드 -->
+        <div class="relative z-10 w-full pb-3 sm:pb-8 px-4 flex justify-center pointer-events-none">
+            <div class="w-full max-w-[320px] bg-white/95 backdrop-blur-md border border-sky-200/90 p-2.5 sm:p-3 rounded-2xl shadow-[0_8px_25px_rgba(14,165,233,0.25)] space-y-2">
+                <!-- 서아 대사 -->
+                <p class="text-[11.5px] sm:text-xs font-bold text-slate-800 text-center leading-tight">
+                    "3일 씹힘 = <b class="text-sky-600">관심 없음</b>. 기다리지 말고 딴 사람 알아봐."
+                </p>
+                <!-- 서아 선택 바 -->
+                <div class="flex items-center justify-between bg-sky-50/80 px-3 py-1.5 rounded-xl border border-sky-100">
+                    <div class="flex items-center gap-1.5">
+                        <span class="bg-sky-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-md shadow-sm">T</span>
+                        <span class="text-slate-900 font-extrabold text-[12.5px] sm:text-[13px]">서아 언니</span>
+                    </div>
+                    <span class="text-sky-600 text-[11px] font-extrabold flex items-center gap-0.5">뼈 때리는 팩폭 선택 →</span>
                 </div>
-                <span class="text-sky-600 text-[11px] font-extrabold flex items-center gap-0.5">뼈 때리는 팩폭 →</span>
             </div>
         </div>
     </div>
