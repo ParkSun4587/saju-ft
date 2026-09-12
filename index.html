@@ -893,8 +893,8 @@
         </div>
     </div>
 
-    <!-- 7. 토스페이먼츠 심사 100% 통과용 콤팩트 푸터 -->
-    <footer class="w-full max-w-lg mt-12 mb-8 px-4 text-center space-y-3 border-t border-rose-200/50 pt-6">
+    <!-- 7. 토스페이먼츠 심사 100% 통과용 콤팩트 푸터 (결과창에서만 노출되도록 초기 hidden 설정) -->
+    <footer id="mainFooter" class="hidden w-full max-w-lg mt-12 mb-8 px-4 text-center space-y-3 border-t border-rose-200/50 pt-6">
         
         <!-- 법적 필수 사업자 정보 (즉시 노출형) -->
         <div class="text-[11px] text-slate-500 space-y-1 leading-relaxed font-medium">
@@ -3018,6 +3018,8 @@
 
             resultSec.style.display = 'block';
             resultSec.classList.add('fade-in-up');
+            const mainFooter = document.getElementById('mainFooter');
+            if (mainFooter) mainFooter.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             setTimeout(() => {
@@ -3816,10 +3818,12 @@
             document.getElementById('nameInput').value = ''; document.getElementById('birthDateInput').value = ''; document.getElementById('birthTimeSelect').selectedIndex = 0;
             setGender('female'); setCalendar('solar'); selectConcern('money', document.querySelector('#concernGrid .concern-chip'));
             
-            // 모든 결과 및 폼 화면 숨김
+            // 모든 결과, 폼 화면 및 푸터 숨김
             document.getElementById('resultSection').style.display = 'none'; 
             document.getElementById('loadingSection').style.display = 'none'; 
             document.getElementById('landingSection').style.display = 'none'; 
+            const mainFooter = document.getElementById('mainFooter');
+            if (mainFooter) mainFooter.classList.add('hidden');
             
             // 인트로 화면으로 복귀
             const introSection = document.getElementById('splitIntroSection');
