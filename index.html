@@ -612,14 +612,14 @@
 
         <!-- 결과 화면 카톡 상단 네비게이션 & 언니의 실시간 총평 말풍선 -->
         <div class="space-y-3 pb-1">
-            <!-- 상단 뒤로가기 & 상담 상태 바 -->
+            <!-- 상단 스마트 스위칭 네비게이션 -->
             <div class="flex items-center justify-between px-1">
-                <button type="button" onclick="startFreshAnalysis()" class="flex items-center gap-1 text-slate-600 hover:text-slate-900 text-xs font-bold bg-transparent border-0 p-0 cursor-pointer transition-colors">
-                    <span class="text-sm leading-none">←</span> 상담 종료하고 처음으로
+                <button type="button" onclick="startFreshAnalysis()" class="flex items-center gap-1 text-slate-500 hover:text-slate-800 text-xs font-bold bg-transparent border-0 p-0 cursor-pointer transition-colors">
+                    <span>‹ 처음으로</span>
                 </button>
-                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                    ● 상담 완료
-                </span>
+                <button type="button" id="topSwitchBtn" onclick="switchSisterMode()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black transition-all active:scale-95 shadow-sm cursor-pointer border">
+                    <!-- JS에서 반대편 언니 정보 주입 -->
+                </button>
             </div>
 
             <!-- 언니의 1:1 카톡 상담 최종 요약 말풍선 -->
@@ -701,6 +701,18 @@
             </div>
             <div class="grid grid-cols-5 gap-1.5 text-center text-[10px] font-bold pt-1" id="ohengBarContainer"></div>
             <p id="ohengSummaryTxt" class="text-[11px] text-slate-600 leading-relaxed break-keep pt-1"></p>
+        </div>
+        <!-- [도파민 2차 폭발] 반대편 언니 시선으로 즉시 전환 카드 -->
+        <div id="sisterSwitchCard" onclick="switchSisterMode()" class="card-box p-4 rounded-3xl cursor-pointer active:scale-98 transition-all flex items-center justify-between border shadow-sm">
+            <div class="flex items-center gap-3">
+                <img id="switchTargetImg" src="./서아.png" class="w-12 h-12 rounded-full object-cover border-2 shadow-sm shrink-0">
+                <div class="text-left space-y-0.5">
+                    <span id="switchTargetBadge" class="text-[10px] font-black px-2 py-0.5 rounded-md inline-block"></span>
+                    <h4 id="switchTargetTitle" class="text-xs sm:text-[13px] font-extrabold text-slate-900 leading-snug break-keep"></h4>
+                    <p class="text-[10px] text-slate-500 font-medium">생년월일 재입력 없이 터치 한 번으로 즉시 전환 ⚡</p>
+                </div>
+            </div>
+            <div class="text-slate-400 font-black text-sm pr-1">›</div>
         </div>
         <!-- [무료 바이럴 & 몰입 유지] 내 사주에 집중시키는 공유 버튼 배치 -->
         <div class="space-y-2 pt-1 pb-1">
@@ -2814,7 +2826,7 @@
             const template = data.rawSolutionTemplate[mode];
             renderOhengDistribution(data.elements, (data.pillars && data.pillars.day) ? data.pillars.day.gan : '甲', data.dayOheng, data.pillars);
 
-            // 카톡 상담 결과 헤더 언니 프로필 및 맞춤 대사 연동 (무료 이벤트 모드 완벽 호환)
+            // 카톡 상담 결과 헤더 언니 프로필 및 맞춤 대사 연동
             const resSisterProfile = document.getElementById('resultSisterProfile');
             const resSisterName = document.getElementById('resultSisterName');
             const resGreeting = document.getElementById('resultSisterGreeting');
@@ -2842,6 +2854,36 @@
                     resGreeting.innerHTML = `우리 <b>${nameJosa}</b> 사주 보니까 겉으론 쿨한 척 다 참아주면서 혼자 집 와서 속앓이하는 타입이네 🥺 언니가 네 편에서 6가지 비밀 메모 꼼꼼히 정리해 뒀어!`;
                 }
             }
+
+            // 상단 및 하단 반대편 언니 스위칭 버튼 동기화 (원클릭 전환용)
+            const topSwitchBtn = document.getElementById('topSwitchBtn');
+            const switchCard = document.getElementById('sisterSwitchCard');
+            const switchImg = document.getElementById('switchTargetImg');
+            const switchBadge = document.getElementById('switchTargetBadge');
+            const switchTitle = document.getElementById('switchTargetTitle');
+
+            if (isT) {
+                // 현재 T모드 -> F(로아)로 전환 유도
+                if (topSwitchBtn) {
+                    topSwitchBtn.innerHTML = `<span>🌸 로아 언니 위로도 듣기</span>`;
+                    topSwitchBtn.className = "flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-black bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100 shadow-sm cursor-pointer";
+                }
+                if (switchCard) switchCard.className = "card-box p-3.5 sm:p-4 rounded-3xl cursor-pointer active:scale-98 transition-all flex items-center justify-between border border-rose-200 bg-rose-50/40 hover:bg-rose-50/70 shadow-sm";
+                if (switchImg) { switchImg.src = "./로아.png"; switchImg.className = "w-12 h-12 rounded-full object-cover border-2 border-rose-300 shadow-sm shrink-0"; }
+                if (switchBadge) { switchBadge.textContent = "F 로아 언니 시선"; switchBadge.className = "text-[10px] font-black px-2 py-0.5 rounded-md bg-rose-100 text-rose-600 inline-block"; }
+                if (switchTitle) switchTitle.innerHTML = `뼈 맞았으니, 이번엔 <b class="text-rose-600">따뜻한 위로</b> 받아볼래? 💕`;
+            } else {
+                // 현재 F모드 -> T(서아)로 전환 유도
+                if (topSwitchBtn) {
+                    topSwitchBtn.innerHTML = `<span>🧊 서아 언니 팩폭도 보기</span>`;
+                    topSwitchBtn.className = "flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-black bg-sky-50 border-sky-200 text-sky-600 hover:bg-sky-100 shadow-sm cursor-pointer";
+                }
+                if (switchCard) switchCard.className = "card-box p-3.5 sm:p-4 rounded-3xl cursor-pointer active:scale-98 transition-all flex items-center justify-between border border-sky-200 bg-sky-50/40 hover:bg-sky-50/70 shadow-sm";
+                if (switchImg) { switchImg.src = "./서아.png"; switchImg.className = "w-12 h-12 rounded-full object-cover border-2 border-sky-300 shadow-sm shrink-0"; }
+                if (switchBadge) { switchBadge.textContent = "T 서아 언니 시선"; switchBadge.className = "text-[10px] font-black px-2 py-0.5 rounded-md bg-sky-100 text-sky-600 inline-block"; }
+                if (switchTitle) switchTitle.innerHTML = `위로받았으니, 이번엔 <b class="text-sky-600">자비 없는 팩폭 처방</b> 볼래? ⚡`;
+            }
+
             const prof = SAZU_CHARACTER_PROFILES[mKey] || SAZU_CHARACTER_PROFILES['ESTJ'];
             const lowest = getLowestStatInfo(data.stats);
 
