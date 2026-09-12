@@ -312,7 +312,7 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (실시간 F vs T 라이브 대립 토론 뷰) -->
+<!-- 0. 화면분할 인트로 (친한 언니 갠톡 바이브 & 반말 답장형 UI) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950">
     <style>
         @keyframes typing-dot {
@@ -322,58 +322,52 @@
         .t-dot-1 { animation: typing-dot 1.2s infinite ease-in-out 0s; }
         .t-dot-2 { animation: typing-dot 1.2s infinite ease-in-out 0.2s; }
         .t-dot-3 { animation: typing-dot 1.2s infinite ease-in-out 0.4s; }
-        @keyframes livePulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.08); opacity: 0.8; }
+        @keyframes bubblePop {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
-        .anim-live { animation: livePulse 2s infinite ease-in-out; }
+        .bubble-pop { animation: bubblePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
     </style>
     
     <!-- 모바일 크기 고정 컨테이너 -->
     <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col overflow-hidden bg-white shadow-2xl">
         
-        <!-- 중앙 미니멀 실시간 대립 구분선 & VS 라이브 뱃지 -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[85] pointer-events-none flex items-center justify-center">
-            <div class="bg-slate-950 text-white border-2 border-white/80 px-3 py-1 rounded-full text-[11px] font-black tracking-widest shadow-[0_0_15px_rgba(0,0,0,0.6)] flex items-center gap-1.5 anim-live">
-                <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
-                <span>LIVE 토론중</span>
-            </div>
-        </div>
+        <!-- 중앙 미니멀 구분선 -->
         <div class="absolute top-1/2 left-0 w-full h-px bg-white/50 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.6)]"></div>
 
-        <!-- 최상단 헤더: 호기심 자극 훅킹 캡슐 -->
+        <!-- 최상단 헤더: 사주 데이터 해석 선택 훅킹 캡슐 -->
         <div id="splitTitle" class="absolute left-0 w-full z-[70] pointer-events-none px-4 flex justify-center" style="top: calc(env(safe-area-inset-top, 0px) + 12px);">
-            <div class="bg-slate-900/90 backdrop-blur-xl px-5 py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-700 flex items-center justify-center">
-                <span class="text-[11.5px] sm:text-[12px] font-black text-amber-300 tracking-tight text-center">"과연 내 진짜 사주엔 누구 말이 적혀 있을까? 👇"</span>
+            <div id="topTitleBox" class="bg-slate-900/90 backdrop-blur-xl px-5 py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-700 flex items-center justify-center">
+                <span class="text-[11.5px] sm:text-[12px] font-black text-amber-300 tracking-tight text-center">똑같은 사주 데이터, 어떤 언니한테 해석 맡길래? 👇</span>
             </div>
         </div>
 
-        <!-- F 패널 (로아: 위로파) -->
+        <!-- F 패널 (로아: 따뜻한 공감 언니) -->
         <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden">
             <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-105">
 
             <!-- 바닥 그라데이션 -->
             <div class="absolute inset-x-0 bottom-0 h-[28%] bg-gradient-to-t from-rose-100/60 via-transparent to-transparent pointer-events-none"></div>
 
-            <!-- 실시간 대립 대사 묶음 -->
+            <!-- 대화 묶음 -->
             <div class="absolute inset-x-0 bottom-0 pb-3.5 px-3.5 flex flex-col gap-1.5 pointer-events-none">
                 <div class="flex items-center gap-1.5 pl-1">
                     <img src="./로아.png" alt="로아 프로필" class="w-6 h-6 rounded-full object-cover object-[center_15%] border-2 border-white shadow-sm">
-                    <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">로아 (공감 파벌)</span>
+                    <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">로아</span>
                 </div>
 
-                <!-- 로아의 실시간 디스 대사 -->
+                <!-- 언니 말풍선 -->
                 <div class="relative bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[90%] ml-1 border border-rose-200">
                     <span class="absolute -left-[5px] top-0 w-3 h-3 bg-white" style="clip-path: polygon(100% 0, 0 0, 100% 100%);"></span>
                     <p class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-800 leading-snug break-keep">
-                        "쟤 말 듣지 마! 사주에 귀인 들어오는데 왜 자꾸 기죽여 🥺 당장 내 편에서 위로받자"
+                        "사주 결과가 어떻든 무조건 네 편할 거니까 걱정 마. 힘든 거 있으면 다 기대도 돼."
                     </p>
                 </div>
 
-                <!-- 유저 선택지 CTA -->
+                <!-- 친한 바이브의 유저 답장형 CTA -->
                 <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
                     <div class="relative bg-[#ffe4e6] text-[#9f1239] border border-[#fda4af] px-4 py-2.5 rounded-2xl rounded-tr-none shadow-md flex items-center gap-2 active:scale-95 transition-transform">
-                        <span class="text-[12px] font-black tracking-tight">"로아 언니한테 따뜻한 위로받기"</span>
+                        <span class="text-[12px] font-black tracking-tight">"응, 나 진짜 힘드니까 무조건 내 편부터 들어줘"</span>
                         <span class="text-sm font-black leading-none text-[#e11d48]">›</span>
                         <span class="absolute -right-[5px] top-0 w-3 h-3 bg-[#ffe4e6] border-t border-r border-[#fda4af]" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
                     </div>
@@ -381,32 +375,32 @@
             </div>
         </div>
 
-        <!-- T 패널 (서아: 팩폭파) -->
+        <!-- T 패널 (서아: 팩폭 직구 언니) -->
         <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden">
             <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
 
             <!-- 바닥 그라데이션 -->
             <div class="absolute inset-x-0 bottom-0 h-[28%] bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none"></div>
 
-            <!-- 실시간 대립 대사 묶음 -->
+            <!-- 대화 묶음 -->
             <div class="absolute inset-x-0 bottom-0 pb-3.5 px-3.5 flex flex-col gap-1.5 pointer-events-none">
                 <div class="flex items-center gap-1.5 pl-1">
                     <img src="./서아.png" alt="서아 프로필" class="w-6 h-6 rounded-full object-cover object-[center_15%] border-2 border-white shadow-sm">
-                    <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">서아 (팩폭 파벌)</span>
+                    <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">서아</span>
                 </div>
 
-                <!-- 서아의 실시간 디스 대사 -->
+                <!-- 언니 말풍선 -->
                 <div class="relative bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[90%] ml-1 border border-slate-700">
                     <span class="absolute -left-[5px] top-0 w-3 h-3 bg-slate-900" style="clip-path: polygon(100% 0, 0 0, 100% 100%);"></span>
                     <p class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-100 leading-snug break-keep">
-                        "위로는 무슨, 원국 누수 생겨서 지금 정신 안 차리면 또 호구 잡힌다니까? ⚡ 팩트부터 까자"
+                        "사주 원국에 뚫린 구멍부터 팩트로 막아줄 테니까 징징대지 말고 와."
                     </p>
                 </div>
 
-                <!-- 유저 선택지 CTA -->
+                <!-- 친한 바이브의 유저 답장형 CTA -->
                 <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
                     <div class="relative bg-[#0284c7] text-white px-4 py-2.5 rounded-2xl rounded-tr-none shadow-md flex items-center gap-2 active:scale-95 transition-transform">
-                        <span class="text-[12px] font-black tracking-tight">"서아 언니한테 자비 없는 팩폭 맞기"</span>
+                        <span class="text-[12px] font-black tracking-tight">"징징 안 댈게. 필터링 다 빼고 날것 그대로 까줘"</span>
                         <span class="text-sm font-black leading-none text-sky-200">›</span>
                         <span class="absolute -right-[5px] top-0 w-3 h-3 bg-[#0284c7]" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
                     </div>
