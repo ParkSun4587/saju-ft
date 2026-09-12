@@ -318,9 +318,19 @@
     <!-- 모바일 크기 고정 컨테이너 -->
     <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col overflow-hidden bg-white shadow-2xl">
         
-        <!-- 중앙 VS 뱃지 -->
+        <!-- 중앙 VS 뱃지 (트렌디한 글래스모피즘 & 네온 그라데이션 서클) -->
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[80] pointer-events-none">
-            <div class="bg-slate-950/85 backdrop-blur-md text-white text-[11px] font-black italic px-3 py-1 rounded-full border border-white/20 shadow-2xl tracking-widest">VS</div>
+            <div class="relative flex items-center justify-center">
+                <!-- 뒤편 은은한 F(핑크) & T(블루) 네온 글로우 -->
+                <div class="absolute w-8 h-8 rounded-full bg-gradient-to-r from-rose-500/40 to-sky-500/40 blur-md"></div>
+                
+                <!-- 메인 글래스 알약 서클 -->
+                <div class="relative px-3.5 py-1 rounded-full bg-slate-950/75 backdrop-blur-md border border-white/25 shadow-[0_4px_16px_rgba(0,0,0,0.35)] flex items-center justify-center gap-0.5">
+                    <span class="text-[10px] font-black italic tracking-tighter text-rose-400">V</span>
+                    <span class="text-[9px] font-black italic text-white/40">·</span>
+                    <span class="text-[10px] font-black italic tracking-tighter text-sky-400">S</span>
+                </div>
+            </div>
         </div>
 
         <!-- 최상단 헤더: 상황 질문 캡슐 -->
