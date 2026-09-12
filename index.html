@@ -627,14 +627,6 @@
 
         <!-- 카드 1: 프로필 & 세부 스탯 -->
         <div class="card-box p-4 sm:p-6 rounded-3xl space-y-2.5 relative overflow-hidden text-center">
-        <div class="card-box p-4 sm:p-6 rounded-3xl space-y-2.5 relative overflow-hidden text-center">
-            
-            <div class="space-y-1">
-                <div class="flex justify-center items-center">
-                    <span id="resultModeBadge" class="px-3 py-0.5 rounded-full text-[11px] font-black tracking-wide shadow-sm">
-                    </span>
-                </div>
-            </div>
 
             <!-- 프로필 명함 영역 -->
             <div id="gradeSection" class="pt-1 pb-1 flex flex-col items-center justify-center space-y-1">
@@ -2805,6 +2797,7 @@
         function updateResultContentByMode(mode) {
             const isT = mode === 'T';
             const data = currentResultData;
+            const mKey = data.mbtiKey || 'ESTJ';
             const lowestStat = getLowestStatInfo(data.stats);
             const template = data.rawSolutionTemplate[mode];
             renderOhengDistribution(data.elements, (data.pillars && data.pillars.day) ? data.pillars.day.gan : '甲', data.dayOheng, data.pillars);
