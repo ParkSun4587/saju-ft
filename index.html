@@ -450,8 +450,8 @@
     
 <!-- 1. 랜딩 페이지 (모바일 1화면 완벽 핏) -->
     <main id="landingSection" style="display:none;" class="max-w-md w-full flex flex-col justify-center min-h-[100dvh] py-3 space-y-2.5">
-        <div class="text-center space-y-1 pb-1">
-            <!-- 이모지 없이 폰트 컬러와 미니멀 텍스트로 정돈한 한 줄 헤더 -->
+        <!-- JS에서 캐릭터 선택 시 과몰입 멘트로 실시간 변경될 헤더 영역 -->
+        <div id="landingHeader" class="text-center space-y-1 pb-2 transition-all duration-300">
             <h1 class="text-[19px] sm:text-[21px] font-black tracking-tight text-slate-900 text-center leading-tight">
                 <span class="text-rose-500 font-black">F 공감</span> <span class="text-slate-300 font-light mx-1">/</span> <span class="text-sky-500 font-black">T 팩폭</span> 골라듣는 사주 MBTI
             </h1>
@@ -1266,8 +1266,32 @@
             const landingSection = document.getElementById('landingSection');
             const originalButtons = document.getElementById('originalFTButtons');
             const nextButtonContainer = document.getElementById('splitNextButton');
+            const landingHeader = document.getElementById('landingHeader');
             
-            // 1. 선택한 모드 버튼 렌더링
+            // 1. [도파민 연출] 선택한 언니와 1:1 채팅방에 입장한 것처럼 상단 멘트 실시간 변경
+            if (landingHeader) {
+                if (mode === 'F') {
+                    landingHeader.innerHTML = `
+                        <h1 class="text-[19px] sm:text-[21px] font-black tracking-tight text-slate-900 leading-tight">
+                            🌸 로아 언니와 <span class="text-rose-500">매칭 완료!</span>
+                        </h1>
+                        <p class="text-[11.5px] text-rose-600 font-bold mt-1.5 bg-rose-50 inline-block px-3.5 py-1.5 rounded-full border border-rose-200 shadow-sm">
+                            "어떤 고민이야? 언니가 다 들어줄게 🥺"
+                        </p>
+                    `;
+                } else {
+                    landingHeader.innerHTML = `
+                        <h1 class="text-[19px] sm:text-[21px] font-black tracking-tight text-slate-900 leading-tight">
+                            🧊 서아 언니와 <span class="text-sky-600">매칭 완료!</span>
+                        </h1>
+                        <p class="text-[11.5px] text-sky-600 font-bold mt-1.5 bg-sky-50 inline-block px-3.5 py-1.5 rounded-full border border-sky-200 shadow-sm">
+                            "변명은 안 들어. 팩트만 깔 테니까 뼈 딱 대."
+                        </p>
+                    `;
+                }
+            }
+
+            // 2. 선택한 모드 하단 버튼 렌더링
             if (originalButtons) originalButtons.style.display = 'none';
             if (nextButtonContainer) {
                 nextButtonContainer.style.display = 'block';
