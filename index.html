@@ -1259,14 +1259,15 @@
             'ESFP': { best: 'ISTJ', bestTag: '주변을 밝혀주는 꿀조합', worst: 'INTJ', worstTag: '지나치게 진지한 사이' }
         };
 
-        // 화면 분할 인트로 클릭 시 폼 화면으로 매끄럽게 전환 및 버튼 동적 렌더링
+        // 화면 분할 인트로 클릭 시 딜레이 없이 즉시 입력창 렌더링
         function selectSplitMode(mode) {
+            selectedSplitMode = mode;
             const introSection = document.getElementById('splitIntroSection');
             const landingSection = document.getElementById('landingSection');
             const originalButtons = document.getElementById('originalFTButtons');
             const nextButtonContainer = document.getElementById('splitNextButton');
             
-            // 1. 선택한 모드에 맞춰 하단 실행 버튼을 하나만 풀너비(Full-width)로 렌더링
+            // 1. 선택한 모드 버튼 렌더링
             if (originalButtons) originalButtons.style.display = 'none';
             if (nextButtonContainer) {
                 nextButtonContainer.style.display = 'block';
@@ -1293,20 +1294,16 @@
                 }
             }
             
-            // 2. 부드러운 페이드아웃 애니메이션 적용
-            if(introSection) {
-                introSection.style.transition = 'opacity 0.4s ease';
-                introSection.style.opacity = '0';
-                
-                setTimeout(() => {
-                    introSection.style.display = 'none';
-                    if (landingSection) landingSection.style.display = 'flex';
-                    window.scrollTo(0, 0); // 화면 최상단으로 이동
-                    
-                    const nameInput = document.getElementById('nameInput');
-                    if(nameInput) nameInput.focus(); // 자연스럽게 이름 입력 유도
-                }, 400);
+            // 2. 렉 유발하던 0.4초 딜레이 제거 -> 즉시 전환
+            if (introSection) introSection.style.display = 'none';
+            if (landingSection) {
+                landingSection.style.display = 'flex';
+                landingSection.classList.add('fade-in-up');
             }
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            
+            const nameInput = document.getElementById('nameInput');
+            if (nameInput) nameInput.focus();
         }
         
         // 한글 받침 여부에 따라 알맞은 조사를 자동으로 결합하는 함수
