@@ -312,23 +312,14 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (일러스트 원본 100% 선명 뷰) -->
+<!-- 0. 화면분할 인트로 (정상적인 태그 구조 & 모바일 스마트폰 뷰) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950">
     
-    <!-- 모바일 크기 고정 컨테이너 -->
+    <!-- 모바일 크기 고정 컨테이너 (PC에서는 중앙 스마트폰 뷰, 모바일에서는 꽉 찬 화면) -->
     <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col overflow-hidden bg-white shadow-2xl">
         
-        <!-- 중앙 미니멀 분할선 (촌스러운 뱃지 제거) -->
+        <!-- 중앙 미니멀 빛 구분선 (촌스러운 글자 뱃지 제거) -->
         <div class="absolute top-1/2 left-0 w-full h-px bg-white/40 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.5)]"></div>
-                
-                <!-- 메인 글래스 알약 서클 -->
-                <div class="relative px-3.5 py-1 rounded-full bg-slate-950/75 backdrop-blur-md border border-white/25 shadow-[0_4px_16px_rgba(0,0,0,0.35)] flex items-center justify-center gap-0.5">
-                    <span class="text-[10px] font-black italic tracking-tighter text-rose-400">V</span>
-                    <span class="text-[9px] font-black italic text-white/40">·</span>
-                    <span class="text-[10px] font-black italic tracking-tighter text-sky-400">S</span>
-                </div>
-            </div>
-        </div>
 
         <!-- 최상단 헤더: 상황 질문 캡슐 -->
         <div id="splitTitle" class="absolute left-0 w-full z-[70] pointer-events-none px-4 flex justify-center" style="top: calc(env(safe-area-inset-top, 0px) + 12px);">
@@ -338,11 +329,11 @@
             </div>
         </div>
 
-        <!-- F 패널 (로아 언니: 얼굴 및 손 원본 선명화) -->
+        <!-- F 패널 (위쪽 50%: 로아 언니) -->
         <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden">
             <img src="./로아.png" alt="로아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-105">
             
-            <!-- 바닥에만 살짝 깔리는 초미니 그라데이션 (28% 높이로 대폭 축소) -->
+            <!-- 바닥 초미니 그라데이션 (선명한 일러스트 유지) -->
             <div class="absolute inset-x-0 bottom-0 h-[28%] bg-gradient-to-t from-white/90 via-white/40 to-transparent pointer-events-none"></div>
             
             <!-- F 모드 텍스트 및 액션 버튼 -->
@@ -357,11 +348,11 @@
             </div>
         </div>
 
-        <!-- T 패널 (서아 언니: 헤드셋 및 안경 원본 선명화) -->
+        <!-- T 패널 (아래쪽 50%: 서아 언니) -->
         <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden">
             <img src="./서아.png" alt="서아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
             
-            <!-- 바닥에만 살짝 깔리는 초미니 그라데이션 (28% 높이로 대폭 축소) -->
+            <!-- 바닥 초미니 그라데이션 (선명한 일러스트 유지) -->
             <div class="absolute inset-x-0 bottom-0 h-[28%] bg-gradient-to-t from-white/90 via-white/40 to-transparent pointer-events-none"></div>
             
             <!-- T 모드 텍스트 및 액션 버튼 -->
