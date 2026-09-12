@@ -312,16 +312,16 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (원래의 분할 구조 + 타이핑 톡 연출 + 범용 고민 훅) -->
+<!-- 0. 화면분할 인트로 (실시간 톡 타이핑 연출 + 범용 고민 훅) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex flex-col sm:flex-row w-full h-[100dvh] overflow-hidden bg-slate-900">
-    <!-- 상단 질문 타이틀 (범용 고민 훅 적용) -->
+    <!-- 상단 질문 타이틀 -->
     <div id="splitTitle" class="absolute top-[6%] sm:top-[8%] left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-full px-4 text-center">
         <h1 class="bg-black/60 backdrop-blur-md px-5 py-2.5 rounded-full text-white font-bold text-[13px] sm:text-sm shadow-xl inline-block">
             <span class="text-white/70 font-medium mr-1.5">"돈이든 일이든 사람 때문에 치이냐?"</span>언니가 사주로 다 털어줄게
         </h1>
     </div>
 
-    <!-- 인트로 전용 CSS -->
+    <!-- 인트로 전용 CSS 스타일 -->
     <style>
         .intro-bubble {
             position: absolute;
@@ -391,7 +391,6 @@
             80% { opacity: 1; }
             100% { opacity: 0; }
         }
-
         @media (min-width: 640px) {
             .intro-bubble, .intro-typing { top: 35%; }
         }
@@ -402,7 +401,6 @@
         <img src="./로아.png" alt="로아 언니" class="absolute inset-0 w-full h-full object-cover object-top pointer-events-none group-hover:scale-105 transition-transform duration-700">
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
         
-        <!-- F 타이핑 & 말풍선 -->
         <div class="intro-typing" style="animation-delay: 0.2s;">
             <span></span><span></span><span></span>
         </div>
@@ -421,7 +419,6 @@
         <img src="./서아.png" alt="서아 언니" class="absolute inset-0 w-full h-full object-cover object-top pointer-events-none group-hover:scale-105 transition-transform duration-700">
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
         
-        <!-- T 타이핑 & 말풍선 -->
         <div class="intro-typing" style="animation-delay: 1.4s;">
             <span></span><span></span><span></span>
         </div>
