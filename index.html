@@ -313,54 +313,55 @@
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
 <!-- 0. 화면분할 인트로 (로아/서아 선택) -->
-<main id="splitIntroSection" class="fixed inset-0 z-[60] flex flex-col sm:flex-row w-full h-[100dvh] overflow-hidden bg-white">
+<main id="splitIntroSection" class="fixed inset-0 z-[60] flex flex-col w-full h-[100dvh] overflow-hidden bg-slate-900">
     
-    <!-- 최상단 헤더: 깔끔한 질문 바 -->
-    <div id="splitTitle" class="absolute left-1/2 -translate-x-1/2 z-[70] pointer-events-none w-full px-3 text-center" style="top: calc(env(safe-area-inset-top, 0px) + 8px);">
-        <div class="bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full border border-slate-200 text-slate-800 shadow-[0_4px_16px_rgba(0,0,0,0.08)] inline-flex items-center gap-1.5">
-            <span class="text-rose-500 font-bold text-xs">💬</span>
-            <span class="text-[11.5px] sm:text-xs font-bold text-slate-700 tracking-tight">"썸남이 3일째 답장 없으면?"</span>
+    <!-- 중앙 VS 뱃지 (위아래 경계선을 트렌디하게 연결하는 앵커) -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[80] pointer-events-none">
+        <div class="bg-slate-900/85 backdrop-blur-md text-white text-[11px] font-black italic px-3.5 py-1 rounded-full border border-white/20 shadow-2xl tracking-widest">VS</div>
+    </div>
+
+    <!-- 최상단 헤더: 토스/애플 스타일의 와이드 캡슐 -->
+    <div id="splitTitle" class="absolute left-0 w-full z-[70] pointer-events-none px-4 flex justify-center" style="top: calc(env(safe-area-inset-top, 0px) + 12px);">
+        <div class="bg-white/95 backdrop-blur-xl px-5 py-3 rounded-[20px] shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-slate-200/80 flex items-center justify-center gap-2 w-full max-w-[320px]">
+            <span class="text-[15px]">💬</span>
+            <span class="text-[13.5px] sm:text-[14px] font-extrabold text-slate-800 tracking-tight">썸남이 3일째 답장 없으면?</span>
         </div>
     </div>
 
-    <!-- F 패널 (로아 언니): 맑고 화사한 핑크 무드 -->
-    <div onclick="selectSplitMode('F')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full flex flex-col justify-end items-center relative overflow-hidden cursor-pointer group select-none bg-rose-50">
-        <img src="./로아.png" alt="로아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_10%] pointer-events-none group-hover:scale-105 transition-transform duration-700">
+    <!-- F 패널 (로아 언니): 화보/에디토리얼 스타일 -->
+    <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-white overflow-hidden">
+        <img src="./로아.png" alt="로아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_12%] transition-transform duration-700 group-hover:scale-105">
         
-        <!-- 하단: 바닥에 딱 안착하는 일체형 비주얼 노벨 카드 (손목/얼굴 가림 0%) -->
-        <div class="relative z-10 w-full pb-1.5 sm:pb-5 px-3.5 flex justify-center pointer-events-none">
-            <div class="w-full max-w-[325px] bg-white/95 backdrop-blur-md border border-rose-200/90 p-2 sm:p-2.5 rounded-2xl shadow-[0_8px_20px_rgba(244,63,94,0.12)] space-y-1.5">
-                <p class="text-[11px] sm:text-[11.5px] font-bold text-slate-800 text-center tracking-tight whitespace-nowrap">
-                    "요즘 <b class="text-rose-500">바빠서</b> 그런 걸 수도 있어... 연락 올 거야 🥺"
-                </p>
-                <div class="flex items-center justify-between bg-rose-50/90 px-3 py-1.5 rounded-xl border border-rose-100">
-                    <div class="flex items-center gap-1.5">
-                        <span class="bg-rose-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-md shadow-sm">F</span>
-                        <span class="text-slate-900 font-extrabold text-[12px] sm:text-[12.5px]">로아 언니</span>
-                    </div>
-                    <span class="text-rose-600 text-[10.5px] sm:text-[11px] font-extrabold flex items-center gap-0.5">무조건 내 편 힐링 픽 →</span>
-                </div>
+        <!-- 하단 부드러운 화이트 그라데이션 (박스 테두리 없이 텍스트를 돋보이게 함) -->
+        <div class="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-white via-white/85 to-transparent pointer-events-none"></div>
+        
+        <!-- 텍스트 & 솔리드 컬러 버튼 -->
+        <div class="absolute inset-x-0 bottom-0 pb-5 px-5 flex flex-col items-center gap-3.5 pointer-events-none">
+            <p class="text-[13.5px] sm:text-[14px] font-extrabold text-slate-800 text-center leading-snug drop-shadow-sm">
+                "요즘 <b class="text-rose-500">바빠서</b> 그런 걸 수도 있어...<br>연락 올 거야 🥺"
+            </p>
+            <div class="w-full max-w-[290px] bg-rose-500 text-white py-3.5 rounded-[18px] shadow-[0_8px_20px_rgba(244,63,94,0.3)] flex justify-center items-center gap-2 transition-transform active:scale-95">
+                <span class="bg-white text-rose-500 text-[10px] font-black px-1.5 py-0.5 rounded-md shadow-sm">F</span>
+                <span class="font-extrabold text-[13.5px]">무조건 내 편 힐링 픽</span>
             </div>
         </div>
     </div>
 
-    <!-- T 패널 (서아 언니): 맑은 쿨톤 무드 -->
-    <div onclick="selectSplitMode('T')" class="split-panel w-full sm:w-1/2 h-1/2 sm:h-full flex flex-col justify-end items-center relative overflow-hidden cursor-pointer group select-none bg-sky-50">
-        <img src="./서아.png" alt="서아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_17%] pointer-events-none group-hover:scale-105 transition-transform duration-700">
+    <!-- T 패널 (서아 언니): 화보/에디토리얼 스타일 -->
+    <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-white overflow-hidden">
+        <img src="./서아.png" alt="서아 언니" class="absolute inset-0 w-full h-full object-cover object-[center_17%] transition-transform duration-700 group-hover:scale-105">
         
-        <!-- 하단: 바닥에 딱 안착하는 일체형 비주얼 노벨 카드 -->
-        <div class="relative z-10 w-full pb-1.5 sm:pb-5 px-3.5 flex justify-center pointer-events-none">
-            <div class="w-full max-w-[325px] bg-white/95 backdrop-blur-md border border-sky-200/90 p-2 sm:p-2.5 rounded-2xl shadow-[0_8px_20px_rgba(14,165,233,0.12)] space-y-1.5">
-                <p class="text-[11px] sm:text-[11.5px] font-bold text-slate-800 text-center tracking-tight whitespace-nowrap">
-                    "3일 씹힘 = <b class="text-sky-600">관심 없음</b>. 딴 사람 알아봐."
-                </p>
-                <div class="flex items-center justify-between bg-sky-50/90 px-3 py-1.5 rounded-xl border border-sky-100">
-                    <div class="flex items-center gap-1.5">
-                        <span class="bg-sky-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-md shadow-sm">T</span>
-                        <span class="text-slate-900 font-extrabold text-[12px] sm:text-[12.5px]">서아 언니</span>
-                    </div>
-                    <span class="text-sky-600 text-[10.5px] sm:text-[11px] font-extrabold flex items-center gap-0.5">뼈 때리는 팩폭 픽 →</span>
-                </div>
+        <!-- 하단 부드러운 화이트 그라데이션 -->
+        <div class="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-white via-white/85 to-transparent pointer-events-none"></div>
+        
+        <!-- 텍스트 & 솔리드 컬러 버튼 -->
+        <div class="absolute inset-x-0 bottom-0 pb-6 px-5 flex flex-col items-center gap-3.5 pointer-events-none">
+            <p class="text-[13.5px] sm:text-[14px] font-extrabold text-slate-800 text-center leading-snug drop-shadow-sm">
+                "3일 씹힘 = <b class="text-sky-600">관심 없음</b>.<br>딴 사람 알아봐."
+            </p>
+            <div class="w-full max-w-[290px] bg-sky-500 text-white py-3.5 rounded-[18px] shadow-[0_8px_20px_rgba(14,165,233,0.3)] flex justify-center items-center gap-2 transition-transform active:scale-95">
+                <span class="bg-white text-sky-500 text-[10px] font-black px-1.5 py-0.5 rounded-md shadow-sm">T</span>
+                <span class="font-extrabold text-[13.5px]">뼈 때리는 팩폭 픽</span>
             </div>
         </div>
     </div>
