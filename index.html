@@ -312,10 +312,9 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
 
-<!-- 0. 화면분할 인트로 (메타뱃지 제거 및 모바일 1줄 최적화 롤백) -->
+<!-- 0. 화면분할 인트로 (쌍따옴표 제거 & 로아 CTA 시인성 강화 버전) -->
 <main id="splitIntroSection" class="fixed inset-0 z-[60] flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950">
     <style>
-        /* 기본 타이핑 및 팝업 애니메이션 유지 */
         @keyframes typing-dot {
             0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
             30% { transform: translateY(-4px); opacity: 1; }
@@ -336,7 +335,7 @@
         <!-- 중앙 미니멀 구분선 -->
         <div class="absolute top-1/2 left-0 w-full h-px bg-white/50 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.6)]"></div>
 
-        <!-- 최상단 헤더: 이모티콘(👇) 적용 및 모바일 1줄 최적화 -->
+        <!-- 최상단 헤더 -->
         <div id="splitTitle" class="absolute left-0 w-full z-[70] pointer-events-none px-3 flex justify-center" style="top: calc(env(safe-area-inset-top, 0px) + 12px);">
             <div id="topTitleBox" class="bg-slate-900/90 backdrop-blur-xl px-4 py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-slate-700 flex items-center justify-center w-max max-w-full">
                 <span class="text-[11px] sm:text-[12px] font-black text-amber-300 tracking-tighter whitespace-nowrap">똑같은 사주 데이터, 어떤 언니한테 해석 맡길래? 👇</span>
@@ -347,7 +346,7 @@
         <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer group bg-rose-50/30 overflow-hidden flex flex-col justify-end">
             <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-105">
             
-            <div class="absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-rose-100/70 via-transparent to-transparent pointer-events-none"></div>
+            <div class="absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-rose-100/80 via-transparent to-transparent pointer-events-none"></div>
 
             <div class="relative z-10 pb-3.5 px-3 flex flex-col gap-1.5 pointer-events-none">
                 <div class="flex items-center gap-1.5 pl-1">
@@ -355,19 +354,20 @@
                     <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">로아</span>
                 </div>
 
+                <!-- 언니 말풍선 (쌍따옴표 제거) -->
                 <div class="relative bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[90%] ml-1 border border-rose-200">
                     <span class="absolute -left-[5px] top-0 w-3 h-3 bg-white" style="clip-path: polygon(100% 0, 0 0, 100% 100%);"></span>
                     <p class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-800 leading-snug break-keep">
-                        "사주 결과가 어떻든 무조건 네 편할 거니까 걱정 마. 힘든 거 있으면 다 기대도 돼."
+                        사주 결과가 어떻든 무조건 네 편할 거니까 걱정 마. 힘든 거 있으면 다 기대도 돼.
                     </p>
                 </div>
 
-                <!-- 유저 답장형 CTA (모바일 한 줄 최적화: whitespace-nowrap 적용) -->
+                <!-- 유저 답장형 CTA (로아 니트색 대비 시인성 강화 + 쌍따옴표 제거) -->
                 <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
-                    <div class="relative bg-[#ffe4e6] text-[#9f1239] border border-[#fda4af] px-3 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-md flex items-center gap-1.5 active:scale-95 transition-transform max-w-full">
-                        <span class="text-[10.5px] sm:text-[12px] font-black tracking-tighter whitespace-nowrap">"응, 나 진짜 힘드니까 무조건 내 편부터 들어줘"</span>
+                    <div class="relative bg-[#fff0f3] text-[#9f1239] border-2 border-[#fb7185] px-3.5 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_12px_rgba(244,63,94,0.22)] flex items-center gap-1.5 active:scale-95 transition-transform max-w-full">
+                        <span class="text-[10.5px] sm:text-[12px] font-black tracking-tighter whitespace-nowrap">응, 나 진짜 힘드니까 무조건 내 편부터 들어줘</span>
                         <span class="text-[13px] font-black leading-none text-[#e11d48]">›</span>
-                        <span class="absolute -right-[5px] top-0 w-3 h-3 bg-[#ffe4e6] border-t border-r border-[#fda4af]" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
+                        <span class="absolute -right-[6px] top-[-2px] w-3 h-3 bg-[#fff0f3] border-t-2 border-r-2 border-[#fb7185]" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
                     </div>
                 </div>
             </div>
@@ -377,7 +377,7 @@
         <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer group bg-sky-50/30 overflow-hidden flex flex-col justify-end">
             <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105">
             
-            <div class="absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-slate-900/70 via-transparent to-transparent pointer-events-none"></div>
+            <div class="absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none"></div>
 
             <div class="relative z-10 pb-3.5 px-3 flex flex-col gap-1.5 pointer-events-none">
                 <div class="flex items-center gap-1.5 pl-1">
@@ -385,19 +385,20 @@
                     <span class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">서아</span>
                 </div>
 
+                <!-- 언니 말풍선 (쌍따옴표 제거) -->
                 <div class="relative bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[90%] ml-1 border border-slate-700">
                     <span class="absolute -left-[5px] top-0 w-3 h-3 bg-slate-900" style="clip-path: polygon(100% 0, 0 0, 100% 100%);"></span>
                     <p class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-100 leading-snug break-keep">
-                        "사주 원국에 뚫린 구멍부터 팩트로 막아줄 테니까 징징대지 말고 와."
+                        사주 원국에 뚫린 구멍부터 팩트로 막아줄 테니까 징징대지 말고 와.
                     </p>
                 </div>
 
-                <!-- 유저 답장형 CTA (모바일 한 줄 최적화: whitespace-nowrap 적용) -->
+                <!-- 유저 답장형 CTA (쌍따옴표 제거) -->
                 <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
-                    <div class="relative bg-[#0284c7] text-white px-3 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-md flex items-center gap-1.5 active:scale-95 transition-transform max-w-full">
-                        <span class="text-[10.5px] sm:text-[12px] font-black tracking-tighter whitespace-nowrap">"징징 안 댈게. 필터링 다 빼고 날것 그대로 까줘"</span>
+                    <div class="relative bg-[#0284c7] text-white border-2 border-sky-400 px-3.5 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_12px_rgba(2,132,199,0.3)] flex items-center gap-1.5 active:scale-95 transition-transform max-w-full">
+                        <span class="text-[10.5px] sm:text-[12px] font-black tracking-tighter whitespace-nowrap">징징 안 댈게. 필터링 다 빼고 날것 그대로 까줘</span>
                         <span class="text-[13px] font-black leading-none text-sky-200">›</span>
-                        <span class="absolute -right-[5px] top-0 w-3 h-3 bg-[#0284c7]" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
+                        <span class="absolute -right-[6px] top-[-2px] w-3 h-3 bg-[#0284c7] border-t-2 border-r-2 border-sky-400" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></span>
                     </div>
                 </div>
             </div>
