@@ -3085,10 +3085,13 @@
             const resGreeting = document.getElementById('resultSisterGreeting');
             const badge = document.getElementById('resultModeBadge');
             
-            // 성을 제외한 이름만 추출 (예: 박태양 -> 태양) 후 조사 결합
+            // 성을 제외한 이름만 추출 (예: 박태양 -> 태양)
             const rawName = data.name || '';
             const displayName = rawName.length >= 2 ? rawName.slice(1) : rawName;
-            const nameJosa = typeof attachJosa === 'function' ? attachJosa(displayName, '이/가') : `${displayName}이`;
+            
+            // T모드 문장용 '은/는' 조사, F모드 호칭용 '이/가' 조사 각각 분리
+            const nameTopic = typeof attachJosa === 'function' ? attachJosa(displayName, '은/는') : `${displayName}은`;
+            const nameSubject = typeof attachJosa === 'function' ? attachJosa(displayName, '이') : `${displayName}이`;
 
             if (isT) {
                 if (resSisterProfile) resSisterProfile.src = './서아.png';
@@ -3098,7 +3101,7 @@
                     badge.className = "px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full text-[10px] font-black";
                 }
                 if (resGreeting) {
-                    resGreeting.innerHTML = `사주 다 깠어. 결론부터 말하면 <b>${nameJosa}</b>는 머릿속 계산기만 두드리다 중요한 타이밍 다 날려먹는 타입이야. 아래 메모장에 적어뒀으니 정신 똑바로 차리고 읽어봐.`;
+                    resGreeting.innerHTML = `사주 다 깠어. 결론부터 말하면 <b>${nameTopic}</b> 머릿속 계산기만 두드리다 중요한 타이밍 다 날려먹는 타입이야. 아래 메모장에 적어뒀으니 정신 똑바로 차리고 읽어봐.`;
                 }
             } else {
                 if (resSisterProfile) resSisterProfile.src = './로아.png';
@@ -3108,7 +3111,7 @@
                     badge.className = "px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full text-[10px] font-black";
                 }
                 if (resGreeting) {
-                    resGreeting.innerHTML = `우리 <b>${nameJosa}</b> 사주 보니까 겉으론 쿨한 척 다 참아주면서 혼자 집 와서 속앓이하는 타입이네 🥺 언니가 네 편에서 6가지 비밀 메모 꼼꼼히 정리해 뒀어!`;
+                    resGreeting.innerHTML = `우리 <b>${nameSubject}</b> 사주 보니까 겉으론 쿨한 척 다 참아주면서 혼자 집 와서 속앓이하는 타입이네. 언니가 네 편에서 6가지 비밀 메모 꼼꼼히 정리해 뒀어!`;
                 }
             }
 
@@ -3947,23 +3950,36 @@
         });
                 
         function restartAnalysisWithOtherConcern() {
-            // 이미 결제한 기존 고민의 권한은 절대 지우지 않고 보존
-            if (currentResultData) {
-                if (currentResultData.name) document.getElementById('nameInput').value = currentResultData.name;
-                if (currentResultData.userBirthStr) {
-                    const b = currentResultData.userBirthStr;
+            // 기존 사주 정보 임시 보관
+            const savedData = currentResultData;
+            
+            // 화면 및 스트림 리셋
+            startFreshAnalysis();
+            
+            // 인트로가 아니라 바로 폼 입력 화면으로 연결
+            const introSection = document.getElementById('splitIntroSection');
+            if (introSection) introSection.style.display = 'none';
+            const landingSection = document.getElementById('landingSection');
+            if (landingSection) landingSection.style.display = 'flex';
+
+            // 보관된 기존 유저 정보 복원
+            if (savedData) {
+                if (savedData.name && document.getElementById('nameInput')) {
+                    document.getElementById('nameInput').value = savedData.name;
+                }
+                if (savedData.userBirthStr && document.getElementById('birthDateInput')) {
+                    const b = savedData.userBirthStr;
                     document.getElementById('birthDateInput').value = (b.length === 8) ? b.substring(0, 4) + '.' + b.substring(4, 6) + '.' + b.substring(6, 8) : b;
                 }
-                if (currentResultData.userTimeKey) document.getElementById('birthTimeSelect').value = currentResultData.userTimeKey;
-                                if (currentResultData.userGender) setGender(currentResultData.userGender);
-                setCalendar(currentResultData.userCalendar || 'solar');
+                if (savedData.userTimeKey && document.getElementById('birthTimeSelect')) {
+                    document.getElementById('birthTimeSelect').value = savedData.userTimeKey;
+                }
+                if (savedData.userGender) setGender(savedData.userGender);
+                setCalendar(savedData.userCalendar || 'solar');
             }
-            isUnlocked = false;
-            premiumBuffer = null;
-            document.getElementById('resultSection').style.display = 'none'; 
-            document.getElementById('loadingSection').style.display = 'none'; 
-            document.getElementById('landingSection').style.display = 'flex';
-            window.scrollTo({ top: 0 });
+            
+            showToast("다른 고민을 선택하고 정보를 보내주세요!");
+            window.scrollTo({ top: 0, behavior: 'instant' });
         }
                 // [수정] 반대편 언니 시선으로 즉시 전환 (텍스트 100% 즉시 교체 및 스크롤 최적화)
         function switchSisterMode() {
