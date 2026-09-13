@@ -485,7 +485,7 @@
             </header>
 
         <!-- 카톡 대화 및 인터랙티브 폼 리스트 (h-full 맞춤 무스크롤 패딩) -->
-        <div class="flex-1 overflow-y-auto px-3 py-1.5 flex flex-col justify-start gap-2 max-w-[430px] mx-auto w-full">
+        <div id="chatStreamArea" class="flex-1 overflow-y-auto px-3 py-1.5 flex flex-col justify-start gap-2 max-w-[430px] mx-auto w-full">
             
             <!-- 1) '오늘' 날짜 뱃지 + 타이핑 인디케이터 및 실시간 말풍선 -->
             <div class="flex flex-col gap-1 pt-0.5 flex-shrink-0">
@@ -521,7 +521,7 @@
             </div>
             
             <!-- 2) 카톡형 사주 입력 카드 말풍선 (상하 마진/패딩 전면 다이어트) -->
-            <div class="bg-white p-2.5 rounded-2xl shadow-sm border border-white/40 w-full mb-1">
+            <div id="sajuInputCardBox" class="bg-white p-2.5 rounded-2xl shadow-sm border border-white/40 w-full mb-1">
                 <p class="text-[10.5px] font-extrabold text-slate-800 border-b border-slate-100 pb-1 mb-1.5 flex items-center gap-1">
                     <span>📋</span> 정확한 만세력 원국 조회를 위해 적어줘
                 </p>
@@ -2843,10 +2843,77 @@
                 premiumBuffer = null;
                 isAnalyzing = true;
 
-                document.getElementById('landingSection').style.display = 'none';
-                document.getElementById('resultSection').style.display = 'none';
-                document.getElementById('loadingSection').style.display = 'flex';
-                window.scrollTo(0, 0); // 로딩 화면 진입 즉시 맨 위로 화면 이동
+                // 1단계: 입력 폼 카드를 숨기고, 유저가 보낸 메시지를 카톡 우측 말풍선으로 띄움
+                const inputCardBox = document.getElementById('sajuInputCardBox');
+                if (inputCardBox) inputCardBox.style.display = 'none';
+
+                const streamArea = document.getElementById('chatStreamArea');
+                const userBubbleHTML = `
+                    <div class="flex justify-end items-end gap-1.5 fade-in-up">
+                        <span class="text-[9px] text-slate-500 font-semibold mb-1">읽음</span>
+                        <div class="bg-[#fee500] text-slate-900 text-xs font-bold px-3.5 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[240px] leading-snug break-keep">
+                            ${name} / ${birthStr} / 고민 접수 완료! 💌
+                        </div>
+                    </div>
+                `;
+                if (streamArea) streamArea.insertAdjacentHTML('beforeend', userBubbleHTML);
+
+                // 2단계: 언니의 타이핑 인디케이터(...) 출력
+                const typingId = 'tempTyping_' + Date.now();
+                const profileImg = (mode === 'T') ? './서아.png' : './로아.png';
+                const sisterName = (mode === 'T') ? '서아 언니 (T)' : '로아 언니 (F)';
+                const typingHTML = `
+                    <div id="${typingId}" class="flex items-start gap-1.5 fade-in-up">
+                        <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
+                        <div>
+                            <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
+                            <div class="typing-indicator">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                if (streamArea) {
+                    streamArea.insertAdjacentHTML('beforeend', typingHTML);
+                    streamArea.scrollTop = streamArea.scrollHeight;
+                }
+
+                // 3단계: 0.8초 뒤 타이핑을 지우고 언니의 확인 톡 출력
+                setTimeout(() => {
+                    const typingEl = document.getElementById(typingId);
+                    if (typingEl) typingEl.remove();
+
+                    const ackText = (mode === 'T') 
+                        ? '입력 완료됐네. 만세력 데이터 바로 추출한다. 잠깐만.' 
+                        : '오케이! 울애기 정보 다 접수했어 💖 만세력 쫙 뽑아볼 테니까 3초만 기다려!';
+
+                    const sisterAckHTML = `
+                        <div class="flex items-start gap-1.5 fade-in-up">
+                            <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
+                            <div>
+                                <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
+                                <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 max-w-[260px] break-keep">
+                                    ${ackText}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    if (streamArea) {
+                        streamArea.insertAdjacentHTML('beforeend', sisterAckHTML);
+                        streamArea.scrollTop = streamArea.scrollHeight;
+                    }
+
+                    // 4단계: 확인 톡을 읽을 수 있게 1.2초 뒤 기존 로딩 화면으로 부드럽게 전환
+                    setTimeout(() => {
+                        document.getElementById('landingSection').style.display = 'none';
+                        document.getElementById('resultSection').style.display = 'none';
+                        document.getElementById('loadingSection').style.display = 'flex';
+                        window.scrollTo(0, 0);
+                    }, 1200);
+
+                }, 800);
 
                 // 뒤로 가기 시 사이트 이탈 대신 랜딩으로 복귀시키기 위한 히스토리 등록
                 try { history.pushState({ view: 'result' }, '', location.pathname + location.search); } catch (e) {}
