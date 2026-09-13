@@ -4052,8 +4052,17 @@
                 `;
             }
 
-            // 6. 입력 폼 카드 노출 및 첫 번째 고민 칩 테마 색상 적용
-            document.getElementById('sajuInputCardBox').style.display = 'block';
+            // 6. 입력 폼 카드 노출 및 이전 전송 대화 말풍선 잔여물 완벽 청소
+            const inputCard = document.getElementById('sajuInputCardBox');
+            if (inputCard) {
+                inputCard.style.display = 'block';
+                // 폼 카드 바로 뒤에 붙어있던 이전 톡(노란 말풍선, 언니 확인 톡 등)을 싹 지움
+                while (inputCard.nextElementSibling) {
+                    inputCard.nextElementSibling.remove();
+                }
+            }
+
+            // 고민 칩 기본 선택 (돈복) 및 화면 상단 정렬
             const firstChip = document.querySelector('#concernGrid .concern-chip');
             if (firstChip) selectConcern('money', firstChip);
 
