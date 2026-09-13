@@ -2771,6 +2771,33 @@
         function formatBirthDate(el) {
             let val = el.value.replace(/[^0-9]/g, '');
             if (val.length > 8) val = val.substring(0, 8);
+            
+            // 1단계: 실시간 월(MM) 유효성 방어 (13월 이상 입력 시 즉시 보정)
+            if (val.length >= 6) {
+                let month = parseInt(val.substring(4, 6), 10);
+                if (month > 12) {
+                    showToast('월은 12월까지만 입력 가능합니다.');
+                    val = val.substring(0, 4) + '12';
+                } else if (month === 0) {
+                    val = val.substring(0, 4) + '01';
+                }
+            }
+            
+            // 2단계: 실시간 일(DD) 유효성 방어 (각 월의 말일 초과 입력 즉시 보정)
+            if (val.length >= 8) {
+                let year = parseInt(val.substring(0, 4), 10);
+                let month = parseInt(val.substring(4, 6), 10);
+                let day = parseInt(val.substring(6, 8), 10);
+                
+                let lastDay = new Date(year, month, 0).getDate();
+                if (day > lastDay) {
+                    showToast(`${month}월은 최대 ${lastDay}일까지입니다.`);
+                    val = val.substring(0, 6) + String(lastDay).padStart(2, '0');
+                } else if (day === 0) {
+                    val = val.substring(0, 6) + '01';
+                }
+            }
+
             if (val.length <= 4) el.value = val;
             else if (val.length <= 6) el.value = val.substring(0, 4) + '.' + val.substring(4);
             else el.value = val.substring(0, 4) + '.' + val.substring(4, 6) + '.' + val.substring(6);
