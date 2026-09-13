@@ -592,8 +592,9 @@
         </div> <!-- 모바일 프레임 닫는 div 추가 -->
     </main>
 
-    <!-- 2. 카톡 실시간 분석 로딩 섹션 (1:1 메신저 상담 대기 UI) -->
-    <main id="loadingSection" style="display: none;" class="fixed inset-0 z-50 flex flex-col bg-[#abc1d1] w-full h-[100dvh] overflow-hidden">
+    <!-- 2. 카톡 실시간 분석 로딩 섹션 (PC에서도 430px 모바일 프레임 완벽 고정) -->
+    <main id="loadingSection" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 w-full h-[100dvh] overflow-hidden select-none">
+        <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col bg-[#abc1d1] shadow-2xl overflow-hidden">
         
         <!-- 카톡 상단 헤더 바 -->
         <header class="bg-[#abc1d1]/95 backdrop-blur-md px-4 py-2.5 flex items-center justify-between border-b border-black/5 shrink-0" style="padding-top: calc(env(safe-area-inset-top, 0px) + 8px);">
@@ -654,10 +655,11 @@
             </div>
 
         </div>
+        </div>
     </main>
 
-    <!-- 3. 결과 섹션 -->
-        <main id="resultSection" style="display: none;" class="max-w-lg w-full py-8 space-y-4">
+    <!-- 3. 결과 섹션 (모바일 430px 규격 완벽 고정) -->
+        <main id="resultSection" style="display: none;" class="w-full max-w-[430px] mx-auto py-5 space-y-3.5 px-1">
 
         <!-- 결과 화면 카톡 상단 네비게이션 & 언니의 실시간 총평 말풍선 -->
         <div class="space-y-3 pb-1">
@@ -966,8 +968,8 @@
         </div>
     </div>
 
-    <!-- 7. 토스페이먼츠 심사 100% 통과용 콤팩트 푸터 (결과창에서만 노출되도록 초기 hidden 설정) -->
-    <footer id="mainFooter" class="hidden w-full max-w-lg mt-12 mb-8 px-4 text-center space-y-3 border-t border-rose-200/50 pt-6">
+    <!-- 7. 토스페이먼츠 심사 100% 통과용 콤팩트 푸터 (모바일 430px 폭 고정) -->
+    <footer id="mainFooter" class="hidden w-full max-w-[430px] mx-auto mt-8 mb-8 px-4 text-center space-y-3 border-t border-rose-200/50 pt-5">
         
         <!-- 법적 필수 사업자 정보 (즉시 노출형) -->
         <div class="text-[11px] text-slate-500 space-y-1 leading-relaxed font-medium">
