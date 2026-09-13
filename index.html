@@ -3106,13 +3106,18 @@
             const resGreeting = document.getElementById('resultSisterGreeting');
             const badge = document.getElementById('resultModeBadge');
             
-            // 성을 제외한 이름만 추출 (예: 박태양 -> 태양)
+            // 성을 제외한 이름만 추출 (예: 박태양 -> 태양, 이지우 -> 지우)
             const rawName = data.name || '';
             const displayName = rawName.length >= 2 ? rawName.slice(1) : rawName;
             
-            // T모드 문장용 '은/는' 조사, F모드 호칭용 '이/가' 조사 각각 분리
-            const nameTopic = typeof attachJosa === 'function' ? attachJosa(displayName, '은/는') : `${displayName}은`;
-            const nameSubject = typeof attachJosa === 'function' ? attachJosa(displayName, '이') : `${displayName}이`;
+            // 받침 유무 계산
+            const lastChar = displayName.charCodeAt(displayName.length - 1);
+            const hasBatchim = (lastChar >= 0xAC00 && lastChar <= 0xD7A3) ? ((lastChar - 0xAC00) % 28 > 0) : false;
+
+            // T모드 문장용: 태양이는 / 지우는
+            const nameTopic = hasBatchim ? `${displayName}이는` : `${displayName}는`;
+            // F모드 호칭용: 태양이 / 지우
+            const nameSubject = hasBatchim ? `${displayName}이` : displayName;
 
             if (isT) {
                 if (resSisterProfile) resSisterProfile.src = './서아.png';
