@@ -2880,10 +2880,10 @@
                     // 받침이 있으면 '태양이 / 환이', 받침이 없으면 '지우'
                     const callName = hasBatchim ? `${displayName}이` : displayName;
 
-                    // 1:1 대화 흐름 반응
+                    // 1:1 대화 흐름 반응 (기다리라는 중복 멘트 제거 및 접수 완료 알림)
                     const ackText = (mode === 'T') 
-                        ? `${callName}구나? 지금 [${selectedConcernText}] 때문에 머리 터지는 중이지? 사주 싹 까서 팩트만 꽂아줄 테니까 잠깐만 기다려봐.` 
-                        : `어머, 우리 ${callName}구나! 그동안 [${selectedConcernText}] 때문에 혼자 속앓이 진짜 많았지? 언니가 꼼꼼하게 다 풀어줄 테니까 딱 3초만 기다려!`;
+                        ? `${callName}구나? [${selectedConcernText}] 고민 접수 완료. 데이터 바로 분석한다.` 
+                        : `어머, 우리 ${callName}구나! [${selectedConcernText}] 때문에 혼자 속앓이 진짜 많았지? 꼼꼼히 다 봐줄게 🥺💕`;
 
                     const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up">
