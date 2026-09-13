@@ -3021,9 +3021,16 @@
                         // 2단계: 핵심 뼈대 파악 대화 (1.5~3.8초)
                         else if (elapsed < 3800) {
                             if (sysLogEl) sysLogEl.innerText = "일간·용신 오행 밸런스 정밀 연산 중...";
+                            
+                            // 이름 받침 여부에 따른 자연스러운 호칭 처리 (태양이 / 지우)
+                            const rawN = name || '';
+                            const dName = rawN.length >= 2 ? rawN.slice(1) : rawN;
+                            const hasBatchim = (dName.charCodeAt(dName.length - 1) - 0xAC00) % 28 > 0;
+                            const callName = hasBatchim ? `${dName}이` : dName;
+
                             mainStatus.innerHTML = isT 
-                                ? `<b class="text-sky-600 font-black">너 사주에 고집이랑 잡생각</b> 꽤 많이 들어있네?` 
-                                : `<b class="text-rose-500 font-black">세상에... 겉으론 괜찮은 척하면서</b> 혼자 다 참아왔구나 🥺`;
+                                ? `<b class="text-sky-600 font-black">${callName} 너 사주에 고집이랑 잡생각</b> 꽤 많이 들어있네?` 
+                                : `<b class="text-rose-500 font-black">우리 ${callName}... 겉으론 괜찮은 척하면서</b> 혼자 다 참아왔구나 🥺`;
                         }
                         // 3단계: 결과 도출 직전 긴장감 (3.8초~끝)
                         else {
