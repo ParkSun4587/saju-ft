@@ -340,6 +340,13 @@
             0%, 80%, 100% { transform: scale(0); }
             40% { transform: scale(1.0); }
         }
+
+       /* 💡 말풍선 텍스트 줄바꿈 및 정렬 균형 최적화 추가 */
+            #welcomeSisterText {
+                word-break: keep-all;
+                text-wrap: balance;
+                line-height: 1.55;
+        }
     </style>
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
@@ -1376,6 +1383,17 @@
                 if (realBubble) realBubble.style.display = 'flex';
             }, 800);
 
+            // 0.8초 타이핑 애니메이션 연출 적용
+            const typingInd = document.getElementById('chatTypingIndicator');
+            const realBubble = document.getElementById('chatRealBubbleBox');
+            if (typingInd) typingInd.style.display = 'flex';
+            if (realBubble) realBubble.style.display = 'none';
+
+            setTimeout(() => {
+                if (typingInd) typingInd.style.display = 'none';
+                if (realBubble) realBubble.style.display = 'flex';
+            }, 800);
+
             if (mode === 'F') {
                 if (sisterImg) sisterImg.src = './로아.png';
                 if (miniProfile) miniProfile.src = './로아.png';
@@ -1383,10 +1401,10 @@
                 if (sisterBadge) sisterBadge.textContent = '로아 언니 (F)';
                 if (senderTitle) senderTitle.textContent = '로아 언니';
                 if (sisterText) {
-                    sisterText.innerHTML = '아이고 왔어? ㅠㅠ 오늘 무슨 일 있었어?<br>속마음 다 털어놔 봐, 언니가 무조건 네 편 들어줄 테니까!<br>일단 정확하게 보게 이름이랑 생일 먼저 적어줘 🥺💕';
+                    sisterText.innerHTML = '아이고 왔어? ㅠㅠ 무슨 일 있었어?<br>속마음 다 털어놔 봐. 언니가 무조건 네 편 들어줄 테니까!<br>일단 정확하게 이름이랑 생일 먼저 적어줘 🥺💕';
                 }
             } else {
-                // 서아 (극T 모드)
+                // 서아 (극T 모드) - 줄바꿈 균형 최적화
                 if (sisterImg) sisterImg.src = './서아.png';
                 if (miniProfile) miniProfile.src = './서아.png';
                 if (document.getElementById('chatBubbleProfileMiniTyping')) document.getElementById('chatBubbleProfileMiniTyping').src = './서아.png';
