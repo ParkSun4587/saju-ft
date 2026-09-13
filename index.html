@@ -3015,13 +3015,51 @@
                                 ? `잠깐만 기다려봐. 태어난 날짜 원국 8글자부터 제대로 펼쳐볼게.` 
                                 : `잠깐만 기다려봐, ${callVoc}! 언니가 만세력 책부터 꼼꼼히 펼쳐볼게.`);
 
-                            // [톡 2] 2.2초 뒤 두 번째 말풍선 (감정 섞인 즉각 리액션)
+                            // [톡 2] 2.2초 뒤 두 번째 말풍선 (진짜 사주 오행 데이터를 찌르는 소름 멘트)
                             showStreamTyping('t2');
                             setTimeout(() => {
                                 removeStreamTyping('t2');
-                                appendSisterMsg(isT 
-                                    ? `헐... ${callSubj} 너 사주 보니까 머릿속 계산기만 두드리다 혼자 속 터지는 타입이네? 쓸데없는 고집 꽤 많다 너.` 
-                                    : `세상에 우리 ${callSubj}... 겉으론 덤덤한 척 다 넘겨놓고 집 와서 혼자 얼마나 끙끙 앓았을까... ㅠㅠ`);
+
+                                // 실제 연산된 사주 오행 중 가장 치우친(강한) 기운 추출
+                                const elCounts = sazuResult.elements || {};
+                                const ohengKeys = ['mok', 'hwa', 'to', 'geum', 'su'];
+                                let topOheng = 'to';
+                                let maxVal = -1;
+                                ohengKeys.forEach(k => {
+                                    if ((elCounts[k] || 0) > maxVal) {
+                                        maxVal = elCounts[k] || 0;
+                                        topOheng = k;
+                                    }
+                                });
+
+                                // 오행별 소름 팩폭/공감 데이터 사전
+                                const sazuSneakPeek = {
+                                    hwa: {
+                                        T: `헐... ${callSubj} 너 사주에 불기운이 너무 세서 감정 앞서고 충동 조절 안 되는 타입이네? 돈이랑 멘탈 샐 구멍이 훤히 보인다 너.`,
+                                        F: `세상에 우리 ${callSubj}... 사주에 뜨거운 불기운이 가득해서 혼자 속에서 천불 나고 답답했을 텐데 그동안 어떻게 다 참고 버텨왔어... ㅠㅠ`
+                                    },
+                                    su: {
+                                        T: `헐... ${callSubj} 너 사주에 물이 너무 많아서 밤마다 잡생각에 침잠하느라 실행 다 날려먹는 타입이네? 머릿속 엑셀 좀 그만 돌려.`,
+                                        F: `세상에 우리 ${callSubj}... 사주에 물기운이 넘쳐서 밤마다 온갖 불안이랑 고민 혼자 떠안고 눈물 삼켰구나... 마음고생 진짜 심했겠다.`
+                                    },
+                                    mok: {
+                                        T: `헐... ${callSubj} 너 사주 보니까 나무 기운이 뻗쳐서 지기 싫어하는 고집이랑 자존심 장난 아니네? 남한테 아쉬운 소리 못 해서 혼자 손해 보지?`,
+                                        F: `세상에 우리 ${callSubj}... 사주에 곧은 나무 기운이 있어서 남한테 짐 되기 싫어 혼자 꼿꼿하게 버티느라 얼마나 외롭고 아팠을까...`
+                                    },
+                                    geum: {
+                                        T: `헐... ${callSubj} 너 사주에 쇠기운이 서슬 퍼래서 완벽주의 잣대로 스스로를 들볶는 타입이네? 주변 꼬락서니 보면서 복장 터졌지?`,
+                                        F: `세상에 우리 ${callSubj}... 사주에 차가운 쇠기운이 강해서 남에게 흐트러진 모습 안 보이려고 늘 긴장하며 채찍질해왔구나... ㅠㅠ`
+                                    },
+                                    to: {
+                                        T: `헐... ${callSubj} 너 사주에 흙이 너무 많아서 속마음 절대 안 까고 미련 곰탱이처럼 버티는 타입이네? 골치 아픈 거 회피한다고 해결 안 돼.`,
+                                        F: `세상에 우리 ${callSubj}... 사주에 묵직한 흙기운이 많아서 남들 실수 뒤치다꺼리 혼자 다 떠안고 속으로 삭여왔구나... 정말 고생 많았어.`
+                                    }
+                                };
+
+                                const targetMsgObj = sazuSneakPeek[topOheng] || sazuSneakPeek.to;
+                                const dynamicSisterSay = isT ? targetMsgObj.T : targetMsgObj.F;
+
+                                appendSisterMsg(dynamicSisterSay);
 
                                 // [톡 3] 2.4초 뒤 세 번째 말풍선 (메모장 정리 완료 & 열람 유도)
                                 showStreamTyping('t3');
