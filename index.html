@@ -2902,14 +2902,13 @@
                     const lastChar = displayName.charCodeAt(displayName.length - 1);
                     const hasBatchim = (lastChar >= 0xAC00 && lastChar <= 0xD7A3) ? ((lastChar - 0xAC00) % 28 > 0) : false;
 
-                    // 받침에 따른 조사 분기: 태양이네 / 지우네, 태양이야? / 지우야?
-                    const tCall = hasBatchim ? `${displayName}이네` : `${displayName}네`;
-                    const fCall = hasBatchim ? `${displayName}이야?` : `${displayName}야?`;
+                    // 받침 유무에 따른 자연스러운 호칭 분기 (태양이 / 지우)
+                    const callName = hasBatchim ? `${displayName}이` : displayName;
 
-                    // 로아(F)와 서아(T) 맞춤형 반응 톡
+                    // 이름의 괄호는 제거해 실제 갠톡 느낌을 살리고, 고민 키워드만 대괄호로 강조
                     const ackText = (mode === 'T') 
-                        ? `[${tCall}]. 지금 [${selectedConcernText}] 쪽으로 기운이 꽉 막혀 있네. 데이터 바로 뽑아서 팩트만 꽂아줄 테니까 잠깐만.` 
-                        : `어머, [${fCall}] 게다가 지금 [${selectedConcernText}] 때문에 많이 답답했겠구나... ㅠㅠ 언니가 원국에서 속 시원하게 다 찾아볼 테니까 3초만 기다려!`;
+                        ? `${callName}구나? 지금 [${selectedConcernText}] 때문에 골치 아픈 모양인데, 데이터 바로 뽑아서 팩트만 꽂아줄 테니까 잠깐만.` 
+                        : `어머, 우리 ${callName}구나! 그동안 [${selectedConcernText}] 때문에 혼자 속앓이 많이 했지? 언니가 원국 꼼꼼히 뜯어볼 테니까 딱 3초만 기다려!`;
 
                     const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up">
