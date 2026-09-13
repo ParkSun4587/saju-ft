@@ -520,8 +520,8 @@
                 </div>
             </div>
             
-            <!-- 2) 카톡형 사주 입력 카드 말풍선 (상하 마진/패딩 전면 다이어트) -->
-            <div id="sajuInputCardBox" class="bg-white p-2.5 rounded-2xl shadow-sm border border-white/40 w-full mb-1">
+            <!-- 2) 카톡형 사주 입력 카드 말풍선 (처음엔 숨김 처리) -->
+            <div id="sajuInputCardBox" class="bg-white p-2.5 rounded-2xl shadow-sm border border-white/40 w-full mb-1" style="display: none;">
                 <p class="text-[10.5px] font-extrabold text-slate-800 border-b border-slate-100 pb-1 mb-1.5 flex items-center gap-1">
                     <span>📋</span> 정확한 만세력 원국 조회를 위해 적어줘
                 </p>
@@ -1372,15 +1372,26 @@
             const miniProfile = document.getElementById('chatBubbleProfileMini');
             const senderTitle = document.getElementById('chatSenderNameTitle');
 
-            // 타이핑 애니메이션 및 극F/극T 대사 반영
+            // 0.8초 타이핑 후 인사말 노출, 직후 입력 폼 카드 등장 시퀀스
             const typingInd = document.getElementById('chatTypingIndicator');
             const realBubble = document.getElementById('chatRealBubbleBox');
+            const inputCardBox = document.getElementById('sajuInputCardBox');
+
             if (typingInd) typingInd.style.display = 'flex';
             if (realBubble) realBubble.style.display = 'none';
+            if (inputCardBox) inputCardBox.style.display = 'none';
 
             setTimeout(() => {
                 if (typingInd) typingInd.style.display = 'none';
                 if (realBubble) realBubble.style.display = 'flex';
+                
+                // 인사말이 뜬 직후(0.2초 뒤) 입력 카드 부드럽게 등장
+                setTimeout(() => {
+                    if (inputCardBox) {
+                        inputCardBox.style.display = 'block';
+                        inputCardBox.classList.add('fade-in-up');
+                    }
+                }, 200);
             }, 800);
         
             if (mode === 'F') {
