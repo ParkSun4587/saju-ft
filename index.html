@@ -2984,7 +2984,7 @@
 
                 const percentText = document.getElementById('loadingPercent');
                 const mainStatus = document.getElementById('loadingMainStatus');
-                const totalDuration = 3800; // 3.8초 최적화 텐션 곡선
+                const totalDuration = 5500; // 5.5초로 넉넉하게 연장하여 가독성 및 몰입감 극대화
                 const startTime = Date.now();
                 let isRendered = false;
                 const sysLogEl = document.getElementById('loadingSysLog');
@@ -2993,12 +2993,12 @@
                     const elapsed = Date.now() - startTime;
                     let progress = 0;
                     
-                    if (elapsed < 800) {
-                        progress = Math.floor((elapsed / 800) * 55);
-                    } else if (elapsed < 2800) {
-                        progress = 55 + Math.floor(((elapsed - 800) / 2000) * 27);
+                    if (elapsed < 1500) {
+                        progress = Math.floor((elapsed / 1500) * 40);
+                    } else if (elapsed < 3800) {
+                        progress = 40 + Math.floor(((elapsed - 1500) / 2300) * 40);
                     } else if (elapsed < totalDuration) {
-                        progress = 82 + Math.floor(((elapsed - 2800) / 1000) * 18);
+                        progress = 80 + Math.floor(((elapsed - 3800) / 1700) * 20);
                     } else {
                         progress = 100;
                     }
@@ -3007,21 +3007,21 @@
                     if (progressFill) progressFill.style.width = progress + "%";
 
                     if (mainStatus) {
-                        // 1단계: 만세력 조회 대화
-                        if (elapsed < 800) {
+                        // 1단계: 만세력 조회 대화 (0~1.5초)
+                        if (elapsed < 1500) {
                             if (sysLogEl) sysLogEl.innerText = "만세력 8글자 오행 데이터 대조 중...";
                             mainStatus.innerHTML = isT 
-                                ? `잠깐, 태어난 날짜 기운부터 까보는 중이야...` 
-                                : `자기야 잠깐만 기다려봐! 언니가 만세력 펼쳐볼게 🌸`;
+                                ? `잠깐, 태어난 날짜 기운부터 정밀하게 파고드는 중이야...` 
+                                : `자기야 잠깐만 기다려봐! 언니가 만세력 꼼꼼히 펼쳐볼게 🌸`;
                         }
-                        // 2단계: 핵심 뼈대 파악 대화
-                        else if (elapsed < 2800) {
+                        // 2단계: 핵심 뼈대 파악 대화 (1.5~3.8초)
+                        else if (elapsed < 3800) {
                             if (sysLogEl) sysLogEl.innerText = "일간·용신 오행 밸런스 정밀 연산 중...";
                             mainStatus.innerHTML = isT 
                                 ? `<b class="text-sky-600 font-black">너 사주에 고집이랑 잡생각</b> 꽤 많이 들어있네?` 
                                 : `<b class="text-rose-500 font-black">세상에... 겉으론 괜찮은 척하면서</b> 혼자 다 참아왔구나 🥺`;
                         }
-                        // 3단계: 결과 도출 직전 긴장감
+                        // 3단계: 결과 도출 직전 긴장감 (3.8초~끝)
                         else {
                             if (sysLogEl) sysLogEl.innerText = "상세 사주 리포트 작성 완료!";
                             mainStatus.innerHTML = isT 
