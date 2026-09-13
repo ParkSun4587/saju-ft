@@ -2934,10 +2934,13 @@
                     };
                     const selectedConcernText = concernLabels[concernKey] || '고민';
 
-                    // 로아(F)와 서아(T)의 성향을 극살린 맞춤형 반응 톡 생성
+                    // 성을 제외한 이름(예: 박태양 -> 태양) 추출 로직 적용
+                    const displayName = name.length >= 3 ? name.slice(1) : name;
+
+                    // 로아(F)와 서아(T)의 성향을 살린 맞춤형 반응 톡 (이름만 다정하게 호칭)
                     const ackText = (mode === 'T') 
-                        ? `[${name}]이네. 지금 [${selectedConcernText}] 쪽으로 기운이 꽉 막혀 있네. 데이터 바로 뽑아서 팩트만 꽂아줄 테니까 잠깐만.` 
-                        : `어머, [${name}]이야? 게다가 지금 [${selectedConcernText}] 때문에 많이 답답했겠구나... ㅠㅠ 언니가 원국에서 속 시원하게 다 찾아볼 테니까 3초만 기다려!`;
+                        ? `[${displayName}]이네. 지금 [${selectedConcernText}] 쪽으로 기운이 꽉 막혀 있네. 데이터 바로 뽑아서 팩트만 꽂아줄 테니까 잠깐만.` 
+                        : `어머, [${displayName}]이야? 게다가 지금 [${selectedConcernText}] 때문에 많이 답답했겠구나... ㅠㅠ 언니가 원국에서 속 시원하게 다 찾아볼 테니까 3초만 기다려!`;
 
                     const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up">
@@ -3441,7 +3444,9 @@
             // 1) 상단 알약 뱃지 (대체안 A 적용)
             const modeBadge = document.getElementById('cardModeBadge');
             if (modeBadge) {
-                const nameJosa = typeof attachJosa === 'function' ? attachJosa(data.name, '이/가') : `${data.name}이`;
+                // 성을 제외한 이름만 추출하여 결과 페이지 대사 및 조사 자연스럽게 결합
+            const displayName = data.name && data.name.length >= 3 ? data.name.slice(1) : (data.name || '');
+            const nameJosa = typeof attachJosa === 'function' ? attachJosa(displayName, '이/가') : `${displayName}이`;
                 modeBadge.innerHTML = isT 
                     ? `🧊 "T발 너 C야?" 소리 나오는 자비 없는 극딜 모드` 
                     : `🌸 "우리 <span class="text-rose-700 font-black">${nameJosa}</span> 다 맞아" 극성 내 편 모드`;
