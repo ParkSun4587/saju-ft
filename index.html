@@ -4017,34 +4017,46 @@
         });
                 
         function restartAnalysisWithOtherConcern() {
-            // 기존 사주 정보 임시 보관
-            const savedData = currentResultData;
-            
-            // 화면 및 스트림 리셋
-            startFreshAnalysis();
-            
-            // 인트로가 아니라 바로 폼 입력 화면으로 연결
-            const introSection = document.getElementById('splitIntroSection');
-            if (introSection) introSection.style.display = 'none';
-            const landingSection = document.getElementById('landingSection');
-            if (landingSection) landingSection.style.display = 'flex';
+            // 1. 현재 보고 있던 언니 모드(F/T) 확인
+            const targetMode = (currentResultData && currentResultData.currentMode) ? currentResultData.currentMode : (selectedSplitMode || 'F');
+            selectedSplitMode = targetMode;
+            const isT = (targetMode === 'T');
 
-            // 보관된 기존 유저 정보 복원
-            if (savedData) {
-                if (savedData.name && document.getElementById('nameInput')) {
-                    document.getElementById('nameInput').value = savedData.name;
-                }
-                if (savedData.userBirthStr && document.getElementById('birthDateInput')) {
-                    const b = savedData.userBirthStr;
-                    document.getElementById('birthDateInput').value = (b.length === 8) ? b.substring(0, 4) + '.' + b.substring(4, 6) + '.' + b.substring(6, 8) : b;
-                }
-                if (savedData.userTimeKey && document.getElementById('birthTimeSelect')) {
-                    document.getElementById('birthTimeSelect').value = savedData.userTimeKey;
-                }
-                if (savedData.userGender) setGender(savedData.userGender);
-                setCalendar(savedData.userCalendar || 'solar');
+            // 2. 화면 전환 (결과 닫고 폼 열기)
+            isUnlocked = false;
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('splitIntroSection').style.display = 'none';
+            document.getElementById('landingSection').style.display = 'flex';
+
+            // 3. 상단 헤더 & 프로필 즉시 일치 (로아/서아 꼬임 방지)
+            const profileSrc = isT ? './서아.png' : './로아.png';
+            document.getElementById('welcomeSisterImg').src = profileSrc;
+            document.getElementById('welcomeSisterBadge').textContent = isT ? '서아 언니 (T)' : '로아 언니 (F)';
+            document.getElementById('chatBubbleProfileMini').src = profileSrc;
+            document.getElementById('chatSenderNameTitle').textContent = isT ? '서아 언니' : '로아 언니';
+
+            // 4. 언니 말풍선 멘트 동기화
+            document.getElementById('welcomeSisterText').innerHTML = isT
+                ? '왔어? 시간 낭비 말고 본론부터 가자.<br>사주 원국 깔 테니까 이름이랑 생년월일시 똑바로 찍어.'
+                : '아이고 왔어? ㅠㅠ 무슨 일 있었어?<br>속마음 다 털어놔 봐. 언니가 무조건 네 편 들어줄 테니까!<br>일단 정확하게 이름이랑 생일 먼저 적어줘 🥺💕';
+
+            // 5. 하단 전송 버튼 텍스트 & 모드 동기화
+            const nextBtn = document.getElementById('splitNextButton');
+            if (nextBtn) {
+                nextBtn.innerHTML = `
+                    <button type="button" onclick="startAnalysis('${targetMode}')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
+                        <span>${isT ? '서아 언니한테 사주 정보 보내기' : '로아 언니한테 사주 정보 보내기'}</span>
+                        <span>💌</span>
+                    </button>
+                `;
             }
-            
+
+            // 6. 입력 폼 카드 노출 및 첫 번째 고민 칩 테마 색상 적용
+            document.getElementById('sajuInputCardBox').style.display = 'block';
+            const firstChip = document.querySelector('#concernGrid .concern-chip');
+            if (firstChip) selectConcern('money', firstChip);
+
             showToast("다른 고민을 선택하고 정보를 보내주세요!");
             window.scrollTo({ top: 0, behavior: 'instant' });
         }
