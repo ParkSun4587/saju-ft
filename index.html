@@ -449,7 +449,7 @@
                 <div>
                     <span id="chatSenderNameTitle" class="text-[10px] text-slate-700 font-bold block mb-0.5">로아 언니</span>
                     <div id="welcomeSisterBubble" class="bg-white text-slate-900 text-[11px] font-medium p-2 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40">
-                        <p id="welcomeSisterText">반가워! 네 사주 꼼꼼하게 봐줄게.<br>우선 네 <b class="text-rose-600">이름(닉네임)</b>부터 알려줘 💕</p>
+                        <p id="welcomeSisterText">반가워! 네 사주 꼼꼼하게 봐줄게.<br>우선 네 <b class="text-rose-600">이름(닉네임)</b>부터 알려줘</p>
                     </div>
                 </div>
             </div>
@@ -478,7 +478,7 @@
                         </div>
                     </div>
 
-                    <!-- 고민 선택 (6종 슬림 패딩) -->
+                    <!-- 고민 선택 (T/F 테마 동적 전환 적용) -->
                     <div>
                         <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">지금 제일 답답한 문제는?</label>
                         <input type="hidden" id="selectedConcernKey" value="money">
@@ -1310,15 +1310,16 @@
                 if (sisterBadge) sisterBadge.textContent = '로아 언니 (F)';
                 if (senderTitle) senderTitle.textContent = '로아 언니';
                 if (sisterText) {
-                    sisterText.innerHTML = '자기야 반가워! 오늘 속마음이랑 연애운 싹 털어줄게 🌸<br>우선 정확하게 봐줄 테니까 <b class="text-rose-600">이름이랑 생일</b> 적어봐!';
+                    sisterText.innerHTML = '자기야 반가워! 오늘 속마음이랑 연애운 싹 털어줄게<br>우선 정확하게 봐줄 테니까 <b class="text-rose-600">이름이랑 생일</b> 적어봐!';
                 }
             } else {
+                // 서아 (T 모드) - 이모티콘 ⚡ 제거
                 if (sisterImg) sisterImg.src = './서아.png';
                 if (miniProfile) miniProfile.src = './서아.png';
                 if (sisterBadge) sisterBadge.textContent = '서아 언니 (T)';
                 if (senderTitle) senderTitle.textContent = '서아 언니';
                 if (sisterText) {
-                    sisterText.innerHTML = '왔어? 시간 낭비 말고 본론부터 가자 ⚡<br>사주 원국 깔 테니까 <b class="text-sky-600">이름이랑 생년월일시</b> 똑바로 찍어.';
+                    sisterText.innerHTML = '왔어? 시간 낭비 말고 본론부터 가자.<br>사주 원국 깔 테니까 <b class="text-sky-600">이름이랑 생년월일시</b> 똑바로 찍어.';
                 }
             }
 
@@ -1337,7 +1338,7 @@
                     nextButtonContainer.innerHTML = `
                         <button type="button" onclick="startAnalysis('T')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
                             <span>서아 언니한테 사주 정보 보내기</span>
-                            <span>⚡</span>
+                            <span>💌</span>
                         </button>
                     `;
                 }
@@ -1350,6 +1351,56 @@
                 landingSection.classList.add('fade-in-up');
             }
             window.scrollTo({ top: 0, behavior: 'instant' });
+
+            // 서아/로아 선택에 따라 첫 번째 카테고리 칩 색상 즉시 동기화
+            const currentSelectedChip = document.querySelector('#concernGrid .concern-chip.selected') || document.querySelector('#concernGrid .concern-chip');
+            if (currentSelectedChip) {
+                applyConcernStyle(currentSelectedChip, selectedSplitMode);
+            }
+        }
+
+        // T/F 모드 연동 카테고리 선택 함수
+        function selectConcern(key, buttonEl) {
+            document.getElementById('selectedConcernKey').value = key;
+            const buttons = document.querySelectorAll('#concernGrid .concern-chip');
+            
+            buttons.forEach(btn => {
+                btn.classList.remove('selected');
+                btn.style.borderColor = '#e2e8f0';
+                btn.style.backgroundColor = '#ffffff';
+                btn.style.boxShadow = 'none';
+                const title = btn.querySelector('.chip-title');
+                if (title) {
+                    title.style.color = '#334155';
+                    title.style.fontWeight = '700';
+                }
+            });
+
+            buttonEl.classList.add('selected');
+            applyConcernStyle(buttonEl, selectedSplitMode);
+        }
+
+        // 선택된 칩에 모드별 스타일 적용 (서아=스카이블루, 로아=로즈)
+        function applyConcernStyle(el, mode) {
+            if (!el) return;
+            const title = el.querySelector('.chip-title');
+            if (mode === 'T') {
+                el.style.borderColor = '#38bdf8';
+                el.style.backgroundColor = '#f0f9ff';
+                el.style.boxShadow = '0 4px 14px rgba(56, 189, 248, 0.2)';
+                if (title) {
+                    title.style.color = '#0284c7';
+                    title.style.fontWeight = '800';
+                }
+            } else {
+                el.style.borderColor = '#fb7185';
+                el.style.backgroundColor = '#ffffff';
+                el.style.boxShadow = '0 4px 14px rgba(251, 113, 133, 0.15)';
+                if (title) {
+                    title.style.color = '#e11d48';
+                    title.style.fontWeight = '800';
+                }
+            }
         }
         
         // 한글 받침 여부에 따라 알맞은 조사를 자동으로 결합하는 함수
@@ -2612,14 +2663,7 @@
             else if (score >= 48) return { grade: '포텐', title: '🌱 잠재력 폭발 대기만성' };
             else return { grade: '히든', title: '🔥 한방 쾌감 드라마틱 역전' };
         }
-
-        function selectConcern(key, buttonEl) {
-            document.getElementById('selectedConcernKey').value = key;
-            const buttons = document.querySelectorAll('#concernGrid .concern-chip');
-            buttons.forEach(btn => btn.classList.remove('selected'));
-            buttonEl.classList.add('selected');
-        }
-
+        
         function formatBirthDate(el) {
             let val = el.value.replace(/[^0-9]/g, '');
             if (val.length > 8) val = val.substring(0, 8);
