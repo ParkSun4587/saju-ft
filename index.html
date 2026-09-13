@@ -2261,10 +2261,10 @@
                     badge: dynamicBadge03,
                     title: isT 
                         ? `남들 따라 기웃거리다 털리지 말고, 내 사주 돈맥으로 굳히는 법`
-                        : `마음 졸이며 전전긍긍하던 텅장을 채워줄 나만의 안정적 재물 그릇`,
+                        : `마음 졸이며 불안해하던 텅장을 든든하게 채워줄 나만의 재물 그릇`,
                     desc: isT
                         ? `남들 돈 벌었다는 소리에 휩쓸려 무리수 뒀다가 물린 적 있지? 네 사주를 살려주는 성공의 열쇠는 <b>[${sangsinText}]</b>야. 뻔한 방식 말고 네 찐 수익 루트인 <b>"${currentGyeok.wealthRoute}"</b>에 집중해. 사주가 지정한 네 고유 무기로 몸값과 권한부터 끌어올려야 진짜 네 통장에 돈이 묶여.`
-                        : `통장 잔고를 볼 때마다 막연한 불안감에 한숨 쉬셨던 날들이 많았지? 네 사주를 든든하게 지켜주는 기운은 <b>[${sangsinText}]</b>야. 남들과 치열하게 뺏고 뺏기는 방식보다, <b>"${currentGyeok.wealthRoute}"</b> 방식으로 차분하게 영역을 넓혀갈 때 돈이 저절로 모이는 팔자거든. 무리하지 말고 네 결대로 가자.`,
+                        : `통장 잔고 볼 때마다 막연한 불안감에 혼자 한숨 쉰 날들 많았지? 네 사주를 든든하게 지켜주는 기운은 <b>[${sangsinText}]</b>야. 남들과 치열하게 뺏고 뺏기는 방식보다 <b>"${currentGyeok.wealthRoute}"</b> 방식으로 차분하게 영역을 넓혀갈 때 돈이 저절로 모이는 팔자거든. 무리하지 말고 네 결대로 가자.`,
                     checklist: isT ? '근거 없는 투자 권유 차단하고, 내 본업 몸값 올리는 루틴 세팅' : '스트레스성 보상 소비 멈추고, 나를 위한 안전 통장 분리하기'
                 },
                 {
@@ -3965,7 +3965,7 @@
             document.getElementById('landingSection').style.display = 'flex';
             window.scrollTo({ top: 0 });
         }
-                // [추가] 반대편 언니 시선으로 즉시 전환 (재계산 없이 렌더만 다시)
+                // [수정] 반대편 언니 시선으로 즉시 전환 (텍스트 100% 즉시 교체 및 스크롤 최적화)
         function switchSisterMode() {
             if (!currentResultData) {
                 showToast('전환할 결과가 없어. 처음부터 다시 봐줘.');
@@ -3977,7 +3977,9 @@
 
             if (typeof gtag === 'function') gtag('event', 'switch_sister_mode', { mode_type: nextMode });
 
-            renderResultView(currentResultData);
+            // 모드별 텍스트 및 6개 노트 강제 재렌더링
+            updateResultContentByMode(nextMode);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function startFreshAnalysis() {
             // 구매 복원 키는 유지 — 결제자가 재방문 시 리포트 복구 가능하도록
