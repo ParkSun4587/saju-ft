@@ -2934,155 +2934,119 @@
                         currentMode: mode, concernKey: concernKey, ...sazuResult, rawSolutionTemplate: solutionTemplate 
                     };
 
-                    // 4단계: 1.8초 뒤 자연스럽게 카톡 상담 로딩방으로 전환되며 연속 대화 개시
-                    setTimeout(() => {
-                        document.getElementById('landingSection').style.display = 'none';
-                        document.getElementById('resultSection').style.display = 'none';
-                        const loadingSec = document.getElementById('loadingSection');
-                        loadingSec.style.display = 'flex';
-                        window.scrollTo(0, 0);
+                    // 호칭 세팅
+                    const rawN = name.trim();
+                    const dName = rawN.length >= 2 ? rawN.slice(1) : rawN;
+                    const lastC = dName.charCodeAt(dName.length - 1);
+                    const hasBat = (lastC >= 0xAC00 && lastC <= 0xD7A3) ? ((lastC - 0xAC00) % 28 > 0) : false;
+                    const callSubj = hasBat ? `${dName}이` : dName;
+                    const callVoc = hasBat ? `${dName}아` : `${dName}야`;
 
-                        // 로딩 상단 프로필 동기화
-                        const loadProfile = document.getElementById('loadingSisterProfile');
-                        const loadName = document.getElementById('loadingSisterName');
-                        if (loadProfile) loadProfile.src = profileImg;
-                        if (loadName) loadName.textContent = sisterName;
-
-                        const loadingStream = document.getElementById('loadingChatStream');
-                        if (!loadingStream) return;
-
-                        // 대화창 초기화 및 유저 전송 톡 렌더링
-                        loadingStream.innerHTML = `
-                            <div class="flex justify-end items-end gap-1.5 fade-in-up">
-                                <span class="text-[9px] text-slate-500 font-semibold mb-1">읽음</span>
-                                <div class="bg-[#fee500] text-slate-900 text-xs font-bold px-3.5 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[240px] leading-snug break-keep">
-                                    ${name} / ${formattedBirth} / 언니 내 사주 얼른 봐줘! 💌
+                    const streamArea = document.getElementById('chatStreamArea');
+                    const appendSingleMsg = (text) => {
+                        const bubbleHTML = `
+                            <div class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-2">
+                                <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
+                                <div>
+                                    <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
+                                    <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 break-keep">
+                                        ${text}
+                                    </div>
                                 </div>
                             </div>
                         `;
+                        streamArea.insertAdjacentHTML('beforeend', bubbleHTML);
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                    };
 
-                        // 호칭 세팅
-                        const rawN = name.trim();
-                        const dName = rawN.length >= 2 ? rawN.slice(1) : rawN;
-                        const lastC = dName.charCodeAt(dName.length - 1);
-                        const hasBat = (lastC >= 0xAC00 && lastC <= 0xD7A3) ? ((lastC - 0xAC00) % 28 > 0) : false;
-                        const callSubj = hasBat ? `${dName}이` : dName;
-                        const callVoc = hasBat ? `${dName}아` : `${dName}야`;
-
-                        // 말풍선 추가 헬퍼 함수
-                        const appendSisterMsg = (text) => {
-                            const bubbleHTML = `
-                                <div class="flex items-start gap-2 fade-in-up">
-                                    <img src="${profileImg}" class="w-8 h-8 rounded-full object-cover shrink-0 mt-0.5 shadow-sm border border-white">
-                                    <div class="space-y-0.5 max-w-[82%]">
-                                        <span class="text-[10px] text-slate-600 font-bold block ml-1">${sisterName}</span>
-                                        <div class="bg-white text-slate-900 text-xs font-bold px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-sm leading-relaxed border border-white/60 break-keep">
-                                            ${text}
-                                        </div>
-                                    </div>
+                    const showLiveTyping = (id) => {
+                        const tHTML = `
+                            <div id="${id}" class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-2">
+                                <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
+                                <div class="typing-indicator mt-1">
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
                                 </div>
-                            `;
-                            loadingStream.insertAdjacentHTML('beforeend', bubbleHTML);
-                            loadingStream.scrollTop = loadingStream.scrollHeight;
-                        };
+                            </div>
+                        `;
+                        streamArea.insertAdjacentHTML('beforeend', tHTML);
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                    };
 
-                        // 타이핑 인디케이터 헬퍼 함수
-                        const showStreamTyping = (id) => {
-                            const tHTML = `
-                                <div id="${id}" class="flex items-start gap-2 fade-in-up">
-                                    <img src="${profileImg}" class="w-8 h-8 rounded-full object-cover shrink-0 mt-0.5">
-                                    <div class="typing-indicator mt-1">
-                                        <div class="typing-dot"></div>
-                                        <div class="typing-dot"></div>
-                                        <div class="typing-dot"></div>
-                                    </div>
-                                </div>
-                            `;
-                            loadingStream.insertAdjacentHTML('beforeend', tHTML);
-                            loadingStream.scrollTop = loadingStream.scrollHeight;
-                        };
+                    const removeLiveTyping = (id) => {
+                        const el = document.getElementById(id);
+                        if (el) el.remove();
+                    };
 
-                        const removeStreamTyping = (id) => {
-                            const el = document.getElementById(id);
-                            if (el) el.remove();
-                        };
+                    // [톡 1] 0.5초 뒤 (만세력 펼치기)
+                    showLiveTyping('liveT1');
+                    setTimeout(() => {
+                        removeLiveTyping('liveT1');
+                        appendSingleMsg(isT 
+                            ? `잠깐만 기다려봐. 태어난 날짜 원국 8글자부터 제대로 펼쳐볼게.` 
+                            : `잠깐만 기다려봐, ${callVoc}! 언니가 만세력 책부터 꼼꼼히 펼쳐볼게.`);
 
-                        // [톡 1] 0.5초 뒤 첫 번째 말풍선 (만세력 펼치기)
-                        showStreamTyping('t1');
+                        // [톡 2] 2.2초 뒤 (실제 사주 최강 오행 팩폭)
+                        showLiveTyping('liveT2');
                         setTimeout(() => {
-                            removeStreamTyping('t1');
-                            appendSisterMsg(isT 
-                                ? `잠깐만 기다려봐. 태어난 날짜 원국 8글자부터 제대로 펼쳐볼게.` 
-                                : `잠깐만 기다려봐, ${callVoc}! 언니가 만세력 책부터 꼼꼼히 펼쳐볼게.`);
+                            removeLiveTyping('liveT2');
 
-                            // [톡 2] 2.2초 뒤 두 번째 말풍선 (진짜 사주 오행 데이터를 찌르는 소름 멘트)
-                            showStreamTyping('t2');
+                            const elCounts = sazuResult.elements || {};
+                            const ohengKeys = ['mok', 'hwa', 'to', 'geum', 'su'];
+                            let topOheng = 'to';
+                            let maxVal = -1;
+                            ohengKeys.forEach(k => {
+                                if ((elCounts[k] || 0) > maxVal) {
+                                    maxVal = elCounts[k] || 0;
+                                    topOheng = k;
+                                }
+                            });
+
+                            const sazuSneakPeek = {
+                                hwa: {
+                                    T: `헐... ${callSubj} 너 사주에 불기운이 너무 세서 감정 앞서고 충동 조절 안 되는 타입이네? 돈이랑 멘탈 샐 구멍이 훤히 보인다 너.`,
+                                    F: `세상에 우리 ${callSubj}... 사주에 뜨거운 불기운이 가득해서 혼자 속에서 천불 나고 답답했을 텐데 그동안 어떻게 다 참고 버텨왔어... ㅠㅠ`
+                                },
+                                su: {
+                                    T: `헐... ${callSubj} 너 사주에 물이 너무 많아서 밤마다 잡생각에 침잠하느라 실행 다 날려먹는 타입이네? 머릿속 엑셀 좀 그만 돌려.`,
+                                    F: `세상에 우리 ${callSubj}... 사주에 물기운이 넘쳐서 밤마다 온갖 불안이랑 고민 혼자 떠안고 눈물 삼켰구나... 마음고생 진짜 심했겠다.`
+                                },
+                                mok: {
+                                    T: `헐... ${callSubj} 너 사주 보니까 나무 기운이 뻗쳐서 지기 싫어하는 고집이랑 자존심 장난 아니네? 남한테 아쉬운 소리 못 해서 혼자 손해 보지?`,
+                                    F: `세상에 우리 ${callSubj}... 사주에 곧은 나무 기운이 있어서 남한테 짐 되기 싫어 혼자 꼿꼿하게 버티느라 얼마나 외롭고 아팠을까...`
+                                },
+                                geum: {
+                                    T: `헐... ${callSubj} 너 사주에 쇠기운이 서슬 퍼래서 완벽주의 잣대로 스스로를 들볶는 타입이네? 주변 꼬락서니 보면서 복장 터졌지?`,
+                                    F: `세상에 우리 ${callSubj}... 사주에 차가운 쇠기운이 강해서 남에게 흐트러진 모습 안 보이려고 늘 긴장하며 채찍질해왔구나... ㅠㅠ`
+                                },
+                                to: {
+                                    T: `헐... ${callSubj} 너 사주에 흙이 너무 많아서 속마음 절대 안 까고 미련 곰탱이처럼 버티는 타입이네? 골치 아픈 거 회피한다고 해결 안 돼.`,
+                                    F: `세상에 우리 ${callSubj}... 사주에 묵직한 흙기운이 많아서 남들 실수 뒤치다꺼리 혼자 다 떠안고 속으로 삭여왔구나... 정말 고생 많았어.`
+                                }
+                            };
+
+                            const targetMsgObj = sazuSneakPeek[topOheng] || sazuSneakPeek.to;
+                            appendSingleMsg(isT ? targetMsgObj.T : targetMsgObj.F);
+
+                            // [톡 3] 2.4초 뒤 (메모장 완료 & 결과 화면 부드럽게 연결)
+                            showLiveTyping('liveT3');
                             setTimeout(() => {
-                                removeStreamTyping('t2');
+                                removeLiveTyping('liveT3');
+                                appendSingleMsg(isT 
+                                    ? `정리 다 끝났어. 속 시원하게 팩트만 꽂은 <b>비밀 메모장</b> 바로 열어줄 테니까 정신 바짝 차리고 읽어.` 
+                                    : `정리 다 끝났어, ${callVoc}! 언니가 너 주려고 적어둔 <b>비밀 메모장</b> 지금 바로 열어볼게!`);
 
-                                // 실제 연산된 사주 오행 중 가장 치우친(강한) 기운 추출
-                                const elCounts = sazuResult.elements || {};
-                                const ohengKeys = ['mok', 'hwa', 'to', 'geum', 'su'];
-                                let topOheng = 'to';
-                                let maxVal = -1;
-                                ohengKeys.forEach(k => {
-                                    if ((elCounts[k] || 0) > maxVal) {
-                                        maxVal = elCounts[k] || 0;
-                                        topOheng = k;
-                                    }
-                                });
-
-                                // 오행별 소름 팩폭/공감 데이터 사전
-                                const sazuSneakPeek = {
-                                    hwa: {
-                                        T: `헐... ${callSubj} 너 사주에 불기운이 너무 세서 감정 앞서고 충동 조절 안 되는 타입이네? 돈이랑 멘탈 샐 구멍이 훤히 보인다 너.`,
-                                        F: `세상에 우리 ${callSubj}... 사주에 뜨거운 불기운이 가득해서 혼자 속에서 천불 나고 답답했을 텐데 그동안 어떻게 다 참고 버텨왔어... ㅠㅠ`
-                                    },
-                                    su: {
-                                        T: `헐... ${callSubj} 너 사주에 물이 너무 많아서 밤마다 잡생각에 침잠하느라 실행 다 날려먹는 타입이네? 머릿속 엑셀 좀 그만 돌려.`,
-                                        F: `세상에 우리 ${callSubj}... 사주에 물기운이 넘쳐서 밤마다 온갖 불안이랑 고민 혼자 떠안고 눈물 삼켰구나... 마음고생 진짜 심했겠다.`
-                                    },
-                                    mok: {
-                                        T: `헐... ${callSubj} 너 사주 보니까 나무 기운이 뻗쳐서 지기 싫어하는 고집이랑 자존심 장난 아니네? 남한테 아쉬운 소리 못 해서 혼자 손해 보지?`,
-                                        F: `세상에 우리 ${callSubj}... 사주에 곧은 나무 기운이 있어서 남한테 짐 되기 싫어 혼자 꼿꼿하게 버티느라 얼마나 외롭고 아팠을까...`
-                                    },
-                                    geum: {
-                                        T: `헐... ${callSubj} 너 사주에 쇠기운이 서슬 퍼래서 완벽주의 잣대로 스스로를 들볶는 타입이네? 주변 꼬락서니 보면서 복장 터졌지?`,
-                                        F: `세상에 우리 ${callSubj}... 사주에 차가운 쇠기운이 강해서 남에게 흐트러진 모습 안 보이려고 늘 긴장하며 채찍질해왔구나... ㅠㅠ`
-                                    },
-                                    to: {
-                                        T: `헐... ${callSubj} 너 사주에 흙이 너무 많아서 속마음 절대 안 까고 미련 곰탱이처럼 버티는 타입이네? 골치 아픈 거 회피한다고 해결 안 돼.`,
-                                        F: `세상에 우리 ${callSubj}... 사주에 묵직한 흙기운이 많아서 남들 실수 뒤치다꺼리 혼자 다 떠안고 속으로 삭여왔구나... 정말 고생 많았어.`
-                                    }
-                                };
-
-                                const targetMsgObj = sazuSneakPeek[topOheng] || sazuSneakPeek.to;
-                                const dynamicSisterSay = isT ? targetMsgObj.T : targetMsgObj.F;
-
-                                appendSisterMsg(dynamicSisterSay);
-
-                                // [톡 3] 2.4초 뒤 세 번째 말풍선 (메모장 정리 완료 & 열람 유도)
-                                showStreamTyping('t3');
+                                // 1.2초 뒤 결과 화면 렌더링
                                 setTimeout(() => {
-                                    removeStreamTyping('t3');
-                                    appendSisterMsg(isT 
-                                        ? `정리 다 끝났어. 속 시원하게 팩트만 꽂은 <b>비밀 메모장</b> 바로 열어줄 테니까 정신 바짝 차리고 읽어.` 
-                                        : `정리 다 끝났어, ${callVoc}! 언니가 너 주려고 적어둔 <b>비밀 메모장</b> 지금 바로 열어볼게!`);
+                                    renderResultView(currentResultData);
+                                }, 1200);
 
-                                    // 1.5초 후 결과 화면으로 전환
-                                    setTimeout(() => {
-                                        renderResultView(currentResultData);
-                                    }, 1500);
+                            }, 2400);
 
-                                }, 2400);
+                        }, 2200);
 
-                            }, 2200);
-
-                        }, 600);
-
-                    }, 1800);
-
-                }, 800);
+                    }, 500);
             } catch (error) {
                 isAnalyzing = false;
                 console.error("로딩 에러 방어:", error);
