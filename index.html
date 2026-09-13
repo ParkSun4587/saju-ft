@@ -2934,13 +2934,13 @@
                         streamArea.scrollTop = streamArea.scrollHeight;
                     }
                     
-                    // 4단계: 확인 톡을 충분히 읽을 수 있게 2.5초로 여유 있게 연장 후 로딩 화면으로 전환
+                    // 4단계: 확인 톡을 여유 있게 정독할 수 있도록 3.8초(읽는 시간 3초 확보) 후 전환
                     setTimeout(() => {
                         document.getElementById('landingSection').style.display = 'none';
                         document.getElementById('resultSection').style.display = 'none';
                         document.getElementById('loadingSection').style.display = 'flex';
                         window.scrollTo(0, 0);
-                    }, 2500);
+                    }, 3800);
 
                 }, 800);
 
@@ -3002,7 +3002,8 @@
 
                 const percentText = document.getElementById('loadingPercent');
                 const mainStatus = document.getElementById('loadingMainStatus');
-                const totalDuration = 5500; // 5.5초로 넉넉하게 연장하여 가독성 및 몰입감 극대화
+                // 총 로딩 시간을 6.8초로 늘려 정밀 데이터 분석 감성을 극대화
+                const totalDuration = 6800;
                 const startTime = Date.now();
                 let isRendered = false;
                 const sysLogEl = document.getElementById('loadingSysLog');
@@ -3011,12 +3012,15 @@
                     const elapsed = Date.now() - startTime;
                     let progress = 0;
                     
-                    if (elapsed < 1500) {
-                        progress = Math.floor((elapsed / 1500) * 40);
-                    } else if (elapsed < 3800) {
-                        progress = 40 + Math.floor(((elapsed - 1500) / 2300) * 40);
+                    if (elapsed < 2000) {
+                        // 1단계: 만세력 원국 추출 (0% -> 35%)
+                        progress = Math.floor((elapsed / 2000) * 35);
+                    } else if (elapsed < 4800) {
+                        // 2단계: 오행 및 뼈대 정밀 대조 (35% -> 80%)
+                        progress = 35 + Math.floor(((elapsed - 2000) / 2800) * 45);
                     } else if (elapsed < totalDuration) {
-                        progress = 80 + Math.floor(((elapsed - 3800) / 1700) * 20);
+                        // 3단계: 솔루션 정리 (80% -> 100%)
+                        progress = 80 + Math.floor(((elapsed - 4800) / 2000) * 20);
                     } else {
                         progress = 100;
                     }
