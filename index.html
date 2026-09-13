@@ -2916,13 +2916,13 @@
                         streamArea.scrollTop = streamArea.scrollHeight;
                     }
 
-                    // 4단계: 확인 톡을 읽을 수 있게 1.2초 뒤 기존 로딩 화면으로 부드럽게 전환
+                    // 4단계: 확인 톡을 충분히 읽을 수 있게 2.5초로 여유 있게 연장 후 로딩 화면으로 전환
                     setTimeout(() => {
                         document.getElementById('landingSection').style.display = 'none';
                         document.getElementById('resultSection').style.display = 'none';
                         document.getElementById('loadingSection').style.display = 'flex';
                         window.scrollTo(0, 0);
-                    }, 1200);
+                    }, 2500);
 
                 }, 800);
 
