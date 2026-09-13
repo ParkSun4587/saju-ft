@@ -3327,7 +3327,12 @@
                 
         function renderResultView(data) {
             isAnalyzing = false;
-            document.getElementById('loadingSection').style.display = 'none';
+            // 카톡 대화창(랜딩)과 로딩 섹션을 모두 닫아 결과 화면이 전면에 드러나도록 처리
+            const landSec = document.getElementById('landingSection');
+            if (landSec) landSec.style.display = 'none';
+            const loadSec = document.getElementById('loadingSection');
+            if (loadSec) loadSec.style.display = 'none';
+
             const resultSec = document.getElementById('resultSection');
             const isT = data.currentMode === 'T';
             updateResultContentByMode(data.currentMode);
