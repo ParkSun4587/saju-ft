@@ -78,6 +78,8 @@
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.min.js"></script>
     <!-- 토스페이먼츠 결제창 SDK v1 -->
     <script src="https://js.tosspayments.com/v1/payment"></script>
+    <!-- 화면 캡처 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
    <style>
         /* Pretendard 폰트 제거 - 시스템 폰트 사용으로 로딩 속도 개선 */
@@ -3497,203 +3499,45 @@
 
         async function saveInstaCardImage() {
             if (!currentResultData) return;
-            const data = currentResultData;
-            const userName = data.name || '당신';
-            const isT = (data.currentMode === 'T');
-            const mKey = data.mbtiKey || 'ESTJ';
-            const prof = SAZU_CHARACTER_PROFILES[mKey] || SAZU_CHARACTER_PROFILES['ESTJ'];
+            const userName = currentResultData.name || '내';
+            const cardElement = document.getElementById('storyCard');
+            
+            if (!cardElement) {
+                showToast("저장할 카드를 찾을 수 없습니다.");
+                return;
+            }
 
-            if (typeof gtag === 'function') gtag('event', 'share', { method: 'instagram_image_save', content_type: 'image' });
+            if (typeof html2canvas === 'undefined') {
+                showToast("이미지 엔진을 불러오는 중입니다. 1초 뒤 다시 눌러주세요.");
+                return;
+            }
 
-            const shareUrl = (window.location.origin && window.location.origin !== 'null' && !window.location.origin.includes('file:')) 
-                ? window.location.origin : 'https://www.sajuft.com';
+            showToast("📸 본캐 카드 생성 중...");
 
             try {
-                if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(shareUrl);
-            } catch (e) {}
+                const canvas = await html2canvas(cardElement, {
+                    scale: 3, // 고화질 인스타 스토리 규격
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
 
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const w = 600;
-            const h = 880;
-            canvas.width = w;
-            canvas.height = h;
+                const imageURI = canvas.toDataURL('image/png');
 
-            // 배경: 크림 톤
-            ctx.fillStyle = '#fcfaf7';
-            ctx.fillRect(0, 0, w, h);
+                // PC & 모바일 전용 직접 다운로드 트리거
+                const link = document.createElement('a');
+                link.download = `${userName}_어떤언니_본캐카드.png`;
+                link.href = imageURI;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
 
-            // 메인 화이트 카드 컨테이너
-            ctx.save();
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = '#fecdd3';
-            ctx.lineWidth = 2;
-            roundRect(ctx, 24, 24, w - 48, h - 48, 28);
-            ctx.fill();
-            ctx.stroke();
-            ctx.restore();
-
-            // 1) 상단 헤더 알약 뱃지 (Y: 65)
-            ctx.save();
-            ctx.fillStyle = isT ? '#0284c7' : '#e11d48';
-            ctx.font = '900 15px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            const nameJosa = typeof attachJosa === 'function' ? attachJosa(userName, '이/가') : `${userName}이`;
-            const headerText = isT 
-                ? '🧊 "T발 너 C야?" 소리 나오는 자비 없는 극딜 모드' 
-                : `🌸 "우리 ${nameJosa} 다 맞아" 극성 내 편 모드`;
-            ctx.fillText(headerText, w / 2, 70);
-            ctx.restore();
-
-            // 2) 거대 MBTI (Y: 155)
-            ctx.save();
-            ctx.fillStyle = isT ? '#0284c7' : '#e11d48';
-            ctx.font = '900 74px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.letterSpacing = '6px';
-            ctx.fillText(mKey, w / 2, 155);
-            ctx.restore();
-
-            // 3) 서브 안내 문구 (Y: 215)
-            ctx.save();
-            ctx.fillStyle = '#64748b';
-            ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('※ 질문지 검사 말고, 사주 데이터로 까본 내 진짜 MBTI', w / 2, 215);
-            ctx.restore();
-
-            // 4) 메인 타이틀 (Y: 260)
-            const mainTitle = `"${isT ? prof.title_T : prof.title_F}"`;
-            ctx.save();
-            ctx.fillStyle = '#0f172a';
-            ctx.font = '900 21px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            drawWrappedTitle(ctx, mainTitle, w / 2, 260, 500, 30);
-            ctx.restore();
-
-            // 5) 📌 내 본캐 취급설명서 박스 (Y: 330 ~ 625)
-            ctx.save();
-            ctx.fillStyle = '#f8fafc';
-            ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = 1.5;
-            roundRect(ctx, 45, 330, w - 90, 295, 22);
-            ctx.fill();
-            ctx.stroke();
-
-            // 취급설명서 타이틀
-            ctx.fillStyle = '#0f172a';
-            ctx.font = '900 16px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('📌 3줄 요약 성향 분석', 68, 368);
-
-            ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(68, 395);
-            ctx.lineTo(w - 68, 395);
-            ctx.stroke();
-
-            // 3줄 불렛 드로잉 (하이퍼리얼리즘 3줄 디테일)
-            const bList = isT ? prof.bullets_T : prof.bullets_F;
-            const bullets = [
-                `• ${bList[0]}`,
-                `• ${bList[1]}`,
-                `• ${bList[2]}`
-            ];
-
-            let currY = 440;
-            bullets.forEach((bText) => {
-                ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-                ctx.fillStyle = '#1e293b';
-                drawWrappedTitle(ctx, bText, 68, currY, 460, 22);
-                currY += 58;
-            });
-            ctx.restore();
-
-            // 6) 💖 찰떡 깐부 vs 💣 숨 막히는 상극 (Y: 645 ~ 720)
-            ctx.save();
-            ctx.fillStyle = '#fff1f2';
-            ctx.strokeStyle = '#fecdd3';
-            ctx.lineWidth = 1.5;
-            roundRect(ctx, 45, 645, w - 90, 68, 18);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#e11d48';
-            ctx.fillText(`💖 잘 맞는 깐부: ${prof.best} (${prof.bestTag})`, w / 2, 668);
-            ctx.fillStyle = '#475569';
-            ctx.fillText(`💣 숨 막히는 상극: ${prof.worst} (${prof.worstTag})`, w / 2, 693);
-            ctx.restore();
-
-            // 7) 하단 링크 스티커 영역 (Y: 735 ~ 825)
-            ctx.save();
-            ctx.setLineDash([6, 4]);
-            ctx.strokeStyle = isT ? '#7dd3fc' : '#fda4af';
-            ctx.fillStyle = isT ? '#f0f9ff' : '#fff1f2';
-            ctx.lineWidth = 1.5;
-            roundRect(ctx, 45, 735, w - 90, 75, 16);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.fillStyle = isT ? '#0284c7' : '#e11d48';
-            ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('🔗 [ 여기를 눌러서 내 본캐도 까보기 ]', w / 2, 765);
-
-            ctx.fillStyle = '#64748b';
-            ctx.font = '11px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
-            ctx.fillText('인스타 스토리 링크 스티커를 여기에 붙여주세요', w / 2, 788);
-            ctx.restore();
-
-            // 파일 출력
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            canvas.toBlob(async (blob) => {
-                if (!blob) return;
-                const file = new File([blob], `${userName}_어떤언니_본캐카드.png`, { type: 'image/png' });
-                if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({ title: '내 사주 MBTI 본캐 카드', files: [file], url: shareUrl });
-                        return;
-                    } catch (err) {}
-                }
-
-                const imgData = canvas.toDataURL('image/png');
-                if (!isMobile) {
-                    const link = document.createElement('a');
-                    ink.download = `${userName}_어떤언니_본캐카드.png`;
-                    link.href = imgData;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    showToast("✨ 본캐 카드 저장 완료!");
-                    return;
-                }
-
-                const previewOverlay = document.createElement('div');
-                previewOverlay.id = 'imgSaveModal';
-                previewOverlay.className = 'fixed inset-0 z-[999] bg-slate-950/95 flex flex-col items-center justify-center p-4 backdrop-blur-md';
-                previewOverlay.innerHTML = `
-                    <div class="max-w-xs w-full flex flex-col items-center space-y-3">
-                        <div class="bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold px-4 py-2 rounded-full text-center shadow-lg animate-pulse">
-                            ✨ 링크 복사 완료! 이미지를 꾹 눌러 저장하세요
-                        </div>
-                        <img src="${imgData}" class="w-full rounded-2xl border border-slate-700 shadow-2xl" alt="본캐 카드">
-                        <button type="button" onclick="document.getElementById('imgSaveModal').remove()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition">
-                            닫기
-                        </button>
-                    </div>
-                `;
-                document.body.appendChild(previewOverlay);
-            }, 'image/png');
+                showToast("✨ 본캐 카드가 저장되었습니다!");
+            } catch (err) {
+                console.error("카드 저장 오류:", err);
+                showToast("카드 저장 중 문제가 발생했습니다.");
+            }
         }
 
         // 캔버스 둥근 모서리 지원 헬퍼
