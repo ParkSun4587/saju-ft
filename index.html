@@ -2895,13 +2895,21 @@
                     };
                     const selectedConcernText = concernLabels[concernKey] || '고민';
 
-                    // 성을 제외한 이름(예: 박태양 -> 태양) 추출 로직 적용
+                    // 성을 제외한 이름(예: 박태양 -> 태양, 이지우 -> 지우) 추출
                     const displayName = name.length >= 3 ? name.slice(1) : name;
 
-                    // 로아(F)와 서아(T)의 성향을 살린 맞춤형 반응 톡 (이름만 다정하게 호칭)
+                    // 받침 유무 판별 (한글 유니코드 계산)
+                    const lastChar = displayName.charCodeAt(displayName.length - 1);
+                    const hasBatchim = (lastChar >= 0xAC00 && lastChar <= 0xD7A3) ? ((lastChar - 0xAC00) % 28 > 0) : false;
+
+                    // 받침에 따른 조사 분기: 태양이네 / 지우네, 태양이야? / 지우야?
+                    const tCall = hasBatchim ? `${displayName}이네` : `${displayName}네`;
+                    const fCall = hasBatchim ? `${displayName}이야?` : `${displayName}야?`;
+
+                    // 로아(F)와 서아(T) 맞춤형 반응 톡
                     const ackText = (mode === 'T') 
-                        ? `[${displayName}]이네. 지금 [${selectedConcernText}] 쪽으로 기운이 꽉 막혀 있네. 데이터 바로 뽑아서 팩트만 꽂아줄 테니까 잠깐만.` 
-                        : `어머, [${displayName}]이야? 게다가 지금 [${selectedConcernText}] 때문에 많이 답답했겠구나... ㅠㅠ 언니가 원국에서 속 시원하게 다 찾아볼 테니까 3초만 기다려!`;
+                        ? `[${tCall}]. 지금 [${selectedConcernText}] 쪽으로 기운이 꽉 막혀 있네. 데이터 바로 뽑아서 팩트만 꽂아줄 테니까 잠깐만.` 
+                        : `어머, [${fCall}] 게다가 지금 [${selectedConcernText}] 때문에 많이 답답했겠구나... ㅠㅠ 언니가 원국에서 속 시원하게 다 찾아볼 테니까 3초만 기다려!`;
 
                     const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up">
