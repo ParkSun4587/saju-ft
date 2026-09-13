@@ -347,6 +347,16 @@
                 text-wrap: balance;
                 line-height: 1.55;
         }
+
+        @keyframes dopaminePop {
+            0% { transform: scale(0.94); opacity: 0; filter: blur(6px); }
+            60% { transform: scale(1.02); opacity: 1; filter: blur(0px); }
+            100% { transform: scale(1); opacity: 1; filter: blur(0px); }
+        }
+
+        .dopamine-reveal {
+            animation: dopaminePop 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
     </style>
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative" style="padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);">
@@ -3338,7 +3348,11 @@
             updateResultContentByMode(data.currentMode);
 
             resultSec.style.display = 'block';
-            resultSec.classList.add('fade-in-up');
+            
+            // 쫀득한 도파민 팝 애니메이션 클래스 부여
+            resultSec.classList.remove('dopamine-reveal');
+            void resultSec.offsetWidth; // 애니메이션 리셋 트리거
+            resultSec.classList.add('dopamine-reveal');
             const mainFooter = document.getElementById('mainFooter');
             if (mainFooter) mainFooter.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
