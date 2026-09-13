@@ -443,17 +443,28 @@
         <!-- 카톡 대화 및 인터랙티브 폼 리스트 (h-full 맞춤 무스크롤 패딩) -->
         <div class="flex-1 overflow-y-auto px-3 py-1 space-y-1.5 flex flex-col justify-between max-w-[430px] mx-auto w-full">
             
-            <!-- 1) 언니 인사 말풍선 (컴팩트 압축) -->
-            <div class="flex items-start gap-1.5 max-w-[90%] pt-0.5">
-                <img id="chatBubbleProfileMini" src="./로아.png" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
-                <div>
-                    <span id="chatSenderNameTitle" class="text-[10px] text-slate-700 font-bold block mb-0.5">로아 언니</span>
-                    <div id="welcomeSisterBubble" class="bg-white text-slate-900 text-[11px] font-medium p-2 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40">
-                        <p id="welcomeSisterText">반가워! 네 사주 꼼꼼하게 봐줄게.<br>우선 네 <b class="text-rose-600">이름(닉네임)</b>부터 알려줘</p>
+            <!-- 1) '오늘' 날짜 뱃지 + 실시간 전송 시간 표시 말풍선 -->
+            <div class="flex flex-col gap-1 pt-0.5 flex-shrink-0">
+                <!-- '오늘' 날짜 캡슐 뱃지 -->
+                <div class="flex justify-center my-0.5">
+                    <span class="bg-black/15 backdrop-blur-xs text-white px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-tight">오늘</span>
+                </div>
+
+                <div class="flex items-start gap-1.5 max-w-[95%]">
+                    <img id="chatBubbleProfileMini" src="./로아.png" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
+                    <div>
+                        <span id="chatSenderNameTitle" class="text-[10px] text-slate-700 font-bold block mb-0.5">로아 언니</span>
+                        <div class="flex items-end gap-1.5">
+                            <div id="welcomeSisterBubble" class="bg-white text-slate-900 text-[11px] font-medium p-2 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40">
+                                <p id="welcomeSisterText">반가워! 네 사주 꼼꼼하게 봐줄게.<br>우선 네 <b class="text-rose-600">이름(닉네임)</b>부터 알려줘</p>
+                            </div>
+                            <!-- 실제 접속 시간 자동 주입 태그 -->
+                            <span id="chatRealTime" class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">오후 0:00</span>
+                        </div>
                     </div>
                 </div>
             </div>
-
+            
             <!-- 2) 카톡형 사주 입력 카드 말풍선 (상하 마진/패딩 전면 다이어트) -->
             <div class="bg-white p-2.5 rounded-2xl shadow-sm border border-white/40 w-full mb-1">
                 <p class="text-[10.5px] font-extrabold text-slate-800 border-b border-slate-100 pb-1 mb-1.5 flex items-center gap-1">
