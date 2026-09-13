@@ -2933,14 +2933,9 @@
                         userCalendar: isLunar ? 'lunar' : 'solar',
                         currentMode: mode, concernKey: concernKey, ...sazuResult, rawSolutionTemplate: solutionTemplate 
                     };
-
-                    // 호칭 세팅
-                    const rawN = name.trim();
-                    const dName = rawN.length >= 2 ? rawN.slice(1) : rawN;
-                    const lastC = dName.charCodeAt(dName.length - 1);
-                    const hasBat = (lastC >= 0xAC00 && lastC <= 0xD7A3) ? ((lastC - 0xAC00) % 28 > 0) : false;
-                    const callSubj = hasBat ? `${dName}이` : dName;
-                    const callVoc = hasBat ? `${dName}아` : `${dName}야`;
+                        // 2단계/3단계 동적 톡용 호칭 및 메시지 출력 헬퍼
+                    const callSubj = callName; // 위에서 이미 계산된 displayName + 받침 조사
+                    const callVoc = hasBatchim ? `${displayName}아` : `${displayName}야`;
 
                     const appendSingleMsg = (text) => {
                         const bubbleHTML = `
