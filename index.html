@@ -2896,9 +2896,21 @@
                     const typingEl = document.getElementById(typingId);
                     if (typingEl) typingEl.remove();
 
+                    // 유저가 선택한 고민 키워드를 친숙한 한글 라벨로 변환
+                    const concernLabels = {
+                        'money': '돈복·텅장',
+                        'career': '취업·이직',
+                        'love': '연애·썸',
+                        'path': '진로·미래',
+                        'people': '인간관계',
+                        'mental': '번아웃·멘탈'
+                    };
+                    const selectedConcernText = concernLabels[concernKey] || '고민';
+
+                    // 로아(F)와 서아(T)의 성향을 극살린 맞춤형 반응 톡 생성
                     const ackText = (mode === 'T') 
-                        ? '입력 완료됐네. 만세력 데이터 바로 추출한다. 잠깐만.' 
-                        : '오케이! 울애기 정보 다 접수했어 💖 만세력 쫙 뽑아볼 테니까 3초만 기다려!';
+                        ? `[${name}]이네. 지금 [${selectedConcernText}] 쪽으로 기운이 꽉 막혀 있네. 데이터 바로 뽑아서 팩트만 꽂아줄 테니까 잠깐만.` 
+                        : `어머, [${name}]이야? 게다가 지금 [${selectedConcernText}] 때문에 많이 답답했겠구나... ㅠㅠ 언니가 원국에서 속 시원하게 다 찾아볼 테니까 3초만 기다려!`;
 
                     const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up">
@@ -2911,6 +2923,10 @@
                             </div>
                         </div>
                     `;
+                    if (streamArea) {
+                        streamArea.insertAdjacentHTML('beforeend', sisterAckHTML);
+                        streamArea.scrollTop = streamArea.scrollHeight;
+                    }
                     if (streamArea) {
                         streamArea.insertAdjacentHTML('beforeend', sisterAckHTML);
                         streamArea.scrollTop = streamArea.scrollHeight;
