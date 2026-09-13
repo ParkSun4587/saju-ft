@@ -647,50 +647,18 @@
                     </span>
                 </div>
             </div>
-            <div class="bg-black/10 text-slate-800 px-2.5 py-1 rounded-full text-[10px] font-bold">
-                <span id="loadingPercent">0%</span> 분석 중
+
+         <div class="bg-black/10 text-slate-800 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>실시간 상담</span>
             </div>
         </header>
 
-        <!-- 채팅 본문 영역 -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col justify-center max-w-sm mx-auto w-full">
-            
-            <!-- 내 전송 말풍선 (내가 보낸 사주 정보) -->
-            <div class="flex justify-end items-end gap-1.5">
-                <span class="text-[9px] text-slate-500 font-semibold mb-1">읽음</span>
-                <div class="bg-[#fee500] text-slate-900 text-xs font-bold px-3.5 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[220px] leading-snug">
-                    언니 내 사주 분석해줘! 💌
-                </div>
-            </div>
-
-            <!-- 언니의 실시간 분석 말풍선 카드 -->
-            <div class="flex items-start gap-2.5">
-                <img id="loadingBubbleProfile" src="./로아.png" class="w-9 h-9 rounded-full object-cover shrink-0 mt-0.5 shadow-sm">
-                <div class="space-y-2 w-full">
-                    <span id="loadingSenderTitle" class="text-[11px] text-slate-700 font-bold block">로아 언니</span>
-                    
-                    <!-- 실시간 타이핑 대사 -->
-                    <div class="bg-white text-slate-900 text-xs sm:text-[13px] font-bold p-3.5 rounded-2xl rounded-tl-none shadow-sm leading-relaxed border border-white/40 space-y-2.5">
-                        <!-- 시스템 로그 한 줄 -->
-                        <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-[10px] font-mono font-bold text-slate-500">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span id="loadingSysLog">만세력 원국 추출 중...</span>
-                        </div>
-
-                        <!-- 핵심 멘트 변화 구간 -->
-                        <p id="loadingMainStatus" class="text-slate-800 font-extrabold leading-snug transition-all duration-150">
-                            잠깐만 기다려봐, 만세력 열어보는 중이야...
-                        </p>
-                    </div>
-
-                    <!-- 슬림 카톡 프로그레스 바 -->
-                    <div class="w-full bg-black/10 rounded-full h-1.5 overflow-hidden p-0.5">
-                        <div id="loadingProgressFill" class="h-full rounded-full bg-rose-500 transition-all duration-75" style="width: 0%;"></div>
-                    </div>
-                </div>
-            </div>
-
+        <!-- 카톡 실시간 연속 대화 스트림 영역 -->
+        <div id="loadingChatStream" class="flex-1 overflow-y-auto p-3.5 space-y-3 flex flex-col justify-start max-w-sm mx-auto w-full pt-4">
+            <!-- 유저가 보낸 정보 톡과 언니의 연속 카톡 말풍선들이 JS에서 순차적으로 꽂힙니다 -->
         </div>
+            
         </div>
     </main>
 
@@ -2934,138 +2902,149 @@
                         streamArea.scrollTop = streamArea.scrollHeight;
                     }
                     
-                    // 4단계: 확인 톡을 여유 있게 정독할 수 있도록 3.8초(읽는 시간 3초 확보) 후 전환
+            // 뒤로 가기 시 사이트 이탈 방지
+                    try { history.pushState({ view: 'result' }, '', location.pathname + location.search); } catch (e) {}
+
+                    mode = mode || selectedSplitMode || 'F';
+                    const isT = mode === 'T';
+
+                    // 사주 정밀 만세력 계산 준비
+                    let calcYear = year, calcMonth = month, calcDay = day;
+                    if (isLunar && typeof Lunar !== 'undefined') {
+                        try {
+                            const lunarObj = Lunar.fromYmd(year, month, day);
+                            const solarObj = lunarObj.getSolar();
+                            calcYear = solarObj.getYear(); calcMonth = solarObj.getMonth(); calcDay = solarObj.getDay();
+                        } catch (err) {
+                            console.warn("음력 변환 에러:", err);
+                            showToast('입력하신 음력 날짜를 변환할 수 없습니다.');
+                            document.getElementById('birthDateInput').focus();
+                            return;
+                        }
+                    }
+
+                    const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, hour === 'unknown' ? null : hour, gender);
+                    const lowest = getLowestStatInfo(sazuResult.stats);
+                    const allSolutions = getTrueBaziSolutions(name, lowest, sazuResult.yongshin, sazuResult.dayOheng, gender, sazuResult.mbtiKey, birthStr, sazuResult.gyeokguk, sazuResult.gyeokStatus, sazuResult.realYeonun);
+                    const solutionTemplate = allSolutions[concernKey] || allSolutions.money;
+
+                    currentResultData = { 
+                        name: name, userName: name, userBirthStr: birthStr, userTimeKey: hour, userGender: gender,
+                        userCalendar: isLunar ? 'lunar' : 'solar',
+                        currentMode: mode, concernKey: concernKey, ...sazuResult, rawSolutionTemplate: solutionTemplate 
+                    };
+
+                    // 4단계: 1.8초 뒤 자연스럽게 카톡 상담 로딩방으로 전환되며 연속 대화 개시
                     setTimeout(() => {
                         document.getElementById('landingSection').style.display = 'none';
                         document.getElementById('resultSection').style.display = 'none';
-                        document.getElementById('loadingSection').style.display = 'flex';
+                        const loadingSec = document.getElementById('loadingSection');
+                        loadingSec.style.display = 'flex';
                         window.scrollTo(0, 0);
-                    }, 3800);
 
-                }, 800);
+                        // 로딩 상단 프로필 동기화
+                        const loadProfile = document.getElementById('loadingSisterProfile');
+                        const loadName = document.getElementById('loadingSisterName');
+                        if (loadProfile) loadProfile.src = profileImg;
+                        if (loadName) loadName.textContent = sisterName;
 
-                // 뒤로 가기 시 사이트 이탈 대신 랜딩으로 복귀시키기 위한 히스토리 등록
-                try { history.pushState({ view: 'result' }, '', location.pathname + location.search); } catch (e) {}
+                        const loadingStream = document.getElementById('loadingChatStream');
+                        if (!loadingStream) return;
 
-                // 사용자가 선택했던 인트로 모드(F/T)를 완벽하게 동기화 (값이 없으면 전역 선택값 또는 기본 F 적용)
-                mode = mode || selectedSplitMode || 'F';
-                const isT = mode === 'T';
-                const progressFill = document.getElementById('loadingProgressFill');
+                        // 대화창 초기화 및 유저 전송 톡 렌더링
+                        loadingStream.innerHTML = `
+                            <div class="flex justify-end items-end gap-1.5 fade-in-up">
+                                <span class="text-[9px] text-slate-500 font-semibold mb-1">읽음</span>
+                                <div class="bg-[#fee500] text-slate-900 text-xs font-bold px-3.5 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[240px] leading-snug break-keep">
+                                    ${name} / ${formattedBirth} / 언니 내 사주 얼른 봐줘! 💌
+                                </div>
+                            </div>
+                        `;
 
-                // 로딩 화면 언니 프로필 동기화
-                const loadProfile = document.getElementById('loadingSisterProfile');
-                const loadBubbleProf = document.getElementById('loadingBubbleProfile');
-                const loadName = document.getElementById('loadingSisterName');
-                const loadSender = document.getElementById('loadingSenderTitle');
-                
-                if (isT) {
-                    if (loadProfile) loadProfile.src = './서아.png';
-                    if (loadBubbleProf) loadBubbleProf.src = './서아.png';
-                    if (loadName) loadName.textContent = '서아 언니 (T)';
-                    if (loadSender) loadSender.textContent = '서아 언니';
-                    if (progressFill) progressFill.style.backgroundColor = '#0284c7';
-                } else {
-                    if (loadProfile) loadProfile.src = './로아.png';
-                    if (loadBubbleProf) loadBubbleProf.src = './로아.png';
-                    if (loadName) loadName.textContent = '로아 언니 (F)';
-                    if (loadSender) loadSender.textContent = '로아 언니';
-                    if (progressFill) progressFill.style.backgroundColor = '#f43f5e';
-                }
-
-                let calcYear = year, calcMonth = month, calcDay = day;
-                if (isLunar && typeof Lunar !== 'undefined') {
-                    try {
-                        const lunarObj = Lunar.fromYmd(year, month, day);
-                        const solarObj = lunarObj.getSolar();
-                        calcYear = solarObj.getYear(); calcMonth = solarObj.getMonth(); calcDay = solarObj.getDay();
-                    } catch (err) {
-                        console.warn("음력 변환 에러:", err);
-                        showToast('입력하신 음력 날짜를 변환할 수 없습니다. 날짜를 다시 확인해주세요.');
-                        document.getElementById('loadingSection').style.display = 'none';
-                        document.getElementById('landingSection').style.display = 'flex';
-                        document.getElementById('birthDateInput').focus();
-                        return;
-                    }
-                }
-
-                // [핵심] 정밀 연산 및 솔루션 매핑
-                const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, hour === 'unknown' ? null : hour, gender);
-                const lowest = getLowestStatInfo(sazuResult.stats);
-                const allSolutions = getTrueBaziSolutions(name, lowest, sazuResult.yongshin, sazuResult.dayOheng, gender, sazuResult.mbtiKey, birthStr, sazuResult.gyeokguk, sazuResult.gyeokStatus, sazuResult.realYeonun);
-                const solutionTemplate = allSolutions[concernKey] || allSolutions.money;
-
-                currentResultData = { 
-                    name: name, userName: name, userBirthStr: birthStr, userTimeKey: hour, userGender: gender,
-                    userCalendar: isLunar ? 'lunar' : 'solar',
-                    currentMode: mode, concernKey: concernKey, ...sazuResult, rawSolutionTemplate: solutionTemplate 
-                };
-
-                const percentText = document.getElementById('loadingPercent');
-                const mainStatus = document.getElementById('loadingMainStatus');
-                // 총 로딩 시간을 6.8초로 늘려 정밀 데이터 분석 감성을 극대화
-                const totalDuration = 6800;
-                const startTime = Date.now();
-                let isRendered = false;
-                const sysLogEl = document.getElementById('loadingSysLog');
-
-                const timer = setInterval(() => {
-                    const elapsed = Date.now() - startTime;
-                    let progress = 0;
-                    
-                    if (elapsed < 2000) {
-                        // 1단계: 만세력 원국 추출 (0% -> 35%)
-                        progress = Math.floor((elapsed / 2000) * 35);
-                    } else if (elapsed < 4800) {
-                        // 2단계: 오행 및 뼈대 정밀 대조 (35% -> 80%)
-                        progress = 35 + Math.floor(((elapsed - 2000) / 2800) * 45);
-                    } else if (elapsed < totalDuration) {
-                        // 3단계: 솔루션 정리 (80% -> 100%)
-                        progress = 80 + Math.floor(((elapsed - 4800) / 2000) * 20);
-                    } else {
-                        progress = 100;
-                    }
-
-                    if (percentText) percentText.innerText = progress + "%";
-                    if (progressFill) progressFill.style.width = progress + "%";
-
-                    if (mainStatus) {
-                        const rawN = name || '';
+                        // 호칭 세팅
+                        const rawN = name.trim();
                         const dName = rawN.length >= 2 ? rawN.slice(1) : rawN;
                         const lastC = dName.charCodeAt(dName.length - 1);
                         const hasBat = (lastC >= 0xAC00 && lastC <= 0xD7A3) ? ((lastC - 0xAC00) % 28 > 0) : false;
-                        
-                        const callSubject = hasBat ? `${dName}이` : dName;
-                        const callVocative = hasBat ? `${dName}아` : `${dName}야`;
+                        const callSubj = hasBat ? `${dName}이` : dName;
+                        const callVoc = hasBat ? `${dName}아` : `${dName}야`;
 
-                        // 1단계: 만세력 조회 구간 (0~1.5초)
-                        if (elapsed < 1500) {
-                            if (sysLogEl) sysLogEl.innerText = "만세력 8글자 펼쳐보는 중...";
-                            mainStatus.innerHTML = isT 
-                                ? `잠깐만, 태어난 생년월일 원국부터 제대로 까보는 중이야.` 
-                                : `잠깐만 기다려봐, ${callVocative}! 언니가 만세력부터 꼼꼼히 펼쳐볼게.`;
-                        }
-                        // 2단계: 핵심 뼈대 파악 구간 (1.5~3.8초)
-                        else if (elapsed < 3800) {
-                            if (sysLogEl) sysLogEl.innerText = "오행 기운이랑 사주 뼈대 대조 중...";
-                            mainStatus.innerHTML = isT 
-                                ? `<b class="text-sky-600 font-black">${callSubject} 너 사주 보니까</b> 쓸데없는 고집이랑 딴생각 꽤 많네?` 
-                                : `<b class="text-rose-500 font-black">세상에 우리 ${callSubject}...</b> 겉으론 덤덤한 척 혼자 다 참아왔구나.`;
-                        }
-                        // 3단계: 결과 도출 직전 긴장감 구간 (3.8초~끝)
-                        else {
-                            if (sysLogEl) sysLogEl.innerText = "메모장에 솔루션 정리 완료!";
-                            mainStatus.innerHTML = isT 
-                                ? `<span class="text-sky-600 font-black">분석 다 끝났어.</span> 뼈 맞을 각오하고 똑바로 읽어봐.` 
-                                : `<span class="text-rose-500 font-black">정리 다 끝났어, ${callVocative}!</span> 이제 언니 얘기 편하게 들어봐.`;
-                        }
-                    }
+                        // 말풍선 추가 헬퍼 함수
+                        const appendSisterMsg = (text) => {
+                            const bubbleHTML = `
+                                <div class="flex items-start gap-2 fade-in-up">
+                                    <img src="${profileImg}" class="w-8 h-8 rounded-full object-cover shrink-0 mt-0.5 shadow-sm border border-white">
+                                    <div class="space-y-0.5 max-w-[82%]">
+                                        <span class="text-[10px] text-slate-600 font-bold block ml-1">${sisterName}</span>
+                                        <div class="bg-white text-slate-900 text-xs font-bold px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-sm leading-relaxed border border-white/60 break-keep">
+                                            ${text}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            loadingStream.insertAdjacentHTML('beforeend', bubbleHTML);
+                            loadingStream.scrollTop = loadingStream.scrollHeight;
+                        };
 
-                    if (elapsed >= totalDuration && !isRendered) {
-                        isRendered = true; 
-                        clearInterval(timer);
-                        setTimeout(() => { renderResultView(currentResultData); }, 100);
-                    }
-                }, 20);
+                        // 타이핑 인디케이터 헬퍼 함수
+                        const showStreamTyping = (id) => {
+                            const tHTML = `
+                                <div id="${id}" class="flex items-start gap-2 fade-in-up">
+                                    <img src="${profileImg}" class="w-8 h-8 rounded-full object-cover shrink-0 mt-0.5">
+                                    <div class="typing-indicator mt-1">
+                                        <div class="typing-dot"></div>
+                                        <div class="typing-dot"></div>
+                                        <div class="typing-dot"></div>
+                                    </div>
+                                </div>
+                            `;
+                            loadingStream.insertAdjacentHTML('beforeend', tHTML);
+                            loadingStream.scrollTop = loadingStream.scrollHeight;
+                        };
+
+                        const removeStreamTyping = (id) => {
+                            const el = document.getElementById(id);
+                            if (el) el.remove();
+                        };
+
+                        // [톡 1] 0.5초 뒤 첫 번째 말풍선 (만세력 펼치기)
+                        showStreamTyping('t1');
+                        setTimeout(() => {
+                            removeStreamTyping('t1');
+                            appendSisterMsg(isT 
+                                ? `잠깐만 기다려봐. 태어난 날짜 원국 8글자부터 제대로 펼쳐볼게.` 
+                                : `잠깐만 기다려봐, ${callVoc}! 언니가 만세력 책부터 꼼꼼히 펼쳐볼게.`);
+
+                            // [톡 2] 2.2초 뒤 두 번째 말풍선 (감정 섞인 즉각 리액션)
+                            showStreamTyping('t2');
+                            setTimeout(() => {
+                                removeStreamTyping('t2');
+                                appendSisterMsg(isT 
+                                    ? `헐... ${callSubj} 너 사주 보니까 머릿속 계산기만 두드리다 혼자 속 터지는 타입이네? 쓸데없는 고집 꽤 많다 너.` 
+                                    : `세상에 우리 ${callSubj}... 겉으론 덤덤한 척 다 넘겨놓고 집 와서 혼자 얼마나 끙끙 앓았을까... ㅠㅠ`);
+
+                                // [톡 3] 2.4초 뒤 세 번째 말풍선 (메모장 정리 완료 & 열람 유도)
+                                showStreamTyping('t3');
+                                setTimeout(() => {
+                                    removeStreamTyping('t3');
+                                    appendSisterMsg(isT 
+                                        ? `정리 다 끝났어. 속 시원하게 팩트만 꽂은 <b>비밀 메모장</b> 바로 열어줄 테니까 정신 바짝 차리고 읽어.` 
+                                        : `정리 다 끝났어, ${callVoc}! 언니가 너 주려고 적어둔 <b>비밀 메모장</b> 지금 바로 열어볼게!`);
+
+                                    // 1.5초 후 결과 화면으로 전환
+                                    setTimeout(() => {
+                                        renderResultView(currentResultData);
+                                    }, 1500);
+
+                                }, 2400);
+
+                            }, 2200);
+
+                        }, 600);
+
+                    }, 1800);
+
+                }, 800);
             } catch (error) {
                 isAnalyzing = false;
                 console.error("로딩 에러 방어:", error);
