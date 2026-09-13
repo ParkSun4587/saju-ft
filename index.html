@@ -3047,6 +3047,9 @@
                         }, 2200);
 
                     }, 500);
+
+                }, 800); // <-- 누락되었던 800ms setTimeout 닫는 괄호 복구
+
             } catch (error) {
                 isAnalyzing = false;
                 console.error("로딩 에러 방어:", error);
