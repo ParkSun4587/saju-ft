@@ -3100,7 +3100,11 @@
             const resSisterName = document.getElementById('resultSisterName');
             const resGreeting = document.getElementById('resultSisterGreeting');
             const badge = document.getElementById('resultModeBadge');
-            const nameJosa = typeof attachJosa === 'function' ? attachJosa(data.name, '이/가') : `${data.name}이`;
+            
+            // 성을 제외한 이름만 추출 (예: 박태양 -> 태양) 후 조사 결합
+            const rawName = data.name || '';
+            const displayName = rawName.length >= 2 ? rawName.slice(1) : rawName;
+            const nameJosa = typeof attachJosa === 'function' ? attachJosa(displayName, '이/가') : `${displayName}이`;
 
             if (isT) {
                 if (resSisterProfile) resSisterProfile.src = './서아.png';
