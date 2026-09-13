@@ -3358,27 +3358,26 @@
                 const reAnalyzeBox = document.getElementById('reAnalyzeBox');
 
                 if (FREE_LAUNCH_MODE) {
-                    // [초반 무료 이벤트] 결제 유도 카드를 아예 띄우지 않고, 기존 해금 함수를 그대로 재사용해 전체 공개
                     unlockFullReport(null, true);
                 } else {
-                if (overlay) overlay.style.display = 'flex';
-                if (wrapper) { wrapper.classList.add('premium-lock-mask'); wrapper.classList.add('pb-36'); }
-                if (vipBadge) {
-                    vipBadge.className = "inline-block mt-1 text-[10px] sm:text-xs bg-amber-500/10 text-amber-400 px-3 py-0.5 rounded-full font-bold border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]";
-                    vipBadge.innerText = "🔒 [비공개] 시크릿 솔루션 문서";
-                }
-                if (reAnalyzeBox) reAnalyzeBox.style.display = 'none';
-                }
-
-                // [보안] localStorage 값만 믿지 않고, 서버가 발급한 토큰을 재검증한 뒤에만 해금
-                const currentUniqueKey = getUserUniqueKey(data);
-                const savedToken = currentUniqueKey ? localStorage.getItem('tok_' + currentUniqueKey) : null;
-                                if (savedToken) {
-                    verifyAccessToken(currentUniqueKey, savedToken).then(state => {
-                        if (state === 'valid') unlockFullReport();
-                        else if (state === 'invalid') localStorage.removeItem('tok_' + currentUniqueKey);
-                        else showToast("일시적인 네트워크 오류입니다. 새로고침하시면 구매 내역이 복구됩니다.");
-                    });
+                    // 비동기 토큰 검증 전 미리 잠금 상태를 확정하여 깜빡임 원천 차단
+                    const currentUniqueKey = getUserUniqueKey(data);
+                    const savedToken = currentUniqueKey ? localStorage.getItem('tok_' + currentUniqueKey) : null;
+                    
+                    if (savedToken) {
+                        verifyAccessToken(currentUniqueKey, savedToken).then(state => {
+                            if (state === 'valid') {
+                                unlockFullReport();
+                            } else {
+                                if (state === 'invalid') localStorage.removeItem('tok_' + currentUniqueKey);
+                                showLockedOverlayState(overlay, wrapper, vipBadge, reAnalyzeBox);
+                            }
+                        }).catch(() => {
+                            showLockedOverlayState(overlay, wrapper, vipBadge, reAnalyzeBox);
+                        });
+                    } else {
+                        showLockedOverlayState(overlay, wrapper, vipBadge, reAnalyzeBox);
+                    }
                 }
             }, 50);
         }
@@ -3633,6 +3632,17 @@
             document.body.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; }, 50);
             setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        // 💡 [추가] 결제 잠금 오버레이 상태를 한 번에 정리하는 도우미 함수
+        function showLockedOverlayState(overlay, wrapper, vipBadge, reAnalyzeBox) {
+            if (overlay) overlay.style.display = 'flex';
+            if (wrapper) { wrapper.classList.add('premium-lock-mask'); wrapper.classList.add('pb-36'); }
+            if (vipBadge) {
+                vipBadge.className = "inline-block mt-1 text-[10px] sm:text-xs bg-amber-500/10 text-amber-400 px-3 py-0.5 rounded-full font-bold border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]";
+                vipBadge.innerText = "🔒 [비공개] 시크릿 솔루션 문서";
+            }
+            if (reAnalyzeBox) reAnalyzeBox.style.display = 'none';
         }
 
         async function saveInstaCardImage() {
