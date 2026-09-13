@@ -3115,8 +3115,8 @@
             const lastChar = displayName.charCodeAt(displayName.length - 1);
             const hasBatchim = (lastChar >= 0xAC00 && lastChar <= 0xD7A3) ? ((lastChar - 0xAC00) % 28 > 0) : false;
 
-            // T모드 문장용: 태양이는 / 지우는
-            const nameTopic = hasBatchim ? `${displayName}이는` : `${displayName}는`;
+            // T모드: 이름만 굵게 하고 조사는 일반 텍스트로 처리 (태양이 + 는 / 지우 + 는)
+            const topicJosa = hasBatchim ? '이는' : '는';
             // F모드 호칭용: 태양이 / 지우
             const nameSubject = hasBatchim ? `${displayName}이` : displayName;
 
@@ -3128,7 +3128,7 @@
                     badge.className = "px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full text-[10px] font-black";
                 }
                 if (resGreeting) {
-                    resGreeting.innerHTML = `사주 다 깠어. 결론부터 말하면 <b>${nameTopic}</b> 머릿속 계산기만 두드리다 중요한 타이밍 다 날려먹는 타입이야. 아래 메모장에 팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐.`;
+                    resGreeting.innerHTML = `사주 다 깠어. 결론부터 말하면 <b>${displayName}</b>${topicJosa} 머릿속 계산기만 두드리다 중요한 타이밍 다 날려먹는 타입이야. 아래 메모장에 팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐.`;
                 }
             } else {
                 if (resSisterProfile) resSisterProfile.src = './로아.png';
