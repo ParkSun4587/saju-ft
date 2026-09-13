@@ -2923,15 +2923,12 @@
                             </div>
                         </div>
                     `;
+                    // 중복 출력 방지: 한 번만 정확하게 삽입
                     if (streamArea) {
                         streamArea.insertAdjacentHTML('beforeend', sisterAckHTML);
                         streamArea.scrollTop = streamArea.scrollHeight;
                     }
-                    if (streamArea) {
-                        streamArea.insertAdjacentHTML('beforeend', sisterAckHTML);
-                        streamArea.scrollTop = streamArea.scrollHeight;
-                    }
-
+                    
                     // 4단계: 확인 톡을 충분히 읽을 수 있게 2.5초로 여유 있게 연장 후 로딩 화면으로 전환
                     setTimeout(() => {
                         document.getElementById('landingSection').style.display = 'none';
@@ -2945,10 +2942,10 @@
                 // 뒤로 가기 시 사이트 이탈 대신 랜딩으로 복귀시키기 위한 히스토리 등록
                 try { history.pushState({ view: 'result' }, '', location.pathname + location.search); } catch (e) {}
 
+                // 사용자가 선택했던 인트로 모드(F/T)를 완벽하게 동기화 (값이 없으면 전역 선택값 또는 기본 F 적용)
+                mode = mode || selectedSplitMode || 'F';
                 const isT = mode === 'T';
-                const outerRing = document.getElementById('outerTechRing');
                 const progressFill = document.getElementById('loadingProgressFill');
-                const glowBg = document.getElementById('loadingGlowBg');
 
                 // 로딩 화면 언니 프로필 동기화
                 const loadProfile = document.getElementById('loadingSisterProfile');
