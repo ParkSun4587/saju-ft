@@ -226,19 +226,24 @@
 
         .concern-chip {
             background: #ffffff;
-            border: 2px solid #e2e8f0 !important; /* 처음부터 2px로 고정하여 두께 변화 차단 */
+            border: 2px solid #e2e8f0 !important;
             color: #334155;
-            transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
             cursor: pointer;
             text-align: left;
             box-sizing: border-box !important;
+            transform: none !important;
+            outline: none !important;
+            user-select: none;
         }
-        .concern-chip:hover { border-color: #cbd5e1 !important; }
-        .concern-chip:active { transform: scale(0.98); }
+        .concern-chip:hover { 
+            border-color: #cbd5e1 !important; 
+        }
+        .concern-chip:active { 
+            transform: none !important;
+        }
         .concern-chip.selected {
             background: #ffffff !important;
             border: 2px solid #fb7185 !important;
-            box-shadow: 0 4px 14px rgba(251, 113, 133, 0.15) !important;
         }
         .concern-chip.selected .chip-title {
             color: #e11d48 !important;
