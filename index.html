@@ -2901,17 +2901,18 @@
                     };
                     const selectedConcernText = concernLabels[concernKey] || '고민';
 
-                    // 성을 제외한 이름(예: 박태양 -> 태양, 이지우 -> 지우) 추출
-                    const displayName = name.length >= 3 ? name.slice(1) : name;
+                    // 2글자 이상(박태양->태양, 김환->환, 이지우->지우) 모두 성을 분리
+                    const rawN = name.trim();
+                    const displayName = rawN.length >= 2 ? rawN.slice(1) : rawN;
 
-                    // 받침 유무 판별 (한글 유니코드 계산)
+                    // 받침 유무 판별
                     const lastChar = displayName.charCodeAt(displayName.length - 1);
                     const hasBatchim = (lastChar >= 0xAC00 && lastChar <= 0xD7A3) ? ((lastChar - 0xAC00) % 28 > 0) : false;
 
-                    // 받침 유무에 따른 자연스러운 호칭 분기 (태양이 / 지우)
+                    // 받침이 있으면 '태양이 / 환이', 받침이 없으면 '지우'
                     const callName = hasBatchim ? `${displayName}이` : displayName;
 
-                    // 1:1 대화 흐름을 극대화한 갠톡 반응
+                    // 1:1 대화 흐름 반응
                     const ackText = (mode === 'T') 
                         ? `${callName}구나? 지금 [${selectedConcernText}] 때문에 머리 터지는 중이지? 사주 싹 까서 팩트만 꽂아줄 테니까 잠깐만 기다려봐.` 
                         : `어머, 우리 ${callName}구나! 그동안 [${selectedConcernText}] 때문에 혼자 속앓이 진짜 많았지? 언니가 꼼꼼하게 다 풀어줄 테니까 딱 3초만 기다려!`;
@@ -3434,15 +3435,22 @@
             const mKey = data.mbtiKey || 'ESTJ';
             const prof = SAZU_CHARACTER_PROFILES[mKey] || SAZU_CHARACTER_PROFILES['ESTJ'];
 
-            // 1) 상단 알약 뱃지 (대체안 A 적용)
+            // 1) 상단 알약 뱃지
             const modeBadge = document.getElementById('cardModeBadge');
             if (modeBadge) {
-                // 성을 제외한 이름만 추출하여 결과 페이지 대사 및 조사 자연스럽게 결합
-            const displayName = data.name && data.name.length >= 3 ? data.name.slice(1) : (data.name || '');
-            const nameJosa = typeof attachJosa === 'function' ? attachJosa(displayName, '이/가') : `${displayName}이`;
+                const rawN = (data.name || '').trim();
+                const displayName = rawN.length >= 2 ? rawN.slice(1) : rawN;
+                
+                // 받침 유무 판별
+                const lastChar = displayName.charCodeAt(displayName.length - 1);
+                const hasBatchim = (lastChar >= 0xAC00 && lastChar <= 0xD7A3) ? ((lastChar - 0xAC00) % 28 > 0) : false;
+
+                // 받침 유무에 따른 주격 조사 결합: 태양이가 / 환이가 / 지우가
+                const nameSubject = hasBatchim ? `${displayName}이가` : `${displayName}가`;
+
                 modeBadge.innerHTML = isT 
                     ? `🧊 "T발 너 C야?" 소리 나오는 자비 없는 극딜 모드` 
-                    : `🌸 "우리 <span class="text-rose-700 font-black">${nameJosa}</span> 다 맞아" 극성 내 편 모드`;
+                    : `🌸 "우리 <span class="text-rose-700 font-black">${nameSubject}</span> 다 맞아" 극성 내 편 모드`;
                 modeBadge.className = isT 
                     ? "px-3.5 py-1.5 bg-sky-50 text-sky-600 border border-sky-200 rounded-full text-[11px] font-black tracking-tight inline-block shadow-sm" 
                     : "px-3.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-[11px] font-black tracking-tight inline-block shadow-sm";
@@ -3957,21 +3965,31 @@
     
         // 뒤로 가기(안드로이드 백버튼 / iOS 스와이프) 시 사이트 이탈 방지
         window.addEventListener('popstate', function () {
+            // 1) 공유 모달이 열려 있으면 공유 모달만 닫고 종료
+            const shareModal = document.getElementById('shareModal');
+            if (shareModal && (shareModal.style.display === 'flex' || !shareModal.classList.contains('hidden'))) {
+                closeShareModal();
+                return;
+            }
+
+            // 2) 약관 모달이 열려 있으면 약관 모달만 닫고 종료
+            const policyModal = document.getElementById('policyModal');
+            if (policyModal && policyModal.style.display === 'flex') {
+                closePolicyModal();
+                return;
+            }
+
+            // 3) 결과나 로딩 화면을 보고 있을 때는 랜딩 입력창으로 부드럽게 복귀
             const resultSec = document.getElementById('resultSection');
             const loadingSec = document.getElementById('loadingSection');
             const isViewing = (resultSec && resultSec.style.display !== 'none') ||
                               (loadingSec && loadingSec.style.display !== 'none');
             if (!isViewing) return;
 
-            const shareModal = document.getElementById('shareModal');
-            if (shareModal && shareModal.style.display === 'flex') { closeShareModal(); return; }
-            const policyModal = document.getElementById('policyModal');
-            if (policyModal && !policyModal.classList.contains('hidden')) { closePolicyModal(); return; }
-
             resultSec.style.display = 'none';
             loadingSec.style.display = 'none';
             document.getElementById('landingSection').style.display = 'flex';
-            window.scrollTo({ top: 0 });
+            window.scrollTo({ top: 0, behavior: 'instant' });
         });
                 
         function restartAnalysisWithOtherConcern() {
