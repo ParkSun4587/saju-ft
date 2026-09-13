@@ -2847,11 +2847,17 @@
                 if (inputCardBox) inputCardBox.style.display = 'none';
 
                 const streamArea = document.getElementById('chatStreamArea');
+                // 생년월일 포맷 정돈 (19980221 -> 1998.02.21)
+                const formattedBirth = birthStr.length === 8 
+                    ? `${birthStr.slice(0,4)}.${birthStr.slice(4,6)}.${birthStr.slice(6,8)}` 
+                    : birthStr;
+
+                // 유저가 언니한테 직접 보낸 카톡 느낌으로 자연스럽게 변경
                 const userBubbleHTML = `
                     <div class="flex justify-end items-end gap-1.5 fade-in-up">
                         <span class="text-[9px] text-slate-500 font-semibold mb-1">읽음</span>
                         <div class="bg-[#fee500] text-slate-900 text-xs font-bold px-3.5 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[240px] leading-snug break-keep">
-                            ${name} / ${birthStr} / 고민 접수 완료! 💌
+                            ${name} / ${formattedBirth} / 언니 내 사주 얼른 봐줘! 💌
                         </div>
                     </div>
                 `;
@@ -2905,10 +2911,10 @@
                     // 받침 유무에 따른 자연스러운 호칭 분기 (태양이 / 지우)
                     const callName = hasBatchim ? `${displayName}이` : displayName;
 
-                    // 이름의 괄호는 제거해 실제 갠톡 느낌을 살리고, 고민 키워드만 대괄호로 강조
+                    // 1:1 대화 흐름을 극대화한 갠톡 반응
                     const ackText = (mode === 'T') 
-                        ? `${callName}구나? 지금 [${selectedConcernText}] 때문에 골치 아픈 모양인데, 데이터 바로 뽑아서 팩트만 꽂아줄 테니까 잠깐만.` 
-                        : `어머, 우리 ${callName}구나! 그동안 [${selectedConcernText}] 때문에 혼자 속앓이 많이 했지? 언니가 원국 꼼꼼히 뜯어볼 테니까 딱 3초만 기다려!`;
+                        ? `${callName}구나? 지금 [${selectedConcernText}] 때문에 머리 터지는 중이지? 사주 싹 까서 팩트만 꽂아줄 테니까 잠깐만 기다려봐.` 
+                        : `어머, 우리 ${callName}구나! 그동안 [${selectedConcernText}] 때문에 혼자 속앓이 진짜 많았지? 언니가 꼼꼼하게 다 풀어줄 테니까 딱 3초만 기다려!`;
 
                     const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up">
@@ -3018,34 +3024,33 @@
                     if (progressFill) progressFill.style.width = progress + "%";
 
                     if (mainStatus) {
-                        // 성을 제외한 이름 및 받침 여부 판별
                         const rawN = name || '';
                         const dName = rawN.length >= 2 ? rawN.slice(1) : rawN;
                         const lastC = dName.charCodeAt(dName.length - 1);
                         const hasBat = (lastC >= 0xAC00 && lastC <= 0xD7A3) ? ((lastC - 0xAC00) % 28 > 0) : false;
                         
-                        const callSubject = hasBat ? `${dName}이` : dName; // 태양이 / 지우
-                        const callVocative = hasBat ? `${dName}아` : `${dName}야`; // 태양아 / 지우야
+                        const callSubject = hasBat ? `${dName}이` : dName;
+                        const callVocative = hasBat ? `${dName}아` : `${dName}야`;
 
                         // 1단계: 만세력 조회 구간 (0~1.5초)
                         if (elapsed < 1500) {
-                            if (sysLogEl) sysLogEl.innerText = "만세력 8글자 원국 추출 중...";
+                            if (sysLogEl) sysLogEl.innerText = "만세력 8글자 펼쳐보는 중...";
                             mainStatus.innerHTML = isT 
-                                ? `잠깐만, 태어난 생년월일부터 제대로 뜯어보는 중이야.` 
+                                ? `잠깐만, 태어난 생년월일 원국부터 제대로 까보는 중이야.` 
                                 : `잠깐만 기다려봐, ${callVocative}! 언니가 만세력부터 꼼꼼히 펼쳐볼게.`;
                         }
                         // 2단계: 핵심 뼈대 파악 구간 (1.5~3.8초)
                         else if (elapsed < 3800) {
-                            if (sysLogEl) sysLogEl.innerText = "오행 밸런스 및 십신 분석 중...";
+                            if (sysLogEl) sysLogEl.innerText = "오행 기운이랑 사주 뼈대 대조 중...";
                             mainStatus.innerHTML = isT 
-                                ? `<b class="text-sky-600 font-black">${callSubject} 너 사주 보니까</b> 고집이랑 딴생각 꽤 많네?` 
-                                : `<b class="text-rose-500 font-black">세상에 우리 ${callSubject}...</b> 혼자 속으로 다 참아내고 있었구나.`;
+                                ? `<b class="text-sky-600 font-black">${callSubject} 너 사주 보니까</b> 쓸데없는 고집이랑 딴생각 꽤 많네?` 
+                                : `<b class="text-rose-500 font-black">세상에 우리 ${callSubject}...</b> 겉으론 덤덤한 척 혼자 다 참아왔구나.`;
                         }
                         // 3단계: 결과 도출 직전 긴장감 구간 (3.8초~끝)
                         else {
-                            if (sysLogEl) sysLogEl.innerText = "상세 사주 리포트 작성 완료!";
+                            if (sysLogEl) sysLogEl.innerText = "메모장에 솔루션 정리 완료!";
                             mainStatus.innerHTML = isT 
-                                ? `<span class="text-sky-600 font-black">분석 다 끝났어.</span> 뼈 맞을 각오하고 바로 읽어봐.` 
+                                ? `<span class="text-sky-600 font-black">분석 다 끝났어.</span> 뼈 맞을 각오하고 똑바로 읽어봐.` 
                                 : `<span class="text-rose-500 font-black">정리 다 끝났어, ${callVocative}!</span> 이제 언니 얘기 편하게 들어봐.`;
                         }
                     }
@@ -3117,7 +3122,7 @@
                     badge.className = "px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full text-[10px] font-black";
                 }
                 if (resGreeting) {
-                    resGreeting.innerHTML = `사주 다 깠어. 결론부터 말하면 <b>${nameTopic}</b> 머릿속 계산기만 두드리다 중요한 타이밍 다 날려먹는 타입이야. 아래 메모장에 적어뒀으니 정신 똑바로 차리고 읽어봐.`;
+                    resGreeting.innerHTML = `사주 다 깠어. 결론부터 말하면 <b>${nameTopic}</b> 머릿속 계산기만 두드리다 중요한 타이밍 다 날려먹는 타입이야. 아래 메모장에 팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐.`;
                 }
             } else {
                 if (resSisterProfile) resSisterProfile.src = './로아.png';
@@ -3127,10 +3132,9 @@
                     badge.className = "px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full text-[10px] font-black";
                 }
                 if (resGreeting) {
-                    resGreeting.innerHTML = `우리 <b>${nameSubject}</b> 사주 보니까 겉으론 쿨한 척 다 참아주면서 혼자 집 와서 속앓이하는 타입이네. 언니가 네 편에서 6가지 비밀 메모 꼼꼼히 정리해 뒀어!`;
+                    resGreeting.innerHTML = `우리 <b>${nameSubject}</b> 사주 보니까 겉으론 쿨한 척 다 넘기면서 혼자 집에 와서 속앓이하는 타입이네. 언니가 속 시원하게 다 풀어줄 테니까 아래 메모장 천천히 읽어봐.`;
                 }
             }
-
             // 맨 하단 반대편 언니 스위칭 카드 동기화 (원클릭 전환용, 이모티콘 제거)
             const switchCard = document.getElementById('sisterSwitchCard');
             const switchImg = document.getElementById('switchTargetImg');
