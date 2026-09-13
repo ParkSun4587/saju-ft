@@ -3410,8 +3410,8 @@
 
             try {
                 const dataStr = JSON.stringify(currentResultData);
-                sessionStorage.setItem('sajuft_temp_result', dataStr);
-                localStorage.setItem('sajuft_temp_result', dataStr);
+                sessionStorage.setItem('unni_temp_result', dataStr);
+                localStorage.setItem('unni_temp_result', dataStr);
             } catch (e) {
                 console.warn("결제 데이터 백업 실패:", e);
             }
@@ -3668,7 +3668,7 @@
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             canvas.toBlob(async (blob) => {
                 if (!blob) return;
-                const file = new File([blob], `${userName}_사주본캐카드.png`, { type: 'image/png' });
+                const file = new File([blob], `${userName}_어떤언니_본캐카드.png`, { type: 'image/png' });
                 if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({ title: '내 사주 MBTI 본캐 카드', files: [file], url: shareUrl });
@@ -3679,7 +3679,7 @@
                 const imgData = canvas.toDataURL('image/png');
                 if (!isMobile) {
                     const link = document.createElement('a');
-                    link.download = `${userName}_사주MBTI_본캐카드.png`;
+                    ink.download = `${userName}_어떤언니_본캐카드.png`;
                     link.href = imgData;
                     document.body.appendChild(link);
                     link.click();
@@ -3745,10 +3745,10 @@
         
         const policyTexts = {
           terms: { 
-              title: '사주FT 이용약관 및 환불규정', 
+              title: '어떤언니 이용약관 및 환불규정', 
               content: `
                   <h4 class="font-black text-xs sm:text-sm text-slate-900">제1조 (목적)</h4>
-                  <p class="text-[11px] text-slate-600 leading-relaxed">본 약관은 '사주FT'(이하 '회사')가 제공하는 사주 기반 성향 분석 및 디지털 콘텐츠 서비스(이하 '서비스')의 이용조건 및 절차, 권리와 의무, 책임사항을 규정함을 목적으로 합니다.</p>
+                  <p class="text-[11px] text-slate-600 leading-relaxed">본 약관은 '어떤언니'(이하 '회사')가 제공하는 사주 기반 성향 분석 및 디지털 콘텐츠 서비스(이하 '서비스')의 이용조건 및 절차, 권리와 의무, 책임사항을 규정함을 목적으로 합니다.</p>
                   
                   <h4 class="font-black text-xs sm:text-sm text-slate-900 mt-3">제2조 (서비스의 성격 및 한계)</h4>
                   <p class="text-[11px] text-slate-600 leading-relaxed">① 회사는 이용자가 입력한 생년월일과 시간 데이터를 바탕으로 명리학 알고리즘 기반의 디지털 리포트를 제공합니다.<br>② 본 분석 결과는 통계 및 흥미 목적의 디지털 엔터테인먼트 콘텐츠이며, 개인의 실제 미래, 의학적 판단, 법률적 분쟁, 재무적 투자 성과를 보장하지 않습니다.</p>
@@ -3766,7 +3766,7 @@
               ` 
           },
           privacy: { 
-              title: '사주FT 개인정보처리방침', 
+              title: '어떤언니 개인정보처리방침', 
               content: `
                   <h4 class="font-black text-xs sm:text-sm text-slate-900">1. 수집하는 개인정보 항목 및 수집 방법</h4>
                   <p class="text-[11px] text-slate-600 leading-relaxed">① 필수 수집 항목: 이름(닉네임), 성별, 생년월일, 태어난 시간, 고민 선택 항목<br>② 유료 결제 시 수집 항목: 결제 승인 번호, 결제 수단 식별 정보 (토스페이먼츠를 통해 암호화 처리되며 회사는 카드번호나 금융 정보를 직접 저장하지 않습니다.)<br>③ 서비스 이용 과정 자동 생성 항목: 서비스 이용 기록, 접속 IP, 쿠키(Cookie), 접속 기기 정보<br>④ 수집 방법: 웹사이트 입력 폼 및 자동 수집</p>
@@ -3818,7 +3818,7 @@
             // 1차: 브라우저 캐시에서 복원 시도
             let restoredData = null;
             try {
-                const tempStr = sessionStorage.getItem('sajuft_temp_result') || localStorage.getItem('sajuft_temp_result');
+                const tempStr = sessionStorage.getItem('unni_temp_result') || localStorage.getItem('unni_temp_result');
                 if (tempStr) restoredData = JSON.parse(tempStr);
             } catch (e) { console.error("스토리지 복원 오류:", e); }
 
