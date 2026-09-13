@@ -421,24 +421,27 @@
     });
 </script>
     
-<!-- 1. 카톡 인터뷰형 사주 정보 입력 (모바일 1화면 무스크롤 완벽 압축 버전) -->
-    <main id="landingSection" style="display:none;" class="fixed inset-0 z-50 flex flex-col bg-[#abc1d1] w-full h-[100dvh] overflow-hidden">
+<!-- 1. 카톡 인터뷰형 사주 정보 입력 (PC에서도 모바일 430px 프레임 완벽 고정) -->
+    <main id="landingSection" style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950 select-none">
         
-        <!-- 카톡 상단 헤더 바 (컴팩트 슬림화) -->
-        <header class="bg-[#abc1d1]/95 backdrop-blur-md px-3.5 py-2 flex items-center justify-between border-b border-black/5 shrink-0 z-20" style="padding-top: calc(env(safe-area-inset-top, 0px) + 6px);">
-            <div class="flex items-center gap-2">
-                <button type="button" onclick="startFreshAnalysis()" class="text-slate-800 text-base font-bold p-1 bg-transparent border-0 cursor-pointer">←</button>
-                <div class="relative">
-                    <img id="welcomeSisterImg" src="./로아.png" alt="프로필" class="w-8 h-8 rounded-full object-cover border border-white/60 shadow-sm">
-                    <span class="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white"></span>
+        <!-- 모바일 크기 고정 스마트폰 프레임 뷰 -->
+        <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col justify-between overflow-hidden bg-[#abc1d1] shadow-2xl">
+            
+            <!-- 카톡 상단 헤더 바 -->
+            <header class="bg-[#abc1d1]/95 backdrop-blur-md px-3.5 py-1.5 flex items-center justify-between border-b border-black/5 shrink-0 z-20" style="padding-top: calc(env(safe-area-inset-top, 0px) + 6px);">
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="startFreshAnalysis()" class="text-slate-800 text-base font-bold p-1 bg-transparent border-0 cursor-pointer">←</button>
+                    <div class="relative">
+                        <img id="welcomeSisterImg" src="./로아.png" alt="프로필" class="w-8 h-8 rounded-full object-cover border border-white/60 shadow-sm">
+                        <span class="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white"></span>
+                    </div>
+                    <div>
+                        <h2 id="welcomeSisterBadge" class="text-[11px] font-extrabold text-slate-900 leading-tight">로아 언니</h2>
+                        <span class="text-[9px] text-slate-600 font-medium">실시간 사주 상담 중</span>
+                    </div>
                 </div>
-                <div>
-                    <h2 id="welcomeSisterBadge" class="text-[11px] font-extrabold text-slate-900 leading-tight">로아 언니</h2>
-                    <span class="text-[9px] text-slate-600 font-medium">실시간 사주 상담 중</span>
-                </div>
-            </div>
-            <div class="bg-black/10 text-slate-800 px-2 py-0.5 rounded-full text-[9.5px] font-bold">🔒 1:1 비밀 상담</div>
-        </header>
+                <div class="bg-black/10 text-slate-800 px-2 py-0.5 rounded-full text-[9.5px] font-bold">🔒 1:1 비밀 상담</div>
+            </header>
 
         <!-- 카톡 대화 및 인터랙티브 폼 리스트 (h-full 맞춤 무스크롤 패딩) -->
         <div class="flex-1 overflow-y-auto px-3 py-1.5 flex flex-col justify-start gap-2 max-w-[430px] mx-auto w-full">
@@ -586,6 +589,7 @@
                 </form>
             </div>
         </div>
+        </div> <!-- 모바일 프레임 닫는 div 추가 -->
     </main>
 
     <!-- 2. 카톡 실시간 분석 로딩 섹션 (1:1 메신저 상담 대기 UI) -->
