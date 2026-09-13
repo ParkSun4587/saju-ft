@@ -1382,18 +1382,7 @@
                 if (typingInd) typingInd.style.display = 'none';
                 if (realBubble) realBubble.style.display = 'flex';
             }, 800);
-
-            // 0.8초 타이핑 애니메이션 연출 적용
-            const typingInd = document.getElementById('chatTypingIndicator');
-            const realBubble = document.getElementById('chatRealBubbleBox');
-            if (typingInd) typingInd.style.display = 'flex';
-            if (realBubble) realBubble.style.display = 'none';
-
-            setTimeout(() => {
-                if (typingInd) typingInd.style.display = 'none';
-                if (realBubble) realBubble.style.display = 'flex';
-            }, 800);
-
+        
             if (mode === 'F') {
                 if (sisterImg) sisterImg.src = './로아.png';
                 if (miniProfile) miniProfile.src = './로아.png';
