@@ -3816,10 +3816,14 @@
             if (reAnalyzeBox) reAnalyzeBox.style.display = 'none';
         }
 
+        let isSavingCard = false;
         async function saveInstaCardImage() {
+            if (isSavingCard) return; // 중복 터치 즉시 차단
             if (!currentResultData) return;
-            const userName = currentResultData.name || '내';
+
             const cardElement = document.getElementById('storyCard');
+            const saveBtn = event ? event.currentTarget : null;
+            const originalBtnText = saveBtn ? saveBtn.innerHTML : '';
             
             if (!cardElement) {
                 showToast("저장할 카드를 찾을 수 없습니다.");
@@ -3831,11 +3835,18 @@
                 return;
             }
 
-            showToast("📸 본캐 카드 생성 중...");
+            isSavingCard = true;
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                saveBtn.innerHTML = `<span>⏳ 고화질 카드 굽는 중...</span>`;
+            }
+            showToast("📸 본캐 카드 생성 중입니다...");
 
             try {
+                const userName = (currentResultData.name || '내').trim();
                 const canvas = await html2canvas(cardElement, {
-                    scale: 3, // 고화질 인스타 스토리 규격
+                    scale: 3, // 고화질 규격 유지
                     useCORS: true,
                     allowTaint: true,
                     backgroundColor: '#ffffff',
@@ -3844,7 +3855,6 @@
 
                 const imageURI = canvas.toDataURL('image/png');
 
-                // PC & 모바일 전용 직접 다운로드 트리거
                 const link = document.createElement('a');
                 link.download = `${userName}_어떤언니_본캐카드.png`;
                 link.href = imageURI;
@@ -3856,9 +3866,15 @@
             } catch (err) {
                 console.error("카드 저장 오류:", err);
                 showToast("카드 저장 중 문제가 발생했습니다.");
+            } finally {
+                isSavingCard = false;
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    saveBtn.innerHTML = originalBtnText;
+                }
             }
         }
-
         // 캔버스 둥근 모서리 지원 헬퍼
         function roundRect(ctx, x, y, width, height, radius) {
             ctx.beginPath();
@@ -4071,6 +4087,19 @@
         } // <-- 이 닫는 중괄호(})가 누락되어 있었습니다.
 
             window.addEventListener('DOMContentLoaded', () => {
+            // 👇 바로 여기에 넣으시면 됩니다
+            const inputElements = document.querySelectorAll('#sazuForm input, #sazuForm select');
+            inputElements.forEach(input => {
+                input.addEventListener('focus', () => {
+                    setTimeout(() => {
+                        const streamArea = document.getElementById('chatStreamArea');
+                        if (streamArea) {
+                            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 300);
+                });
+            });
+                
             const urlParams = new URLSearchParams(window.location.search);
             
             // 1. 토스페이먼츠 결제 성공 리다이렉트 처리 (서버 승인 필수)
