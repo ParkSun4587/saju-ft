@@ -347,7 +347,28 @@
                 text-wrap: balance;
                 line-height: 1.55;
         }
-
+        /* 게임 캐릭터 선택 시 팝업 & 네온 글로우 인터랙션 */
+        .char-panel {
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.35s ease, opacity 0.35s ease, box-shadow 0.35s ease;
+        }
+        .char-selected-f {
+            transform: scale(1.03) translateY(-4px);
+            z-index: 50;
+            box-shadow: inset 0 0 25px rgba(251, 113, 133, 0.8), 0 0 35px rgba(251, 113, 133, 0.6);
+            filter: brightness(1.08);
+        }
+        .char-selected-t {
+            transform: scale(1.03) translateY(4px);
+            z-index: 50;
+            box-shadow: inset 0 0 25px rgba(56, 189, 248, 0.8), 0 0 35px rgba(56, 189, 248, 0.6);
+            filter: brightness(1.08);
+        }
+        .char-dimmed {
+            filter: grayscale(80%) brightness(0.35) blur(3px) !important;
+            opacity: 0.45 !important;
+            transform: scale(0.97);
+            pointer-events: none;
+        }
         @keyframes dopaminePop {
             0% { transform: scale(0.94); opacity: 0; filter: blur(6px); }
             60% { transform: scale(1.02); opacity: 1; filter: blur(0px); }
@@ -390,7 +411,7 @@
         </div>
 
         <!-- F 패널 (로아) -->
-        <div onclick="selectSplitMode('F')" class="relative w-full h-1/2 cursor-pointer bg-rose-50/30 overflow-hidden flex flex-col justify-end">
+        <div id="panelRoa" onclick="selectSplitMode('F')" class="char-panel relative w-full h-1/2 cursor-pointer bg-rose-50/30 overflow-hidden flex flex-col justify-end">
             <!-- 확대/축소 애니메이션 제거된 정적 이미지 -->
             <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_18%]">
             
@@ -422,7 +443,7 @@
         </div>
 
         <!-- T 패널 (서아) -->
-        <div onclick="selectSplitMode('T')" class="relative w-full h-1/2 cursor-pointer bg-slate-950 overflow-hidden flex flex-col justify-end">
+        <div id="panelSeoa" onclick="selectSplitMode('T')" class="char-panel relative w-full h-1/2 cursor-pointer bg-slate-950 overflow-hidden flex flex-col justify-end">
             <!-- 확대/축소 애니메이션 제거된 정적 이미지 -->
             <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%]">
             
@@ -1318,42 +1339,59 @@
             'ESFP': { best: 'ISTJ', bestTag: '주변을 밝혀주는 꿀조합', worst: 'INTJ', worstTag: '지나치게 진지한 사이' }
         };
 
-        // 화면 분할 인트로 클릭 시 카톡 대화형 브릿지 세팅 및 폼 화면 렌더링
+        // 화면 분할 인트로 클릭 시 캐릭터 선택 효과 적용 후 카톡 진입
+        let isSplitSelecting = false;
         function selectSplitMode(mode) {
+            if (isSplitSelecting) return;
+            isSplitSelecting = true;
             selectedSplitMode = mode;
-            const introSection = document.getElementById('splitIntroSection');
-            const landingSection = document.getElementById('landingSection');
-            const originalButtons = document.getElementById('originalFTButtons');
-            const nextButtonContainer = document.getElementById('splitNextButton');
-            
-            // 카톡 UI 요소들
-            const sisterImg = document.getElementById('welcomeSisterImg');
-            const sisterBadge = document.getElementById('welcomeSisterBadge');
-            const sisterText = document.getElementById('welcomeSisterText');
-            const miniProfile = document.getElementById('chatBubbleProfileMini');
-            const senderTitle = document.getElementById('chatSenderNameTitle');
 
-            // 0.8초 타이핑 후 인사말 노출, 직후 입력 폼 카드 등장 시퀀스
-            const typingInd = document.getElementById('chatTypingIndicator');
-            const realBubble = document.getElementById('chatRealBubbleBox');
-            const inputCardBox = document.getElementById('sajuInputCardBox');
+            const panelRoa = document.getElementById('panelRoa');
+            const panelSeoa = document.getElementById('panelSeoa');
 
-            if (typingInd) typingInd.style.display = 'flex';
-            if (realBubble) realBubble.style.display = 'none';
-            if (inputCardBox) inputCardBox.style.display = 'none';
+            // 1단계: 격투 게임/RPG 스타일 캐릭터 팝업 & 네온 글로우 발동
+            if (mode === 'F') {
+                if (panelRoa) panelRoa.classList.add('char-selected-f');
+                if (panelSeoa) panelSeoa.classList.add('char-dimmed');
+            } else {
+                if (panelSeoa) panelSeoa.classList.add('char-selected-t');
+                if (panelRoa) panelRoa.classList.add('char-dimmed');
+            }
 
+            // 2단계: 0.25초간 선택의 손맛(도파민)을 준 뒤 카톡 인터페이스로 전환
             setTimeout(() => {
-                if (typingInd) typingInd.style.display = 'none';
-                if (realBubble) realBubble.style.display = 'flex';
+                const introSection = document.getElementById('splitIntroSection');
+                const landingSection = document.getElementById('landingSection');
+                const originalButtons = document.getElementById('originalFTButtons');
+                const nextButtonContainer = document.getElementById('splitNextButton');
                 
-                // 인사말이 뜬 직후(0.2초 뒤) 입력 카드 부드럽게 등장
+                // 카톡 UI 요소들
+                const sisterImg = document.getElementById('welcomeSisterImg');
+                const sisterBadge = document.getElementById('welcomeSisterBadge');
+                const sisterText = document.getElementById('welcomeSisterText');
+                const miniProfile = document.getElementById('chatBubbleProfileMini');
+                const senderTitle = document.getElementById('chatSenderNameTitle');
+
+                // 0.8초 타이핑 후 인사말 노출, 직후 입력 폼 카드 등장 시퀀스
+                const typingInd = document.getElementById('chatTypingIndicator');
+                const realBubble = document.getElementById('chatRealBubbleBox');
+                const inputCardBox = document.getElementById('sajuInputCardBox');
+
+                if (typingInd) typingInd.style.display = 'flex';
+                if (realBubble) realBubble.style.display = 'none';
+                if (inputCardBox) inputCardBox.style.display = 'none';
+
                 setTimeout(() => {
-                    if (inputCardBox) {
-                        inputCardBox.style.display = 'block';
-                        inputCardBox.classList.add('fade-in-up');
-                    }
-                }, 200);
-            }, 800);
+                    if (typingInd) typingInd.style.display = 'none';
+                    if (realBubble) realBubble.style.display = 'flex';
+                    
+                    setTimeout(() => {
+                        if (inputCardBox) {
+                            inputCardBox.style.display = 'block';
+                            inputCardBox.classList.add('fade-in-up');
+                        }
+                    }, 200);
+                }, 800);
         
             if (mode === 'F') {
                 if (sisterImg) sisterImg.src = './로아.png';
@@ -4337,7 +4375,13 @@
             const mainFooter = document.getElementById('mainFooter');
             if (mainFooter) mainFooter.classList.add('hidden');
             
-            // 인트로 화면으로 복귀
+            // 인트로 화면 복귀 및 선택 인터랙션 클래스 완벽 초기화
+            isSplitSelecting = false;
+            const pRoa = document.getElementById('panelRoa');
+            const pSeoa = document.getElementById('panelSeoa');
+            if (pRoa) pRoa.className = "char-panel relative w-full h-1/2 cursor-pointer bg-rose-50/30 overflow-hidden flex flex-col justify-end";
+            if (pSeoa) pSeoa.className = "char-panel relative w-full h-1/2 cursor-pointer bg-slate-950 overflow-hidden flex flex-col justify-end";
+
             const introSection = document.getElementById('splitIntroSection');
             if (introSection) {
                 introSection.style.display = 'flex';
