@@ -734,25 +734,25 @@
                 </div>
             </div>
 
-            <!-- [바이럴 치트키] 환상의 찰떡 깐부 vs 숨 막히는 상극 (조화로운 소프트 톤) -->
-            <div class="grid grid-cols-2 gap-2 mt-2 text-left">
-                <div class="p-3 rounded-2xl bg-rose-50/80 border border-rose-200 shadow-sm flex flex-col justify-between">
+            <!-- [바이럴 치트키] 환상의 찰떡 깐부 vs 숨 막히는 상극 (동적 테마 연동형) -->
+            <div class="grid grid-cols-2 gap-2.5 mt-2.5 text-left">
+                <div id="chemBestCard" class="p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between shadow-sm">
                     <div>
-                        <div class="text-[10px] font-black text-rose-500 flex items-center gap-1 mb-0.5">
-                            <span>💖</span> <span>환상의 찰떡 깐부</span>
+                        <div id="chemBestHeader" class="text-[10.5px] font-black flex items-center gap-1 mb-1">
+                            <span>💖</span> <span id="chemBestTitle">환상의 찰떡 깐부</span>
                         </div>
-                        <div class="text-base font-black text-slate-900 font-mono tracking-wide" id="chemBestMbti">ENFP</div>
+                        <div class="text-lg font-black font-mono tracking-wide" id="chemBestMbti">ENFP</div>
                     </div>
-                    <div class="text-[10px] text-slate-500 font-semibold truncate mt-1" id="chemBestTag">영혼의 단짝</div>
+                    <div class="text-[10px] font-bold truncate mt-1.5 px-2 py-0.5 rounded-md w-max max-w-full" id="chemBestTag">영혼의 단짝</div>
                 </div>
-                <div class="p-3 rounded-2xl bg-slate-100/90 border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div id="chemWorstCard" class="p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between shadow-sm">
                     <div>
-                        <div class="text-[10px] font-black text-slate-600 flex items-center gap-1 mb-0.5">
-                            <span>💣</span> <span>숨 막히는 상극</span>
+                        <div id="chemWorstHeader" class="text-[10.5px] font-black flex items-center gap-1 mb-1">
+                            <span>💣</span> <span id="chemWorstTitle">숨 막히는 상극</span>
                         </div>
-                        <div class="text-base font-black text-slate-900 font-mono tracking-wide" id="chemWorstMbti">ISTJ</div>
+                        <div class="text-lg font-black font-mono tracking-wide" id="chemWorstMbti">ISTJ</div>
                     </div>
-                    <div class="text-[10px] text-slate-500 font-semibold truncate mt-1" id="chemWorstTag">거리 두기 시급</div>
+                    <div class="text-[10px] font-bold truncate mt-1.5 px-2 py-0.5 rounded-md w-max max-w-full" id="chemWorstTag">거리 두기 시급</div>
                 </div>
             </div>
         </div>
@@ -3210,16 +3210,50 @@
                 `;
             }
 
-            // 3) 💖 찰떡 깐부 vs 💣 상극
+            // 3) 💖 찰떡 깐부 vs 💣 상극 (F/T 모드별 강렬한 비주얼 대비 적용)
             const bestMbtiEl = document.getElementById('chemBestMbti');
             const bestTagEl = document.getElementById('chemBestTag');
             const worstMbtiEl = document.getElementById('chemWorstMbti');
             const worstTagEl = document.getElementById('chemWorstTag');
+            const bestCard = document.getElementById('chemBestCard');
+            const worstCard = document.getElementById('chemWorstCard');
+            const bestHeader = document.getElementById('chemBestHeader');
+            const worstHeader = document.getElementById('chemWorstHeader');
+            const bestTitle = document.getElementById('chemBestTitle');
+            const worstTitle = document.getElementById('chemWorstTitle');
 
             if (bestMbtiEl) bestMbtiEl.innerText = prof.best;
             if (bestTagEl) bestTagEl.innerText = prof.bestTag;
             if (worstMbtiEl) worstMbtiEl.innerText = prof.worst;
             if (worstTagEl) worstTagEl.innerText = prof.worstTag;
+
+            if (isT) {
+                // 서아(T): 시크하고 명확한 팩폭 대비 (에메랄드 시안 깐부 vs 다크 차콜 상극)
+                if (bestCard) bestCard.className = "p-3.5 rounded-2xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 text-emerald-950 flex flex-col justify-between shadow-[0_4px_14px_rgba(16,185,129,0.12)]";
+                if (bestHeader) bestHeader.className = "text-[10.5px] font-black text-emerald-600 flex items-center gap-1 mb-1";
+                if (bestTitle) bestTitle.textContent = "치트키 깐부";
+                if (bestMbtiEl) bestMbtiEl.className = "text-xl font-black font-mono tracking-wide text-emerald-700";
+                if (bestTagEl) bestTagEl.className = "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-emerald-100/80 text-emerald-800 w-max max-w-full";
+
+                if (worstCard) worstCard.className = "p-3.5 rounded-2xl border-2 border-slate-300 bg-gradient-to-br from-slate-100 via-white to-slate-100/60 text-slate-900 flex flex-col justify-between shadow-[0_4px_14px_rgba(15,23,42,0.06)]";
+                if (worstHeader) worstHeader.className = "text-[10.5px] font-black text-slate-600 flex items-center gap-1 mb-1";
+                if (worstTitle) worstTitle.textContent = "상종 불가 상극";
+                if (worstMbtiEl) worstMbtiEl.className = "text-xl font-black font-mono tracking-wide text-slate-800";
+                if (worstTagEl) worstTagEl.className = "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 w-max max-w-full";
+            } else {
+                // 로아(F): 온기 있는 힐링 대비 (러블리 로즈 깐부 vs 쿨 슬레이트 상극)
+                if (bestCard) bestCard.className = "p-3.5 rounded-2xl border-2 border-rose-300 bg-gradient-to-br from-rose-50 via-white to-rose-50/50 text-rose-950 flex flex-col justify-between shadow-[0_4px_14px_rgba(244,63,94,0.12)]";
+                if (bestHeader) bestHeader.className = "text-[10.5px] font-black text-rose-600 flex items-center gap-1 mb-1";
+                if (bestTitle) bestTitle.textContent = "환상의 찰떡 깐부";
+                if (bestMbtiEl) bestMbtiEl.className = "text-xl font-black font-mono tracking-wide text-rose-600";
+                if (bestTagEl) bestTagEl.className = "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-rose-100/80 text-rose-700 w-max max-w-full";
+
+                if (worstCard) worstCard.className = "p-3.5 rounded-2xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white text-slate-800 flex flex-col justify-between shadow-sm";
+                if (worstHeader) worstHeader.className = "text-[10.5px] font-black text-slate-500 flex items-center gap-1 mb-1";
+                if (worstTitle) worstTitle.textContent = "기 빨리는 상극";
+                if (worstMbtiEl) worstMbtiEl.className = "text-xl font-black font-mono tracking-wide text-slate-700";
+                if (worstTagEl) worstTagEl.className = "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 w-max max-w-full";
+            }
 
             // 공유 버튼 시인성
             const mainShareBtn = document.getElementById('mainShareBtn');
