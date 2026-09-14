@@ -2088,7 +2088,128 @@
                 }
             };
         }
+        function generateConcernNotes(data, mode) {
+    const isT = mode === 'T';
+    const rawConcern = data.concernKey || 'money';
 
+    const concernNames = {
+        money: '재물·돈복',
+        career: '직장·이직',
+        love: '연애·썸',
+        path: '진로·미래',
+        people: '인간관계',
+        mental: '멘탈·번아웃'
+    };
+
+    const concernKey = concernNames[rawConcern] ? rawConcern : 'money';
+    const concernLabel = concernNames[concernKey];
+
+    const source = data.rawSolutionTemplate &&
+        data.rawSolutionTemplate[mode];
+
+    // 기존 맞춤 데이터가 없을 때만 기존 함수로 안전하게 대체
+    if (!source) {
+        return generateDynamicDeepSolution(data, mode);
+    }
+
+    const previewText = typeof source.preview === 'function'
+        ? source.preview()
+        : (source.preview || '');
+
+    const act1 = source.acts && source.acts[0]
+        ? source.acts[0]
+        : { t: '내 상황에 맞는 실전 룰', d: '작은 행동부터 하나씩 시작해.' };
+
+    const act2 = source.acts && source.acts[1]
+        ? source.acts[1]
+        : { t: '사람과 환경 필터', d: '나를 지치게 하는 관계와 거리를 둬.' };
+
+    const titles = isT
+        ? [
+            `${concernLabel} 앞에서 쿨한 척 버티는 내 진짜 속마음`,
+            `${concernLabel} 때문에 자꾸 반복되는 그 장면`,
+            `${concernLabel}이 새는 결정적인 이유`,
+            `${concernLabel} 흐름을 살리는 나만의 실전 룰`,
+            `${concernLabel}에서 내 편과 빌런을 가르는 기준`,
+            `2026-2027 ${concernLabel} 승부 타이밍`
+        ]
+        : [
+            `${concernLabel} 때문에 혼자 속앓이했던 마음의 기록`,
+            `${concernLabel} 앞에서 자꾸 작아졌던 진짜 이유`,
+            `아무에게도 말하지 못했던 ${concernLabel}의 숨은 상처`,
+            `${concernLabel}을 편안하게 풀어내는 나만의 방법`,
+            `${concernLabel}에서 나를 지켜줄 사람과 거리 둘 사람`,
+            `2026-2027 ${concernLabel} 반등의 계절`
+        ];
+
+    const badges = [
+        `${concernLabel} 속마음`,
+        `${concernLabel} 반복 패턴`,
+        '숨겨진 누수 원인',
+        '맞춤 실전 처방',
+        '사람·환경 필터',
+        '2026-2027 타임라인'
+    ];
+
+    return [
+        {
+            themeNum: '01',
+            badge: badges[0],
+            title: titles[0],
+            desc: previewText,
+            checklist: isT
+                ? `${concernLabel}에서 남들 기준 말고 내 기준부터 세우기`
+                : `${concernLabel} 때문에 힘들었던 내 마음부터 인정해주기`
+        },
+        {
+            themeNum: '02',
+            badge: badges[1],
+            title: titles[1],
+            desc: `${source.asset || ''}<br><br>${isT
+                ? '이 장점이 과해지는 순간 오히려 내 발목을 잡는 패턴으로 바뀔 수 있어.'
+                : '이건 부족해서가 아니라, 너무 진심으로 살아와서 생긴 패턴일 수 있어.'}`,
+            checklist: isT
+                ? `${concernLabel}에서 반복되는 행동을 하나 정하고 즉시 끊기`
+                : `내가 반복해온 행동을 자책하지 말고 천천히 관찰하기`
+        },
+        {
+            themeNum: '03',
+            badge: badges[2],
+            title: titles[2],
+            desc: `${source.flaw || ''}<br><br><b>숨은 누수:</b> ${source.leak || ''}`,
+            checklist: isT
+                ? '문제를 남 탓이나 운 탓으로 넘기지 말고 반복 패턴부터 차단하기'
+                : '내가 왜 그렇게 행동했는지 먼저 이해하고 스스로를 몰아세우지 않기'
+        },
+        {
+            themeNum: '04',
+            badge: badges[3],
+            title: titles[3],
+            desc: `<b>${act1.t || ''}</b><br>${act1.d || ''}`,
+            checklist: isT
+                ? '완벽하게 준비될 때까지 미루지 말고 오늘 바로 한 단계 실행하기'
+                : '무리해서 한 번에 바꾸려 하지 말고 가능한 것부터 하나씩 시작하기'
+        },
+        {
+            themeNum: '05',
+            badge: badges[4],
+            title: titles[4],
+            desc: act2.d || '',
+            checklist: isT
+                ? '나를 소모시키는 관계와 환경에는 분명한 기준 세우기'
+                : '나를 편안하게 해주는 사람과 환경을 의식적으로 선택하기'
+        },
+        {
+            themeNum: '06',
+            badge: badges[5],
+            title: titles[5],
+            desc: `<b>${source.r1 || ''}</b><br>${source.r1d || ''}<br><br><b>${source.r2 || ''}</b><br>${source.r2d || ''}`,
+            checklist: isT
+                ? `${concernLabel} 승부처 전에 준비를 끝내고 기회를 놓치지 않기`
+                : `다가올 좋은 흐름을 맞이할 수 있도록 마음과 생활 리듬 정비하기`
+        }
+    ];
+}
         function generateDynamicDeepSolution(data, mode) {
             const isT = mode === 'T';
             const s = data.stats;
@@ -3324,7 +3445,7 @@
             }
     
             // [아이폰 비밀 메모장 렌더링] 6대 테마 100% 무료 전체 오픈
-            const notesData = generateDynamicDeepSolution(data, mode);
+            const notesData = generateConcernNotes(data, mode);
             
             const buildNotesHTML = (items) => {
                 return items.map((item) => {
