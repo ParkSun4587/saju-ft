@@ -2840,9 +2840,6 @@
             isAnalyzing = false;
             isSplitSelecting = false;
         }
-        
-        let isAnalyzing = false;
-        let selectedSplitMode = null;
 
         function startAnalysis(mode) {
             if (isAnalyzing) return;
@@ -3813,7 +3810,7 @@
 
         let isSavingCard = false;
         async function saveInstaCardImage(event) {
-            if (isSavingCard) return; 
+            if (isSavingCard) return;
             if (!currentResultData) return;
 
             const cardElement = document.getElementById('storyCard');
