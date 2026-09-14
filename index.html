@@ -372,6 +372,24 @@
             from { transform: translateX(100%); }
             to { transform: translateX(0); }
         }
+
+        /* [추가] 렉 유발하는 강제 dvh 고정 해제 및 프레임 안정화 */
+        #landingSection, #loadingSection {
+            position: fixed;
+            inset: 0;
+            height: 100vh;
+            height: 100dvh;
+        }
+        #landingFrame, #loadingFrame {
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
         @keyframes dopaminePop {
             0% { transform: scale(0.94); opacity: 0; filter: blur(6px); }
             60% { transform: scale(1.02); opacity: 1; filter: blur(0px); }
@@ -4188,36 +4206,16 @@
             window.scrollTo({ top: 0, behavior: 'instant' });
         }
 
-        // 모바일 가상 키보드 팝업 시 화면 높이 자동 축소 및 부드러운 스크롤 보장
+        // [수정] 렉 유발 요소를 제거하고 부드러운 스크롤만 가볍게 동작하도록 최적화
         function initMobileKeyboardHandler() {
-            if (window.visualViewport) {
-                const resizeHandler = () => {
-                    const landingFrame = document.getElementById('landingFrame');
-                    const loadingFrame = document.getElementById('loadingFrame');
-                    const currentHeight = window.visualViewport.height + 'px';
-
-                    if (landingFrame && document.getElementById('landingSection').style.display !== 'none') {
-                        landingFrame.style.height = currentHeight;
-                    }
-                    if (loadingFrame && document.getElementById('loadingSection').style.display !== 'none') {
-                        loadingFrame.style.height = currentHeight;
-                    }
-                };
-
-                window.visualViewport.addEventListener('resize', resizeHandler);
-                window.visualViewport.addEventListener('scroll', resizeHandler);
-            }
-
-            // 인풋 포커스 시 항상 해당 영역으로 부드럽게 스크롤
             document.addEventListener('focusin', (e) => {
                 if (e.target && e.target.closest('#sazuForm')) {
                     setTimeout(() => {
                         e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 250);
+                    }, 200);
                 }
             });
         }
-
         // 페이지 로드 시 실행
         window.addEventListener('DOMContentLoaded', () => {
             initMobileKeyboardHandler();
