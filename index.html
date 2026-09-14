@@ -2593,6 +2593,102 @@
 
             return { status: status, sangsinFound: sangsinFound, gisinFound: gisinFound, flow: rule.flow };
         }
+        function buildClassicalLayers(input) {
+    const elements = input.elements || {};
+    const scores = input.sipsinScores || {};
+    const monthZhi = input.monthZhi || '';
+
+    const seasonMap = {
+        '寅': '봄', '卯': '봄', '辰': '봄',
+        '巳': '여름', '午': '여름', '未': '여름',
+        '申': '가을', '酉': '가을', '戌': '가을',
+        '亥': '겨울', '子': '겨울', '丑': '겨울'
+    };
+
+    const season = seasonMap[monthZhi] || '중립';
+
+    const supportForce =
+        Number(scores.bi || 0) + Number(scores.in || 0);
+
+    const drainForce =
+        Number(scores.sike || 0) +
+        Number(scores.jae || 0) +
+        Number(scores.gwan || 0);
+
+    let climateType = '중립';
+
+    const fireScore = Number(elements.hwa || 0);
+    const waterScore = Number(elements.su || 0);
+    const earthScore = Number(elements.to || 0);
+
+    if (
+        season === '여름' ||
+        (fireScore >= waterScore + 2 && fireScore >= earthScore)
+    ) {
+        climateType = '열조';
+    } else if (
+        season === '겨울' ||
+        (waterScore >= fireScore + 2 && waterScore >= earthScore)
+    ) {
+        climateType = '한습';
+    } else if (
+        earthScore >= 5 &&
+        waterScore <= 2
+    ) {
+        climateType = '조토';
+    }
+
+    let climateDirection = '현재 용신과 원국 전체의 균형을 함께 확인';
+
+    if (climateType === '열조') {
+        climateDirection = '수(水) 기운으로 과한 열기와 건조함을 조절하는 방향';
+    } else if (climateType === '한습') {
+        climateDirection = '화(火) 기운으로 차갑고 눅눅한 흐름을 덥히는 방향';
+    } else if (climateType === '조토') {
+        climateDirection = '수(水) 기운으로 메마른 토(土)의 흐름을 부드럽게 하는 방향';
+    }
+
+    let energyDirection = '기세가 비교적 균형적';
+
+    if (supportForce >= drainForce * 1.25) {
+        energyDirection = '나를 돕는 기운이 강해 과잉을 덜어내는 조절이 중요';
+    } else if (drainForce >= supportForce * 1.25) {
+        energyDirection = '나를 소모시키는 기운이 강해 회복과 보호가 중요';
+    }
+
+    return {
+        japyeong: {
+            principle: '월령과 격국을 중심으로 원국의 성패 구조를 판단',
+            gyeokName: input.gyeokguk && input.gyeokguk.name
+                ? input.gyeokguk.name
+                : '평격',
+            status: input.gyeokStatus && input.gyeokStatus.status
+                ? input.gyeokStatus.status
+                : '평격',
+            sangsin: input.gyeokStatus
+                ? (input.gyeokStatus.sangsinFound || '')
+                : '',
+            gisin: input.gyeokStatus
+                ? (input.gyeokStatus.gisinFound || '')
+                : ''
+        },
+
+        jeokcheon: {
+            principle: '일간의 강약과 전체 기세의 흐름을 중심으로 판단',
+            dayMasterStrength: input.isDayMasterStrong ? '신강' : '신약',
+            supportForce: Math.round(supportForce * 100) / 100,
+            drainForce: Math.round(drainForce * 100) / 100,
+            direction: energyDirection
+        },
+
+        qiongtong: {
+            principle: '월령의 계절과 원국의 한난조습을 보정',
+            season: season,
+            climateType: climateType,
+            direction: climateDirection
+        }
+    };
+}
         function buildAnalysisProfile(input) {
     const elements = input.elements || {};
     const pillars = input.pillars || {};
@@ -2955,6 +3051,23 @@
         network: statNetwork
     },
     hasChung: hasChung
+});
+                analysisProfile.classical = buildClassicalLayers({
+    dayGan: dGan,
+    monthZhi: mZhi,
+    dayOheng: dayOheng,
+    isDayMasterStrong: isDayMasterStrong,
+    yongshin: yongshin,
+    gyeokguk: gyeokguk,
+    gyeokStatus: gyeokStatus,
+    elements: counts,
+    sipsinScores: {
+        bi: scoreBi,
+        sike: scoreSike,
+        jae: scoreJae,
+        gwan: scoreGwan,
+        in: scoreIn
+    }
 });
                 return {
                     mbtiKey: calculatedKey,
