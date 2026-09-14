@@ -2955,22 +2955,36 @@
                         currentMode: mode, concernKey: concernKey, ...sazuResult, rawSolutionTemplate: solutionTemplate 
                     };
 
-                    const appendSisterMsg = (text) => {
-                        const bubbleHTML = `
-                            <div class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-1.5">
-                                <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
-                                <div>
-                                    <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
-                                    <div class="flex items-end gap-1.5">
+                    // 진짜 카톡처럼 첫 톡에만 프로필/이름을 띄우고 연속 톡은 말풍선만 연결하는 함수
+                    const appendSisterMsg = (text, isFollowUp = false) => {
+                        let bubbleHTML = '';
+                        if (!isFollowUp) {
+                            // 연타 톡의 첫 번째: 프로필 + 이름 + 말풍선
+                            bubbleHTML = `
+                                <div class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-2 sister-chat-group">
+                                    <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
+                                    <div class="flex flex-col gap-1 sister-bubble-container">
+                                        <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
                                         <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep">
                                             ${text}
                                         </div>
-                                        <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">${getCurrTime()}</span>
                                     </div>
                                 </div>
-                            </div>
-                        `;
-                        streamArea.insertAdjacentHTML('beforeend', bubbleHTML);
+                            `;
+                            streamArea.insertAdjacentHTML('beforeend', bubbleHTML);
+                        } else {
+                            // 연타 톡의 연속(2번째, 3번째): 프로필 없이 기존 말풍선 바로 밑에 착 달라붙음
+                            const containers = streamArea.querySelectorAll('.sister-bubble-container');
+                            const targetContainer = containers[containers.length - 1];
+                            if (targetContainer) {
+                                const followUpHTML = `
+                                    <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep fade-in-up">
+                                        ${text}
+                                    </div>
+                                `;
+                                targetContainer.insertAdjacentHTML('beforeend', followUpHTML);
+                            }
+                        }
                         streamArea.scrollTop = streamArea.scrollHeight;
                     };
 
@@ -2997,15 +3011,15 @@
                         if (el) el.remove();
                     };
 
-                    // [톡 1] 0.5초 뒤 (만세력 펼치기)
+                    // [톡 1] 0.5초 뒤 (만세력 펼치기 - 연타 첫 번째 톡)
                     showLiveTyping('liveT1');
                     setTimeout(() => {
                         removeLiveTyping('liveT1');
                         appendSisterMsg(isT 
                             ? `잠깐만 기다려봐. 태어난 날짜 원국 8글자부터 제대로 펼쳐볼게.` 
-                            : `잠깐만 기다려봐, ${callVoc}! 언니가 만세력 책부터 꼼꼼히 펼쳐볼게.`);
+                            : `잠깐만 기다려봐, ${callVoc}! 언니가 만세력 책부터 꼼꼼히 펼쳐볼게.`, false);
 
-                        // [톡 2] 1.8초 뒤 (실제 사주 최강 오행 맞춤 팩폭/공감)
+                        // [톡 2] 1.6초 뒤 (실제 사주 팩폭 - 프로필 없이 바로 이어붙임)
                         showLiveTyping('liveT2');
                         setTimeout(() => {
                             removeLiveTyping('liveT2');
@@ -3045,24 +3059,25 @@
                             };
 
                             const targetMsgObj = sazuSneakPeek[topOheng] || sazuSneakPeek.to;
-                            appendSisterMsg(isT ? targetMsgObj.T : targetMsgObj.F);
+                            // 두 번째 인자 true: 프로필 없이 바로 아래에 붙임
+                            appendSisterMsg(isT ? targetMsgObj.T : targetMsgObj.F, true);
 
-                            // [톡 3] 1.8초 뒤 (마무리 및 비밀 메모장 오픈)
+                            // [톡 3] 1.6초 뒤 (마무리 멘트 - 프로필 없이 바로 이어붙임)
                             showLiveTyping('liveT3');
                             setTimeout(() => {
                                 removeLiveTyping('liveT3');
                                 appendSisterMsg(isT 
                                     ? `정리 다 끝났어. 속 시원하게 팩트만 꽂은 <b>비밀 메모장</b> 바로 열어줄 테니까 정신 바짝 차리고 읽어.` 
-                                    : `정리 다 끝났어, ${callVoc}! 언니가 너 주려고 적어둔 <b>비밀 메모장</b> 지금 바로 열어볼게!`);
+                                    : `정리 다 끝났어, ${callVoc}! 언니가 너 주려고 적어둔 <b>비밀 메모장</b> 지금 바로 열어볼게!`, true);
 
                                 // 1.0초 뒤 도파민 팝 애니메이션과 함께 결과 화면 렌더링
                                 setTimeout(() => {
                                     renderResultView(currentResultData);
                                 }, 1000);
 
-                            }, 1800);
+                            }, 1600);
 
-                        }, 1800);
+                        }, 1600);
 
                     }, 500);
 
