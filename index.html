@@ -3824,24 +3824,43 @@
         }
                 
         function renderResultView(data) {
-                // 결과 화면 진입 즉시 새로고침 복원용 데이터 저장
-    try {
-        const restoreKey = getUserUniqueKey(data);
+                            // 결과 화면 진입 즉시 복원용 데이터 저장
+            try {
+                const restoreKey = getUserUniqueKey(data);
+                const restoreData = JSON.stringify(data);
 
-        if (restoreKey && data) {
-            localStorage.setItem(
-                'sazu_last_unique_key',
-                restoreKey
-            );
+                if (restoreKey && data) {
+                    try {
+                        localStorage.setItem(
+                            'sazu_last_unique_key',
+                            restoreKey
+                        );
 
-            localStorage.setItem(
-                'sazu_last_result_data_' + restoreKey,
-                JSON.stringify(data)
-            );
-        }
-    } catch (e) {
-        console.error('결과 저장 실패:', e);
-    }
+                        localStorage.setItem(
+                            'sazu_last_result_data_' + restoreKey,
+                            restoreData
+                        );
+                    } catch (storageError) {
+                        console.warn('localStorage 저장 실패:', storageError);
+                    }
+
+                    try {
+                        sessionStorage.setItem(
+                            'sazu_last_unique_key',
+                            restoreKey
+                        );
+
+                        sessionStorage.setItem(
+                            'sazu_last_result_data_' + restoreKey,
+                            restoreData
+                        );
+                    } catch (sessionError) {
+                        console.warn('sessionStorage 저장 실패:', sessionError);
+                    }
+                }
+            } catch (e) {
+                console.error('결과 저장 실패:', e);
+            }
             isAnalyzing = false;
             // 카톡 대화창(랜딩)과 로딩 섹션을 모두 닫아 결과 화면이 전면에 드러나도록 처리
             const landSec = document.getElementById('landingSection');
@@ -4500,22 +4519,43 @@
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
 
-                        // 2. 기존 브라우저 재방문 유저 복원
-            const lastKey = localStorage.getItem('sazu_last_unique_key');
+            // 2. 기존 브라우저 재방문 유저 복원
+            const readSavedValue = function(key) {
+                let value = null;
 
-            if (!lastKey) return;
+                try {
+                    value = localStorage.getItem(key);
+                } catch (e) {
+                    console.warn('localStorage 읽기 실패:', e);
+                }
 
-            const savedDataStr =
-                localStorage.getItem('sazu_last_result_data_' + lastKey);
+                if (!value) {
+                    try {
+                        value = sessionStorage.getItem(key);
+                    } catch (e) {
+                        console.warn('sessionStorage 읽기 실패:', e);
+                    }
+                }
 
-            const savedToken =
-                localStorage.getItem('tok_' + lastKey);
+                return value;
+            };
 
-            // 무료 테스트 모드에서는 결과 데이터만 있으면 복원
+            const lastKey =
+                readSavedValue('sazu_last_unique_key');
+
+            const savedDataStr = lastKey
+                ? readSavedValue('sazu_last_result_data_' + lastKey)
+                : null;
+
+            const savedToken = lastKey
+                ? readSavedValue('tok_' + lastKey)
+                : null;
+
+            // 무료 모드: 결과 데이터만 있으면 복원
             const canRestoreFreeMode =
                 FREE_LAUNCH_MODE && !!savedDataStr;
 
-            // 유료 모드에서는 결제 토큰까지 있어야 복원
+            // 유료 모드: 결과 데이터와 결제 토큰이 모두 있어야 복원
             const canRestorePaidMode =
                 !FREE_LAUNCH_MODE &&
                 !!savedDataStr &&
