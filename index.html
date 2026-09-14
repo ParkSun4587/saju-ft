@@ -4506,21 +4506,14 @@
             });
         } // <-- 이 닫는 중괄호(})가 누락되어 있었습니다.
 
-            window.addEventListener('DOMContentLoaded', () => {
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            // 1. 토스페이먼츠 결제 성공 리다이렉트 처리 (서버 승인 필수)
-            if (urlParams.get('payment') === 'success') {
-                handlePaymentReturn(urlParams);
-                return;
-            } else if (urlParams.get('payment') === 'fail') {
-                showToast("결제가 취소되었거나 실패했습니다.");
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
+                   // 새로고침 결과 복원
+        let restoreAlreadyAttempted = false;
 
-            // 2. 기존 브라우저 재방문 유저 복원
-            const readSavedValue = function(key) {
+        function restoreLastResult() {
+            if (restoreAlreadyAttempted) return;
+            restoreAlreadyAttempted = true;
+
+            function readSavedValue(key) {
                 let value = null;
 
                 try {
@@ -4538,60 +4531,111 @@
                 }
 
                 return value;
-            };
+            }
 
-            const lastKey =
-                readSavedValue('sazu_last_unique_key');
+            const urlParams = new URLSearchParams(window.location.search);
 
-            const savedDataStr = lastKey
-                ? readSavedValue('sazu_last_result_data_' + lastKey)
-                : null;
+            // 결제 성공 리다이렉트 처리
+            if (urlParams.get('payment') === 'success') {
+                handlePaymentReturn(urlParams);
+                return;
+            }
 
-            const savedToken = lastKey
-                ? readSavedValue('tok_' + lastKey)
-                : null;
+            if (urlParams.get('payment') === 'fail') {
+                showToast("결제가 취소되었거나 실패했습니다.");
+                window.history.replaceState(
+                    {},
+                    document.title,
+                    window.location.pathname
+                );
+            }
 
-            // 무료 모드: 결과 데이터만 있으면 복원
+            const lastKey = readSavedValue('sazu_last_unique_key');
+
+            if (!lastKey) {
+                console.warn('복원할 결과 키가 없습니다.');
+                return;
+            }
+
+            const savedDataStr = readSavedValue(
+                'sazu_last_result_data_' + lastKey
+            );
+
+            const savedToken = readSavedValue('tok_' + lastKey);
+
             const canRestoreFreeMode =
-                FREE_LAUNCH_MODE && !!savedDataStr;
+                FREE_LAUNCH_MODE &&
+                !!savedDataStr;
 
-            // 유료 모드: 결과 데이터와 결제 토큰이 모두 있어야 복원
             const canRestorePaidMode =
                 !FREE_LAUNCH_MODE &&
                 !!savedDataStr &&
                 !!savedToken;
 
-            if (canRestoreFreeMode || canRestorePaidMode) {
-                try {
-                    const savedData = JSON.parse(savedDataStr);
+            if (!canRestoreFreeMode && !canRestorePaidMode) {
+                console.warn('결과 데이터 또는 결제 토큰이 없습니다.');
+                return;
+            }
 
-                    const allSolutions = getTrueBaziSolutions(
-                        savedData.name,
-                        getLowestStatInfo(savedData.stats),
-                        savedData.yongshin,
-                        savedData.dayOheng,
-                        savedData.userGender,
-                        savedData.mbtiKey,
-                        savedData.userBirthStr,
-                        savedData.gyeokguk,
-                        savedData.gyeokStatus,
-                        savedData.realYeonun
-                    );
+            try {
+                const savedData = JSON.parse(savedDataStr);
 
-                    savedData.rawSolutionTemplate =
-                        allSolutions[savedData.concernKey || 'money'] ||
-                        allSolutions.money;
+                const allSolutions = getTrueBaziSolutions(
+                    savedData.name,
+                    getLowestStatInfo(savedData.stats),
+                    savedData.yongshin,
+                    savedData.dayOheng,
+                    savedData.userGender,
+                    savedData.mbtiKey,
+                    savedData.userBirthStr,
+                    savedData.gyeokguk,
+                    savedData.gyeokStatus,
+                    savedData.realYeonun
+                );
 
-                    currentResultData = savedData;
-                    isUnlocked = false;
+                savedData.rawSolutionTemplate =
+                    allSolutions[savedData.concernKey || 'money'] ||
+                    allSolutions.money;
 
-                    document.getElementById('landingSection').style.display = 'none';
-                    document.getElementById('loadingSection').style.display = 'none';
+                currentResultData = savedData;
+                isUnlocked = false;
 
-                    renderResultView(savedData);
-                } catch (e) {
-                    console.error('결과 복원 실패:', e);
+                const landingSection =
+                    document.getElementById('landingSection');
+
+                const loadingSection =
+                    document.getElementById('loadingSection');
+
+                if (landingSection) {
+                    landingSection.style.display = 'none';
                 }
+
+                if (loadingSection) {
+                    loadingSection.style.display = 'none';
+                }
+
+                renderResultView(savedData);
+            } catch (e) {
+                console.error('결과 복원 실패:', e);
+            }
+        }
+
+        // DOM이 아직 준비 중이면 DOMContentLoaded 이후 실행
+        // 이미 준비가 끝났으면 즉시 실행
+        if (document.readyState === 'loading') {
+            document.addEventListener(
+                'DOMContentLoaded',
+                restoreLastResult,
+                { once: true }
+            );
+        } else {
+            restoreLastResult();
+        }
+
+        // 모바일 브라우저 새로고침·복귀 대응
+        window.addEventListener('pageshow', function () {
+            if (!restoreAlreadyAttempted) {
+                restoreLastResult();
             }
         });
     
