@@ -3840,9 +3840,6 @@ function renderResultView(data) {
             if (introSec) introSec.style.display = 'none';
 
             const resultSec = document.getElementById('resultSection');
-            if (introSec) introSec.style.display = 'none';
-
-            const resultSec = document.getElementById('resultSection');
             const isT = data.currentMode === 'T';
             updateResultContentByMode(data.currentMode);
 
@@ -4524,15 +4521,7 @@ function renderResultView(data) {
                 );
             }
 
-            // 🚀 결과 화면을 보던 중 새로고침한 유저가 아니면 인트로(첫 화면) 유지!
-            const viewState = sessionStorage.getItem('unni_view_state');
-            const isPaymentReturn = urlParams.get('payment') === 'success';
-
-            if (viewState !== 'result' && !isPaymentReturn) {
-                return;
-            }
-
-            // 결과 화면을 보던 상태가 아니거나 결제 복귀가 아니면 첫 화면(인트로) 유지
+            // 결과 화면을 보던 중 새로고침한 유저가 아니면 인트로(첫 화면) 유지
             let viewState = null;
             try {
                 viewState = sessionStorage.getItem('unni_view_state');
@@ -4542,7 +4531,6 @@ function renderResultView(data) {
             if (viewState !== 'result' && !isPaymentReturn) {
                 return;
             }
-
             const lastKey = readSavedValue('sazu_last_unique_key');
 
             if (!lastKey) {
