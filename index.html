@@ -2593,6 +2593,128 @@
 
             return { status: status, sangsinFound: sangsinFound, gisinFound: gisinFound, flow: rule.flow };
         }
+        function buildAnalysisProfile(input) {
+    const elements = input.elements || {};
+    const pillars = input.pillars || {};
+    const gyeokguk = input.gyeokguk || {};
+    const gyeokStatus = input.gyeokStatus || {};
+    const dayOheng = input.dayOheng || 'to';
+
+    const elementNames = {
+        mok: '목(木)',
+        hwa: '화(火)',
+        to: '토(土)',
+        geum: '금(金)',
+        su: '수(水)'
+    };
+
+    const elementEntries = Object.keys(elementNames).map(function(key) {
+        return {
+            key: key,
+            name: elementNames[key],
+            score: Number(elements[key] || 0)
+        };
+    }).sort(function(a, b) {
+        return b.score - a.score;
+    });
+
+    const strongest = elementEntries[0] || {
+        key: dayOheng,
+        name: elementNames[dayOheng] || '토(土)',
+        score: 0
+    };
+
+    const weakest = elementEntries[elementEntries.length - 1] || {
+        key: dayOheng,
+        name: elementNames[dayOheng] || '토(土)',
+        score: 0
+    };
+
+    const allSipsin = [];
+
+    ['year', 'month', 'day', 'hour'].forEach(function(key) {
+        const pillar = pillars[key];
+        if (!pillar || !pillar.sipsin) return;
+
+        if (pillar.sipsin.gan) {
+            allSipsin.push({
+                pillar: key,
+                position: '천간',
+                value: pillar.sipsin.gan
+            });
+        }
+
+        if (pillar.sipsin.zhi) {
+            allSipsin.push({
+                pillar: key,
+                position: '지지',
+                value: pillar.sipsin.zhi
+            });
+        }
+    });
+
+    const sipsinCount = {};
+    allSipsin.forEach(function(item) {
+        sipsinCount[item.value] = (sipsinCount[item.value] || 0) + 1;
+    });
+
+    const dominantSipsin = Object.keys(sipsinCount).sort(function(a, b) {
+        return sipsinCount[b] - sipsinCount[a];
+    })[0] || null;
+
+    return {
+        dayMaster: {
+            gan: input.dayGan || '',
+            element: dayOheng,
+            elementName: elementNames[dayOheng] || '토(土)',
+            strength: input.isDayMasterStrong ? '신강' : '신약'
+        },
+
+        structure: {
+            gyeokName: gyeokguk.name || '평격',
+            gyeokSipsin: gyeokguk.sipsin || '',
+            basisGan: gyeokguk.basisGan || '',
+            touchul: !!gyeokguk.touchul,
+            status: gyeokStatus.status || '평격',
+            flow: gyeokStatus.flow || '',
+            sangsin: gyeokStatus.sangsinFound || '',
+            gisin: gyeokStatus.gisinFound || ''
+        },
+
+        elements: {
+            strongest: strongest,
+            weakest: weakest,
+            all: elementEntries
+        },
+
+        sipsin: {
+            all: allSipsin,
+            count: sipsinCount,
+            dominant: dominantSipsin
+        },
+
+        relations: {
+            hasChung: !!input.hasChung
+        },
+
+        timing: {
+            yeonun: input.realYeonun || {}
+        },
+
+        stats: input.stats || {},
+
+        evidence: [
+            '일간: ' + (input.dayGan || '미상'),
+            '일간 오행: ' + (elementNames[dayOheng] || '미상'),
+            '일간 강약: ' + (input.isDayMasterStrong ? '신강' : '신약'),
+            '격국: ' + (gyeokguk.name || '평격'),
+            '용신: ' + (elementNames[input.yongshin] || input.yongshin || '미상'),
+            '강한 오행: ' + strongest.name,
+            '부족한 오행: ' + weakest.name,
+            '격국 상태: ' + (gyeokStatus.status || '평격')
+        ]
+    };
+}
 
         // [자평진전 3단계] 실제 대운·세운(60갑자) — lunar-javascript의 getYun/getDaYun/getLiuNian을 그대로 사용.
         // 절기 기준 순행/역행, 대운수까지 라이브러리가 이미 계산해주므로 직접 만들 필요가 없다.
@@ -2811,7 +2933,29 @@
                     helpCandidates.sort((a, b) => a[1] - b[1]);
                     yongshin = helpCandidates[0][0];
                 }
-
+                const analysisProfile = buildAnalysisProfile({
+    dayGan: dGan,
+    dayOheng: dayOheng,
+    isDayMasterStrong: isDayMasterStrong,
+    yongshin: yongshin,
+    gyeokguk: gyeokguk,
+    gyeokStatus: gyeokStatus,
+    pillars: {
+        year:  { gan: yGan, zhi: yZhi, sipsin: pillarSipsin.year },
+        month: { gan: mGan, zhi: mZhi, sipsin: pillarSipsin.month },
+        day:   { gan: dGan, zhi: dZhi, sipsin: pillarSipsin.day },
+        hour:  hourZhi ? { gan: hGan, zhi: hourZhi, sipsin: pillarSipsin.hour } : null
+    },
+    elements: counts,
+    realYeonun: realYeonun,
+    stats: {
+        wealth: statWealth,
+        mental: statMental,
+        drive: statDrive,
+        network: statNetwork
+    },
+    hasChung: hasChung
+});
                 return {
                     mbtiKey: calculatedKey,
                     characterTitle: matchedProfile.title_T,
@@ -2820,6 +2964,7 @@
                     profile: matchedProfile,
                     dayOheng: dayOheng, 
                     yongshin: yongshin,
+                    analysisProfile: analysisProfile,
                     isDayMasterStrong: isDayMasterStrong,
                     gyeokguk: gyeokguk,
                     gyeokStatus: gyeokStatus,
