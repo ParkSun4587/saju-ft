@@ -482,7 +482,7 @@
     <main id="landingSection" style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center w-full h-[100dvh] overflow-hidden bg-slate-950 select-none">
         
         <!-- 모바일 크기 고정 스마트폰 프레임 뷰 -->
-        <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col justify-between overflow-hidden bg-[#abc1d1] shadow-2xl">
+        <div id="landingFrame" class="relative w-full max-w-[430px] h-[100dvh] flex flex-col justify-between overflow-hidden bg-[#abc1d1] shadow-2xl">
             
             <!-- 카톡 상단 헤더 바 -->
             <header class="bg-[#abc1d1]/95 backdrop-blur-md px-3.5 py-1.5 flex items-center justify-between border-b border-black/5 shrink-0 z-20" style="padding-top: calc(env(safe-area-inset-top, 0px) + 6px);">
@@ -662,7 +662,7 @@
 
     <!-- 2. 카톡 실시간 분석 로딩 섹션 (PC에서도 430px 모바일 프레임 완벽 고정) -->
     <main id="loadingSection" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 w-full h-[100dvh] overflow-hidden select-none">
-        <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col bg-[#abc1d1] shadow-2xl overflow-hidden">
+        <div id="loadingFrame" class="relative w-full max-w-[430px] h-[100dvh] flex flex-col bg-[#abc1d1] shadow-2xl overflow-hidden">
         
         <!-- 카톡 상단 헤더 바 -->
         <header class="bg-[#abc1d1]/95 backdrop-blur-md px-4 py-2.5 flex items-center justify-between border-b border-black/5 shrink-0" style="padding-top: calc(env(safe-area-inset-top, 0px) + 8px);">
@@ -4188,16 +4188,39 @@
             window.scrollTo({ top: 0, behavior: 'instant' });
         }
 
-        // 전역 이벤트 위임으로 폼 내 인풋 포커스 시 항상 부드러운 스크롤 및 버튼 시인성 보장
-        document.addEventListener('focusin', (e) => {
-            if (e.target && e.target.closest('#sajuForm')) {
-                setTimeout(() => {
-                    const chatStream = document.getElementById('chatStreamArea');
-                    if (chatStream) {
-                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // 모바일 가상 키보드 팝업 시 화면 높이 자동 축소 및 부드러운 스크롤 보장
+        function initMobileKeyboardHandler() {
+            if (window.visualViewport) {
+                const resizeHandler = () => {
+                    const landingFrame = document.getElementById('landingFrame');
+                    const loadingFrame = document.getElementById('loadingFrame');
+                    const currentHeight = window.visualViewport.height + 'px';
+
+                    if (landingFrame && document.getElementById('landingSection').style.display !== 'none') {
+                        landingFrame.style.height = currentHeight;
                     }
-                }, 300);
+                    if (loadingFrame && document.getElementById('loadingSection').style.display !== 'none') {
+                        loadingFrame.style.height = currentHeight;
+                    }
+                };
+
+                window.visualViewport.addEventListener('resize', resizeHandler);
+                window.visualViewport.addEventListener('scroll', resizeHandler);
             }
+
+            // 인풋 포커스 시 항상 해당 영역으로 부드럽게 스크롤
+            document.addEventListener('focusin', (e) => {
+                if (e.target && e.target.closest('#sazuForm')) {
+                    setTimeout(() => {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 250);
+                }
+            });
+        }
+
+        // 페이지 로드 시 실행
+        window.addEventListener('DOMContentLoaded', () => {
+            initMobileKeyboardHandler();
         });
         
                 // [수정] 반대편 언니 시선으로 즉시 전환 (텍스트 100% 즉시 교체 및 스크롤 최적화)
