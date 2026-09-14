@@ -1360,17 +1360,17 @@
                 if (miniProfile) miniProfile.src = './로아.png';
                 if (document.getElementById('chatBubbleProfileMiniTyping')) document.getElementById('chatBubbleProfileMiniTyping').src = './로아.png';
                 if (sisterBadge) sisterBadge.textContent = '로아 언니 (F)';
-                if (senderTitle) senderTitle.textContent = '로아 언니';
+                if (senderTitle) senderTitle.textContent = '로아 언니 (F)';
                 if (sisterText) {
                     sisterText.innerHTML = '아이고 왔어? ㅠㅠ 무슨 일 있었어?<br>속마음 다 털어놔 봐. 언니가 무조건 네 편 들어줄 테니까!<br>일단 정확하게 이름이랑 생일 먼저 적어줘 🥺💕';
                 }
             } else {
-                // 서아 (극T 모드) - 줄바꿈 균형 최적화
+                // 서아 (극T 모드)
                 if (sisterImg) sisterImg.src = './서아.png';
                 if (miniProfile) miniProfile.src = './서아.png';
                 if (document.getElementById('chatBubbleProfileMiniTyping')) document.getElementById('chatBubbleProfileMiniTyping').src = './서아.png';
                 if (sisterBadge) sisterBadge.textContent = '서아 언니 (T)';
-                if (senderTitle) senderTitle.textContent = '서아 언니';
+                if (senderTitle) senderTitle.textContent = '서아 언니 (T)';
                 if (sisterText) {
                     sisterText.innerHTML = '왔어? 시간 낭비 말고 본론부터 가자.<br>사주 원국 깔 테니까 이름이랑 생년월일시 똑바로 찍어.';
                 }
@@ -2837,12 +2837,21 @@
                 hrs = hrs % 12 || 12;
                 const currentChatTime = `${ampm} ${hrs}:${mins}`;
 
+                // 실시간 전송 시간 계산 함수
+                const getCurrTime = () => {
+                    const now = new Date();
+                    let h = now.getHours();
+                    const m = now.getMinutes().toString().padStart(2, '0');
+                    const ampm = h >= 12 ? '오후' : '오전';
+                    h = h % 12;
+                    h = h ? h : 12;
+                    return `${ampm} ${h}:${m}`;
+                };
+
+                // 1) 유저 전송 톡: '읽음' 텍스트를 완전히 없애고 실제 카톡처럼 시간만 하단에 배치
                 const userBubbleHTML = `
                     <div class="flex justify-end items-end gap-1.5 fade-in-up">
-                        <div class="flex flex-col items-end shrink-0 mb-0.5">
-                            <span class="text-[8.5px] text-[#2563eb] font-bold leading-none mb-0.5">읽음</span>
-                            <span class="text-[9px] text-slate-500 font-medium leading-none">${currentChatTime}</span>
-                        </div>
+                        <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">${getCurrTime()}</span>
                         <div class="bg-[#fee500] text-slate-900 text-xs font-bold px-3.5 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[240px] leading-snug break-keep">
                             ${name} / ${formattedBirth} / 언니 내 사주 얼른 봐줘! 💌
                         </div>
@@ -2850,12 +2859,12 @@
                 `;
                 if (streamArea) streamArea.insertAdjacentHTML('beforeend', userBubbleHTML);
 
-                // 2단계: 언니의 타이핑 인디케이터(...) 출력
+                // 2) 타이핑 인디케이터
                 const typingId = 'tempTyping_' + Date.now();
                 const profileImg = (mode === 'T') ? './서아.png' : './로아.png';
                 const sisterName = (mode === 'T') ? '서아 언니 (T)' : '로아 언니 (F)';
                 const typingHTML = `
-                    <div id="${typingId}" class="flex items-start gap-1.5 fade-in-up">
+                    <div id="${typingId}" class="flex items-start gap-1.5 fade-in-up mt-1">
                         <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
                         <div>
                             <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
@@ -2872,12 +2881,11 @@
                     streamArea.scrollTop = streamArea.scrollHeight;
                 }
 
-                // 3단계: 0.8초 뒤 타이핑을 지우고 언니의 확인 톡 출력
+                // 3) 0.6초 뒤 언니의 첫 접수 톡 + 연타 톡 시퀀스 시작
                 setTimeout(() => {
                     const typingEl = document.getElementById(typingId);
                     if (typingEl) typingEl.remove();
 
-                    // 유저가 선택한 고민 키워드를 친숙한 한글 라벨로 변환
                     const concernLabels = {
                         'money': '돈복·텅장',
                         'career': '취업·이직',
@@ -2888,49 +2896,41 @@
                     };
                     const selectedConcernText = concernLabels[concernKey] || '고민';
 
-                    // 2글자 이상(박태양->태양, 김환->환, 이지우->지우) 모두 성을 분리
                     const rawN = name.trim();
                     const displayName = rawN.length >= 2 ? rawN.slice(1) : rawN;
-
-                    // 받침 유무 판별
                     const lastChar = displayName.charCodeAt(displayName.length - 1);
                     const hasBatchim = (lastChar >= 0xAC00 && lastChar <= 0xD7A3) ? ((lastChar - 0xAC00) % 28 > 0) : false;
-
-                    // 받침이 있으면 '태양이 / 환이', 받침이 없으면 '지우'
                     const callName = hasBatchim ? `${displayName}이` : displayName;
+                    const callVoc = hasBatchim ? `${displayName}아` : `${displayName}야`;
 
-                    // 1:1 대화 흐름 반응 (기다리라는 중복 멘트 제거 및 접수 완료 알림)
                     const ackText = (mode === 'T') 
                         ? `${callName}구나? [${selectedConcernText}] 고민 접수 완료. 데이터 바로 분석한다.` 
                         : `어머, 우리 ${callName}구나! [${selectedConcernText}] 때문에 혼자 속앓이 진짜 많았지? 꼼꼼히 다 봐줄게 🥺💕`;
 
                     const sisterAckHTML = `
-                        <div class="flex items-start gap-1.5 fade-in-up">
+                        <div class="flex items-start gap-1.5 fade-in-up mt-1">
                             <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
                             <div>
                                 <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
                                 <div class="flex items-end gap-1.5">
-                                    <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 max-w-[260px] break-keep">
+                                    <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep">
                                         ${ackText}
                                     </div>
-                                    <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">${currentChatTime}</span>
+                                    <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">${getCurrTime()}</span>
                                 </div>
                             </div>
                         </div>
                     `;
-                    // 중복 출력 방지: 한 번만 정확하게 삽입
                     if (streamArea) {
                         streamArea.insertAdjacentHTML('beforeend', sisterAckHTML);
                         streamArea.scrollTop = streamArea.scrollHeight;
                     }
                     
-            // 뒤로 가기 시 사이트 이탈 방지
                     try { history.pushState({ view: 'result' }, '', location.pathname + location.search); } catch (e) {}
 
                     mode = mode || selectedSplitMode || 'F';
                     const isT = mode === 'T';
 
-                    // 사주 정밀 만세력 계산 준비
                     let calcYear = year, calcMonth = month, calcDay = day;
                     if (isLunar && typeof Lunar !== 'undefined') {
                         try {
@@ -2938,7 +2938,6 @@
                             const solarObj = lunarObj.getSolar();
                             calcYear = solarObj.getYear(); calcMonth = solarObj.getMonth(); calcDay = solarObj.getDay();
                         } catch (err) {
-                            console.warn("음력 변환 에러:", err);
                             showToast('입력하신 음력 날짜를 변환할 수 없습니다.');
                             document.getElementById('birthDateInput').focus();
                             return;
@@ -2955,42 +2954,42 @@
                         userCalendar: isLunar ? 'lunar' : 'solar',
                         currentMode: mode, concernKey: concernKey, ...sazuResult, rawSolutionTemplate: solutionTemplate 
                     };
-                        // 2단계/3단계 동적 톡용 호칭 및 메시지 출력 헬퍼
-                    const callSubj = callName; // 위에서 이미 계산된 displayName + 받침 조사
-                    const callVoc = hasBatchim ? `${displayName}아` : `${displayName}야`;
 
-                    const appendSingleMsg = (text) => {
+                    const appendSisterMsg = (text) => {
                         const bubbleHTML = `
-                            <div class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-2">
+                            <div class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-1.5">
                                 <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
                                 <div>
                                     <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
                                     <div class="flex items-end gap-1.5">
-                                        <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 break-keep">
+                                        <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep">
                                             ${text}
                                         </div>
-                                        <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">${currentChatTime}</span>
+                                        <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">${getCurrTime()}</span>
                                     </div>
                                 </div>
                             </div>
                         `;
                         streamArea.insertAdjacentHTML('beforeend', bubbleHTML);
-                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                        streamArea.scrollTop = streamArea.scrollHeight;
                     };
 
                     const showLiveTyping = (id) => {
                         const tHTML = `
-                            <div id="${id}" class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-2">
+                            <div id="${id}" class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-1.5">
                                 <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
-                                <div class="typing-indicator mt-1">
-                                    <div class="typing-dot"></div>
-                                    <div class="typing-dot"></div>
-                                    <div class="typing-dot"></div>
+                                <div>
+                                    <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
+                                    <div class="typing-indicator mt-0.5">
+                                        <div class="typing-dot"></div>
+                                        <div class="typing-dot"></div>
+                                        <div class="typing-dot"></div>
+                                    </div>
                                 </div>
                             </div>
                         `;
                         streamArea.insertAdjacentHTML('beforeend', tHTML);
-                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                        streamArea.scrollTop = streamArea.scrollHeight;
                     };
 
                     const removeLiveTyping = (id) => {
@@ -3002,11 +3001,11 @@
                     showLiveTyping('liveT1');
                     setTimeout(() => {
                         removeLiveTyping('liveT1');
-                        appendSingleMsg(isT 
+                        appendSisterMsg(isT 
                             ? `잠깐만 기다려봐. 태어난 날짜 원국 8글자부터 제대로 펼쳐볼게.` 
                             : `잠깐만 기다려봐, ${callVoc}! 언니가 만세력 책부터 꼼꼼히 펼쳐볼게.`);
 
-                        // [톡 2] 2.2초 뒤 (실제 사주 최강 오행 팩폭)
+                        // [톡 2] 1.8초 뒤 (실제 사주 최강 오행 맞춤 팩폭/공감)
                         showLiveTyping('liveT2');
                         setTimeout(() => {
                             removeLiveTyping('liveT2');
@@ -3024,50 +3023,50 @@
 
                             const sazuSneakPeek = {
                                 hwa: {
-                                    T: `헐... ${callSubj} 너 사주에 불기운이 너무 세서 감정 앞서고 충동 조절 안 되는 타입이네? 돈이랑 멘탈 샐 구멍이 훤히 보인다 너.`,
-                                    F: `세상에 우리 ${callSubj}... 사주에 뜨거운 불기운이 가득해서 혼자 속에서 천불 나고 답답했을 텐데 그동안 어떻게 다 참고 버텨왔어... ㅠㅠ`
+                                    T: `헐... ${callName} 너 사주에 불기운이 너무 세서 감정 앞서고 충동 조절 안 되는 타입이네? 돈이랑 멘탈 샐 구멍이 훤히 보인다 너.`,
+                                    F: `세상에 우리 ${callName}... 사주에 뜨거운 불기운이 가득해서 혼자 속에서 천불 나고 답답했을 텐데 그동안 어떻게 다 참고 버텨왔어... ㅠㅠ`
                                 },
                                 su: {
-                                    T: `헐... ${callSubj} 너 사주에 물이 너무 많아서 밤마다 잡생각에 침잠하느라 실행 다 날려먹는 타입이네? 머릿속 엑셀 좀 그만 돌려.`,
-                                    F: `세상에 우리 ${callSubj}... 사주에 물기운이 넘쳐서 밤마다 온갖 불안이랑 고민 혼자 떠안고 눈물 삼켰구나... 마음고생 진짜 심했겠다.`
+                                    T: `헐... ${callName} 너 사주에 물이 너무 많아서 밤마다 잡생각에 침잠하느라 실행 다 날려먹는 타입이네? 머릿속 엑셀 좀 그만 돌려.`,
+                                    F: `세상에 우리 ${callName}... 사주에 물기운이 넘쳐서 밤마다 온갖 불안이랑 고민 혼자 떠안고 눈물 삼켰구나... 마음고생 진짜 심했겠다.`
                                 },
                                 mok: {
-                                    T: `헐... ${callSubj} 너 사주 보니까 나무 기운이 뻗쳐서 지기 싫어하는 고집이랑 자존심 장난 아니네? 남한테 아쉬운 소리 못 해서 혼자 손해 보지?`,
-                                    F: `세상에 우리 ${callSubj}... 사주에 곧은 나무 기운이 있어서 남한테 짐 되기 싫어 혼자 꼿꼿하게 버티느라 얼마나 외롭고 아팠을까...`
+                                    T: `헐... ${callName} 너 사주 보니까 나무 기운이 뻗쳐서 지기 싫어하는 고집이랑 자존심 장난 아니네? 남한테 아쉬운 소리 못 해서 혼자 손해 보지?`,
+                                    F: `세상에 우리 ${callName}... 사주에 곧은 나무 기운이 있어서 남한테 짐 되기 싫어 혼자 꼿꼿하게 버티느라 얼마나 외롭고 아팠을까...`
                                 },
                                 geum: {
-                                    T: `헐... ${callSubj} 너 사주에 쇠기운이 서슬 퍼래서 완벽주의 잣대로 스스로를 들볶는 타입이네? 주변 꼬락서니 보면서 복장 터졌지?`,
-                                    F: `세상에 우리 ${callSubj}... 사주에 차가운 쇠기운이 강해서 남에게 흐트러진 모습 안 보이려고 늘 긴장하며 채찍질해왔구나... ㅠㅠ`
+                                    T: `헐... ${callName} 너 사주에 쇠기운이 서슬 퍼래서 완벽주의 잣대로 스스로를 들볶는 타입이네? 주변 꼬락서니 보면서 복장 터졌지?`,
+                                    F: `세상에 우리 ${callName}... 사주에 차가운 쇠기운이 강해서 남에게 흐트러진 모습 안 보이려고 늘 긴장하며 채찍질해왔구나... ㅠㅠ`
                                 },
                                 to: {
-                                    T: `헐... ${callSubj} 너 사주에 흙이 너무 많아서 속마음 절대 안 까고 미련 곰탱이처럼 버티는 타입이네? 골치 아픈 거 회피한다고 해결 안 돼.`,
-                                    F: `세상에 우리 ${callSubj}... 사주에 묵직한 흙기운이 많아서 남들 실수 뒤치다꺼리 혼자 다 떠안고 속으로 삭여왔구나... 정말 고생 많았어.`
+                                    T: `헐... ${callName} 너 사주에 흙이 너무 많아서 속마음 절대 안 까고 미련 곰탱이처럼 버티는 타입이네? 골치 아픈 거 회피한다고 해결 안 돼.`,
+                                    F: `세상에 우리 ${callName}... 사주에 묵직한 흙기운이 많아서 남들 실수 뒤치다꺼리 혼자 다 떠안고 속으로 삭여왔구나... 정말 고생 많았어.`
                                 }
                             };
 
                             const targetMsgObj = sazuSneakPeek[topOheng] || sazuSneakPeek.to;
-                            appendSingleMsg(isT ? targetMsgObj.T : targetMsgObj.F);
+                            appendSisterMsg(isT ? targetMsgObj.T : targetMsgObj.F);
 
-                            // [톡 3] 2.4초 뒤 (메모장 완료 & 결과 화면 부드럽게 연결)
+                            // [톡 3] 1.8초 뒤 (마무리 및 비밀 메모장 오픈)
                             showLiveTyping('liveT3');
                             setTimeout(() => {
                                 removeLiveTyping('liveT3');
-                                appendSingleMsg(isT 
+                                appendSisterMsg(isT 
                                     ? `정리 다 끝났어. 속 시원하게 팩트만 꽂은 <b>비밀 메모장</b> 바로 열어줄 테니까 정신 바짝 차리고 읽어.` 
                                     : `정리 다 끝났어, ${callVoc}! 언니가 너 주려고 적어둔 <b>비밀 메모장</b> 지금 바로 열어볼게!`);
 
-                                // 1.2초 뒤 결과 화면 렌더링
+                                // 1.0초 뒤 도파민 팝 애니메이션과 함께 결과 화면 렌더링
                                 setTimeout(() => {
                                     renderResultView(currentResultData);
-                                }, 1200);
+                                }, 1000);
 
-                            }, 2400);
+                            }, 1800);
 
-                        }, 2200);
+                        }, 1800);
 
                     }, 500);
 
-                }, 800); // <-- 누락되었던 800ms setTimeout 닫는 괄호 복구
+                }, 600);
 
             } catch (error) {
                 isAnalyzing = false;
