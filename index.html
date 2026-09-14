@@ -3812,7 +3812,7 @@
         }
 
         let isSavingCard = false;
-        async function saveInstaCardImage() {
+        async function saveInstaCardImage(event) {
             if (isSavingCard) return; 
             if (!currentResultData) return;
 
@@ -4142,6 +4142,8 @@
     
         // 뒤로 가기(안드로이드 백버튼 / iOS 스와이프) 시 사이트 이탈 방지
         window.addEventListener('popstate', function () {
+            clearAllTimeouts(); // 뒤로가기 시 꼬임 완벽 방지
+            
             // 1) 공유 모달이 열려 있으면 공유 모달만 닫고 종료
             const shareModal = document.getElementById('shareModal');
             if (shareModal && (shareModal.style.display === 'flex' || !shareModal.classList.contains('hidden'))) {
@@ -4240,6 +4242,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function startFreshAnalysis() {
+            clearAllTimeouts(); // 애니메이션 타이머 강제 종료 (유령 렌더링 방어)
             // 구매 복원 키는 유지 — 결제자가 재방문 시 리포트 복구 가능하도록
             isUnlocked = false;
             premiumBuffer = null;
@@ -4443,143 +4446,20 @@
             
                         window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
-
         // ============================================================
-        // 📱 생년월일 입력 시 키보드 위 자동 정렬
+        // 📱 폼 내 인풋 포커스 시 렉 없는 부드러운 스크롤 보장
         // ============================================================
-        (function setupBirthDateKeyboardScroll() {
-
-            let scrollTimer = null;
-            let isAdjustingBirthScroll = false;
-
-            function adjustBirthFormPosition() {
-
-                const birthInput = document.getElementById('birthDateInput');
-
-                if (!birthInput) return;
-                if (document.activeElement !== birthInput) return;
-                if (isAdjustingBirthScroll) return;
-
-                const streamArea = document.getElementById('chatStreamArea');
-                const sendArea = document.getElementById('splitNextButton');
-
-                if (!streamArea || !sendArea) return;
-
-                clearTimeout(scrollTimer);
-
-                scrollTimer = setTimeout(() => {
-
-                    requestAnimationFrame(() => {
-
-                        const birthBlock =
-                            birthInput.parentElement?.parentElement || birthInput;
-
-                        const streamRect =
-                            streamArea.getBoundingClientRect();
-
-                        const birthRect =
-                            birthBlock.getBoundingClientRect();
-
-                        const sendRect =
-                            sendArea.getBoundingClientRect();
-
-                        const viewport = window.visualViewport;
-
-                        const visibleBottom = viewport
-                            ? viewport.offsetTop + viewport.height
-                            : window.innerHeight;
-
-                        const topLimit = streamRect.top + 10;
-
-                        const bottomLimit =
-                            Math.min(streamRect.bottom, visibleBottom) - 14;
-
-                        const blockHeight =
-                            sendRect.bottom - birthRect.top;
-
-                        const availableHeight =
-                            bottomLimit - topLimit;
-
-                        let desiredBirthTop = topLimit;
-
-                        if (blockHeight <= availableHeight) {
-                            desiredBirthTop =
-                                bottomLimit - blockHeight;
-                        }
-
-                        const delta =
-                            birthRect.top - desiredBirthTop;
-
-                        // 5px 미만의 작은 움직임은 무시
-                        if (Math.abs(delta) < 5) return;
-
-                        isAdjustingBirthScroll = true;
-
-                        streamArea.scrollTo({
-                            top: Math.max(
-                                0,
-                                streamArea.scrollTop + delta
-                            ),
-                            behavior: 'smooth'
-                        });
-
-                        setTimeout(() => {
-                            isAdjustingBirthScroll = false;
-                        }, 350);
-
-                    });
-
-                }, 80);
-            }
-
-
-            // 생년월일 칸을 눌렀을 때 실행
-            document.addEventListener('focusin', function(e) {
-
-                if (!e.target) return;
-                if (e.target.id !== 'birthDateInput') return;
-
-                clearTimeout(scrollTimer);
-
-                scrollTimer = setTimeout(() => {
-                    adjustBirthFormPosition();
-                }, 280);
-
-            });
-
-
-            // 모바일 키보드가 올라오면서 화면 크기가 바뀔 때 보정
-            if (window.visualViewport) {
-
-                let viewportTimer = null;
-
-                window.visualViewport.addEventListener(
-                    'resize',
-                    function() {
-
-                        if (!document.activeElement) return;
-
-                        if (
-                            document.activeElement.id !==
-                            'birthDateInput'
-                        ) {
-                            return;
-                        }
-
-                        clearTimeout(viewportTimer);
-
-                        viewportTimer = setTimeout(() => {
-                            adjustBirthFormPosition();
-                        }, 120);
-
+        document.addEventListener('focusin', (e) => {
+            if (e.target && e.target.closest('#sazuForm')) {
+                setTimeout(() => {
+                    const chatStream = document.getElementById('chatStreamArea');
+                    if (chatStream) {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
-                );
+                }, 300);
             }
-
-        })();
-
-
+        });
+        
     </script>
     
 <!-- 6. 약관 및 개인정보처리방침 팝업 모달 (최상위 독립 배치) -->
