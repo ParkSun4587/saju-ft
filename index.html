@@ -2955,31 +2955,40 @@
                         currentMode: mode, concernKey: concernKey, ...sazuResult, rawSolutionTemplate: solutionTemplate 
                     };
 
-                    // 진짜 카톡처럼 첫 톡에만 프로필/이름을 띄우고 연속 톡은 말풍선만 연결하는 함수
+                    // 진짜 카톡처럼 연속 톡의 맨 마지막 말풍선 옆에만 시간을 붙여주는 함수
                     const appendSisterMsg = (text, isFollowUp = false) => {
-                        let bubbleHTML = '';
+                        // 기존에 붙어있던 연속 톡의 이전 시간 태그는 깔끔하게 삭제
+                        const prevTimes = streamArea.querySelectorAll('.sister-last-time');
+                        prevTimes.forEach(el => el.remove());
+
                         if (!isFollowUp) {
-                            // 연타 톡의 첫 번째: 프로필 + 이름 + 말풍선
-                            bubbleHTML = `
+                            // 연타 톡의 첫 번째: 프로필 + 이름 + 말풍선 + 시간
+                            const bubbleHTML = `
                                 <div class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-2 sister-chat-group">
                                     <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
                                     <div class="flex flex-col gap-1 sister-bubble-container">
                                         <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
-                                        <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep">
-                                            ${text}
+                                        <div class="flex items-end gap-1.5">
+                                            <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep">
+                                                ${text}
+                                            </div>
+                                            <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5 sister-last-time">${getCurrTime()}</span>
                                         </div>
                                     </div>
                                 </div>
                             `;
                             streamArea.insertAdjacentHTML('beforeend', bubbleHTML);
                         } else {
-                            // 연타 톡의 연속(2번째, 3번째): 프로필 없이 기존 말풍선 바로 밑에 착 달라붙음
+                            // 연타 톡의 연속(2번째, 3번째): 이전 말풍선 아래에 붙고, 시간은 맨 마지막 말풍선 옆으로 이동
                             const containers = streamArea.querySelectorAll('.sister-bubble-container');
                             const targetContainer = containers[containers.length - 1];
                             if (targetContainer) {
                                 const followUpHTML = `
-                                    <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep fade-in-up">
-                                        ${text}
+                                    <div class="flex items-end gap-1.5 fade-in-up">
+                                        <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep">
+                                            ${text}
+                                        </div>
+                                        <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5 sister-last-time">${getCurrTime()}</span>
                                     </div>
                                 `;
                                 targetContainer.insertAdjacentHTML('beforeend', followUpHTML);
@@ -2987,7 +2996,6 @@
                         }
                         streamArea.scrollTop = streamArea.scrollHeight;
                     };
-
                     const showLiveTyping = (id) => {
                         const tHTML = `
                             <div id="${id}" class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-1.5">
