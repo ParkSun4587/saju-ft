@@ -3828,7 +3828,7 @@
 
         let isSavingCard = false;
         async function saveInstaCardImage() {
-            if (isSavingCard) return; // 중복 터치 즉시 차단
+            if (isSavingCard) return; 
             if (!currentResultData) return;
 
             const cardElement = document.getElementById('storyCard');
@@ -3856,27 +3856,51 @@
             try {
                 const userName = (currentResultData.name || '내').trim();
                 const canvas = await html2canvas(cardElement, {
-                    scale: 3, // 고화질 규격 유지
+                    scale: 3, 
                     useCORS: true,
                     allowTaint: true,
                     backgroundColor: '#ffffff',
                     logging: false
                 });
 
-                const imageURI = canvas.toDataURL('image/png');
+                canvas.toBlob(async function(blob) {
+                    const fileName = `${userName}_어떤언니_본캐카드.png`;
+                    const file = new File([blob], fileName, { type: 'image/png' });
 
-                const link = document.createElement('a');
-                link.download = `${userName}_어떤언니_본캐카드.png`;
-                link.href = imageURI;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                showToast("✨ 본캐 카드가 저장되었습니다!");
+                    // 모바일(iOS 사파리/카톡, 안드로이드) 네이티브 공유 및 사진 저장 지원
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: '내 찐성향 본캐 카드',
+                            });
+                            showToast("✨ 공유 및 저장이 완료되었습니다!");
+                        } catch (e) {
+                            // 사용자가 공유 창을 닫은 경우 예외 무시
+                        }
+                    } else {
+                        // PC 환경 파일 직접 다운로드
+                        const imageURI = canvas.toDataURL('image/png');
+                        const link = document.createElement('a');
+                        link.download = fileName;
+                        link.href = imageURI;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        showToast("✨ 본캐 카드가 저장되었습니다!");
+                    }
+                    
+                    isSavingCard = false;
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                        saveBtn.innerHTML = originalBtnText;
+                    }
+                }, 'image/png');
+                
             } catch (err) {
                 console.error("카드 저장 오류:", err);
                 showToast("카드 저장 중 문제가 발생했습니다.");
-            } finally {
                 isSavingCard = false;
                 if (saveBtn) {
                     saveBtn.disabled = false;
