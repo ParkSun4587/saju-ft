@@ -2829,10 +2829,20 @@
                     ? `${birthStr.slice(0,4)}.${birthStr.slice(4,6)}.${birthStr.slice(6,8)}` 
                     : birthStr;
 
-                // 유저가 언니한테 직접 보낸 카톡 느낌으로 자연스럽게 변경
+                // 현재 실시간 시간 구하기
+                const now = new Date();
+                let hrs = now.getHours();
+                const mins = now.getMinutes().toString().padStart(2, '0');
+                const ampm = hrs >= 12 ? '오후' : '오전';
+                hrs = hrs % 12 || 12;
+                const currentChatTime = `${ampm} ${hrs}:${mins}`;
+
                 const userBubbleHTML = `
                     <div class="flex justify-end items-end gap-1.5 fade-in-up">
-                        <span class="text-[9px] text-slate-500 font-semibold mb-1">읽음</span>
+                        <div class="flex flex-col items-end shrink-0 mb-0.5">
+                            <span class="text-[8.5px] text-[#2563eb] font-bold leading-none mb-0.5">읽음</span>
+                            <span class="text-[9px] text-slate-500 font-medium leading-none">${currentChatTime}</span>
+                        </div>
                         <div class="bg-[#fee500] text-slate-900 text-xs font-bold px-3.5 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[240px] leading-snug break-keep">
                             ${name} / ${formattedBirth} / 언니 내 사주 얼른 봐줘! 💌
                         </div>
@@ -2899,8 +2909,11 @@
                             <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
                             <div>
                                 <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
-                                <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 max-w-[260px] break-keep">
-                                    ${ackText}
+                                <div class="flex items-end gap-1.5">
+                                    <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 max-w-[260px] break-keep">
+                                        ${ackText}
+                                    </div>
+                                    <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">${currentChatTime}</span>
                                 </div>
                             </div>
                         </div>
@@ -2952,8 +2965,11 @@
                                 <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
                                 <div>
                                     <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
-                                    <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 break-keep">
-                                        ${text}
+                                    <div class="flex items-end gap-1.5">
+                                        <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 break-keep">
+                                            ${text}
+                                        </div>
+                                        <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">${currentChatTime}</span>
                                     </div>
                                 </div>
                             </div>
