@@ -892,7 +892,7 @@
 
                     <!-- 2순위: 결제 유저용 친구 사주 보기 -->
                     <button type="button" onclick="startFreshAnalysis()" class="w-full py-3 px-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
-                        <span>👥 다른 사람(친구/최애) 사주도 까보기</span>
+                        <span>🔍 다른 사람(친구/최애) 사주도 까보기</span>
                     </button>
                 </div>
 
@@ -3143,22 +3143,27 @@
 
             if (isT) {
                 // 현재 T모드 -> F(로아)로 전환 배너 세팅
-                if (switchCard) switchCard.className = "relative overflow-hidden card-box p-5 rounded-3xl cursor-pointer active:scale-98 transition-all text-center border-2 border-rose-300 bg-white shadow-[0_4px_16px_rgba(251,113,133,0.15)] mt-4";
+                if (switchCard) {
+                    switchCard.className = "relative overflow-hidden p-4 sm:p-5 rounded-3xl cursor-pointer active:scale-98 transition-all text-center border-2 border-rose-300 bg-white shadow-[0_4px_16px_rgba(251,113,133,0.15)] mt-4";
+                    switchCard.style.borderColor = "#fda4af";
+                }
                 if (switchImg) switchImg.src = "./로아.png";
-                if (switchBadge) { switchBadge.textContent = "🌸 로아 언니(F) 모드로 전환"; switchBadge.className = "text-[11px] font-black px-3 py-1 rounded-full bg-rose-100 text-rose-600 inline-block"; }
+                if (switchBadge) { switchBadge.textContent = "극F 공감 · 로아 언니 모드"; switchBadge.className = "text-[11px] font-black px-3 py-1 rounded-full bg-rose-100 text-rose-600 inline-block tracking-tight"; }
                 if (switchTitle) switchTitle.innerHTML = `뼈 맞았으니, 이번엔 <b class="text-rose-600">따뜻한 위로</b> 받아볼래?`;
                 const bg = document.getElementById('switchTargetBg');
                 if (bg) bg.className = "absolute inset-0 bg-gradient-to-br from-rose-50 to-white opacity-60 pointer-events-none";
             } else {
                 // 현재 F모드 -> T(서아)로 전환 배너 세팅
-                if (switchCard) switchCard.className = "relative overflow-hidden card-box p-5 rounded-3xl cursor-pointer active:scale-98 transition-all text-center border-2 border-sky-300 bg-white shadow-[0_4px_16px_rgba(56,189,248,0.15)] mt-4";
+                if (switchCard) {
+                    switchCard.className = "relative overflow-hidden p-4 sm:p-5 rounded-3xl cursor-pointer active:scale-98 transition-all text-center border-2 border-sky-300 bg-white shadow-[0_4px_16px_rgba(56,189,248,0.15)] mt-4";
+                    switchCard.style.borderColor = "#7dd3fc";
+                }
                 if (switchImg) switchImg.src = "./서아.png";
-                if (switchBadge) { switchBadge.textContent = "🧊 서아 언니(T) 모드로 전환"; switchBadge.className = "text-[11px] font-black px-3 py-1 rounded-full bg-sky-100 text-sky-600 inline-block"; }
+                if (switchBadge) { switchBadge.textContent = "극T 팩폭 · 서아 언니 모드"; switchBadge.className = "text-[11px] font-black px-3 py-1 rounded-full bg-sky-100 text-sky-600 inline-block tracking-tight"; }
                 if (switchTitle) switchTitle.innerHTML = `위로받았으니, 이번엔 <b class="text-sky-600">자비 없는 팩폭 처방</b> 볼래?`;
                 const bg = document.getElementById('switchTargetBg');
                 if (bg) bg.className = "absolute inset-0 bg-gradient-to-br from-sky-50 to-white opacity-60 pointer-events-none";
             }
-
             const prof = SAZU_CHARACTER_PROFILES[mKey] || SAZU_CHARACTER_PROFILES['ESTJ'];
             const lowest = getLowestStatInfo(data.stats);
 
@@ -3248,7 +3253,7 @@
 
                         <!-- 메모 하단 실전 체크리스트 박스 -->
                         <div class="mt-2.5 pt-2.5 border-t border-dashed border-amber-200/60 flex items-start gap-2 bg-amber-50/40 p-2.5 rounded-xl text-left">
-                            <span class="${checkColor} font-black text-xs shrink-0 mt-0.5">☑️</span>
+                            <span class="${checkColor} font-black text-sm shrink-0 mt-0.5">✔</span>
                             <div class="text-[11px] font-bold text-slate-800 leading-relaxed break-keep flex-1 min-w-0" style="text-wrap: balance;">
                                 <span class="text-amber-800 font-extrabold">[실전 룰]</span> ${item.checklist}
                             </div>
