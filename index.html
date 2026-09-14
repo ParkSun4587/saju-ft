@@ -128,8 +128,13 @@
         
         /* 모바일 브라우저 자동 확대 방지 */
         @media screen and (max-width: 768px) {
-            input[type="text"], select, textarea { font-size: 16px !important; }
-        }
+    input[type="text"],
+    input[type="tel"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
         
         select.input-box { 
             color: #334155; 
@@ -4424,121 +4429,145 @@
                 if (landingSec) landingSec.style.display = 'flex';
             }
             
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-                // ============================================================
-        // 📱 모바일 생년월일 입력 시 키보드 위 자동 스크롤
-        // 생년월일 → 태어난 시간 → 사주 정보 보내기 💌 까지
-        // 한 화면에 자연스럽게 보이도록 정렬
+
+
+        // ============================================================
+        // 📱 생년월일 입력 시 키보드 위 자동 정렬
         // ============================================================
         (function setupBirthDateKeyboardScroll() {
 
-            let mobileScrollTimer = null;
+            let scrollTimer = null;
+            let isAdjustingBirthScroll = false;
 
-            function alignBirthFormAboveKeyboard() {
+            function adjustBirthFormPosition() {
+
                 const birthInput = document.getElementById('birthDateInput');
 
-                // 생년월일 입력창에 실제 포커스가 있을 때만 실행
-                if (!birthInput || document.activeElement !== birthInput) return;
+                if (!birthInput) return;
+                if (document.activeElement !== birthInput) return;
+                if (isAdjustingBirthScroll) return;
 
                 const streamArea = document.getElementById('chatStreamArea');
-                const sendButtonArea = document.getElementById('splitNextButton');
+                const sendArea = document.getElementById('splitNextButton');
 
-                if (!streamArea || !sendButtonArea) return;
+                if (!streamArea || !sendArea) return;
 
-                clearTimeout(mobileScrollTimer);
+                clearTimeout(scrollTimer);
 
-                mobileScrollTimer = setTimeout(() => {
+                scrollTimer = setTimeout(() => {
+
                     requestAnimationFrame(() => {
 
-                        // 생년월일 라벨까지 포함한 블록
                         const birthBlock =
                             birthInput.parentElement?.parentElement || birthInput;
 
-                        const streamRect = streamArea.getBoundingClientRect();
-                        const birthRect = birthBlock.getBoundingClientRect();
-                        const buttonRect = sendButtonArea.getBoundingClientRect();
+                        const streamRect =
+                            streamArea.getBoundingClientRect();
 
-                        // 모바일 키보드가 올라온 뒤 실제 보이는 화면 높이
+                        const birthRect =
+                            birthBlock.getBoundingClientRect();
+
+                        const sendRect =
+                            sendArea.getBoundingClientRect();
+
                         const viewport = window.visualViewport;
 
                         const visibleBottom = viewport
                             ? viewport.offsetTop + viewport.height
                             : window.innerHeight;
 
-                        // 카톡 스크롤 영역 안에서 사용할 수 있는 실제 화면 범위
-                        const availableTop = streamRect.top + 8;
+                        const topLimit = streamRect.top + 10;
 
-                        const availableBottom =
-                            Math.min(streamRect.bottom, visibleBottom) - 12;
+                        const bottomLimit =
+                            Math.min(streamRect.bottom, visibleBottom) - 14;
 
-                        // 생년월일부터 전송 버튼 끝까지 필요한 전체 높이
-                        const contentHeight =
-                            buttonRect.bottom - birthRect.top;
+                        const blockHeight =
+                            sendRect.bottom - birthRect.top;
 
                         const availableHeight =
-                            availableBottom - availableTop;
+                            bottomLimit - topLimit;
 
-                        let targetTop;
+                        let desiredBirthTop = topLimit;
 
-                        // 전체가 화면 안에 들어오면
-                        // 전송 버튼을 키보드 바로 위쪽에 맞춤
-                        if (contentHeight <= availableHeight) {
-                            targetTop = Math.max(
-                                availableTop,
-                                availableBottom - contentHeight
-                            );
-                        } else {
-                            // 화면이 아주 작은 기기에서는
-                            // 생년월일 입력창을 최상단에 우선 배치
-                            targetTop = availableTop;
+                        if (blockHeight <= availableHeight) {
+                            desiredBirthTop =
+                                bottomLimit - blockHeight;
                         }
 
-                        const moveAmount =
-                            birthRect.top - targetTop;
+                        const delta =
+                            birthRect.top - desiredBirthTop;
+
+                        // 5px 미만의 작은 움직임은 무시
+                        if (Math.abs(delta) < 5) return;
+
+                        isAdjustingBirthScroll = true;
 
                         streamArea.scrollTo({
-                            top: streamArea.scrollTop + moveAmount,
+                            top: Math.max(
+                                0,
+                                streamArea.scrollTop + delta
+                            ),
                             behavior: 'smooth'
                         });
 
+                        setTimeout(() => {
+                            isAdjustingBirthScroll = false;
+                        }, 350);
+
                     });
-                }, 100);
+
+                }, 80);
             }
 
 
-            // innerHTML로 입력폼이 다시 만들어져도 작동하도록
-            // document 레벨에서 이벤트 위임
+            // 생년월일 칸을 눌렀을 때 실행
             document.addEventListener('focusin', function(e) {
 
-                if (!e.target || e.target.id !== 'birthDateInput') return;
+                if (!e.target) return;
+                if (e.target.id !== 'birthDateInput') return;
 
-                // 키보드가 올라오기 시작할 때
-                setTimeout(alignBirthFormAboveKeyboard, 100);
+                clearTimeout(scrollTimer);
 
-                // 키보드 애니메이션이 끝난 뒤 한 번 더 미세 보정
-                setTimeout(alignBirthFormAboveKeyboard, 350);
+                scrollTimer = setTimeout(() => {
+                    adjustBirthFormPosition();
+                }, 280);
+
             });
 
 
-            // iPhone / 삼성 인터넷 / Chrome 모바일에서
-            // 실제 키보드 높이가 변경될 때 최종 위치 재보정
+            // 모바일 키보드가 올라오면서 화면 크기가 바뀔 때 보정
             if (window.visualViewport) {
 
-                window.visualViewport.addEventListener('resize', function() {
+                let viewportTimer = null;
 
-                    if (
-                        document.activeElement &&
-                        document.activeElement.id === 'birthDateInput'
-                    ) {
-                        alignBirthFormAboveKeyboard();
+                window.visualViewport.addEventListener(
+                    'resize',
+                    function() {
+
+                        if (!document.activeElement) return;
+
+                        if (
+                            document.activeElement.id !==
+                            'birthDateInput'
+                        ) {
+                            return;
+                        }
+
+                        clearTimeout(viewportTimer);
+
+                        viewportTimer = setTimeout(() => {
+                            adjustBirthFormPosition();
+                        }, 120);
+
                     }
-
-                });
+                );
             }
 
         })();
-        
+
+
     </script>
     
 <!-- 6. 약관 및 개인정보처리방침 팝업 모달 (최상위 독립 배치) -->
