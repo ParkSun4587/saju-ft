@@ -4487,7 +4487,10 @@
             if (!lastKey) return;
             const savedDataStr = localStorage.getItem('sazu_last_result_data_' + lastKey);
             const savedToken = localStorage.getItem('tok_' + lastKey);
-            if (savedDataStr && savedToken) {
+            const canRestoreFreeMode = FREE_LAUNCH_MODE && savedDataStr;
+const canRestorePaidMode = !FREE_LAUNCH_MODE && savedDataStr && savedToken;
+
+if (canRestoreFreeMode || canRestorePaidMode) {
                 try {
                     const savedData = JSON.parse(savedDataStr);
                     const allSolutions = getTrueBaziSolutions(savedData.name, getLowestStatInfo(savedData.stats), savedData.yongshin, savedData.dayOheng, savedData.userGender, savedData.mbtiKey, savedData.userBirthStr, savedData.gyeokguk, savedData.gyeokStatus, savedData.realYeonun);
