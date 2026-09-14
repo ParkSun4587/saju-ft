@@ -635,7 +635,13 @@
 
                     <!-- 생년월일 -->
                     <div>
-                        <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">생년월일</label>
+                        <div class="flex justify-between items-end mb-0.5">
+                            <label class="block text-[9.5px] font-bold text-slate-500">생년월일</label>
+                            <label id="leapMonthWrapper" class="hidden items-center gap-1 cursor-pointer">
+                                <input type="checkbox" id="isLeapMonth" class="w-3 h-3 accent-rose-500">
+                                <span class="text-[9px] font-bold text-slate-600">윤달</span>
+                            </label>
+                        </div>
                         <input type="hidden" id="calendarSelect" value="solar">
                         <div class="flex gap-1.5 items-center">
                             <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 w-[84px] shrink-0 h-[32px] items-center">
@@ -1015,7 +1021,7 @@
             </div>
 
             <div class="w-full mt-4 space-y-2">
-                <button type="button" onclick="saveInstaCardImage()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-transform">
+                <button type="button" onclick="saveInstaCardImage(event)" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-transform">
                     <span>📥 내 사주 본캐 카드 저장하기</span>
                 </button>
                 <button type="button" onclick="closeShareModal()" class="w-full py-2 text-slate-400 hover:text-slate-200 text-xs font-semibold text-center transition-colors">
@@ -2713,25 +2719,7 @@
                 };
             } catch (err) {
                 console.error("정밀 만세력 엔진 연산 예외:", err);
-                return {
-                    mbtiKey: 'ISTJ',
-                    characterTitle: "계획 틀어지면 멘붕 와서 급발진하는 FM 인간",
-                    stats: { wealth: 42, mental: 88, drive: 35, network: 70 },
-                    elements: { mok: 1.0, hwa: 1.0, to: 3.0, geum: 2.0, su: 1.0 },
-                    profile: SAZU_CHARACTER_PROFILES['ISTJ'],
-                    dayOheng: 'to',
-                    yongshin: 'mok',
-                    gyeokguk: null,
-                    gyeokStatus: null,
-                    realYeonun: {},
-                    isDayMasterStrong: true,
-                    pillars: {
-                        year:  { gan: '己', zhi: '亥' },
-                        month: { gan: '癸', zhi: '酉' },
-                        day:   { gan: '戊', zhi: '辰' },
-                        hour:  null
-                    }
-                };
+                throw new Error("만세력 연산에 실패했습니다. 생년월일을 다시 확인해주세요."); 
             }
         }
 
@@ -2770,15 +2758,17 @@
                 }
             }
             
-            // 2단계: 실시간 일(DD) 유효성 방어 (각 월의 말일 초과 입력 즉시 보정)
+            // 2단계: 실시간 일(DD) 유효성 방어
             if (val.length >= 8) {
                 let year = parseInt(val.substring(0, 4), 10);
                 let month = parseInt(val.substring(4, 6), 10);
                 let day = parseInt(val.substring(6, 8), 10);
                 
-                let lastDay = new Date(year, month, 0).getDate();
+                let isLunar = document.getElementById('calendarSelect').value === 'lunar';
+                let lastDay = isLunar ? 30 : new Date(year, month, 0).getDate();
+                
                 if (day > lastDay) {
-                    showToast(`${month}월은 최대 ${lastDay}일까지입니다.`);
+                    showToast(isLunar ? `음력 ${month}월은 최대 30일까지 입력 가능합니다.` : `양력 ${month}월은 최대 ${lastDay}일까지입니다.`);
                     val = val.substring(0, 6) + String(lastDay).padStart(2, '0');
                 } else if (day === 0) {
                     val = val.substring(0, 6) + '01';
@@ -2794,8 +2784,18 @@
             document.getElementById('calendarSelect').value = type;
             const btnSolar = document.getElementById('btnSolar');
             const btnLunar = document.getElementById('btnLunar');
-            if (type === 'solar') { btnSolar.className = "toggle-tab-btn active text-xs font-bold h-full rounded-lg"; btnLunar.className = "toggle-tab-btn inactive text-xs font-bold h-full rounded-lg"; } 
-            else { btnSolar.className = "toggle-tab-btn inactive text-xs font-bold h-full rounded-lg"; btnLunar.className = "toggle-tab-btn active text-xs font-bold h-full rounded-lg"; }
+            const leapWrapper = document.getElementById('leapMonthWrapper');
+            
+            if (type === 'solar') { 
+                btnSolar.className = "toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg"; 
+                btnLunar.className = "toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg"; 
+                if (leapWrapper) leapWrapper.style.display = 'none';
+                document.getElementById('isLeapMonth').checked = false;
+            } else { 
+                btnSolar.className = "toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg"; 
+                btnLunar.className = "toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg"; 
+                if (leapWrapper) leapWrapper.style.display = 'flex';
+            }
         }
 
         function setGender(gender) {
@@ -2824,6 +2824,23 @@
         const PAY_AMOUNT = 1900;
         const CONFIRM_API = "/api/confirm-payment"; // 서버리스 결제 승인 엔드포인트
 
+        let isAnalyzing = false;
+        let selectedSplitMode = null;
+        window.appTimeouts = []; // 뒤로가기 시 꼬임 방지용 글로벌 타이머 저장소
+
+        function runSafeTimeout(fn, delay) {
+            const t = setTimeout(fn, delay);
+            window.appTimeouts.push(t);
+            return t;
+        }
+
+        function clearAllTimeouts() {
+            window.appTimeouts.forEach(clearTimeout);
+            window.appTimeouts = [];
+            isAnalyzing = false;
+            isSplitSelecting = false;
+        }
+        
         let isAnalyzing = false;
         let selectedSplitMode = null;
 
@@ -2931,17 +2948,13 @@
                 }
 
                 // 3) 0.6초 뒤 언니의 첫 접수 톡 + 연타 톡 시퀀스 시작
-                setTimeout(() => {
+                runSafeTimeout(() => {
                     const typingEl = document.getElementById(typingId);
                     if (typingEl) typingEl.remove();
 
                     const concernLabels = {
-                        'money': '돈복·텅장',
-                        'career': '취업·이직',
-                        'love': '연애·썸',
-                        'path': '진로·미래',
-                        'people': '인간관계',
-                        'mental': '번아웃·멘탈'
+                        'money': '돈복·텅장', 'career': '취업·이직', 'love': '연애·썸',
+                        'path': '진로·미래', 'people': '인간관계', 'mental': '번아웃·멘탈'
                     };
                     const selectedConcernText = concernLabels[concernKey] || '고민';
 
@@ -2979,172 +2992,142 @@
 
                     mode = mode || selectedSplitMode || 'F';
                     const isT = mode === 'T';
+                    const isLeapMonth = document.getElementById('isLeapMonth') ? document.getElementById('isLeapMonth').checked : false;
 
                     let calcYear = year, calcMonth = month, calcDay = day;
                     if (isLunar && typeof Lunar !== 'undefined') {
                         try {
-                            const lunarObj = Lunar.fromYmd(year, month, day);
+                            const lMonth = isLeapMonth ? -month : month;
+                            const lunarObj = Lunar.fromYmd(year, lMonth, day);
                             const solarObj = lunarObj.getSolar();
                             calcYear = solarObj.getYear(); calcMonth = solarObj.getMonth(); calcDay = solarObj.getDay();
                         } catch (err) {
-                            showToast('입력하신 음력 날짜를 변환할 수 없습니다.');
-                            document.getElementById('birthDateInput').focus();
+                            showToast('입력하신 음력 날짜를 양력으로 변환할 수 없습니다.');
+                            clearAllTimeouts();
+                            if (inputCardBox) inputCardBox.style.display = 'block';
                             return;
                         }
                     }
 
-                    const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, hour === 'unknown' ? null : hour, gender);
-                    const lowest = getLowestStatInfo(sazuResult.stats);
-                    const allSolutions = getTrueBaziSolutions(name, lowest, sazuResult.yongshin, sazuResult.dayOheng, gender, sazuResult.mbtiKey, birthStr, sazuResult.gyeokguk, sazuResult.gyeokStatus, sazuResult.realYeonun);
-                    const solutionTemplate = allSolutions[concernKey] || allSolutions.money;
+                    try {
+                        const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, hour === 'unknown' ? null : hour, gender);
+                        const lowest = getLowestStatInfo(sazuResult.stats);
+                        const allSolutions = getTrueBaziSolutions(name, lowest, sazuResult.yongshin, sazuResult.dayOheng, gender, sazuResult.mbtiKey, birthStr, sazuResult.gyeokguk, sazuResult.gyeokStatus, sazuResult.realYeonun);
+                        const solutionTemplate = allSolutions[concernKey] || allSolutions.money;
 
-                    currentResultData = { 
-                        name: name, userName: name, userBirthStr: birthStr, userTimeKey: hour, userGender: gender,
-                        userCalendar: isLunar ? 'lunar' : 'solar',
-                        currentMode: mode, concernKey: concernKey, ...sazuResult, rawSolutionTemplate: solutionTemplate 
-                    };
+                        currentResultData = { 
+                            name: name, userName: name, userBirthStr: birthStr, userTimeKey: hour, userGender: gender,
+                            userCalendar: isLunar ? 'lunar' : 'solar', isLeapMonth: isLeapMonth,
+                            currentMode: mode, concernKey: concernKey, ...sazuResult, rawSolutionTemplate: solutionTemplate 
+                        };
 
-                    // 진짜 카톡처럼 연속 톡의 맨 마지막 말풍선 옆에만 시간을 붙여주는 함수
-                    const appendSisterMsg = (text, isFollowUp = false) => {
-                        // 기존에 붙어있던 연속 톡의 이전 시간 태그는 깔끔하게 삭제
-                        const prevTimes = streamArea.querySelectorAll('.sister-last-time');
-                        prevTimes.forEach(el => el.remove());
+                        const appendSisterMsg = (text, isFollowUp = false) => {
+                            const prevTimes = streamArea.querySelectorAll('.sister-last-time');
+                            prevTimes.forEach(el => el.remove());
 
-                        if (!isFollowUp) {
-                            // 연타 톡의 첫 번째: 프로필 + 이름 + 말풍선 + 시간
-                            const bubbleHTML = `
-                                <div class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-2 sister-chat-group">
-                                    <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
-                                    <div class="flex flex-col gap-1 sister-bubble-container">
-                                        <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
-                                        <div class="flex items-end gap-1.5">
-                                            <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep">
+                            if (!isFollowUp) {
+                                const bubbleHTML = `
+                                    <div class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-2 sister-chat-group">
+                                        <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
+                                        <div class="flex flex-col gap-1 sister-bubble-container">
+                                            <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
+                                            <div class="flex items-end gap-1.5">
+                                                <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep">
+                                                    ${text}
+                                                </div>
+                                                <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5 sister-last-time">${getCurrTime()}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                streamArea.insertAdjacentHTML('beforeend', bubbleHTML);
+                            } else {
+                                const containers = streamArea.querySelectorAll('.sister-bubble-container');
+                                const targetContainer = containers[containers.length - 1];
+                                if (targetContainer) {
+                                    const followUpHTML = `
+                                        <div class="flex items-end gap-1.5 fade-in-up">
+                                            <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep">
                                                 ${text}
                                             </div>
                                             <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5 sister-last-time">${getCurrTime()}</span>
                                         </div>
+                                    `;
+                                    targetContainer.insertAdjacentHTML('beforeend', followUpHTML);
+                                }
+                            }
+                            streamArea.scrollTop = streamArea.scrollHeight;
+                        };
+
+                        const showLiveTyping = (id) => {
+                            const tHTML = `
+                                <div id="${id}" class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-1.5">
+                                    <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
+                                    <div>
+                                        <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
+                                        <div class="typing-indicator mt-0.5">
+                                            <div class="typing-dot"></div>
+                                            <div class="typing-dot"></div>
+                                            <div class="typing-dot"></div>
+                                        </div>
                                     </div>
                                 </div>
                             `;
-                            streamArea.insertAdjacentHTML('beforeend', bubbleHTML);
-                        } else {
-                            // 연타 톡의 연속(2번째, 3번째): 이전 말풍선 아래에 붙고, 시간은 맨 마지막 말풍선 옆으로 이동
-                            const containers = streamArea.querySelectorAll('.sister-bubble-container');
-                            const targetContainer = containers[containers.length - 1];
-                            if (targetContainer) {
-                                const followUpHTML = `
-                                    <div class="flex items-end gap-1.5 fade-in-up">
-                                        <div class="bg-white text-slate-900 text-[11px] font-medium p-2.5 rounded-2xl shadow-sm leading-snug border border-white/40 max-w-[250px] break-keep">
-                                            ${text}
-                                        </div>
-                                        <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5 sister-last-time">${getCurrTime()}</span>
-                                    </div>
-                                `;
-                                targetContainer.insertAdjacentHTML('beforeend', followUpHTML);
-                            }
-                        }
-                        streamArea.scrollTop = streamArea.scrollHeight;
-                    };
-                    const showLiveTyping = (id) => {
-                        const tHTML = `
-                            <div id="${id}" class="flex items-start gap-1.5 max-w-[95%] fade-in-up mt-1.5">
-                                <img src="${profileImg}" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
-                                <div>
-                                    <span class="text-[10px] text-slate-700 font-bold block mb-0.5">${sisterName}</span>
-                                    <div class="typing-indicator mt-0.5">
-                                        <div class="typing-dot"></div>
-                                        <div class="typing-dot"></div>
-                                        <div class="typing-dot"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        streamArea.insertAdjacentHTML('beforeend', tHTML);
-                        streamArea.scrollTop = streamArea.scrollHeight;
-                    };
+                            streamArea.insertAdjacentHTML('beforeend', tHTML);
+                            streamArea.scrollTop = streamArea.scrollHeight;
+                        };
+                        const removeLiveTyping = (id) => { const el = document.getElementById(id); if (el) el.remove(); };
 
-                    const removeLiveTyping = (id) => {
-                        const el = document.getElementById(id);
-                        if (el) el.remove();
-                    };
+                        showLiveTyping('liveT1');
+                        runSafeTimeout(() => {
+                            removeLiveTyping('liveT1');
+                            appendSisterMsg(isT ? `잠깐만 기다려봐. 태어난 날짜 원국 8글자부터 제대로 펼쳐볼게.` : `잠깐만 기다려봐, ${callVoc}! 언니가 만세력 책부터 꼼꼼히 펼쳐볼게.`, false);
 
-                    // [톡 1] 0.5초 뒤 (만세력 펼치기 - 연타 첫 번째 톡)
-                    showLiveTyping('liveT1');
-                    setTimeout(() => {
-                        removeLiveTyping('liveT1');
-                        appendSisterMsg(isT 
-                            ? `잠깐만 기다려봐. 태어난 날짜 원국 8글자부터 제대로 펼쳐볼게.` 
-                            : `잠깐만 기다려봐, ${callVoc}! 언니가 만세력 책부터 꼼꼼히 펼쳐볼게.`, false);
+                            showLiveTyping('liveT2');
+                            runSafeTimeout(() => {
+                                removeLiveTyping('liveT2');
+                                const elCounts = sazuResult.elements || {};
+                                const ohengKeys = ['mok', 'hwa', 'to', 'geum', 'su'];
+                                let topOheng = 'to'; let maxVal = -1;
+                                ohengKeys.forEach(k => { if ((elCounts[k] || 0) > maxVal) { maxVal = elCounts[k] || 0; topOheng = k; } });
 
-                        // [톡 2] 1.6초 뒤 (실제 사주 팩폭 - 프로필 없이 바로 이어붙임)
-                        showLiveTyping('liveT2');
-                        setTimeout(() => {
-                            removeLiveTyping('liveT2');
+                                const sazuSneakPeek = {
+                                    hwa: { T: `헐... 너 사주에 불기운이 너무 세서 감정 조절 안 되는 타입이네?`, F: `세상에... 사주에 뜨거운 불기운이 가득해서 혼자 속앓이 많이 했겠다 ㅠㅠ` },
+                                    su: { T: `헐... 너 물기운 많아서 밤마다 잡생각 엑셀 돌리느라 실행 다 날려먹지?`, F: `물기운이 넘쳐서 온갖 고민 혼자 다 떠안고 눈물 삼켰구나...` },
+                                    mok: { T: `헐... 나무 기운 뻗쳐서 지기 싫어하는 똥고집 장난 아니네?`, F: `곧은 나무 기운이라 남한테 폐 끼치기 싫어 혼자 꼿꼿하게 버텼구나...` },
+                                    geum: { T: `헐... 쇠기운 서슬 퍼래서 완벽주의로 네 자신을 들볶는 타입이네?`, F: `차가운 쇠기운이 강해 남에게 빈틈 안 보이려 늘 긴장해왔구나 ㅠㅠ` },
+                                    to: { T: `헐... 흙이 많아서 속마음 안 까고 미련 곰탱이처럼 버티는 타입이네?`, F: `묵직한 흙기운이라 남들 실수 뒤치다꺼리 혼자 다 떠안고 살았지 ㅠㅠ` }
+                                };
+                                const targetMsgObj = sazuSneakPeek[topOheng] || sazuSneakPeek.to;
+                                appendSisterMsg(isT ? targetMsgObj.T : targetMsgObj.F, true);
 
-                            const elCounts = sazuResult.elements || {};
-                            const ohengKeys = ['mok', 'hwa', 'to', 'geum', 'su'];
-                            let topOheng = 'to';
-                            let maxVal = -1;
-                            ohengKeys.forEach(k => {
-                                if ((elCounts[k] || 0) > maxVal) {
-                                    maxVal = elCounts[k] || 0;
-                                    topOheng = k;
-                                }
-                            });
+                                showLiveTyping('liveT3');
+                                runSafeTimeout(() => {
+                                    removeLiveTyping('liveT3');
+                                    appendSisterMsg(isT ? `정리 끝났어. 팩트 꽂힌 <b>비밀 메모장</b> 열 테니까 똑바로 읽어.` : `정리 끝났어! <b>비밀 메모장</b> 열어볼게!`, true);
 
-                            const sazuSneakPeek = {
-                                hwa: {
-                                    T: `헐... ${callName} 너 사주에 불기운이 너무 세서 감정 앞서고 충동 조절 안 되는 타입이네? 돈이랑 멘탈 샐 구멍이 훤히 보인다 너.`,
-                                    F: `세상에 우리 ${callName}... 사주에 뜨거운 불기운이 가득해서 혼자 속에서 천불 나고 답답했을 텐데 그동안 어떻게 다 참고 버텨왔어... ㅠㅠ`
-                                },
-                                su: {
-                                    T: `헐... ${callName} 너 사주에 물이 너무 많아서 밤마다 잡생각에 침잠하느라 실행 다 날려먹는 타입이네? 머릿속 엑셀 좀 그만 돌려.`,
-                                    F: `세상에 우리 ${callName}... 사주에 물기운이 넘쳐서 밤마다 온갖 불안이랑 고민 혼자 떠안고 눈물 삼켰구나... 마음고생 진짜 심했겠다.`
-                                },
-                                mok: {
-                                    T: `헐... ${callName} 너 사주 보니까 나무 기운이 뻗쳐서 지기 싫어하는 고집이랑 자존심 장난 아니네? 남한테 아쉬운 소리 못 해서 혼자 손해 보지?`,
-                                    F: `세상에 우리 ${callName}... 사주에 곧은 나무 기운이 있어서 남한테 짐 되기 싫어 혼자 꼿꼿하게 버티느라 얼마나 외롭고 아팠을까...`
-                                },
-                                geum: {
-                                    T: `헐... ${callName} 너 사주에 쇠기운이 서슬 퍼래서 완벽주의 잣대로 스스로를 들볶는 타입이네? 주변 꼬락서니 보면서 복장 터졌지?`,
-                                    F: `세상에 우리 ${callName}... 사주에 차가운 쇠기운이 강해서 남에게 흐트러진 모습 안 보이려고 늘 긴장하며 채찍질해왔구나... ㅠㅠ`
-                                },
-                                to: {
-                                    T: `헐... ${callName} 너 사주에 흙이 너무 많아서 속마음 절대 안 까고 미련 곰탱이처럼 버티는 타입이네? 골치 아픈 거 회피한다고 해결 안 돼.`,
-                                    F: `세상에 우리 ${callName}... 사주에 묵직한 흙기운이 많아서 남들 실수 뒤치다꺼리 혼자 다 떠안고 속으로 삭여왔구나... 정말 고생 많았어.`
-                                }
-                            };
-
-                            const targetMsgObj = sazuSneakPeek[topOheng] || sazuSneakPeek.to;
-                            // 두 번째 인자 true: 프로필 없이 바로 아래에 붙임
-                            appendSisterMsg(isT ? targetMsgObj.T : targetMsgObj.F, true);
-
-                            // [톡 3] 1.6초 뒤 (마무리 멘트 - 프로필 없이 바로 이어붙임)
-                            showLiveTyping('liveT3');
-                            setTimeout(() => {
-                                removeLiveTyping('liveT3');
-                                appendSisterMsg(isT 
-                                    ? `정리 다 끝났어. 속 시원하게 팩트만 꽂은 <b>비밀 메모장</b> 바로 열어줄 테니까 정신 바짝 차리고 읽어.` 
-                                    : `정리 다 끝났어, ${callVoc}! 언니가 너 주려고 적어둔 <b>비밀 메모장</b> 지금 바로 열어볼게!`, true);
-
-                                // 1.0초 뒤 도파민 팝 애니메이션과 함께 결과 화면 렌더링
-                                setTimeout(() => {
-                                    renderResultView(currentResultData);
-                                }, 1000);
-
+                                    runSafeTimeout(() => {
+                                        renderResultView(currentResultData);
+                                    }, 1000);
+                                }, 1600);
                             }, 1600);
+                        }, 500);
 
-                        }, 1600);
-
-                    }, 500);
+                    } catch(calcErr) {
+                        // 만세력 연산 실패 시 튕김 방지 및 폼 복구
+                        clearAllTimeouts();
+                        showToast(calcErr.message || "연산 중 오류가 발생했습니다. 생년월일을 다시 확인해주세요.");
+                        if (inputCardBox) inputCardBox.style.display = 'block';
+                    }
 
                 }, 600);
 
             } catch (error) {
-                isAnalyzing = false;
+                clearAllTimeouts();
                 console.error("로딩 에러 방어:", error);
                 showToast("일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-                setTimeout(() => { location.reload(); }, 2000);
+                const inputCardBox = document.getElementById('sajuInputCardBox');
+                if (inputCardBox) inputCardBox.style.display = 'block';
             }
         }
 
@@ -3731,15 +3714,17 @@
 
             const cleanOrigin = window.location.origin;
             // [방어율 100%] 인앱 웹뷰가 메모리를 날려도 URL에서 100% 복구할 수 있도록 유저 데이터를 쿼리스트링에 백업
-            const uDataParam = encodeURIComponent(JSON.stringify({
+            // 개인정보 보호를 위한 Base64 암호화 처리 및 윤달 데이터 추가
+            const uDataParam = btoa(encodeURIComponent(JSON.stringify({
                 n: currentResultData.name || '',
                 b: currentResultData.userBirthStr || '',
                 t: currentResultData.userTimeKey || 'unknown',
                 g: currentResultData.userGender || 'female',
                 c: currentResultData.userCalendar || 'solar',
                 k: currentResultData.concernKey || 'money',
-                m: currentResultData.currentMode || 'T'
-            }));
+                m: currentResultData.currentMode || 'T',
+                l: currentResultData.isLeapMonth || false
+            })));
             const successUrl = `${cleanOrigin}/?payment=success&udata=${uDataParam}`;
             const failUrl = cleanOrigin + "/?payment=fail";
 
@@ -4025,27 +4010,30 @@
                 if (tempStr) restoredData = JSON.parse(tempStr);
             } catch (e) { console.error("스토리지 복원 오류:", e); }
 
-            // 2차: 인앱 웹뷰가 스토리지를 날렸을 경우, URL의 udata 파라미터에서 강제 복원
+            // 2차: URL 파라미터(암호화)에서 강제 복원 및 성별 누락 버그 해결
             if (!restoredData && urlParams.get('udata')) {
                 try {
-                    const parsed = JSON.parse(decodeURIComponent(urlParams.get('udata')));
+                    const parsed = JSON.parse(decodeURIComponent(atob(urlParams.get('udata'))));
                     const birth = parsed.b || '';
                     const year = parseInt(birth.substring(0, 4));
                     const month = parseInt(birth.substring(4, 6));
                     const day = parseInt(birth.substring(6, 8));
+                    const isLeap = parsed.l || false;
 
                     let calcYear = year, calcMonth = month, calcDay = day;
                     if (parsed.c === 'lunar' && typeof Lunar !== 'undefined') {
-                        const lunarObj = Lunar.fromYmd(year, month, day);
+                        const lMonth = isLeap ? -month : month;
+                        const lunarObj = Lunar.fromYmd(year, lMonth, day);
                         const solarObj = lunarObj.getSolar();
                         calcYear = solarObj.getYear(); calcMonth = solarObj.getMonth(); calcDay = solarObj.getDay();
                     }
 
-                    const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, parsed.t === 'unknown' ? null : parsed.t);
+                    // 성별(parsed.g) 파라미터 정상 전달!
+                    const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, parsed.t === 'unknown' ? null : parsed.t, parsed.g);
                     restoredData = {
                         name: parsed.n, userName: parsed.n, userBirthStr: birth, userTimeKey: parsed.t,
                         userGender: parsed.g, userCalendar: parsed.c, currentMode: parsed.m,
-                        concernKey: parsed.k, ...sazuResult
+                        isLeapMonth: isLeap, concernKey: parsed.k, ...sazuResult
                     };
                 } catch (e) {
                     console.error("URL 파라미터 복원 실패:", e);
