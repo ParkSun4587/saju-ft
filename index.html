@@ -347,27 +347,30 @@
                 text-wrap: balance;
                 line-height: 1.55;
         }
-        /* 게임 캐릭터 선택 시 팝업 & 네온 글로우 인터랙션 */
+        /* 캐릭터 패널 딤 처리 및 이미지 전용 스프링 팝업 */
         .char-panel {
-            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.35s ease, opacity 0.35s ease, box-shadow 0.35s ease;
+            transition: opacity 0.25s ease, filter 0.25s ease;
         }
-        .char-selected-f {
-            transform: scale(1.03) translateY(-4px);
-            z-index: 50;
-            box-shadow: inset 0 0 25px rgba(251, 113, 133, 0.8), 0 0 35px rgba(251, 113, 133, 0.6);
-            filter: brightness(1.08);
+        .panel-img {
+            transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.22s ease;
+            will-change: transform;
         }
-        .char-selected-t {
-            transform: scale(1.03) translateY(4px);
-            z-index: 50;
-            box-shadow: inset 0 0 25px rgba(56, 189, 248, 0.8), 0 0 35px rgba(56, 189, 248, 0.6);
-            filter: brightness(1.08);
+        .img-pop-spring {
+            transform: scale(1.08) translateY(-2%) !important;
+            filter: brightness(1.08) contrast(102%);
         }
-        .char-dimmed {
-            filter: grayscale(80%) brightness(0.35) blur(3px) !important;
-            opacity: 0.45 !important;
-            transform: scale(0.97);
+        .panel-dimmed {
+            opacity: 0.35 !important;
+            filter: grayscale(60%) brightness(0.5) !important;
             pointer-events: none;
+        }
+        /* 카톡 대화방 우측 슬라이드-인 모션 */
+        .slide-in-right {
+            animation: slideInRight 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
         }
         @keyframes dopaminePop {
             0% { transform: scale(0.94); opacity: 0; filter: blur(6px); }
@@ -399,7 +402,7 @@
     <div class="relative w-full max-w-[430px] h-[100dvh] flex flex-col overflow-hidden bg-slate-950 shadow-2xl" style="touch-action: none; overscroll-behavior: none;">
 
         <!-- 중앙 구분선 -->
-        <div class="absolute top-1/2 left-0 w-full h-px bg-white/50 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.6)]"></div>
+        <div id="centerDivider" class="absolute top-1/2 left-0 w-full h-px bg-white/50 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.6)] transition-opacity duration-200"></div>
 
         <!-- 최상단 헤더 (1020 감성 카피 & 투명 블러 디자인 적용) -->
         <div id="splitTitle" class="absolute left-0 w-full z-[70] pointer-events-none px-3 flex justify-center" style="top: calc(env(safe-area-inset-top, 0px) + 12px);">
@@ -411,9 +414,8 @@
         </div>
 
         <!-- F 패널 (로아) -->
-        <div id="panelRoa" onclick="selectSplitMode('F')" class="char-panel relative w-full h-1/2 cursor-pointer bg-rose-50/30 overflow-hidden flex flex-col justify-end">
-            <!-- 확대/축소 애니메이션 제거된 정적 이미지 -->
-            <img src="./로아.png" alt="로아" class="absolute inset-0 w-full h-full object-cover object-[center_18%]">
+        <div id="panelRoa" onclick="selectSplitMode('F')" class="char-panel relative w-full h-1/2 cursor-pointer bg-rose-50/30 overflow-hidden flex flex-col justify-end active:scale-[0.98] transition-transform duration-100">
+            <img id="imgRoa" src="./로아.png" alt="로아" class="panel-img absolute inset-0 w-full h-full object-cover object-[center_18%]">
             
             <div class="absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-rose-100/80 via-transparent to-transparent pointer-events-none"></div>
 
@@ -443,9 +445,8 @@
         </div>
 
         <!-- T 패널 (서아) -->
-        <div id="panelSeoa" onclick="selectSplitMode('T')" class="char-panel relative w-full h-1/2 cursor-pointer bg-slate-950 overflow-hidden flex flex-col justify-end">
-            <!-- 확대/축소 애니메이션 제거된 정적 이미지 -->
-            <img src="./서아.png" alt="서아" class="absolute inset-0 w-full h-full object-cover object-[center_20%]">
+        <div id="panelSeoa" onclick="selectSplitMode('T')" class="char-panel relative w-full h-1/2 cursor-pointer bg-slate-950 overflow-hidden flex flex-col justify-end active:scale-[0.98] transition-transform duration-100">
+            <img id="imgSeoa" src="./서아.png" alt="서아" class="panel-img absolute inset-0 w-full h-full object-cover object-[center_20%]">
             
             <div class="absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none"></div>
 
@@ -1339,40 +1340,37 @@
             'ESFP': { best: 'ISTJ', bestTag: '주변을 밝혀주는 꿀조합', worst: 'INTJ', worstTag: '지나치게 진지한 사이' }
         };
 
-        // 화면 분할 인트로 클릭 시 캐릭터 선택 효과 적용 후 카톡 진입
+        // 화면 분할 인트로: 스프링 팝업(0.18s) 후 카톡방 슬라이드-인 전환
         let isSplitSelecting = false;
         function selectSplitMode(mode) {
             if (isSplitSelecting) return;
             isSplitSelecting = true;
             selectedSplitMode = mode;
 
-            const panelRoa = document.getElementById('panelRoa');
-            const panelSeoa = document.getElementById('panelSeoa');
+            const isF = (mode === 'F');
+            const targetImg = document.getElementById(isF ? 'imgRoa' : 'imgSeoa');
+            const otherPanel = document.getElementById(isF ? 'panelSeoa' : 'panelRoa');
+            const divider = document.getElementById('centerDivider');
 
-            // 1단계: 격투 게임/RPG 스타일 캐릭터 팝업 & 네온 글로우 발동
-            if (mode === 'F') {
-                if (panelRoa) panelRoa.classList.add('char-selected-f');
-                if (panelSeoa) panelSeoa.classList.add('char-dimmed');
-            } else {
-                if (panelSeoa) panelSeoa.classList.add('char-selected-t');
-                if (panelRoa) panelRoa.classList.add('char-dimmed');
-            }
+            // 1단계: 인물 일러스트만 앞으로 탁! 튕겨나옴 (스프링 팝업) + 반대편 딤 처리
+            if (targetImg) targetImg.classList.add('img-pop-spring');
+            if (otherPanel) otherPanel.classList.add('panel-dimmed');
+            if (divider) divider.style.opacity = '0';
 
-            // 2단계: 0.25초간 선택의 손맛(도파민)을 준 뒤 카톡 인터페이스로 전환
+            // 2단계: 손맛을 인지하는 0.18초 뒤 카톡 대화방 우측 슬라이드-인
             setTimeout(() => {
                 const introSection = document.getElementById('splitIntroSection');
                 const landingSection = document.getElementById('landingSection');
                 const originalButtons = document.getElementById('originalFTButtons');
                 const nextButtonContainer = document.getElementById('splitNextButton');
                 
-                // 카톡 UI 요소들
+                // 카톡 UI 세팅
                 const sisterImg = document.getElementById('welcomeSisterImg');
                 const sisterBadge = document.getElementById('welcomeSisterBadge');
                 const sisterText = document.getElementById('welcomeSisterText');
                 const miniProfile = document.getElementById('chatBubbleProfileMini');
                 const senderTitle = document.getElementById('chatSenderNameTitle');
 
-                // 0.8초 타이핑 후 인사말 노출, 직후 입력 폼 카드 등장 시퀀스
                 const typingInd = document.getElementById('chatTypingIndicator');
                 const realBubble = document.getElementById('chatRealBubbleBox');
                 const inputCardBox = document.getElementById('sajuInputCardBox');
@@ -1392,7 +1390,7 @@
                         }
                     }, 200);
                 }, 800);
-        
+
                 if (mode === 'F') {
                     if (sisterImg) sisterImg.src = './로아.png';
                     if (miniProfile) miniProfile.src = './로아.png';
@@ -1403,7 +1401,6 @@
                         sisterText.innerHTML = '아이고 왔어? ㅠㅠ 무슨 일 있었어?<br>속마음 다 털어놔 봐. 언니가 무조건 네 편 들어줄 테니까!<br>일단 정확하게 이름이랑 생일 먼저 적어줘 🥺💕';
                     }
                 } else {
-                    // 서아 (극T 모드)
                     if (sisterImg) sisterImg.src = './서아.png';
                     if (miniProfile) miniProfile.src = './서아.png';
                     if (document.getElementById('chatBubbleProfileMiniTyping')) document.getElementById('chatBubbleProfileMiniTyping').src = './서아.png';
@@ -1413,28 +1410,18 @@
                         sisterText.innerHTML = '왔어? 시간 낭비 말고 본론부터 가자.<br>사주 원국 깔 테니까 이름이랑 생년월일시 똑바로 찍어.';
                     }
                 }
-                // 카톡 전송형 액션 버튼 세팅
+
                 if (originalButtons) originalButtons.style.display = 'none';
                 if (nextButtonContainer) {
                     nextButtonContainer.style.display = 'block';
-                    if (mode === 'F') {
-                        nextButtonContainer.innerHTML = `
-                            <button type="button" onclick="startAnalysis('F')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
-                                <span>로아 언니한테 사주 정보 보내기</span>
-                                <span>💌</span>
-                            </button>
-                        `;
-                    } else {
-                        nextButtonContainer.innerHTML = `
-                            <button type="button" onclick="startAnalysis('T')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
-                                <span>서아 언니한테 사주 정보 보내기</span>
-                                <span>💌</span>
-                            </button>
-                        `;
-                    }
+                    nextButtonContainer.innerHTML = `
+                        <button type="button" onclick="startAnalysis('${mode}')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
+                            <span>${mode === 'F' ? '로아 언니한테 사주 정보 보내기' : '서아 언니한테 사주 정보 보내기'}</span>
+                            <span>💌</span>
+                        </button>
+                    `;
                 }
-                
-                // 실시간 현재 시간 계산 및 말풍선 옆 주입 (카톡 싱크로율 100%)
+
                 const timeEl = document.getElementById('chatRealTime');
                 if (timeEl) {
                     const now = new Date();
@@ -1442,24 +1429,24 @@
                     const minutes = now.getMinutes().toString().padStart(2, '0');
                     const ampm = hours >= 12 ? '오후' : '오전';
                     hours = hours % 12;
-                    hours = hours ? hours : 12; // 0시면 12시로 표시
+                    hours = hours ? hours : 12;
                     timeEl.textContent = `${ampm} ${hours}:${minutes}`;
                 }
 
-                // 화면 전환
+                // 카톡 대화방 슬라이드-인 실행
                 if (introSection) introSection.style.display = 'none';
                 if (landingSection) {
+                    landingSection.classList.remove('fade-in-up');
+                    landingSection.classList.add('slide-in-right');
                     landingSection.style.display = 'flex';
-                    landingSection.classList.add('fade-in-up');
                 }
                 window.scrollTo({ top: 0, behavior: 'instant' });
 
-                // 서아/로아 선택에 따라 첫 번째 카테고리 칩 색상 즉시 동기화
                 const currentSelectedChip = document.querySelector('#concernGrid .concern-chip.selected') || document.querySelector('#concernGrid .concern-chip');
                 if (currentSelectedChip) {
                     applyConcernStyle(currentSelectedChip, selectedSplitMode);
                 }
-            }, 250);
+            }, 180);
         }
 
         // T/F 모드 연동 카테고리 선택 함수 (2px 테두리 두께 고정으로 울렁거림 방지)
@@ -4393,19 +4380,29 @@
             const mainFooter = document.getElementById('mainFooter');
             if (mainFooter) mainFooter.classList.add('hidden');
             
-            // 인트로 화면 복귀 및 선택 인터랙션 클래스 완벽 초기화
+            // 인트로 화면 복귀 및 스프링/딤 클래스 완벽 초기화
             isSplitSelecting = false;
+            const imgR = document.getElementById('imgRoa');
+            const imgS = document.getElementById('imgSeoa');
             const pRoa = document.getElementById('panelRoa');
             const pSeoa = document.getElementById('panelSeoa');
-            if (pRoa) pRoa.className = "char-panel relative w-full h-1/2 cursor-pointer bg-rose-50/30 overflow-hidden flex flex-col justify-end";
-            if (pSeoa) pSeoa.className = "char-panel relative w-full h-1/2 cursor-pointer bg-slate-950 overflow-hidden flex flex-col justify-end";
+            const divEl = document.getElementById('centerDivider');
+
+            if (imgR) imgR.classList.remove('img-pop-spring');
+            if (imgS) imgS.classList.remove('img-pop-spring');
+            if (pRoa) pRoa.classList.remove('panel-dimmed');
+            if (pSeoa) pSeoa.classList.remove('panel-dimmed');
+            if (divEl) divEl.style.opacity = '1';
+
+            const landingSec = document.getElementById('landingSection');
+            if (landingSec) landingSec.classList.remove('slide-in-right');
 
             const introSection = document.getElementById('splitIntroSection');
             if (introSection) {
                 introSection.style.display = 'flex';
                 introSection.style.opacity = '1';
             } else {
-                document.getElementById('landingSection').style.display = 'flex';
+                if (landingSec) landingSec.style.display = 'flex';
             }
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
