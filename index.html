@@ -4205,22 +4205,7 @@
             showToast("다른 고민을 선택하고 정보를 보내주세요!");
             window.scrollTo({ top: 0, behavior: 'instant' });
         }
-
-        // [수정] 렉 유발 요소를 제거하고 부드러운 스크롤만 가볍게 동작하도록 최적화
-        function initMobileKeyboardHandler() {
-            document.addEventListener('focusin', (e) => {
-                if (e.target && e.target.closest('#sazuForm')) {
-                    setTimeout(() => {
-                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 200);
-                }
-            });
-        }
-        // 페이지 로드 시 실행
-        window.addEventListener('DOMContentLoaded', () => {
-            initMobileKeyboardHandler();
-        });
-        
+     
                 // [수정] 반대편 언니 시선으로 즉시 전환 (텍스트 100% 즉시 교체 및 스크롤 최적화)
         function switchSisterMode() {
             if (!currentResultData) {
