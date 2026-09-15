@@ -5446,16 +5446,15 @@ if (inputCardBox) {
         </div>
     </div>  
     <script>
-        // 🛠️ 카카오톡 인앱 대응: 입력창 포커스 시 하단 버튼이 키보드 바로 위에 오도록 강제 스크롤
+        // 🛠️ 카카오톡 인앱 전용: 입력창 누르면 스크롤 영역을 맨 아래로 밀어 버튼 노출
         document.addEventListener('focusin', function (e) {
             if (e.target.tagName === 'INPUT' && e.target.closest('#landingSection')) {
                 setTimeout(() => {
                     const landing = document.getElementById('landingSection');
-                    const submitBtn = landing ? landing.querySelector('button') : null;
-                    if (submitBtn) {
-                        submitBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    if (landing) {
+                        landing.scrollTop = landing.scrollHeight;
                     }
-                }, 400);
+                }, 350);
             }
         });
     </script>
