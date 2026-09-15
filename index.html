@@ -5445,5 +5445,23 @@ if (inputCardBox) {
             </div>
         </div>
     </div>  
+    <!-- 기존에 있던 스크립트나 내용들... -->
+    
+    <script>
+        // 🛠️ 모바일 키보드가 올라올 때 '사주 정보 보내기' 버튼이 가려지지 않도록 자동 스크롤
+        document.addEventListener('DOMContentLoaded', function () {
+            const inputs = document.querySelectorAll('#landingSection input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function () {
+                    setTimeout(() => {
+                        const submitBtn = document.querySelector('#landingSection button[type="button"], #landingSection .submit-btn, #landingSection button');
+                        if (submitBtn) {
+                            submitBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    }, 300);
+                });
+            });
+        });
+    </script>
 </body>
 </html>
