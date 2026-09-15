@@ -3250,51 +3250,9 @@ if (!matchedProfile) {
                 }
             }
 
-            if (val.length <= 4) el.value = val;
+             if (val.length <= 4) el.value = val;
             else if (val.length <= 6) el.value = val.substring(0, 4) + '.' + val.substring(4);
             else el.value = val.substring(0, 4) + '.' + val.substring(4, 6) + '.' + val.substring(6);
-        }
-
-        // 🚀 [오전/오후 탭 전환 함수]
-        function setTimeAmpm(type) {
-            const input = document.getElementById('timeAmpmValue');
-            if (input) input.value = type;
-            const btnAm = document.getElementById('btnAm');
-            const btnPm = document.getElementById('btnPm');
-            if (type === 'am') {
-                if (btnAm) btnAm.className = "toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg";
-                if (btnPm) btnPm.className = "toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg";
-            } else {
-                if (btnAm) btnAm.className = "toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg";
-                if (btnPm) btnPm.className = "toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg";
-            }
-        }
-
-        // 🚀 [12시간제 시·분 자동 포맷팅 및 방어 함수]
-        function formatBirthTime(el) {
-            let val = el.value.replace(/[^0-9]/g, '');
-            if (val.length > 4) val = val.substring(0, 4);
-
-            // 시(Hour) 12 초과 방어 (오전/오후 방식이므로 12까지만 허용)
-            if (val.length >= 2) {
-                let hour = parseInt(val.substring(0, 2), 10);
-                if (hour > 12) {
-                    showToast('시간은 1시부터 12시까지 입력 가능합니다.');
-                    val = '12' + val.substring(2);
-                }
-            }
-
-            // 분(Minute) 59 초과 방어
-            if (val.length >= 4) {
-                let min = parseInt(val.substring(2, 4), 10);
-                if (min > 59) {
-                    showToast('분은 59분까지 입력 가능합니다.');
-                    val = val.substring(0, 2) + '59';
-                }
-            }
-
-            if (val.length <= 2) el.value = val;
-            else el.value = val.substring(0, 2) + ':' + val.substring(2);
         }
         
         function setCalendar(type) {
@@ -3415,24 +3373,9 @@ const isTimeUnknown = !!(
     birthTimeUnknown.checked
 );
 
-let birthTime = 'unknown';
-if (!isTimeUnknown) {
-    const rawT = (birthTimeInput ? birthTimeInput.value : '').replace(/[^0-9]/g, '');
-    if (rawT.length !== 4) {
-        showToast('태어난 시간을 4자리(예: 0230)로 입력하거나 모름을 체크해주세요.');
-        if (birthTimeInput) birthTimeInput.focus();
-        return;
-    }
-    let h = parseInt(rawT.substring(0, 2), 10);
-    const m = rawT.substring(2, 4);
-    const ampm = document.getElementById('timeAmpmValue') ? document.getElementById('timeAmpmValue').value : 'am';
-    
-    // 12시간제 -> 24시간제 변환
-    if (ampm === 'pm' && h < 12) h += 12;
-    if (ampm === 'am' && h === 12) h = 0;
-    
-    birthTime = String(h).padStart(2, '0') + ':' + m;
-}
+const birthTime = isTimeUnknown
+    ? 'unknown'
+    : (birthTimeInput ? birthTimeInput.value.trim() : '');
 
 const isLunar =
     document.getElementById('calendarSelect').value === 'lunar';
@@ -5353,22 +5296,17 @@ const originalInputCardHTML =
                             </div>
                             <div>
                                 <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">태어난 시간</label>
-                                <input type="hidden" id="timeAmpmValue" value="am">
                                 <div class="flex gap-1.5 items-center">
-                                    <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 w-[84px] shrink-0 h-[32px] items-center">
-                                        <button type="button" id="btnAm" onclick="setTimeAmpm('am')" class="toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg">오전</button>
-                                        <button type="button" id="btnPm" onclick="setTimeAmpm('pm')" class="toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg">오후</button>
-                                    </div>
-                                    <input type="tel" id="birthTimeInput" maxlength="5" inputmode="numeric" placeholder="02:30" oninput="formatBirthTime(this)" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white focus:outline-none">
-                                    <label class="h-[32px] px-2 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-1 shrink-0 cursor-pointer select-none">
+                                    <input type="time" id="birthTimeInput" step="60" aria-label="태어난 시간" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-center font-bold text-xs text-slate-700 focus:bg-white focus:outline-none">
+                                    <label class="h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
                                         <input type="checkbox" id="birthTimeUnknown" onchange="toggleBirthTimeUnknown(this)" class="accent-rose-500">
-                                        <span class="text-[10px] font-bold text-slate-600 whitespace-nowrap">모름</span>
+                                        <span class="text-[10.5px] font-bold text-slate-600">시간 모름</span>
                                     </label>
                                 </div>
-                                <p id="birthTimeHint" class="mt-1 text-[8.5px] font-semibold text-slate-400">
-                                    오전/오후 선택 후 시·분 4자리(예: 02시 30분 ➔ 0230)를 적어줘.
+                                <p id="birthTimeHint" class="mt-0.5 text-[8.5px] font-semibold text-slate-400">
+                                    출생기록에 적힌 시각을 입력하면 더 정확해.
                                 </p>
-                            </div>
+           ``                 </div>
                                                         <div id="originalFTButtons" style="display:none;"></div>
                             <div id="splitNextButton" class="pt-1">
                                 <button type="button" onclick="startAnalysis('${isT ? 'T' : 'F'}')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
