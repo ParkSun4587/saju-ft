@@ -377,17 +377,23 @@
             to { transform: translateX(0); }
         }
 
-        /* 모바일 뷰포트 밀림 방지 및 상/하단 완전 고정 */
-        #landingSection, #loadingSection {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+        /* 🛠️ 모바일 전체 페이지 바운스 및 밀림 원천 차단 */
+        html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
             overscroll-behavior: none;
+            position: fixed;
+        }
+
+        #landingSection, #loadingSection {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: none;
         }
         #landingFrame, #loadingFrame {
             width: 100%;
