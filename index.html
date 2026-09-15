@@ -1509,7 +1509,9 @@
                     landingSection.classList.add('slide-in-right');
                     landingSection.style.display = 'flex';
                 }
-                window.scrollTo({ top: 0, behavior: 'instant' });
+                window.scrollTo(0, 0);
+                document.body.scrollTop = 0;
+                document.documentElement.scrollTop = 0;
 
                 const currentSelectedChip = document.querySelector('#concernGrid .concern-chip.selected') || document.querySelector('#concernGrid .concern-chip');
                 if (currentSelectedChip) {
