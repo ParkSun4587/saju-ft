@@ -545,23 +545,23 @@
                     </div>
                 </div>
 
-                <!-- 실제 말풍선 (처음엔 숨김) -->
+                <!-- 실제 말풍선 (컴팩트 최적화) -->
                 <div id="chatRealBubbleBox" class="flex items-start gap-1.5 max-w-[95%]" style="display: none;">
-                    <img id="chatBubbleProfileMini" src="./로아.png" class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5">
+                    <img id="chatBubbleProfileMini" src="./로아.png" class="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5">
                     <div>
-                        <span id="chatSenderNameTitle" class="text-[10px] text-slate-700 font-bold block mb-0.5">로아 언니</span>
-                        <div class="flex items-end gap-1.5">
-                            <div id="welcomeSisterBubble" class="bg-white text-slate-900 text-[11px] font-medium p-2 rounded-2xl rounded-tl-none shadow-sm leading-snug border border-white/40">
-                                <p id="welcomeSisterText">반가워! 네 사주 꼼꼼하게 봐줄게.<br>우선 네 <b class="text-rose-600">이름(닉네임)</b>부터 알려줘</p>
+                        <span id="chatSenderNameTitle" class="text-[9.5px] text-slate-700 font-bold block mb-0.5">로아 언니</span>
+                        <div class="flex items-end gap-1">
+                            <div id="welcomeSisterBubble" class="bg-white text-slate-900 text-[10.5px] font-medium py-1.5 px-2.5 rounded-2xl rounded-tl-none shadow-sm leading-tight border border-white/40">
+                                <p id="welcomeSisterText">반가워! 네 사주 꼼꼼히 봐줄게.<br>우선 네 <b class="text-rose-600">이름(닉네임)</b>부터 적어줘</p>
                             </div>
                             <!-- 실제 접속 시간 자동 주입 태그 -->
-                            <span id="chatRealTime" class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">오후 0:00</span>
+                            <span id="chatRealTime" class="text-[8.5px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">오후 0:00</span>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 2) 카톡형 사주 입력 카드 말풍선 (처음엔 숨김 처리) -->
+            <!-- 2) 카톡형 사주 입력 카드 말풍선 (가독성 & 비율 개선) -->
             <div id="sajuInputCardBox" class="bg-white p-2.5 rounded-2xl shadow-sm border border-white/40 w-full mb-1" style="display: none;">
                 <p class="text-[10.5px] font-extrabold text-slate-800 border-b border-slate-100 pb-1 mb-1.5 flex items-center gap-1">
                     <span>📋</span> 정확한 만세력 원국 조회를 위해 적어줘
@@ -570,7 +570,7 @@
                 <form id="sazuForm" class="space-y-1.5" onsubmit="event.preventDefault();">
                     
                     <!-- 이름 & 성별 -->
-                    <div class="grid grid-cols-2 gap-2 items-end">
+                    <div class="grid grid-cols-2 gap-1.5 items-end">
                         <div>
                             <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">내 이름</label>
                             <input type="text" id="nameInput" maxlength="10" placeholder="이름" class="w-full h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs focus:bg-white focus:outline-none">
@@ -585,110 +585,89 @@
                         </div>
                     </div>
 
-                    <!-- 고민 선택 (T/F 테마 동적 전환 적용) -->
+                    <!-- 고민 선택 (서브 텍스트 가독성 및 마진 최적화) -->
                     <div>
                         <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">지금 제일 답답한 문제는?</label>
                         <input type="hidden" id="selectedConcernKey" value="money">
                         <div class="grid grid-cols-2 gap-1" id="concernGrid">
-                            <button type="button" onclick="selectConcern('money', this)" class="concern-chip selected p-1 rounded-xl flex items-center gap-1">
-                                <span class="text-xs shrink-0">💸</span>
-                                <div class="truncate text-left leading-none">
-                                    <div class="chip-title text-[10.5px] font-bold leading-tight">돈복 · 텅장</div>
-                                    <div class="text-[8px] text-slate-400 truncate">언제 돈 모일까?</div>
+                            <button type="button" onclick="selectConcern('money', this)" class="concern-chip selected p-1.5 rounded-xl flex items-center gap-1.5">
+                                <span class="text-sm shrink-0">💸</span>
+                                <div class="truncate text-left leading-tight">
+                                    <div class="chip-title text-[11px] font-extrabold text-slate-800">돈복 · 텅장</div>
+                                    <div class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate">언제 돈 모일까?</div>
                                 </div>
                             </button>
-                            <button type="button" onclick="selectConcern('career', this)" class="concern-chip p-1 rounded-xl flex items-center gap-1">
-                                <span class="text-xs shrink-0">💼</span>
-                                <div class="truncate text-left leading-none">
-                                    <div class="chip-title text-[10.5px] font-bold leading-tight">취업 · 이직</div>
-                                    <div class="text-[8px] text-slate-400 truncate">서류 합격·퇴사각</div>
+                            <button type="button" onclick="selectConcern('career', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
+                                <span class="text-sm shrink-0">💼</span>
+                                <div class="truncate text-left leading-tight">
+                                    <div class="chip-title text-[11px] font-extrabold text-slate-800">취업 · 이직</div>
+                                    <div class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate">서류 합격·퇴사각</div>
                                 </div>
                             </button>
-                            <button type="button" onclick="selectConcern('love', this)" class="concern-chip p-1 rounded-xl flex items-center gap-1">
-                                <span class="text-xs shrink-0">💖</span>
-                                <div class="truncate text-left leading-none">
-                                    <div class="chip-title text-[10.5px] font-bold leading-tight">연애 · 썸</div>
-                                    <div class="text-[8px] text-slate-400 truncate">내 찐인연 시점</div>
+                            <button type="button" onclick="selectConcern('love', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
+                                <span class="text-sm shrink-0">💖</span>
+                                <div class="truncate text-left leading-tight">
+                                    <div class="chip-title text-[11px] font-extrabold text-slate-800">연애 · 썸</div>
+                                    <div class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate">내 찐인연 시점</div>
                                 </div>
                             </button>
-                            <button type="button" onclick="selectConcern('path', this)" class="concern-chip p-1 rounded-xl flex items-center gap-1">
-                                <span class="text-xs shrink-0">🧭</span>
-                                <div class="truncate text-left leading-none">
-                                    <div class="chip-title text-[10.5px] font-bold leading-tight">진로 · 미래</div>
-                                    <div class="text-[8px] text-slate-400 truncate">적성과 평생 갈 길</div>
+                            <button type="button" onclick="selectConcern('path', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
+                                <span class="text-sm shrink-0">🧭</span>
+                                <div class="truncate text-left leading-tight">
+                                    <div class="chip-title text-[11px] font-extrabold text-slate-800">진로 · 미래</div>
+                                    <div class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate">적성과 평생 갈 길</div>
                                 </div>
                             </button>
-                            <button type="button" onclick="selectConcern('people', this)" class="concern-chip p-1 rounded-xl flex items-center gap-1">
-                                <span class="text-xs shrink-0">✂️</span>
-                                <div class="truncate text-left leading-none">
-                                    <div class="chip-title text-[10.5px] font-bold leading-tight">인간관계</div>
-                                    <div class="text-[8px] text-slate-400 truncate">선 넘는 사람 손절</div>
+                            <button type="button" onclick="selectConcern('people', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
+                                <span class="text-sm shrink-0">✂️</span>
+                                <div class="truncate text-left leading-tight">
+                                    <div class="chip-title text-[11px] font-extrabold text-slate-800">인간관계</div>
+                                    <div class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate">선 넘는 사람 손절</div>
                                 </div>
                             </button>
-                            <button type="button" onclick="selectConcern('mental', this)" class="concern-chip p-1 rounded-xl flex items-center gap-1">
-                                <span class="text-xs shrink-0">🔋</span>
-                                <div class="truncate text-left leading-none">
-                                    <div class="chip-title text-[10.5px] font-bold leading-tight">번아웃·멘탈</div>
-                                    <div class="text-[8px] text-slate-400 truncate">멘탈 회복 타이밍</div>
+                            <button type="button" onclick="selectConcern('mental', this)" class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5">
+                                <span class="text-sm shrink-0">🔋</span>
+                                <div class="truncate text-left leading-tight">
+                                    <div class="chip-title text-[11px] font-extrabold text-slate-800">번아웃·멘탈</div>
+                                    <div class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate">멘탈 회복 타이밍</div>
                                 </div>
                             </button>
                         </div>
                     </div>
 
                     <!-- 생년월일 -->
-<div>
-    <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">생년월일</label>
+                    <div>
+                        <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">생년월일</label>
+                        <input type="hidden" id="calendarSelect" value="solar">
+                        <div class="flex gap-1.5 items-center">
+                            <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 w-[84px] shrink-0 h-[32px] items-center">
+                                <button type="button" id="btnSolar" onclick="setCalendar('solar')" class="toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg">양력</button>
+                                <button type="button" id="btnLunar" onclick="setCalendar('lunar')" class="toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg">음력</button>
+                            </div>
+                            <input type="tel" id="birthDateInput" maxlength="10" inputmode="numeric" placeholder="8자리 (예: 20010524)" oninput="formatBirthDate(this)" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white focus:outline-none">
+                        </div>
+                        <div id="leapMonthWrap" class="hidden mt-1">
+                            <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                                <input type="checkbox" id="leapMonthCheck" class="accent-rose-500">
+                                <span class="text-[9px] font-bold text-slate-500">윤달로 태어났어요</span>
+                            </label>
+                        </div>
+                    </div>
 
-    <input type="hidden" id="calendarSelect" value="solar">
-
-    <div class="flex gap-1.5 items-center">
-        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 w-[84px] shrink-0 h-[32px] items-center">
-            <button type="button" id="btnSolar" onclick="setCalendar('solar')" class="toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg">
-                양력
-            </button>
-
-            <button type="button" id="btnLunar" onclick="setCalendar('lunar')" class="toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg">
-                음력
-            </button>
-        </div>
-
-        <input type="tel" id="birthDateInput" maxlength="10" inputmode="numeric" placeholder="8자리 (예: 20010524)" oninput="formatBirthDate(this)" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white focus:outline-none">
-    </div>
-
-    <div id="leapMonthWrap" class="hidden mt-1">
-        <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
-            <input type="checkbox" id="leapMonthCheck" class="accent-rose-500">
-            <span class="text-[9px] font-bold text-slate-500">
-                윤달로 태어났어요
-            </span>
-        </label>
-    </div>
-</div>
-
-<!-- 태어난 시간 (오전/오후 선택 + 숫자 키패드 4자리) -->
-<div>
-    <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">태어난 시간</label>
-    <input type="hidden" id="timeAmpmValue" value="am">
-    <div class="flex gap-1.5 items-center">
-        <!-- 오전 / 오후 선택 탭 -->
-        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 w-[84px] shrink-0 h-[32px] items-center">
-            <button type="button" id="btnAm" onclick="setTimeAmpm('am')" class="toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg">오전</button>
-            <button type="button" id="btnPm" onclick="setTimeAmpm('pm')" class="toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg">오후</button>
-        </div>
-
-        <!-- 4자리 시:분 숫자 입력창 -->
-        <input type="tel" id="birthTimeInput" maxlength="5" inputmode="numeric" placeholder="02:30" oninput="formatBirthTime(this)" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white focus:outline-none">
-
-        <!-- 시간 모름 체크박스 -->
-        <label class="h-[32px] px-2 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-1 shrink-0 cursor-pointer select-none">
-            <input type="checkbox" id="birthTimeUnknown" onchange="toggleBirthTimeUnknown(this)" class="accent-rose-500">
-            <span class="text-[10px] font-bold text-slate-600 whitespace-nowrap">모름</span>
-        </label>
-    </div>
-    <p id="birthTimeHint" class="mt-1 text-[8.5px] font-semibold text-slate-400">
-        오전/오후 선택 후 시·분 4자리(예: 02시 30분 ➔ 0230)를 적어줘.
-    </p>
-</div>
+                    <!-- 태어난 시간 (기존 검증된 시계 피커 방식으로 원상복구) -->
+                    <div>
+                        <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">태어난 시간</label>
+                        <div class="flex gap-1.5 items-center">
+                            <input type="time" id="birthTimeInput" step="60" aria-label="태어난 시간" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-center font-bold text-xs text-slate-700 focus:bg-white focus:outline-none">
+                            <label class="h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
+                                <input type="checkbox" id="birthTimeUnknown" onchange="toggleBirthTimeUnknown(this)" class="accent-rose-500">
+                                <span class="text-[10.5px] font-bold text-slate-600">시간 모름</span>
+                            </label>
+                        </div>
+                        <p id="birthTimeHint" class="mt-0.5 text-[8.5px] font-semibold text-slate-400">
+                            출생기록에 적힌 시각을 입력하면 더 정확해.
+                        </p>
+                    </div>
 
                     <!-- 전송 버튼 영역 (스크립트 자동 주입) -->
                     <div id="originalFTButtons" style="display:none;"></div>
@@ -5306,7 +5285,7 @@ const originalInputCardHTML =
                                 <p id="birthTimeHint" class="mt-0.5 text-[8.5px] font-semibold text-slate-400">
                                     출생기록에 적힌 시각을 입력하면 더 정확해.
                                 </p>
-           ``                 </div>
+                               </div>
                                                         <div id="originalFTButtons" style="display:none;"></div>
                             <div id="splitNextButton" class="pt-1">
                                 <button type="button" onclick="startAnalysis('${isT ? 'T' : 'F'}')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
