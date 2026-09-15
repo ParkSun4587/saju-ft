@@ -654,21 +654,17 @@
                         </div>
                     </div>
 
-                    <!-- 태어난 시간 (기존 검증된 시계 피커 방식으로 원상복구) -->
+                    <!-- 태어난 시간 (하단 힌트 문구 제거 버전) -->
                     <div>
                         <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">태어난 시간</label>
                         <div class="flex gap-1.5 items-center">
-                            <input type="time" id="birthTimeInput" step="60" aria-label="태어난 시간" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-center font-bold text-xs text-slate-700 focus:bg-white focus:outline-none">
+                            <input type="tel" id="birthTimeInput" maxlength="5" inputmode="numeric" placeholder="태어난 시간 4자리 (예: 1330)" oninput="formatBirthTime(this)" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white focus:outline-none">
                             <label class="h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
                                 <input type="checkbox" id="birthTimeUnknown" onchange="toggleBirthTimeUnknown(this)" class="accent-rose-500">
                                 <span class="text-[10.5px] font-bold text-slate-600">시간 모름</span>
                             </label>
                         </div>
-                        <p id="birthTimeHint" class="mt-0.5 text-[8.5px] font-semibold text-slate-400">
-                            출생기록에 적힌 시각을 입력하면 더 정확해.
-                        </p>
                     </div>
-
                     <!-- 전송 버튼 영역 (스크립트 자동 주입) -->
                     <div id="originalFTButtons" style="display:none;"></div>
                     <div id="splitNextButton" class="pt-1"></div>
@@ -3233,6 +3229,33 @@ if (!matchedProfile) {
             else if (val.length <= 6) el.value = val.substring(0, 4) + '.' + val.substring(4);
             else el.value = val.substring(0, 4) + '.' + val.substring(4, 6) + '.' + val.substring(6);
         }
+
+        // 🚀 [추가] 24시간 형식 4자리(예: 1330 ➔ 13:30) 자동 변환 및 방어 함수
+        function formatBirthTime(el) {
+            let val = el.value.replace(/[^0-9]/g, '');
+            if (val.length > 4) val = val.substring(0, 4);
+
+            // 1단계: 시(00~23시) 초과 방어
+            if (val.length >= 2) {
+                let hour = parseInt(val.substring(0, 2), 10);
+                if (hour > 23) {
+                    showToast('시간은 00시부터 23시까지 입력 가능합니다.');
+                    val = '23' + val.substring(2);
+                }
+            }
+
+            // 2단계: 분(00~59분) 초과 방어
+            if (val.length >= 4) {
+                let min = parseInt(val.substring(2, 4), 10);
+                if (min > 59) {
+                    showToast('분은 59분까지 입력 가능합니다.');
+                    val = val.substring(0, 2) + '59';
+                }
+            }
+
+            if (val.length <= 2) el.value = val;
+            else el.value = val.substring(0, 2) + ':' + val.substring(2);
+        }
         
         function setCalendar(type) {
     document.getElementById('calendarSelect').value = type;
@@ -3341,7 +3364,7 @@ let paymentMethodsWidget = null;
 
                 // GA4: 분석 시작 이벤트 (선택한 모드와 고민 키워드 수집)
                 if (typeof gtag === 'function') gtag('event', 'generate_lead', { mode_type: mode, concern_type: concernKey });
-                const rawBirth = document.getElementById('birthDateInput').value.trim();
+                 const rawBirth = document.getElementById('birthDateInput').value.trim();
 let birthStr = rawBirth.replace(/[^0-9]/g, '');
 
 const birthTimeInput = document.getElementById('birthTimeInput');
@@ -3352,9 +3375,18 @@ const isTimeUnknown = !!(
     birthTimeUnknown.checked
 );
 
-const birthTime = isTimeUnknown
-    ? 'unknown'
-    : (birthTimeInput ? birthTimeInput.value.trim() : '');
+// 🚀 4자리 숫자(14:30) 완성 확인
+let birthTime = 'unknown';
+if (!isTimeUnknown) {
+    const rawT = (birthTimeInput ? birthTimeInput.value.trim() : '');
+    const cleanTime = rawT.replace(/[^0-9]/g, '');
+    if (cleanTime.length !== 4) {
+        showToast('태어난 시간을 4자리(예: 1430)로 입력하거나 시간 모름을 체크해주세요.');
+        if (birthTimeInput) birthTimeInput.focus();
+        return;
+    }
+    birthTime = cleanTime.substring(0, 2) + ':' + cleanTime.substring(2, 4);
+}
 
 const isLunar =
     document.getElementById('calendarSelect').value === 'lunar';
@@ -5283,9 +5315,9 @@ const originalInputCardHTML =
                                     </label>
                                 </div>
                                 <p id="birthTimeHint" class="mt-0.5 text-[8.5px] font-semibold text-slate-400">
-                                    출생기록에 적힌 시각을 입력하면 더 정확해.
+                                    24시간 형식으로 4자리(예: 14시 30분 ➔ 1430)를 적어줘.
                                 </p>
-                               </div>
+                            </div>
                                                         <div id="originalFTButtons" style="display:none;"></div>
                             <div id="splitNextButton" class="pt-1">
                                 <button type="button" onclick="startAnalysis('${isT ? 'T' : 'F'}')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
