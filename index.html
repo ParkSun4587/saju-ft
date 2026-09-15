@@ -649,28 +649,18 @@
                     <div>
                         <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">태어난 시간</label>
                         <div class="relative">
-                            <select id="birthTimeSelect" class="w-full h-[32px] px-2.5 pr-8 rounded-xl border border-slate-200 bg-slate-50 text-center font-bold text-xs cursor-pointer appearance-none text-slate-700 focus:bg-white focus:outline-none">
-                                <option value="" selected disabled>태어난 시간 선택</option>
-                                <option value="unknown">시간 모름 (정밀 추정)</option>
-                                <option value="子">자시 (23:30 ~ 01:29)</option>
-                                <option value="丑">축시 (01:30 ~ 03:29)</option>
-                                <option value="寅">인시 (03:30 ~ 05:29)</option>
-                                <option value="卯">묘시 (05:30 ~ 07:29)</option>
-                                <option value="辰">진시 (07:30 ~ 09:29)</option>
-                                <option value="巳">사시 (09:30 ~ 11:29)</option>
-                                <option value="午">오시 (11:30 ~ 13:29)</option>
-                                <option value="未">미시 (13:30 ~ 15:29)</option>
-                                <option value="申">신시 (15:30 ~ 17:29)</option>
-                                <option value="酉">유시 (17:30 ~ 19:29)</option>
-                                <option value="戌">술시 (19:30 ~ 21:29)</option>
-                                <option value="亥">해시 (21:30 ~ 23:29)</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                </svg>
-                            </div>
-                        </div>
+                            <div class="flex gap-1.5 items-center">
+    <input type="time" id="birthTimeInput" step="60" aria-label="태어난 시간" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-center font-bold text-xs text-slate-700 focus:bg-white focus:outline-none">
+
+    <label class="h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
+        <input type="checkbox" id="birthTimeUnknown" onchange="toggleBirthTimeUnknown(this)" class="accent-rose-500">
+        <span class="text-[10.5px] font-bold text-slate-600">시간 모름</span>
+    </label>
+</div>
+
+<p id="birthTimeHint" class="mt-1 text-[8.5px] font-semibold text-slate-400">
+    출생기록에 적힌 시각을 입력하면 더 정확해.
+</p>
                     </div>
 
                     <!-- 전송 버튼 영역 (스크립트 자동 주입) -->
@@ -2906,15 +2896,41 @@
             return out;
         }
 
-        function calculateAccurateManse(year, month, day, hourZhi, gender) {
-            try {
-                const hourMap = {
-                    '子': 0, '丑': 2, '寅': 4, '卯': 6, '辰': 8, '巳': 10,
-                    '午': 12, '未': 14, '申': 16, '酉': 18, '戌': 20, '亥': 22
-                };
-                const hVal = hourZhi && hourMap[hourZhi] !== undefined ? hourMap[hourZhi] : 12;
+        function calculateAccurateManse(year, month, day, birthTime, gender) {
+    try {
+        // 신규 데이터는 "HH:MM"을 그대로 사용한다.
+        // 기존 테스트 데이터의 자시·축시 값도 복원되도록 임시 지원한다.
+        const legacyHourMap = {
+            '子': 0, '丑': 2, '寅': 4, '卯': 6, '辰': 8, '巳': 10,
+            '午': 12, '未': 14, '申': 16, '酉': 18, '戌': 20, '亥': 22
+        };
 
-                const solar = Solar.fromYmdHms(year, month, day, hVal, 0, 0);
+        const exactTimeMatch = typeof birthTime === 'string'
+            ? birthTime.match(/^([01]\d|2[0-3]):([0-5]\d)$/)
+            : null;
+
+        const isLegacyTime =
+            typeof birthTime === 'string' &&
+            legacyHourMap[birthTime] !== undefined;
+
+        const hourKnown = !!exactTimeMatch || isLegacyTime;
+
+        const hVal = exactTimeMatch
+            ? Number(exactTimeMatch[1])
+            : (isLegacyTime ? legacyHourMap[birthTime] : 12);
+
+        const minuteVal = exactTimeMatch
+            ? Number(exactTimeMatch[2])
+            : 0;
+
+        const solar = Solar.fromYmdHms(
+            year,
+            month,
+            day,
+            hVal,
+            minuteVal,
+            0
+        );
                 const lunar = solar.getLunar();
                 const baZi = lunar.getEightChar(); 
 
@@ -2926,14 +2942,25 @@
                 const dZhi = baZi.getDayZhi();
                 
                 let hGan = "";
-                if (hourZhi) hGan = baZi.getTimeGan();
+let hZhi = "";
 
-                // 시주를 모르면 가짜 정오(12시) 기준 시간(時干)이 격국 투출 판정에 섞여 들어가지 않도록,
-                // hourZhi가 실제로 있을 때만 후보에 포함시킨다.
-                const gyeokCandidates = [yGan, mGan];
-                if (hourZhi && hGan) gyeokCandidates.push(hGan);
-                const gyeokguk = determineGyeokguk(baZi, gyeokCandidates);
-                const pillarSipsin = getPillarSipsinSet(baZi, !!(hourZhi && hGan));
+if (hourKnown) {
+    hGan = baZi.getTimeGan();
+    hZhi = baZi.getTimeZhi();
+}
+
+// 시간을 모르면 임시 정오의 시주가 실제 분석에 섞이지 않도록 제외한다.
+const gyeokCandidates = [yGan, mGan];
+
+if (hourKnown && hGan) {
+    gyeokCandidates.push(hGan);
+}
+
+const gyeokguk = determineGyeokguk(baZi, gyeokCandidates);
+const pillarSipsin = getPillarSipsinSet(
+    baZi,
+    !!(hourKnown && hGan)
+);
                 const gyeokStatus = evaluateGyeokStatus(gyeokguk, pillarSipsin);
                 const genderCode = (gender === 'male') ? 1 : 0;
                 const realYeonun = getRealYeonunInfo(baZi, dGan, genderCode, [2026, 2027]);
@@ -2943,9 +2970,12 @@
                     { ch: mGan, w: 1.5 }, { ch: mZhi, w: 3.0 }, 
                     { ch: dGan, w: 2.0 }, { ch: dZhi, w: 1.8 }
                 ];
-                if (hGan && hourZhi) {
-                    allElements.push({ ch: hGan, w: 1.0 }, { ch: hourZhi, w: 1.2 });
-                }
+                if (hGan && hZhi) {
+    allElements.push(
+        { ch: hGan, w: 1.0 },
+        { ch: hZhi, w: 1.2 }
+    );
+}
 
                 const counts = { mok: 0, hwa: 0, to: 0, geum: 0, su: 0 };
                 allElements.forEach(item => {
@@ -2954,7 +2984,10 @@
                 });
 
                 const allZhis = [yZhi, mZhi, dZhi];
-                if (hourZhi) allZhis.push(hourZhi);
+
+if (hZhi) {
+    allZhis.push(hZhi);
+}
 
                 if ((allZhis.includes('申') && allZhis.includes('子')) || (allZhis.includes('子') && allZhis.includes('辰'))) counts.su += 2.5;
                 if ((allZhis.includes('寅') && allZhis.includes('午')) || (allZhis.includes('午') && allZhis.includes('戌'))) counts.hwa += 2.5;
@@ -3040,7 +3073,7 @@
         year:  { gan: yGan, zhi: yZhi, sipsin: pillarSipsin.year },
         month: { gan: mGan, zhi: mZhi, sipsin: pillarSipsin.month },
         day:   { gan: dGan, zhi: dZhi, sipsin: pillarSipsin.day },
-        hour:  hourZhi ? { gan: hGan, zhi: hourZhi, sipsin: pillarSipsin.hour } : null
+        hour:  hourKnown ? { gan: hGan, zhi: hZhi, sipsin: pillarSipsin.hour } : null
     },
     elements: counts,
     realYeonun: realYeonun,
@@ -3086,7 +3119,7 @@
                         year:  { gan: yGan, zhi: yZhi, sipsin: pillarSipsin.year },
                         month: { gan: mGan, zhi: mZhi, sipsin: pillarSipsin.month },
                         day:   { gan: dGan, zhi: dZhi, sipsin: pillarSipsin.day },
-                        hour:  hourZhi ? { gan: hGan, zhi: hourZhi, sipsin: pillarSipsin.hour } : null
+                        hour:  hourKnown ? { gan: hGan, zhi: hZhi, sipsin: pillarSipsin.hour } : null
                     }
                 };
             } catch (err) {
@@ -3153,17 +3186,42 @@
         }
         
         function setCalendar(type) {
-            document.getElementById('calendarSelect').value = type;
-            const btnSolar = document.getElementById('btnSolar');
-            const btnLunar = document.getElementById('btnLunar');
-            if (type === 'solar') { 
-                btnSolar.className = "toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg"; 
-                btnLunar.className = "toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg"; 
-            } else { 
-                btnSolar.className = "toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg"; 
-                btnLunar.className = "toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg"; 
-            }
+    document.getElementById('calendarSelect').value = type;
+    const btnSolar = document.getElementById('btnSolar');
+    const btnLunar = document.getElementById('btnLunar');
+
+    if (type === 'solar') { 
+        btnSolar.className = "toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg"; 
+        btnLunar.className = "toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg"; 
+    } else { 
+        btnSolar.className = "toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg"; 
+        btnLunar.className = "toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg"; 
+    }
+}
+
+function toggleBirthTimeUnknown(checkbox) {
+    const timeInput = document.getElementById('birthTimeInput');
+    const hint = document.getElementById('birthTimeHint');
+
+    if (!timeInput) return;
+
+    timeInput.disabled = checkbox.checked;
+    timeInput.classList.toggle('opacity-50', checkbox.checked);
+
+    if (checkbox.checked) {
+        timeInput.value = '';
+
+        if (hint) {
+            hint.textContent = '괜찮아. 시간주는 빼고 확인 가능한 정보만 볼게.';
         }
+    } else {
+        if (hint) {
+            hint.textContent = '출생기록에 적힌 시각을 입력하면 더 정확해.';
+        }
+
+        timeInput.focus();
+    }
+}
 
         function setGender(gender) {
             document.getElementById('genderValue').value = gender;
@@ -3217,11 +3275,25 @@
                 // GA4: 분석 시작 이벤트 (선택한 모드와 고민 키워드 수집)
                 if (typeof gtag === 'function') gtag('event', 'generate_lead', { mode_type: mode, concern_type: concernKey });
                 const rawBirth = document.getElementById('birthDateInput').value.trim();
-                let birthStr = rawBirth.replace(/[^0-9]/g, ''); 
-                const hourSelect = document.getElementById('birthTimeSelect');
-                const hour = hourSelect ? hourSelect.value : 'unknown';
-                const isLunar = document.getElementById('calendarSelect').value === 'lunar';
-                const gender = document.getElementById('genderValue').value;
+let birthStr = rawBirth.replace(/[^0-9]/g, '');
+
+const birthTimeInput = document.getElementById('birthTimeInput');
+const birthTimeUnknown = document.getElementById('birthTimeUnknown');
+
+const isTimeUnknown = !!(
+    birthTimeUnknown &&
+    birthTimeUnknown.checked
+);
+
+const birthTime = isTimeUnknown
+    ? 'unknown'
+    : (birthTimeInput ? birthTimeInput.value.trim() : '');
+
+const isLunar =
+    document.getElementById('calendarSelect').value === 'lunar';
+
+const gender =
+    document.getElementById('genderValue').value;
 
                 if (!name) { showToast('이름을 입력해주세요.'); document.getElementById('nameInput').focus(); return; }
                 if (!birthStr || birthStr.length !== 8) { showToast('생년월일 8자리(예: 19991230)를 정확히 입력해주세요.'); document.getElementById('birthDateInput').focus(); return; }
@@ -3242,7 +3314,18 @@
                     document.getElementById('birthDateInput').focus(); 
                     return; 
                 }
-                if (!hour || hour === '') { showToast('태어난 시간을 선택해주세요.'); if (hourSelect) hourSelect.focus(); return; }
+                if (
+    !isTimeUnknown &&
+    !/^([01]\d|2[0-3]):[0-5]\d$/.test(birthTime)
+) {
+    showToast('태어난 시각을 입력하거나 시간 모름을 체크해주세요.');
+
+    if (birthTimeInput) {
+        birthTimeInput.focus();
+    }
+
+    return;
+}
 
                 // 새 분석이므로 이전 해금 상태를 반드시 초기화
                 isUnlocked = false;
@@ -3256,8 +3339,11 @@
                 const streamArea = document.getElementById('chatStreamArea');
                 // 생년월일 포맷 정돈 (19980221 -> 1998.02.21)
                 const formattedBirth = birthStr.length === 8 
-                    ? `${birthStr.slice(0,4)}.${birthStr.slice(4,6)}.${birthStr.slice(6,8)}` 
-                    : birthStr;
+    ? `${birthStr.slice(0,4)}.${birthStr.slice(4,6)}.${birthStr.slice(6,8)}` 
+    : birthStr;
+
+const formattedBirthTime =
+    birthTime === 'unknown' ? '시간 모름' : birthTime;
 
                 // 현재 실시간 시간 구하기
                 const now = new Date();
@@ -3283,7 +3369,7 @@
                     <div class="flex justify-end items-end gap-1.5 fade-in-up">
                         <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">${getCurrTime()}</span>
                         <div class="bg-[#fee500] text-slate-900 text-xs font-bold px-3.5 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[240px] leading-snug break-keep">
-                            ${name} / ${formattedBirth} / 언니 내 사주 얼른 봐줘! 💌
+                            ${name} / ${formattedBirth} / ${formattedBirthTime} / 언니 내 사주 얼른 봐줘! 💌
                         </div>
                     </div>
                 `;
@@ -3371,13 +3457,19 @@
                     }
 
                     try {
-                        const sazuResult = calculateAccurateManse(calcYear, calcMonth, calcDay, hour === 'unknown' ? null : hour, gender);
+                        const sazuResult = calculateAccurateManse(
+    calcYear,
+    calcMonth,
+    calcDay,
+    birthTime,
+    gender
+);
                         const lowest = getLowestStatInfo(sazuResult.stats);
                         const allSolutions = getTrueBaziSolutions(name, lowest, sazuResult.yongshin, sazuResult.dayOheng, gender, sazuResult.mbtiKey, birthStr, sazuResult.gyeokguk, sazuResult.gyeokStatus, sazuResult.realYeonun);
                         const solutionTemplate = allSolutions[concernKey] || allSolutions.money;
 
                         currentResultData = { 
-                            name: name, userName: name, userBirthStr: birthStr, userTimeKey: hour, userGender: gender,
+                            name: name, userName: name, userBirthStr: birthStr, userTimeKey: birthTime, userGender: gender,
                             userCalendar: isLunar ? 'lunar' : 'solar',
                             currentMode: mode, concernKey: concernKey, ...sazuResult, rawSolutionTemplate: solutionTemplate 
                         };
@@ -4854,28 +4946,18 @@ function renderResultView(data) {
                             <div>
                                 <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">태어난 시간</label>
                                 <div class="relative">
-                                    <select id="birthTimeSelect" class="w-full h-[32px] px-2.5 pr-8 rounded-xl border border-slate-200 bg-slate-50 text-center font-bold text-xs cursor-pointer appearance-none text-slate-700 focus:bg-white focus:outline-none">
-                                        <option value="" selected disabled>태어난 시간 선택</option>
-                                        <option value="unknown">시간 모름 (정밀 추정)</option>
-                                        <option value="子">자시 (23:30 ~ 01:29)</option>
-                                        <option value="丑">축시 (01:30 ~ 03:29)</option>
-                                        <option value="寅">인시 (03:30 ~ 05:29)</option>
-                                        <option value="卯">묘시 (05:30 ~ 07:29)</option>
-                                        <option value="辰">진시 (07:30 ~ 09:29)</option>
-                                        <option value="巳">사시 (09:30 ~ 11:29)</option>
-                                        <option value="午">오시 (11:30 ~ 13:29)</option>
-                                        <option value="未">미시 (13:30 ~ 15:29)</option>
-                                        <option value="申">신시 (15:30 ~ 17:29)</option>
-                                        <option value="酉">유시 (17:30 ~ 19:29)</option>
-                                        <option value="戌">술시 (19:30 ~ 21:29)</option>
-                                        <option value="亥">해시 (21:30 ~ 23:29)</option>
-                                    </select>
-                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                        </svg>
-                                    </div>
-                                </div>
+                                    <div class="flex gap-1.5 items-center">
+    <input type="time" id="birthTimeInput" step="60" aria-label="태어난 시간" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-center font-bold text-xs text-slate-700 focus:bg-white focus:outline-none">
+
+    <label class="h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
+        <input type="checkbox" id="birthTimeUnknown" onchange="toggleBirthTimeUnknown(this)" class="accent-rose-500">
+        <span class="text-[10.5px] font-bold text-slate-600">시간 모름</span>
+    </label>
+</div>
+
+<p id="birthTimeHint" class="mt-1 text-[8.5px] font-semibold text-slate-400">
+    출생기록에 적힌 시각을 입력하면 더 정확해.
+</p>
                             </div>
                                                         <div id="originalFTButtons" style="display:none;"></div>
                             <div id="splitNextButton" class="pt-1">
