@@ -3252,6 +3252,33 @@ if (!matchedProfile) {
             else if (val.length <= 6) el.value = val.substring(0, 4) + '.' + val.substring(4);
             else el.value = val.substring(0, 4) + '.' + val.substring(4, 6) + '.' + val.substring(6);
         }
+
+        // 🚀 [추가] 태어난 시간 4자리(예: 1430) 입력 시 14:30 자동 변환 및 유효성 검증 함수
+        function formatBirthTime(el) {
+            let val = el.value.replace(/[^0-9]/g, '');
+            if (val.length > 4) val = val.substring(0, 4);
+
+            // 1단계: 시(Hour) 23시 초과 방어
+            if (val.length >= 2) {
+                let hour = parseInt(val.substring(0, 2), 10);
+                if (hour > 23) {
+                    showToast('시간은 00시부터 23시까지 입력 가능합니다.');
+                    val = '23' + val.substring(2);
+                }
+            }
+
+            // 2단계: 분(Minute) 59분 초과 방어
+            if (val.length >= 4) {
+                let min = parseInt(val.substring(2, 4), 10);
+                if (min > 59) {
+                    showToast('분은 59분까지 입력 가능합니다.');
+                    val = val.substring(0, 2) + '59';
+                }
+            }
+
+            if (val.length <= 2) el.value = val;
+            else el.value = val.substring(0, 2) + ':' + val.substring(2);
+        }
         
         function setCalendar(type) {
     document.getElementById('calendarSelect').value = type;
@@ -3430,18 +3457,15 @@ if (!isLunar) {
                     document.getElementById('birthDateInput').focus(); 
                     return; 
                 }
-                if (
-    !isTimeUnknown &&
-    !/^([01]\d|2[0-3]):[0-5]\d$/.test(birthTime)
-) {
-    showToast('태어난 시각을 입력하거나 시간 모름을 체크해주세요.');
-
-    if (birthTimeInput) {
-        birthTimeInput.focus();
-    }
-
-    return;
-}
+                // 4자리 숫자(14:30) 완성 여부 정밀 검증
+                if (!isTimeUnknown) {
+                    const cleanTime = birthTime.replace(/[^0-9]/g, '');
+                    if (cleanTime.length !== 4) {
+                        showToast('태어난 시간을 4자리(예: 1430)로 입력하거나 시간 모름을 체크해주세요.');
+                        if (birthTimeInput) birthTimeInput.focus();
+                        return;
+                    }
+                }
                 // 음력 날짜는 말풍선을 만들기 전에 먼저 실제 달력 날짜로 검증한다.
 let calcYear = year;
 let calcMonth = month;
