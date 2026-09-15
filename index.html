@@ -388,7 +388,7 @@
             overscroll-behavior: none;
         }
 
-        #landingSection, #loadingSection {
+        #landingSection, #loadingSection, #resultSection {
             position: absolute;
             inset: 0;
             width: 100%;
@@ -397,6 +397,7 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: none;
+            background-color: #fcfaf7;
         }
         #landingFrame, #loadingFrame {
             width: 100%;
@@ -720,7 +721,8 @@
     </main>
 
     <!-- 3. 결과 섹션 (모바일 430px 규격 완벽 고정) -->
-        <main id="resultSection" style="display: none;" class="w-full max-w-[430px] mx-auto py-5 space-y-3.5 px-1">
+    <main id="resultSection" style="display: none;" class="absolute inset-0 z-50 w-full h-[100dvh] overflow-y-auto bg-[#fcfaf7] select-none">
+        <div class="w-full max-w-[430px] mx-auto py-5 space-y-3.5 px-2.5 sm:px-4">
 
         <!-- 결과 화면 카톡 상단 네비게이션 & 언니의 실시간 총평 말풍선 -->
         <div class="space-y-3 pb-1">
