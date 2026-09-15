@@ -954,6 +954,14 @@
                                 >
                                     이 결제수단으로 결제하기 · 990원
                                 </button>
+
+                                <!-- 인앱 브라우저 결제 튕김 방지용 보조 링크 -->
+                                <div id="inAppBrowserNotice" class="mt-2.5 pt-2 border-t border-slate-100 text-center">
+                                    <p class="text-[10px] text-slate-400">
+                                        카카오페이/토스 결제 중 화면이 멈춘다면?
+                                        <button type="button" onclick="openInExternalBrowser()" class="underline text-sky-600 font-bold ml-1 bg-transparent border-0 p-0 cursor-pointer">기본 브라우저로 열기</button>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -4485,7 +4493,45 @@ if (!mKey || !SAZU_CHARACTER_PROFILES[mKey]) {
                 }
             }
         }
+        // 인앱 브라우저 탈출 및 외부 브라우저(사파리/크롬) 호출 함수
+        function openInExternalBrowser() {
+            if (!currentResultData) {
+                showToast("분석 데이터를 먼저 확인해주세요.");
+                return;
+            }
 
+            const cleanOrigin = window.location.origin;
+            const uDataParam = encodeURIComponent(
+                btoa(
+                    encodeURIComponent(
+                        JSON.stringify({
+                            n: currentResultData.name || '',
+                            b: currentResultData.userBirthStr || '',
+                            t: currentResultData.userTimeKey || 'unknown',
+                            g: currentResultData.userGender || 'female',
+                            c: currentResultData.userCalendar || 'solar',
+                            k: currentResultData.concernKey || 'money',
+                            m: currentResultData.currentMode || 'T',
+                            l: currentResultData.isLeapMonth || false
+                        })
+                    )
+                )
+            );
+
+            // 외부 브라우저로 열릴 주소 (결과 복원 파라미터 포함)
+            const targetUrl = `${cleanOrigin}/?udata=${uDataParam}`;
+            const userAgent = navigator.userAgent.toLowerCase();
+
+            // 안드로이드 크롬 인텐트 호출
+            if (userAgent.match(/android/i)) {
+                location.href = `intent://${targetUrl.replace(/https?:\/\//i, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+            } 
+            // iOS 사파리 등 기타 환경
+            else {
+                window.open(targetUrl, '_system');
+            }
+        }
+        
         function getUserUniqueKey(data) {
     if (!data) return '';
     return `sazu_pay_${data.userName || ''}_${data.userBirthStr || ''}_${data.userTimeKey || ''}_${data.userGender || ''}_${data.concernKey || 'money'}`;
