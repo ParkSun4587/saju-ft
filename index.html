@@ -70,7 +70,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.min.js"></script>
     <!-- 토스페이먼츠 결제창 SDK v1 -->
-    <script src="https://js.tosspayments.com/v1/payment"></script>
+    <script src="https://js.tosspayments.com/v1/payment-widget"></script>
     <!-- 화면 캡처 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -917,18 +917,44 @@
                             </div>
                         </div>
 
-                        <!-- CTA 버튼 (빛 스위핑 애니메이션 btn-shine 적용) -->
-                        <div class="space-y-1.5 pt-0.5">
+                                                <div class="space-y-1.5 pt-0.5">
                             <div class="bg-slate-50 border border-slate-200 rounded-xl py-1.5 px-3 text-center">
                                 <p class="text-[10px] text-slate-400 whitespace-nowrap text-center">
-                                    콘텐츠 특성상 열람 후 환불 불가 동의 <button type="button" onclick="openPolicyModal('terms')" class="underline text-slate-600 hover:text-slate-900 bg-transparent border-0 p-0 cursor-pointer ml-0.5">[약관]</button>
+                                    콘텐츠 특성상 열람 후 환불 불가 동의
+                                    <button type="button" onclick="openPolicyModal('terms')" class="underline text-slate-600 hover:text-slate-900 bg-transparent border-0 p-0 cursor-pointer ml-0.5">[약관]</button>
                                 </p>
                             </div>
 
-                            <button type="button" onclick="startDirectPayment()" class="btn-shine w-full py-3.5 px-5 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:brightness-110 text-slate-950 font-black text-lg rounded-2xl shadow-[0_0_25px_rgba(251,191,36,0.5)] transition-all transform active:scale-95 flex flex-col items-center justify-center gap-0.5 cursor-pointer border-0">
-                                <span id="payBtnActionText" class="text-base sm:text-lg tracking-tight">언니, 그다음도 봐줘 →</span>
-                                <span class="text-[11px] font-bold text-slate-900/85">990원 · 결제하면 이어서 바로 볼 수 있어</span>
+                            <button
+                                id="directPaymentOpenButton"
+                                type="button"
+                                onclick="startDirectPayment()"
+                                class="btn-shine w-full py-3.5 px-5 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:brightness-110 text-slate-950 font-black text-lg rounded-2xl shadow-[0_0_25px_rgba(251,191,36,0.5)] transition-all transform active:scale-95 flex flex-col items-center justify-center gap-0.5 cursor-pointer border-0"
+                            >
+                                <span class="text-base sm:text-lg tracking-tight">
+                                    결제수단 선택하기 →
+                                </span>
+                                <span class="text-[11px] font-bold text-slate-900/85">
+                                    990원 · 카드·카카오페이·토스페이
+                                </span>
                             </button>
+
+                            <div
+                                id="paymentWidgetArea"
+                                style="display: none;"
+                                class="mt-3 rounded-2xl bg-white border border-slate-200 p-2"
+                            >
+                                <div id="paymentMethod"></div>
+                                <div id="paymentAgreement" class="mt-2"></div>
+
+                                <button
+                                    type="button"
+                                    onclick="requestWidgetPayment()"
+                                    class="w-full py-3.5 px-4 mt-3 bg-[#fee500] text-[#3c1e1e] font-black text-sm rounded-2xl shadow-sm active:scale-95 transition-all"
+                                >
+                                    이 결제수단으로 결제하기 · 990원
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3287,6 +3313,9 @@ function toggleBirthTimeUnknown(checkbox) {
 
         let isUnlocked = false;
 
+let paymentWidget = null;
+let paymentMethodsWidget = null;
+
         // ⚠️ 키는 반드시 이 한 줄에서만 관리. 토스 대시보드에서 직접 복사해 붙여넣을 것.
         // ⚠️ 런칭 당일 live_ck_... 로 교체 (test_ck_ 상태로 열면 실매출 0원 = 전환율 0%)
         const TOSS_CLIENT_KEY = "test_ck_LlDJaYngro2leKPaObPxVezGdRpX";
@@ -4293,66 +4322,168 @@ if (!mKey || !SAZU_CHARACTER_PROFILES[mKey]) {
             } catch (e) { return 'error'; }
         }
 
-              async function startDirectPayment() {
-            if (typeof gtag === 'function') {
-                gtag('event', 'begin_checkout', { item_name: 'VVIP 사주 처방전', value: PAY_AMOUNT, currency: 'KRW' });
-            }
-
+                async function startDirectPayment() {
             if (!currentResultData) {
                 showToast("분석 결과를 먼저 확인해주세요.");
                 return;
             }
 
-            try {
-                const dataStr = JSON.stringify(currentResultData);
-                sessionStorage.setItem('unni_temp_result', dataStr);
-                localStorage.setItem('unni_temp_result', dataStr);
-            } catch (e) {
-                console.warn("결제 데이터 백업 실패:", e);
-            }
-
-            const orderId = "SAJU" + Date.now() + Math.random().toString(36).substring(2, 6);
-            const customerName = (currentResultData.name || "구매자").trim();
-
-            const cleanOrigin = window.location.origin;
-            // [방어율 100%] 인앱 웹뷰가 메모리를 날려도 URL에서 100% 복구할 수 있도록 유저 데이터를 쿼리스트링에 백업
-            // 개인정보 보호를 위한 Base64 암호화 처리 및 윤달 데이터 추가
-            const uDataParam = btoa(encodeURIComponent(JSON.stringify({
-                n: currentResultData.name || '',
-                b: currentResultData.userBirthStr || '',
-                t: currentResultData.userTimeKey || 'unknown',
-                g: currentResultData.userGender || 'female',
-                c: currentResultData.userCalendar || 'solar',
-                k: currentResultData.concernKey || 'money',
-                m: currentResultData.currentMode || 'T',
-                l: currentResultData.isLeapMonth || false
-            })));
-            const successUrl = `${cleanOrigin}/?payment=success&udata=${uDataParam}`;
-            const failUrl = cleanOrigin + "/?payment=fail";
-
-            const toss = getTossSDK();
-            if (!toss) {
-                if (typeof gtag === 'function') gtag('event', 'pay_sdk_fail');
+            if (typeof PaymentWidget === 'undefined') {
                 showToast("결제 모듈을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.");
                 return;
             }
 
-            toss.requestPayment('카드', {
-                amount: PAY_AMOUNT,
-                orderId: orderId,
-                orderName: '2026-2027 시크릿 사주 처방전',
-                customerName: customerName.length > 0 ? customerName : '구매자',
-                successUrl: successUrl,
-                failUrl: failUrl,
-                flowMode: 'DEFAULT'
-            }).catch(function (error) {
+            const widgetArea =
+                document.getElementById('paymentWidgetArea');
+
+            const openButton =
+                document.getElementById('directPaymentOpenButton');
+
+            if (!widgetArea) {
+                showToast("결제 화면을 불러오지 못했습니다.");
+                return;
+            }
+
+            widgetArea.style.display = 'block';
+
+            if (openButton) {
+                openButton.style.display = 'none';
+            }
+
+            if (paymentMethodsWidget) {
+                return;
+            }
+
+            try {
+                paymentWidget = PaymentWidget(
+                    TOSS_CLIENT_KEY,
+                    PaymentWidget.ANONYMOUS
+                );
+
+                paymentMethodsWidget =
+                    paymentWidget.renderPaymentMethods(
+                        '#paymentMethod',
+                        {
+                            value: PAY_AMOUNT,
+                            currency: 'KRW'
+                        },
+                        {
+                            variantKey: 'DEFAULT'
+                        }
+                    );
+
+                paymentWidget.renderAgreement(
+                    '#paymentAgreement'
+                );
+            } catch (error) {
+                console.error('결제위젯 렌더링 오류:', error);
+
+                widgetArea.style.display = 'none';
+
+                if (openButton) {
+                    openButton.style.display = 'flex';
+                }
+
+                showToast("결제수단을 불러오지 못했습니다.");
+            }
+        }
+
+        async function requestWidgetPayment() {
+            if (!currentResultData) {
+                showToast("분석 결과를 먼저 확인해주세요.");
+                return;
+            }
+
+            if (!paymentWidget) {
+                showToast("먼저 결제수단을 선택해주세요.");
+                return;
+            }
+
+            if (typeof gtag === 'function') {
+                gtag('event', 'begin_checkout', {
+                    item_name: '어떤언니 심층 분석',
+                    value: PAY_AMOUNT,
+                    currency: 'KRW'
+                });
+            }
+
+            try {
+                const dataStr =
+                    JSON.stringify(currentResultData);
+
+                sessionStorage.setItem(
+                    'unni_temp_result',
+                    dataStr
+                );
+
+                localStorage.setItem(
+                    'unni_temp_result',
+                    dataStr
+                );
+            } catch (error) {
+                console.warn(
+                    '결제 데이터 백업 실패:',
+                    error
+                );
+            }
+
+            const orderId =
+                'SAJU' +
+                Date.now() +
+                Math.random()
+                    .toString(36)
+                    .substring(2, 6);
+
+            const customerName =
+                (currentResultData.name || '구매자').trim();
+
+            const cleanOrigin =
+                window.location.origin;
+
+            const uDataParam =
+                btoa(
+                    encodeURIComponent(
+                        JSON.stringify({
+                            n: currentResultData.name || '',
+                            b: currentResultData.userBirthStr || '',
+                            t: currentResultData.userTimeKey || 'unknown',
+                            g: currentResultData.userGender || 'female',
+                            c: currentResultData.userCalendar || 'solar',
+                            k: currentResultData.concernKey || 'money',
+                            m: currentResultData.currentMode || 'T',
+                            l: currentResultData.isLeapMonth || false
+                        })
+                    )
+                );
+
+            const successUrl =
+                `${cleanOrigin}/?payment=success&udata=${uDataParam}`;
+
+            const failUrl =
+                `${cleanOrigin}/?payment=fail`;
+
+            try {
+                await paymentWidget.requestPayment({
+                    orderId: orderId,
+                    orderName: '어떤언니 고민 심층 분석',
+                    customerName: customerName || '구매자',
+                    successUrl: successUrl,
+                    failUrl: failUrl
+                });
+            } catch (error) {
                 if (error.code === 'USER_CANCEL') {
                     showToast("결제가 취소되었습니다.");
                 } else {
-                    showToast("결제 오류: " + (error.message || error.code || '알 수 없는 오류'));
-                    console.error("토스 결제 창 에러 상세:", error);
+                    console.error(
+                        '결제위젯 결제 오류:',
+                        error
+                    );
+
+                    showToast(
+                        "결제 중 문제가 발생했습니다. 다시 시도해주세요."
+                    );
                 }
-            });
+            }
         }
 
         function getUserUniqueKey(data) {
