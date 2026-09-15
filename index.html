@@ -5445,5 +5445,21 @@ if (inputCardBox) {
             </div>
         </div>
     </div>
+    <script>
+    // 🛠️ 카카오톡 인앱/모바일 웹뷰 고무줄 바운스(당김) 현상 강제 차단
+    document.addEventListener('touchmove', function (e) {
+        const landing = document.getElementById('landingSection');
+        // 사주 입력 화면이 떠 있고, 맨 위에 있을 때 위로 당기는(아래로 내리는) 터치를 막음
+        if (landing && landing.style.display !== 'none') {
+            if (landing.scrollTop <= 0 && e.touches[0].clientY > window.lastY) {
+                e.preventDefault();
+            }
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchstart', function (e) {
+        window.lastY = e.touches[0].clientY;
+    }, { passive: true });
+</script>
 </body>
 </html>
