@@ -5395,16 +5395,27 @@ if (inputCardBox) {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         // ============================================================
-        // 📱 폼 내 인풋 포커스 시 렉 없는 부드러운 스크롤 보장
+        // 📱 모바일 키보드 열림/닫힘 시 화면 붕 뜸 및 짤림 완벽 방어
         // ============================================================
         document.addEventListener('focusin', (e) => {
             if (e.target && e.target.closest('#sazuForm')) {
                 setTimeout(() => {
                     const chatStream = document.getElementById('chatStreamArea');
                     if (chatStream) {
-                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        chatStream.scrollTop = chatStream.scrollHeight;
                     }
-                }, 300);
+                    window.scrollTo(0, 0);
+                }, 150);
+            }
+        });
+
+        // 키보드가 내려가는 순간 화면을 원래 0점 위치로 즉시 강제 원복
+        document.addEventListener('focusout', (e) => {
+            if (e.target && e.target.closest('#sazuForm')) {
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                    document.body.scrollTop = 0;
+                }, 100);
             }
         });
         
