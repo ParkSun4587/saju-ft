@@ -377,23 +377,26 @@
             to { transform: translateX(0); }
         }
 
-        /* 🛠️ 모바일 전체 페이지 바운스 및 밀림 원천 차단 */
+        /* 🛠️ 카카오톡 인앱 브라우저 전용 바운스 및 밀림 방지 */
         html, body {
             width: 100%;
             height: 100%;
+            height: 100dvh;
             overflow: hidden;
-            overscroll-behavior: none;
             position: fixed;
+            inset: 0;
+            overscroll-behavior: none;
         }
 
         #landingSection, #loadingSection {
-            position: fixed;
+            position: absolute;
             inset: 0;
             width: 100%;
             height: 100%;
+            height: 100dvh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            overscroll-behavior-y: none;
+            overscroll-behavior: none;
         }
         #landingFrame, #loadingFrame {
             width: 100%;
