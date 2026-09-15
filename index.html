@@ -5098,13 +5098,25 @@ const originalInputCardHTML =
                 `;
 
                                 // 오래된 동적 입력 폼 대신 정상 입력 카드를 다시 넣는다.
-                const rebuiltInputCard =
-                    document.getElementById('sajuInputCardBox');
+                // 동적 문자열 안의 오래된 입력 폼을 제거하고
+// 정상 입력 카드 하나만 다시 넣는다.
+const rebuiltInputCard =
+    document.getElementById('sajuInputCardBox');
 
-                if (rebuiltInputCard && originalInputCardHTML) {
-                    rebuiltInputCard.outerHTML =
-                        originalInputCardHTML;
-                }
+if (rebuiltInputCard && originalInputCardHTML) {
+    rebuiltInputCard.outerHTML =
+        originalInputCardHTML;
+}
+
+// 카드 밖으로 빠져나온 시간 입력·전송 버튼 찌꺼기 제거
+const activeInputCard =
+    document.getElementById('sajuInputCardBox');
+
+if (activeInputCard) {
+    while (activeInputCard.nextElementSibling) {
+        activeInputCard.nextElementSibling.remove();
+    }
+}
             }
             
             const inputCardBox =
