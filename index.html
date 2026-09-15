@@ -665,26 +665,28 @@
     </div>
 </div>
 
-<!-- 태어난 시간 (숫자 4자리 키패드 방식) -->
+<!-- 태어난 시간 (오전/오후 선택 + 숫자 키패드 4자리) -->
 <div>
-    <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">
-        태어난 시간
-    </label>
-
+    <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">태어난 시간</label>
+    <input type="hidden" id="timeAmpmValue" value="am">
     <div class="flex gap-1.5 items-center">
-        <input type="tel" id="birthTimeInput" maxlength="5" inputmode="numeric" placeholder="4자리 (예: 1430)" oninput="formatBirthTime(this)" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white focus:outline-none">
+        <!-- 오전 / 오후 선택 탭 -->
+        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200 w-[84px] shrink-0 h-[32px] items-center">
+            <button type="button" id="btnAm" onclick="setTimeAmpm('am')" class="toggle-tab-btn active text-[10.5px] font-bold h-full rounded-lg">오전</button>
+            <button type="button" id="btnPm" onclick="setTimeAmpm('pm')" class="toggle-tab-btn inactive text-[10.5px] font-bold h-full rounded-lg">오후</button>
+        </div>
 
-        <label class="h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
+        <!-- 4자리 시:분 숫자 입력창 -->
+        <input type="tel" id="birthTimeInput" maxlength="5" inputmode="numeric" placeholder="02:30" oninput="formatBirthTime(this)" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white focus:outline-none">
+
+        <!-- 시간 모름 체크박스 -->
+        <label class="h-[32px] px-2 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-1 shrink-0 cursor-pointer select-none">
             <input type="checkbox" id="birthTimeUnknown" onchange="toggleBirthTimeUnknown(this)" class="accent-rose-500">
-
-            <span class="text-[10.5px] font-bold text-slate-600">
-                시간 모름
-            </span>
+            <span class="text-[10px] font-bold text-slate-600 whitespace-nowrap">모름</span>
         </label>
     </div>
-
     <p id="birthTimeHint" class="mt-1 text-[8.5px] font-semibold text-slate-400">
-        24시간 형식으로 4자리(오후 2시 30분 ➔ 1430)를 적어줘.
+        오전/오후 선택 후 시·분 4자리(예: 02시 30분 ➔ 0230)를 적어줘.
     </p>
 </div>
 
@@ -3486,15 +3488,6 @@ if (!isLunar) {
                     showToast('1920년부터 2026년 사이의 연도를 입력해주세요.'); 
                     document.getElementById('birthDateInput').focus(); 
                     return; 
-                }
-                // 4자리 숫자(14:30) 완성 여부 정밀 검증
-                if (!isTimeUnknown) {
-                    const cleanTime = birthTime.replace(/[^0-9]/g, '');
-                    if (cleanTime.length !== 4) {
-                        showToast('태어난 시간을 4자리(예: 1430)로 입력하거나 시간 모름을 체크해주세요.');
-                        if (birthTimeInput) birthTimeInput.focus();
-                        return;
-                    }
                 }
                 // 음력 날짜는 말풍선을 만들기 전에 먼저 실제 달력 날짜로 검증한다.
 let calcYear = year;
