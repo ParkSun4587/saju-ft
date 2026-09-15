@@ -3716,8 +3716,22 @@ const calendarLabel =
         function updateResultContentByMode(mode) {
             const isT = mode === 'T';
             const data = currentResultData;
-            const mKey = data.mbtiKey || 'ESTJ';
-            const lowestStat = getLowestStatInfo(data.stats);
+const mKey = data && data.mbtiKey;
+
+if (!mKey || !SAZU_CHARACTER_PROFILES[mKey]) {
+    console.error(
+        '유효하지 않은 MBTI 결과:',
+        data && data.mbtiKey
+    );
+
+    showToast(
+        '분석 결과를 안전하게 표시하지 못했어요. 다시 분석해주세요.'
+    );
+
+    return;
+}
+
+const lowestStat = getLowestStatInfo(data.stats);
             const template = data.rawSolutionTemplate[mode];
             renderOhengDistribution(data.elements, (data.pillars && data.pillars.day) ? data.pillars.day.gan : '甲', data.dayOheng, data.pillars);
 
@@ -3808,7 +3822,7 @@ const calendarLabel =
                 const bg = document.getElementById('switchTargetBg');
                 if (bg) bg.className = "absolute inset-0 bg-gradient-to-br from-sky-50 to-white opacity-60 pointer-events-none";
             }
-            const prof = SAZU_CHARACTER_PROFILES[mKey] || SAZU_CHARACTER_PROFILES['ESTJ'];
+            const prof =   SAZU_CHARACTER_PROFILES[mKey];
             const lowest = getLowestStatInfo(data.stats);
 
             // 1) 메인 타이틀
@@ -4949,13 +4963,23 @@ if (parsed.c === 'lunar') {
             premiumBuffer = null;
             
             // 현재 정상 입력 카드의 HTML을 잠시 보관해 재사용한다.
-const originalInputCard =
+            const rebuiltInputCard =
     document.getElementById('sajuInputCardBox');
 
-const originalInputCardHTML =
-    originalInputCard
-        ? originalInputCard.outerHTML
-        : '';
+if (rebuiltInputCard && originalInputCardHTML) {
+    rebuiltInputCard.outerHTML =
+        originalInputCardHTML;
+}
+
+// 카드 밖으로 빠져나온 시간 입력·전송 버튼 찌꺼기 제거
+const activeInputCard =
+    document.getElementById('sajuInputCardBox');
+
+if (activeInputCard) {
+    while (activeInputCard.nextElementSibling) {
+        activeInputCard.nextElementSibling.remove();
+    }
+}
             // 채팅 스트림 영역 리셋 (처음 진입했던 상태의 기본 웰컴 톡만 남김)
             const streamArea = document.getElementById('chatStreamArea');
             if (streamArea) {
