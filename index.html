@@ -5095,6 +5095,14 @@ if (parsed.c === 'lunar') {
             document.getElementById('chatBubbleProfileMini').src = profileSrc;
             document.getElementById('chatSenderNameTitle').textContent = isT ? '서아 언니' : '로아 언니';
 
+            // 🚀 [찌꺼기 완전 제거] 타이핑 점(...)을 즉시 끄고, 언니의 진짜 말풍선만 깔끔하게 노출
+            const typingInd = document.getElementById('chatTypingIndicator');
+            if (typingInd) typingInd.style.display = 'none';
+            const realBubble = document.getElementById('chatRealBubbleBox');
+            if (realBubble) realBubble.style.display = 'flex';
+            const typingMini = document.getElementById('chatBubbleProfileMiniTyping');
+            if (typingMini) typingMini.src = profileSrc;
+
             // 4. 언니 말풍선 멘트 동기화
             document.getElementById('welcomeSisterText').innerHTML = isT
                 ? '왔어? 시간 낭비 말고 본론부터 가자.<br>사주 원국 깔 테니까 이름이랑 생년월일시 똑바로 찍어.'
