@@ -665,14 +665,14 @@
     </div>
 </div>
 
-<!-- 태어난 시간 -->
+<!-- 태어난 시간 (숫자 4자리 키패드 방식) -->
 <div>
     <label class="block text-[9.5px] font-bold text-slate-500 mb-0.5">
         태어난 시간
     </label>
 
     <div class="flex gap-1.5 items-center">
-        <input type="time" id="birthTimeInput" step="60" aria-label="태어난 시간" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-center font-bold text-xs text-slate-700 focus:bg-white focus:outline-none">
+        <input type="tel" id="birthTimeInput" maxlength="5" inputmode="numeric" placeholder="4자리 (예: 1430)" oninput="formatBirthTime(this)" class="flex-1 min-w-0 h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-xs text-center font-mono focus:bg-white focus:outline-none">
 
         <label class="h-[32px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-1.5 shrink-0 cursor-pointer select-none">
             <input type="checkbox" id="birthTimeUnknown" onchange="toggleBirthTimeUnknown(this)" class="accent-rose-500">
@@ -684,7 +684,7 @@
     </div>
 
     <p id="birthTimeHint" class="mt-1 text-[8.5px] font-semibold text-slate-400">
-        출생기록에 적힌 시각을 입력하면 더 정확해.
+        24시간 형식으로 4자리(오후 2시 30분 ➔ 1430)를 적어줘.
     </p>
 </div>
 
