@@ -4933,10 +4933,14 @@ if (parsed.c === 'lunar') {
             isUnlocked = false;
             premiumBuffer = null;
             
-            // 입력 폼 카드 다시 노출 및 이전 대화 기록(노란색 말풍선 등) 완전 청소
-            const inputCardBox = document.getElementById('sajuInputCardBox');
-            if (inputCardBox) inputCardBox.style.display = 'block';
+            // 현재 정상 입력 카드의 HTML을 잠시 보관해 재사용한다.
+const originalInputCard =
+    document.getElementById('sajuInputCardBox');
 
+const originalInputCardHTML =
+    originalInputCard
+        ? originalInputCard.outerHTML
+        : '';
             // 채팅 스트림 영역 리셋 (처음 진입했던 상태의 기본 웰컴 톡만 남김)
             const streamArea = document.getElementById('chatStreamArea');
             if (streamArea) {
@@ -5092,7 +5096,23 @@ if (parsed.c === 'lunar') {
                         </form>
                     </div>
                 `;
+
+                                // 오래된 동적 입력 폼 대신 정상 입력 카드를 다시 넣는다.
+                const rebuiltInputCard =
+                    document.getElementById('sajuInputCardBox');
+
+                if (rebuiltInputCard && originalInputCardHTML) {
+                    rebuiltInputCard.outerHTML =
+                        originalInputCardHTML;
+                }
             }
+            
+            const inputCardBox =
+    document.getElementById('sajuInputCardBox');
+
+if (inputCardBox) {
+    inputCardBox.style.display = 'block';
+}
 
             // [순서 수정] innerHTML 재생성 이후에 폼 상태 초기화
             setGender('female');
