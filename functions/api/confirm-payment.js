@@ -66,7 +66,7 @@ export async function onRequestPost(context) {
             }
 
             // [보안] 클라이언트가 보낸 금액을 그대로 믿지 않는다
-            if (Number(amount) !== 1900) {
+                        if (Number(amount) !== 990) {
                 return new Response(
                     JSON.stringify({ ok: false, message: "결제 금액이 올바르지 않습니다." }),
                     { status: 400, headers: { "Content-Type": "application/json" } }
@@ -80,7 +80,11 @@ export async function onRequestPost(context) {
                     Authorization: `Basic ${basicAuth}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ paymentKey, orderId, amount }),
+                                body: JSON.stringify({
+                    paymentKey,
+                    orderId,
+                    amount: Number(amount),
+                }),
             });
 
             const tossData = await tossResponse.json();
