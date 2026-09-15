@@ -4564,8 +4564,11 @@ if (!mKey || !SAZU_CHARACTER_PROFILES[mKey]) {
                 wrapper.classList.remove('pb-36');
                 wrapper.classList.remove('min-h-[640px]');
 
-                // 결과 해금 후에도 비밀 메모장으로 화면을 당기지 않고, 맨 위(MBTI 명함)로 유지
-                window.scrollTo({ top: 0, behavior: 'instant' });
+                // 결제 해금 후 비밀 메모장 영역으로 부드럽게 자동 이동
+                const notesContainer = document.getElementById('notesListContainer');
+                if (notesContainer) {
+                    notesContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }
             
             if (msg) showToast(msg);
