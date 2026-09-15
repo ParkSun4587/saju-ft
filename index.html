@@ -5397,25 +5397,17 @@ if (inputCardBox) {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         // ============================================================
-        // 📱 모바일 키보드 열림/닫힘 시 화면 붕 뜸 방어 및 버튼 자동 스크롤
+        // 📱 모바일 키보드 열림/닫힘 시 화면 붕 뜸 및 짤림 완벽 방어
         // ============================================================
         document.addEventListener('focusin', (e) => {
             if (e.target && e.target.closest('#sazuForm')) {
-                // 키보드가 다 올라오는 시점(300ms)에 맞춰 노란 버튼까지 보이도록 내부 스크롤 이동
                 setTimeout(() => {
                     const chatStream = document.getElementById('chatStreamArea');
-                    const nextBtn = document.getElementById('splitNextButton');
-                    
-                    if (nextBtn) {
-                        nextBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                    } else if (chatStream) {
-                        chatStream.scrollTo({ top: chatStream.scrollHeight, behavior: 'smooth' });
+                    if (chatStream) {
+                        chatStream.scrollTop = chatStream.scrollHeight;
                     }
-                    
-                    // 상단 헤더가 위로 밀려 잘리지 않도록 윈도우 스크롤 0점 고정 유지
                     window.scrollTo(0, 0);
-                    document.body.scrollTop = 0;
-                }, 300);
+                }, 150);
             }
         });
 
