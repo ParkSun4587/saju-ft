@@ -5444,19 +5444,6 @@ if (inputCardBox) {
                 <button type="button" onclick="closePolicyModal()" class="w-full py-3 bg-slate-100 active:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition border-0 cursor-pointer">닫기</button>
             </div>
         </div>
-    </div>  
-    <script>
-        // 🛠️ 카카오톡 인앱 전용: 입력창 누르면 스크롤 영역을 맨 아래로 밀어 버튼 노출
-        document.addEventListener('focusin', function (e) {
-            if (e.target.tagName === 'INPUT' && e.target.closest('#landingSection')) {
-                setTimeout(() => {
-                    const landing = document.getElementById('landingSection');
-                    if (landing) {
-                        landing.scrollTop = landing.scrollHeight;
-                    }
-                }, 350);
-            }
-        });
-    </script>
+    </div>    
 </body>
 </html>
