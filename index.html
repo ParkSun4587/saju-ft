@@ -4152,12 +4152,55 @@ if (notesContainer) {
         }
                 
 function renderResultView(data) {
-            isAnalyzing = false;
+    isAnalyzing = false;
+    currentResultData = data;
 
-            // 현재 결과 화면을 보고 있음을 세션에 기록
-            try {
-                sessionStorage.setItem('unni_view_state', 'result');
-            } catch (e) {}
+    // 결제 여부와 상관없이 현재 보고 있는 결과를 저장한다.
+    const resultKey =
+        getUserUniqueKey(data);
+
+    if (resultKey) {
+        try {
+            localStorage.setItem(
+                'sazu_last_unique_key',
+                resultKey
+            );
+
+            localStorage.setItem(
+                'sazu_last_result_data_' + resultKey,
+                JSON.stringify(data)
+            );
+        } catch (e) {
+            console.warn(
+                '현재 결과 저장 실패:',
+                e
+            );
+        }
+
+        try {
+            sessionStorage.setItem(
+                'sazu_last_unique_key',
+                resultKey
+            );
+
+            sessionStorage.setItem(
+                'sazu_last_result_data_' + resultKey,
+                JSON.stringify(data)
+            );
+        } catch (e) {
+            console.warn(
+                '현재 결과 임시 저장 실패:',
+                e
+            );
+        }
+    }
+
+    try {
+        sessionStorage.setItem(
+            'unni_view_state',
+            'result'
+        );
+    } catch (e) {}
 
             // 카톡 대화창(랜딩), 로딩 섹션, 첫 화면(인트로) 닫기
             const landSec = document.getElementById('landingSection');
@@ -5049,21 +5092,12 @@ if (parsed.c === 'lunar') {
                 'sazu_last_result_data_' + lastKey
             );
 
-            const savedToken = readSavedValue('tok_' + lastKey);
-
-            const canRestoreFreeMode =
-                FREE_LAUNCH_MODE &&
-                !!savedDataStr;
-
-            const canRestorePaidMode =
-                !FREE_LAUNCH_MODE &&
-                !!savedDataStr &&
-                !!savedToken;
-
-            if (!canRestoreFreeMode && !canRestorePaidMode) {
-                console.warn('결과 데이터 또는 결제 토큰이 없습니다.');
-                return;
-            }
+            if (!savedDataStr) {
+    console.warn(
+        '복원할 결과 데이터가 없습니다.'
+    );
+    return;
+}
 
             try {
                 const savedData = JSON.parse(savedDataStr);
