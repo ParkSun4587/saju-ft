@@ -8,6 +8,7 @@ import sxtwl
 
 GAN = "甲乙丙丁戊己庚辛壬癸"
 ZHI = "子丑寅卯辰巳午未申酉戌亥"
+JIAZI = [GAN[i % 10] + ZHI[i % 12] for i in range(60)]
 JQ_NAMES = [
     "冬至", "小寒", "大寒", "立春", "雨水", "惊蛰", "春分", "清明",
     "谷雨", "立夏", "小满", "芒种", "夏至", "小暑", "大暑", "立秋",
@@ -20,6 +21,10 @@ SEOUL = ZoneInfo("Asia/Seoul")
 
 def gz(g):
     return GAN[g.tg] + ZHI[g.dz]
+
+
+def prev_gz(value):
+    return JIAZI[(JIAZI.index(value) - 1) % 60]
 
 
 def valid_random_date(rng):
@@ -74,6 +79,11 @@ for base in rng.sample(solar, 600):
         }
     )
 
+# sxtwl's Day.getMonthGZ() is date-based, so it cannot represent the two sides
+# of a solar-term instant on the same civil date. We use sxtwl only for the
+# astronomical Jie instant and for the post-Jie pillar on the following day;
+# the pre-Jie month is exactly the previous member of the 60-cycle. The year
+# pillar changes only at Lichun, where the same previous-cycle rule applies.
 term_cases = []
 for year in range(1900, 2051):
     for info in sxtwl.getJieQiByYear(year):
@@ -89,18 +99,22 @@ for year in range(1900, 2051):
         after_bj = base + dt.timedelta(minutes=5)
         before_kr = before_bj.astimezone(SEOUL)
         after_kr = after_bj.astimezone(SEOUL)
-        prev_day = sxtwl.fromSolar(*(base.date() - dt.timedelta(days=1)).timetuple()[:3])
-        next_day = sxtwl.fromSolar(*(base.date() + dt.timedelta(days=1)).timetuple()[:3])
+        next_date = base.date() + dt.timedelta(days=1)
+        next_day = sxtwl.fromSolar(next_date.year, next_date.month, next_date.day)
+        after_year = gz(next_day.getYearGZ())
+        after_month = gz(next_day.getMonthGZ())
+        before_year = prev_gz(after_year) if idx == 3 else after_year
+        before_month = prev_gz(after_month)
         term_cases.append(
             {
                 "year": year,
                 "name": JQ_NAMES[idx],
                 "before": local_parts(before_kr),
                 "after": local_parts(after_kr),
-                "beforeYear": gz(prev_day.getYearGZ()),
-                "beforeMonth": gz(prev_day.getMonthGZ()),
-                "afterYear": gz(next_day.getYearGZ()),
-                "afterMonth": gz(next_day.getMonthGZ()),
+                "beforeYear": before_year,
+                "beforeMonth": before_month,
+                "afterYear": after_year,
+                "afterMonth": after_month,
             }
         )
 
