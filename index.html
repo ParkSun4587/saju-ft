@@ -5459,11 +5459,15 @@ if (parsed.c === 'lunar') {
                 : savedData.userTimeKey;
     }
 
-    if (birthTimeUnknown) {
-        toggleBirthTimeUnknown(
-            birthTimeUnknown
-        );
-    }
+    if (birthTimeInput) {
+    birthTimeInput.disabled =
+        isTimeUnknown;
+
+    birthTimeInput.classList.toggle(
+        'opacity-50',
+        isTimeUnknown
+    );
+}
 
     const concernOrder = [
         'money',
@@ -5507,11 +5511,14 @@ if (parsed.c === 'lunar') {
         document.getElementById('chatStreamArea');
 
     requestAnimationFrame(() => {
-        if (chatStream) {
-            chatStream.scrollTop =
-                chatStream.scrollHeight;
-        }
-    });
+    if (chatStream) {
+        chatStream.scrollTop = 0;
+    }
+
+    if (landingSection) {
+        landingSection.scrollTop = 0;
+    }
+});
 
     showToast(
         '사주정보는 그대로 뒀어. 다른 고민만 골라줘!'
