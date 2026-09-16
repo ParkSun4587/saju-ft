@@ -1,9 +1,6 @@
 name: Patch middle-strength note logic
 
 on:
-  push:
-    branches:
-      - pre-note3-regression
   workflow_dispatch:
 
 permissions:
