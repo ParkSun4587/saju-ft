@@ -142,6 +142,7 @@
       };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.7.7/lunar.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/korean-lunar-calendar@0.4.0/dist/korean-lunar-calendar.min.js"></script>
     <!-- 토스페이먼츠 결제창 SDK v1 -->
     <script src="https://js.tosspayments.com/v1/payment-widget"></script>
     <!-- 화면 캡처 라이브러리 -->
@@ -2133,12 +2134,12 @@
           m = Number(d.b.slice(4, 6)),
           day = Number(d.b.slice(6));
         if (d.c === "lunar") {
-          if (typeof Lunar === "undefined")
-            throw new Error("음력 모듈 로딩 후 다시 확인해주세요.");
-          const solar = Lunar.fromYmd(y, d.l ? -m : m, day).getSolar();
-          y = solar.getYear();
-          m = solar.getMonth();
-          day = solar.getDay();
+          if (typeof koreanLunarToSolar !== "function")
+            throw new Error("한국 음력 모듈 로딩 후 다시 확인해주세요.");
+          const solar = koreanLunarToSolar(y, m, day, !!d.l);
+          y = solar.year;
+          m = solar.month;
+          day = solar.day;
         }
         const result = calculateAccurateManse(
           y,
@@ -5574,9 +5575,18 @@ return [
 
           const minuteVal = exactTimeMatch ? Number(exactTimeMatch[2]) : 0;
 
-          const solar = Solar.fromYmdHms(year, month, day, hVal, minuteVal, 0);
-          const lunar = solar.getLunar();
-          const baZi = lunar.getEightChar();
+          if (typeof createKoreanHybridBaZi !== "function") {
+            throw new Error("한국 만세력 보정 모듈을 불러오지 못했습니다.");
+          }
+          const { solar, lunar, baZi, calendarMeta } =
+            createKoreanHybridBaZi(
+              year,
+              month,
+              day,
+              hVal,
+              minuteVal,
+              hourKnown,
+            );
 
           const yGan = baZi.getYearGan();
           const yZhi = baZi.getYearZhi();
@@ -5846,6 +5856,7 @@ return [
             dayOheng: dayOheng,
             yongshin: yongshin,
             analysisProfile: analysisProfile,
+            calendarMeta: calendarMeta || null,
             isDayMasterStrong: isDayMasterStrong,
             gyeokguk: gyeokguk,
             gyeokStatus: gyeokStatus,
@@ -5861,6 +5872,17 @@ return [
           };
         } catch (err) {
           console.error("정밀 만세력 엔진 연산 예외:", err);
+          if (
+            err &&
+            [
+              "KST_TERM_TIME_REQUIRED",
+              "KST_LOCAL_TIME_INVALID",
+              "KST_LOCAL_TIME_AMBIGUOUS",
+              "KOREAN_LUNAR_INVALID",
+            ].includes(err.code)
+          ) {
+            throw err;
+          }
           throw new Error(
             "만세력 연산에 실패했습니다. 생년월일을 다시 확인해주세요.",
           );
@@ -6147,13 +6169,19 @@ return [
             }
 
             try {
-              const lunarMonth = isLeapMonth ? -month : month;
-              const lunarObj = Lunar.fromYmd(year, lunarMonth, day);
-              const solarObj = lunarObj.getSolar();
+              if (typeof koreanLunarToSolar !== "function") {
+                throw new Error("한국 음력 변환 모듈을 불러오지 못했습니다.");
+              }
+              const solarObj = koreanLunarToSolar(
+                year,
+                month,
+                day,
+                isLeapMonth,
+              );
 
-              calcYear = solarObj.getYear();
-              calcMonth = solarObj.getMonth();
-              calcDay = solarObj.getDay();
+              calcYear = solarObj.year;
+              calcMonth = solarObj.month;
+              calcDay = solarObj.day;
             } catch (err) {
               showToast(
                 isLeapMonth
@@ -8280,5 +8308,6 @@ return [
         </div>
       </div>
     </div>
-  </body>
+    <script src="./manse-korea-v2.js?v=2"></script>
+</body>
 </html>
