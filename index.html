@@ -5234,66 +5234,289 @@ if (parsed.c === 'lunar') {
         });
                 
         function restartAnalysisWithOtherConcern() {
-            // 1. 현재 보고 있던 언니 모드(F/T) 확인
-            const targetMode = (currentResultData && currentResultData.currentMode) ? currentResultData.currentMode : (selectedSplitMode || 'F');
-            selectedSplitMode = targetMode;
-            const isT = (targetMode === 'T');
+    if (!currentResultData) {
+        showToast(
+            '기존 사주정보를 불러오지 못했어. 처음부터 다시 입력해줘.'
+        );
 
-            // 2. 화면 전환 (결과 닫고 폼 열기)
-            isUnlocked = false;
-            document.getElementById('resultSection').style.display = 'none';
-            document.getElementById('loadingSection').style.display = 'none';
-            document.getElementById('splitIntroSection').style.display = 'none';
-            document.getElementById('landingSection').style.display = 'flex';
+        startFreshAnalysis();
+        return;
+    }
 
-            // 3. 상단 헤더 & 프로필 즉시 일치 (로아/서아 꼬임 방지)
-            const profileSrc = isT ? './서아.png' : './로아.png';
-            document.getElementById('welcomeSisterImg').src = profileSrc;
-            document.getElementById('welcomeSisterBadge').textContent = isT ? '서아 언니 (T)' : '로아 언니 (F)';
-            document.getElementById('chatBubbleProfileMini').src = profileSrc;
-            document.getElementById('chatSenderNameTitle').textContent = isT ? '서아 언니' : '로아 언니';
+    clearAllTimeouts();
 
-            // 🚀 [찌꺼기 완전 제거] 타이핑 점(...)을 즉시 끄고, 언니의 진짜 말풍선만 깔끔하게 노출
-            const typingInd = document.getElementById('chatTypingIndicator');
-            if (typingInd) typingInd.style.display = 'none';
-            const realBubble = document.getElementById('chatRealBubbleBox');
-            if (realBubble) realBubble.style.display = 'flex';
-            const typingMini = document.getElementById('chatBubbleProfileMiniTyping');
-            if (typingMini) typingMini.src = profileSrc;
+    const savedData =
+        currentResultData;
 
-            // 4. 언니 말풍선 멘트 동기화
-            document.getElementById('welcomeSisterText').innerHTML = isT
-                ? '왔어? 시간 낭비 말고 본론부터 가자.<br>사주 원국 깔 테니까 이름이랑 생년월일시 똑바로 찍어.'
-                : '아이고 왔어? ㅠㅠ 무슨 일 있었어?<br>속마음 다 털어놔 봐. 언니가 무조건 네 편 들어줄 테니까!<br>일단 정확하게 이름이랑 생일 먼저 적어줘 🥺💕';
+    const targetMode =
+        savedData.currentMode ||
+        selectedSplitMode ||
+        'F';
 
-            // 5. 하단 전송 버튼 텍스트 & 모드 동기화
-            const nextBtn = document.getElementById('splitNextButton');
-            if (nextBtn) {
-                nextBtn.innerHTML = `
-                    <button type="button" onclick="startAnalysis('${targetMode}')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
-                        <span>${isT ? '서아 언니한테 사주 정보 보내기' : '로아 언니한테 사주 정보 보내기'}</span>
-                        <span>💌</span>
-                    </button>
-                `;
-            }
+    selectedSplitMode =
+        targetMode;
 
-            // 6. 입력 폼 카드 노출 및 이전 전송 대화 말풍선 잔여물 완벽 청소
-            const inputCard = document.getElementById('sajuInputCardBox');
-            if (inputCard) {
-                inputCard.style.display = 'block';
-                // 폼 카드 바로 뒤에 붙어있던 이전 톡(노란 말풍선, 언니 확인 톡 등)을 싹 지움
-                while (inputCard.nextElementSibling) {
-                    inputCard.nextElementSibling.remove();
-                }
-            }
+    const isT =
+        targetMode === 'T';
 
-            // 고민 칩 기본 선택 (돈복) 및 화면 상단 정렬
-            const firstChip = document.querySelector('#concernGrid .concern-chip');
-            if (firstChip) selectConcern('money', firstChip);
+    isUnlocked = false;
+    premiumBuffer = null;
 
-            showToast("다른 고민을 선택하고 정보를 보내주세요!");
-            window.scrollTo({ top: 0, behavior: 'instant' });
+    try {
+        sessionStorage.setItem(
+            'unni_view_state',
+            'input'
+        );
+    } catch (e) {}
+
+    const resultSection =
+        document.getElementById('resultSection');
+
+    const loadingSection =
+        document.getElementById('loadingSection');
+
+    const splitIntroSection =
+        document.getElementById('splitIntroSection');
+
+    const landingSection =
+        document.getElementById('landingSection');
+
+    if (resultSection) {
+        resultSection.style.display = 'none';
+        resultSection.scrollTop = 0;
+    }
+
+    if (loadingSection) {
+        loadingSection.style.display = 'none';
+    }
+
+    if (splitIntroSection) {
+        splitIntroSection.style.display = 'none';
+    }
+
+    if (landingSection) {
+        landingSection.style.display = 'flex';
+    }
+
+    const profileSrc =
+        isT ? './서아.png' : './로아.png';
+
+    const welcomeSisterImg =
+        document.getElementById('welcomeSisterImg');
+
+    const welcomeSisterBadge =
+        document.getElementById('welcomeSisterBadge');
+
+    const chatBubbleProfileMini =
+        document.getElementById('chatBubbleProfileMini');
+
+    const chatSenderNameTitle =
+        document.getElementById('chatSenderNameTitle');
+
+    const typingMini =
+        document.getElementById('chatBubbleProfileMiniTyping');
+
+    if (welcomeSisterImg) {
+        welcomeSisterImg.src = profileSrc;
+    }
+
+    if (welcomeSisterBadge) {
+        welcomeSisterBadge.textContent =
+            isT ? '서아 언니 (T)' : '로아 언니 (F)';
+    }
+
+    if (chatBubbleProfileMini) {
+        chatBubbleProfileMini.src = profileSrc;
+    }
+
+    if (chatSenderNameTitle) {
+        chatSenderNameTitle.textContent =
+            isT ? '서아 언니' : '로아 언니';
+    }
+
+    if (typingMini) {
+        typingMini.src = profileSrc;
+    }
+
+    const typingInd =
+        document.getElementById('chatTypingIndicator');
+
+    const realBubble =
+        document.getElementById('chatRealBubbleBox');
+
+    if (typingInd) {
+        typingInd.style.display = 'none';
+    }
+
+    if (realBubble) {
+        realBubble.style.display = 'flex';
+    }
+
+    const welcomeSisterText =
+        document.getElementById('welcomeSisterText');
+
+    if (welcomeSisterText) {
+        welcomeSisterText.innerHTML = isT
+            ? '좋아. 사주정보는 그대로 뒀어.<br>이번엔 다른 고민만 골라.'
+            : '사주정보는 언니가 그대로 챙겨뒀어 💕<br>이번엔 어떤 고민을 더 봐줄까?';
+    }
+
+    const nextBtn =
+        document.getElementById('splitNextButton');
+
+    if (nextBtn) {
+        nextBtn.innerHTML = `
+            <button
+                type="button"
+                onclick="startAnalysis('${targetMode}')"
+                class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5"
+            >
+                <span>
+                    ${isT
+                        ? '서아 언니한테 다른 고민 보내기'
+                        : '로아 언니한테 다른 고민 보내기'}
+                </span>
+                <span>💌</span>
+            </button>
+        `;
+    }
+
+    const inputCard =
+        document.getElementById('sajuInputCardBox');
+
+    if (inputCard) {
+        inputCard.style.display = 'block';
+
+        while (inputCard.nextElementSibling) {
+            inputCard.nextElementSibling.remove();
         }
+    }
+
+    const nameInput =
+        document.getElementById('nameInput');
+
+    const birthDateInput =
+        document.getElementById('birthDateInput');
+
+    const birthTimeInput =
+        document.getElementById('birthTimeInput');
+
+    const birthTimeUnknown =
+        document.getElementById('birthTimeUnknown');
+
+    const leapMonthCheck =
+        document.getElementById('leapMonthCheck');
+
+    if (nameInput) {
+        nameInput.value =
+            savedData.name ||
+            savedData.userName ||
+            '';
+    }
+
+    setGender(
+        savedData.userGender || 'female'
+    );
+
+    setCalendar(
+        savedData.userCalendar === 'lunar'
+            ? 'lunar'
+            : 'solar'
+    );
+
+    const birthDigits =
+        String(savedData.userBirthStr || '')
+            .replace(/[^0-9]/g, '');
+
+    if (birthDateInput) {
+        birthDateInput.value =
+            birthDigits.length === 8
+                ? `${birthDigits.slice(0, 4)}.${birthDigits.slice(4, 6)}.${birthDigits.slice(6, 8)}`
+                : birthDigits;
+    }
+
+    if (
+        leapMonthCheck &&
+        savedData.userCalendar === 'lunar'
+    ) {
+        leapMonthCheck.checked =
+            !!savedData.isLeapMonth;
+    }
+
+    const isTimeUnknown =
+        !savedData.userTimeKey ||
+        savedData.userTimeKey === 'unknown';
+
+    if (birthTimeUnknown) {
+        birthTimeUnknown.checked =
+            isTimeUnknown;
+    }
+
+    if (birthTimeInput) {
+        birthTimeInput.value =
+            isTimeUnknown
+                ? ''
+                : savedData.userTimeKey;
+    }
+
+    if (birthTimeUnknown) {
+        toggleBirthTimeUnknown(
+            birthTimeUnknown
+        );
+    }
+
+    const concernOrder = [
+        'money',
+        'career',
+        'love',
+        'path',
+        'people',
+        'mental'
+    ];
+
+    const currentConcernIndex =
+        concernOrder.indexOf(
+            savedData.concernKey
+        );
+
+    const nextConcernIndex =
+        currentConcernIndex >= 0
+            ? (currentConcernIndex + 1) %
+              concernOrder.length
+            : 0;
+
+    const nextConcernKey =
+        concernOrder[nextConcernIndex];
+
+    const concernButtons =
+        document.querySelectorAll(
+            '#concernGrid .concern-chip'
+        );
+
+    const nextConcernButton =
+        concernButtons[nextConcernIndex];
+
+    if (nextConcernButton) {
+        selectConcern(
+            nextConcernKey,
+            nextConcernButton
+        );
+    }
+
+    const chatStream =
+        document.getElementById('chatStreamArea');
+
+    requestAnimationFrame(() => {
+        if (chatStream) {
+            chatStream.scrollTop =
+                chatStream.scrollHeight;
+        }
+    });
+
+    showToast(
+        '사주정보는 그대로 뒀어. 다른 고민만 골라줘!'
+    );
+}
      
                 // [수정] 반대편 언니 시선으로 즉시 전환 (텍스트 100% 즉시 교체 및 스크롤 최적화)
         function switchSisterMode() {
