@@ -1,0 +1,209 @@
+name: Apply Korean manse stage1
+on:
+  push:
+    branches: [manse-korea-stage1]
+permissions:
+  contents: write
+jobs:
+  patch-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply index patch
+        shell: bash
+        run: |
+          cat > /tmp/apply-manse-stage1.js <<'EOF'
+          const fs = require('fs');
+          const file = 'index.html';
+          let html = fs.readFileSync(file, 'utf8');
+          function replaceOnce(label, needle, replacement) {
+            const count = html.split(needle).length - 1;
+            if (count !== 1) throw new Error(`${label}: expected 1 occurrence, got ${count}`);
+            html = html.replace(needle, replacement);
+            console.log(`OK ${label}`);
+          }
+          if (!html.includes('korean-lunar-calendar@0.4.0')) {
+            replaceOnce(
+              'add Korean lunar calendar CDN',
+              '    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.7.7/lunar.min.js"></script>',
+              '    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.7.7/lunar.min.js"></script>\n' +
+                '    <script src="https://cdn.jsdelivr.net/npm/korean-lunar-calendar@0.4.0/dist/korean-lunar-calendar.min.js"></script>',
+            );
+          }
+          replaceOnce(
+            'snapshot Korean lunar conversion',
+          `        if (d.c === "lunar") {
+                    if (typeof Lunar === "undefined")
+                      throw new Error("음력 모듈 로딩 후 다시 확인해주세요.");
+                    const solar = Lunar.fromYmd(y, d.l ? -m : m, day).getSolar();
+                    y = solar.getYear();
+                    m = solar.getMonth();
+                    day = solar.getDay();
+                  }`,
+          `        if (d.c === "lunar") {
+                    if (typeof koreanLunarToSolar !== "function")
+                      throw new Error("한국 음력 모듈 로딩 후 다시 확인해주세요.");
+                    const solar = koreanLunarToSolar(y, m, day, !!d.l);
+                    y = solar.year;
+                    m = solar.month;
+                    day = solar.day;
+                  }`,
+          );
+          replaceOnce(
+            'input Korean lunar conversion',
+          `            try {
+                        const lunarMonth = isLeapMonth ? -month : month;
+                        const lunarObj = Lunar.fromYmd(year, lunarMonth, day);
+                        const solarObj = lunarObj.getSolar();
+          
+                        calcYear = solarObj.getYear();
+                        calcMonth = solarObj.getMonth();
+                        calcDay = solarObj.getDay();`,
+          `            try {
+                        if (typeof koreanLunarToSolar !== "function") {
+                          throw new Error("한국 음력 변환 모듈을 불러오지 못했습니다.");
+                        }
+                        const solarObj = koreanLunarToSolar(
+                          year,
+                          month,
+                          day,
+                          isLeapMonth,
+                        );
+          
+                        calcYear = solarObj.year;
+                        calcMonth = solarObj.month;
+                        calcDay = solarObj.day;`,
+          );
+          replaceOnce(
+            'KST/CST hybrid EightChar',
+          `          const solar = Solar.fromYmdHms(year, month, day, hVal, minuteVal, 0);
+                    const lunar = solar.getLunar();
+                    const baZi = lunar.getEightChar();`,
+          `          if (typeof createKoreanHybridBaZi !== "function") {
+                      throw new Error("한국 만세력 보정 모듈을 불러오지 못했습니다.");
+                    }
+                    const { solar, lunar, baZi, calendarMeta } =
+                      createKoreanHybridBaZi(
+                        year,
+                        month,
+                        day,
+                        hVal,
+                        minuteVal,
+                        hourKnown,
+                      );`,
+          );
+          replaceOnce(
+            'return calendarMeta',
+            '            analysisProfile: analysisProfile,\n            isDayMasterStrong: isDayMasterStrong,',
+            '            analysisProfile: analysisProfile,\n            calendarMeta: calendarMeta || null,\n            isDayMasterStrong: isDayMasterStrong,',
+          );
+          replaceOnce(
+            'preserve calendar validation errors',
+          `        } catch (err) {
+                    console.error("정밀 만세력 엔진 연산 예외:", err);
+                    throw new Error(
+                      "만세력 연산에 실패했습니다. 생년월일을 다시 확인해주세요.",
+                    );
+                  }`,
+          `        } catch (err) {
+                    console.error("정밀 만세력 엔진 연산 예외:", err);
+                    if (
+                      err &&
+                      [
+                        "KST_TERM_TIME_REQUIRED",
+                        "KST_LOCAL_TIME_INVALID",
+                        "KST_LOCAL_TIME_AMBIGUOUS",
+                        "KOREAN_LUNAR_INVALID",
+                      ].includes(err.code)
+                    ) {
+                      throw err;
+                    }
+                    throw new Error(
+                      "만세력 연산에 실패했습니다. 생년월일을 다시 확인해주세요.",
+                    );
+                  }`,
+          );
+          if (!html.includes('./manse-korea-v2.js')) {
+            replaceOnce(
+              'load Korean manse layer',
+              '</body>',
+              '  <script src="./manse-korea-v2.js?v=2"></script>\n</body>',
+            );
+          }
+          fs.writeFileSync(file, html, 'utf8');
+          EOF
+          node --check /tmp/apply-manse-stage1.js
+          node /tmp/apply-manse-stage1.js
+      - name: Functional calendar regression tests
+        shell: bash
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save --ignore-scripts lunar-javascript@1.7.7 korean-lunar-calendar@0.4.0 >/dev/null
+          cat > /tmp/test-manse-stage1.cjs <<'EOF'
+          const path=require('path');
+          const root=process.cwd();
+          const lunarLib=require(path.join(root,'node_modules/lunar-javascript'));
+          global.Solar=lunarLib.Solar;
+          global.Lunar=lunarLib.Lunar;
+          const kl=require(path.join(root,'node_modules/korean-lunar-calendar'));
+          global.KoreanLunarCalendar=kl.default||kl.KoreanLunarCalendar||kl;
+          global.JIE_ORDER=["立春","惊蛰","清明","立夏","芒种","小暑","立秋","白露","寒露","立冬","大雪","小寒"];
+          global.computeSipsin=()=>"";
+          require(path.join(root,'manse-korea-v2.js'));
+          function assert(c,m){if(!c)throw new Error(m)}
+          function gzDay(b){return b.getDayGan()+b.getDayZhi()}
+          function gzHour(b){return b.getTimeGan()+b.getTimeZhi()}
+          const k1=global.koreanLunarToSolar(1956,1,21,false);
+          assert(k1.year===1956&&k1.month===3&&k1.day===3,`Korean lunar mismatch ${JSON.stringify(k1)}`);
+          const k2=global.koreanLunarToSolar(2017,5,1,true);
+          assert(k2.year===2017&&k2.month===6&&k2.day===24,`Korean leap mismatch ${JSON.stringify(k2)}`);
+          let badLeap=false;
+          try{global.koreanLunarToSolar(2017,3,1,true)}catch(e){badLeap=e.code==='KOREAN_LUNAR_INVALID'}
+          assert(badLeap,'Impossible leap month must be rejected');
+          const I=global.__MANSE_KOREA_V2__;
+          assert(I.seoulLocalToCstFields(2026,2,4,12,0).seoulOffsetMinutes===540,'2026 Seoul offset');
+          assert(I.seoulLocalToCstFields(1956,1,1,12,0).seoulOffsetMinutes===510,'1956 +08:30');
+          assert(I.seoulLocalToCstFields(1960,6,1,12,0).seoulOffsetMinutes===570,'1960 DST');
+          assert(I.seoulLocalToCstFields(1988,7,1,12,0).seoulOffsetMinutes===600,'1988 DST');
+          const before=global.createKoreanHybridBaZi(2026,2,4,4,30,true);
+          const after=global.createKoreanHybridBaZi(2026,2,4,5,30,true);
+          const by=before.baZi.getYearGan()+before.baZi.getYearZhi();
+          const ay=after.baZi.getYearGan()+after.baZi.getYearZhi();
+          assert(by==='乙巳',`2026 입춘 전 expected 乙巳 got ${by}`);
+          assert(ay==='丙午',`2026 입춘 후 expected 丙午 got ${ay}`);
+          let unknown=false;
+          try{global.createKoreanHybridBaZi(2026,2,4,12,0,false)}catch(e){unknown=e.code==='KST_TERM_TIME_REQUIRED'}
+          assert(unknown,'Unknown time at term boundary must stop');
+          for(const [Y,M,D,exp] of [[2000,1,1,'甲子'],[1990,5,15,'戊子'],[1985,8,8,'丙子']]){
+            const r=global.createKoreanHybridBaZi(Y,M,D,23,0,true);
+            const r22=global.createKoreanHybridBaZi(Y,M,D,22,0,true);
+            assert(gzHour(r.baZi)===exp,`${Y}-${M}-${D} 23:00 expected ${exp} got ${gzHour(r.baZi)}`);
+            assert(gzDay(r.baZi)===gzDay(r22.baZi),`${Y}-${M}-${D} 23:00 day pillar rolled`);
+          }
+          const range=I.getMonthGanZhiRangeKst(2026,0);
+          assert(range.startMonth===2&&range.startDay===4,`2026 입춘 date ${JSON.stringify(range)}`);
+          assert(range.startHour>=4&&range.startHour<=6,`2026 입춘 hour ${JSON.stringify(range)}`);
+          console.log('PASS manse stage1');
+          EOF
+          node /tmp/test-manse-stage1.cjs
+      - name: Static checks and commit
+        shell: bash
+        run: |
+          git diff --check
+          grep -q 'korean-lunar-calendar@0.4.0' index.html
+          grep -q 'createKoreanHybridBaZi' index.html
+          grep -q 'koreanLunarToSolar' index.html
+          grep -q 'manse-korea-v2.js?v=2' index.html
+          grep -q 'calendarMeta' index.html
+          rm -rf node_modules package.json package-lock.json
+          rm -f .github/workflows/apply-manse-stage1.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html manse-korea-v2.js .github/workflows/apply-manse-stage1.yml
+          git commit -m 'Fix Korean manse calendar basis'
+          git push origin HEAD:manse-korea-stage1
