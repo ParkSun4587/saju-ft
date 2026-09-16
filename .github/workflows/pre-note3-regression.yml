@@ -34,4 +34,4 @@ jobs:
       - name: Run existing classical 5-7 validation
         run: node tests/validate_classical_5_7.cjs
       - name: Run full browser regression
-        run: node tests/pre_note3_browser_regression.cjs
+        run: node tests/pre_note3_browser_regression_v2.cjs
