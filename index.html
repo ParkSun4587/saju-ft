@@ -4418,13 +4418,26 @@ if (!mKey || !SAZU_CHARACTER_PROFILES[mKey]) {
 
             widgetArea.style.display = 'block';
 
-            if (openButton) {
-                openButton.style.display = 'none';
-            }
+if (openButton) {
+    openButton.style.display = 'none';
+}
 
-            if (paymentMethodsWidget) {
-                return;
-            }
+// 카카오톡 인앱 브라우저에서도 결제창으로 부드럽게 이동
+setTimeout(() => {
+    const widgetTop =
+        widgetArea.getBoundingClientRect().top +
+        window.scrollY -
+        12;
+
+    window.scrollTo({
+        top: Math.max(0, widgetTop),
+        behavior: 'smooth'
+    });
+}, 350);
+
+if (paymentMethodsWidget) {
+    return;
+}
 
             try {
                 paymentWidget = PaymentWidget(
