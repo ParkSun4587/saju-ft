@@ -1044,24 +1044,24 @@
                     </div>
                   </button>
                   <button
-                    type="button"
-                    onclick="selectConcern('career', this)"
-                    class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5"
-                  >
-                    <span class="text-sm shrink-0">💼</span>
-                    <div class="truncate text-left leading-tight">
-                      <div
-                        class="chip-title text-[11px] font-extrabold text-slate-800"
-                      >
-                        취업 · 이직
-                      </div>
-                      <div
-                        class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
-                      >
-                        서류 합격·퇴사각
-                      </div>
-                    </div>
-                  </button>
+  type="button"
+  onclick="selectConcern('career', this)"
+  class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5"
+>
+  <span class="text-sm shrink-0">💼</span>
+  <div class="truncate text-left leading-tight">
+    <div
+      class="chip-title text-[11px] font-extrabold text-slate-800"
+    >
+      학업 · 커리어
+    </div>
+    <div
+      class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
+    >
+      시험·합격·취업·이직
+    </div>
+  </div>
+</button>
                   <button
                     type="button"
                     onclick="selectConcern('love', this)"
@@ -3708,8 +3708,8 @@
             },
           },
           career: {
-            label: "이직 · 취업 · 퇴사",
-            T: {
+  label: "학업 · 취업 · 커리어",
+  T: {
               preview: () =>
                 `현재 상황에 불만은 1등인데 정작 이력서나 포트폴리오 한 줄 안 고치고 있지? ${myCause} 완벽한 때만 재다간 평생 제자리야. 대책 없는 도피 말고 내 가치를 증명할 냉철한 기준부터 세워.`,
               asset: `${myOheng.name} 특유의 예리한 시선으로 조직의 비효율을 간파하고 냉정하게 평가하는 능력.`,
@@ -3949,9 +3949,59 @@
         const gyeokName = structure.gyeokName || data.gyeokguk?.name || "평격";
         const dominant = sipsin.dominant || "";
         const strongest = elements.strongest?.name || "";
-        const weakest = elements.weakest?.name || "";
-        const hourKnown = data.userTimeKey && data.userTimeKey !== "unknown";
+const weakest = elements.weakest?.name || "";
+const hourKnown =
+  data.userTimeKey &&
+  data.userTimeKey !== "unknown";
 
+const birthDigits = String(
+  data.userBirthStr || ""
+).replace(/\D/g, "");
+
+const birthYear = Number(
+  birthDigits.slice(0, 4)
+);
+const birthMonth = Number(
+  birthDigits.slice(4, 6)
+);
+const birthDay = Number(
+  birthDigits.slice(6, 8)
+);
+
+const today = new Date();
+
+const hasValidBirthDate =
+  birthDigits.length === 8 &&
+  birthYear >= 1900 &&
+  birthMonth >= 1 &&
+  birthMonth <= 12 &&
+  birthDay >= 1 &&
+  birthDay <= 31;
+
+let userAge = 25;
+
+if (hasValidBirthDate) {
+  userAge =
+    today.getFullYear() - birthYear;
+
+  const birthdayHasPassed =
+    today.getMonth() + 1 > birthMonth ||
+    (
+      today.getMonth() + 1 === birthMonth &&
+      today.getDate() >= birthDay
+    );
+
+  if (!birthdayHasPassed) {
+    userAge -= 1;
+  }
+}
+
+const careerStage =
+  userAge <= 19
+    ? "teen"
+    : userAge <= 24
+      ? "early20"
+      : "adult";
         const dayNatureMap = {
           甲: "한번 방향을 잡으면 쉽게 꺾이고 싶지 않은",
           乙: "상황에 맞춰주면서도 속기준은 쉽게 바꾸지 않는",
@@ -3995,21 +4045,61 @@
             checkF: "나를 위해 쓴 돈과 미안해서 대신 낸 돈을 따로 적어보기",
           },
           career: {
-            titleT: "퇴사하고 싶다면서 마지막 뒷정리까지 떠안는 사람",
-            titleF: "내 일이 아닌 것까지 해내고도 ‘내가 부족했나’ 돌아본 마음",
-            strongT:
-              "조직의 비효율은 제일 먼저 보면서도 일이 망가지는 꼴은 못 봐서 결국 네가 수습했지. 그래서 불만은 쌓이는데 주변에서는 네가 잘 버티는 줄만 알아. 이직 욕구보다 ‘내가 빠져도 되나’라는 책임감이 발목을 잡는 쪽이야.",
-            weakT:
-              "지금 환경이 답답한 건 정확히 아는데, 다음 선택이 틀릴까 봐 자격증·포트폴리오·경력 조건을 끝없이 더 확인해. 준비가 부족한 게 아니라 실패했을 때 받을 평가를 미리 피하고 있는 거야.",
-            strongF:
-              "부탁받지 않은 일까지 먼저 챙기고, 힘들다는 말 대신 ‘제가 할게요’라고 했지. 인정받고 싶어서라기보다 누군가 곤란해지는 걸 보는 게 더 불편해서 네 몫을 자꾸 늘린 거야.",
-            weakF:
-              "작은 피드백 하나도 집에 와서 다시 떠올리며 ‘내가 민폐였나’ 자책했지. 실력이 없어서가 아니라 평가가 관계의 거절처럼 느껴져서 마음이 먼저 움츠러든 거야.",
-            checkT:
-              "오늘 맡은 일에서 ‘내 책임’과 ‘남이 넘긴 책임’을 한 줄씩 분리하기",
-            checkF:
-              "이번 주 해낸 일을 결과가 아니라 내가 기여한 행동으로 세 가지 적기",
-          },
+  titleT:
+    "퇴사하고 싶다면서 마지막 뒷정리까지 떠안는 사람",
+  titleF:
+    "내 일이 아닌 것까지 해내고도 ‘내가 부족했나’ 돌아본 마음",
+  strongT:
+    "조직의 비효율은 제일 먼저 보면서도 일이 망가지는 꼴은 못 봐서 결국 네가 수습했지. 그래서 불만은 쌓이는데 주변에서는 네가 잘 버티는 줄만 알아. 이직 욕구보다 ‘내가 빠져도 되나’라는 책임감이 발목을 잡는 쪽이야.",
+  weakT:
+    "지금 환경이 답답한 건 정확히 아는데, 다음 선택이 틀릴까 봐 자격증·포트폴리오·경력 조건을 끝없이 더 확인해. 준비가 부족한 게 아니라 실패했을 때 받을 평가를 미리 피하고 있는 거야.",
+  strongF:
+    "부탁받지 않은 일까지 먼저 챙기고, 힘들다는 말 대신 ‘제가 할게요’라고 했지. 인정받고 싶어서라기보다 누군가 곤란해지는 걸 보는 게 더 불편해서 네 몫을 자꾸 늘린 거야.",
+  weakF:
+    "작은 피드백 하나도 집에 와서 다시 떠올리며 ‘내가 민폐였나’ 자책했지. 실력이 없어서가 아니라 평가가 관계의 거절처럼 느껴져서 마음이 먼저 움츠러든 거야.",
+  checkT:
+    "오늘 맡은 일에서 ‘내 책임’과 ‘남이 넘긴 책임’을 한 줄씩 분리하기",
+  checkF:
+    "이번 주 해낸 일을 결과가 아니라 내가 기여한 행동으로 세 가지 적기",
+},
+
+careerTeen: {
+  titleT:
+    "공부가 싫은 게 아니라, 못했을 때 평가받는 게 싫어서 미루는 타입",
+  titleF:
+    "성적보다 ‘실망시킬까 봐’ 더 마음 졸였던 이유",
+  strongT:
+    "시험이나 수행평가에서 기준이 마음에 안 들어도 결과가 망가지는 건 못 봐서 결국 조별과제까지 네가 정리했지. 잘하는 애라는 기대를 내려놓기 싫어서 힘들어도 먼저 손을 놓지 못하는 쪽이야.",
+  weakT:
+    "계획표와 공부법은 계속 바꾸는데 막상 시작하려면 ‘이번에도 못하면 어떡하지’가 먼저 떠오르지. 공부가 싫어서가 아니라 노력한 뒤에도 원하는 결과가 안 나올까 봐 출발을 늦추는 거야.",
+  strongF:
+    "친구 과제와 분위기는 먼저 챙기면서 네가 힘든 건 티 내지 않았지. 성적 자체보다 선생님이나 가족을 실망시키면 기대까지 잃을 것 같아 혼자 더 버틴 거야.",
+  weakF:
+    "점수 하나가 기대보다 낮으면 ‘나는 왜 이것밖에 안 되지’ 하며 오래 마음 아파했지. 한 번의 결과를 네 가능성 전체로 받아들여서 마음이 먼저 움츠러든 거야.",
+  checkT:
+    "이번 공부에서 점수가 아니라 오늘 끝낼 분량 하나만 숫자로 정하기",
+  checkF:
+    "결과와 상관없이 이번 주 내가 꾸준히 해낸 행동 세 가지 적기",
+},
+
+careerEarly20: {
+  titleT:
+    "스펙은 쌓는데 지원 버튼 앞에서 자꾸 멈추는 타입",
+  titleF:
+    "내 진로보다 모두가 안심할 선택을 먼저 고민했던 마음",
+  strongT:
+    "팀플·인턴·알바에서 답답한 부분이 보이면 결국 네가 정리했지. 실력은 이미 행동으로 보여주면서도 지원할 때는 조건을 더 채워야 한다며 미루는 건, 첫 평가에서 밀리고 싶지 않아서야.",
+  weakT:
+    "자격증·포트폴리오·공고를 계속 확인하지만 막상 지원 버튼 앞에서는 부족한 것만 보여. 준비가 덜된 게 아니라 탈락을 능력 전체의 판정처럼 받아들일까 봐 안전한 준비 단계에 머무는 거야.",
+  strongF:
+    "팀플이나 첫 사회생활에서 누군가 곤란해지면 네 몫이 아닌 일도 먼저 챙겼지. 인정받고 싶어서라기보다 민폐가 되거나 분위기를 망치고 싶지 않아 책임을 더 가져온 거야.",
+  weakF:
+    "면접·발표·피드백이 끝나면 작은 실수까지 다시 떠올리며 ‘내가 부족했나’ 자책했지. 결과보다 사람들의 실망한 표정을 상상하는 일이 더 무서웠던 거야.",
+  checkT:
+    "오늘 공고 하나를 골라 부족한 조건보다 이미 충족한 조건부터 표시하기",
+  checkF:
+    "합격 여부와 분리해서 이번 주 내가 시도한 행동 세 가지 적기",
+},
           love: {
             titleT: "좋아할수록 확인하고, 확신이 없으면 먼저 식은 척하는 타입",
             titleF: "답장 하나에도 마음이 흔들리면서 아무렇지 않은 척했던 밤",
@@ -4075,7 +4165,15 @@
           },
         };
 
-        const scene = scenes[concernKey] || scenes.money;
+        const scene =
+  concernKey === "career" &&
+  careerStage === "teen"
+    ? scenes.careerTeen
+    : concernKey === "career" &&
+        careerStage === "early20"
+      ? scenes.careerEarly20
+      : scenes[concernKey] ||
+        scenes.money;
         const title = isT ? scene.titleT : scene.titleF;
         const opening = isT
           ? isStrong
@@ -4096,18 +4194,74 @@
             : "원국의 충도 함께 보여서 참고 싶은 마음과 벗어나고 싶은 마음이 안에서 자주 부딪혔어."
           : "이번 원국에서는 감정을 즉시 뒤집기보다 속에서 충분히 판단한 뒤 움직이는 흐름이 더 보여.";
 
-        const basis = [
-          dayGan ? `${dayGan} 일간` : "일간 확인",
-          gyeokName,
-          strength,
-          dominant ? `${dominant} 반복` : "십신 분산",
-          strongest ? `${strongest} 강` : "",
-          weakest ? `${weakest} 약` : "",
-          hourKnown ? "시주 포함" : "시주 제외",
-        ]
-          .filter(Boolean)
-          .map(escapeHTML)
-          .join(" · ");
+        const dayGanLabelMap = {
+  甲: "甲(갑목)",
+  乙: "乙(을목)",
+  丙: "丙(병화)",
+  丁: "丁(정화)",
+  戊: "戊(무토)",
+  己: "己(기토)",
+  庚: "庚(경금)",
+  辛: "辛(신금)",
+  壬: "壬(임수)",
+  癸: "癸(계수)",
+};
+
+const gyeokLabelMap = {
+  정관격: "정관격(규칙·신뢰)",
+  편관격: "편관격(압박·돌파)",
+  정재격: "정재격(관리·안정)",
+  편재격: "편재격(기회·확장)",
+  식신격: "식신격(표현·생산)",
+  상관격: "상관격(독창·직설)",
+  정인격: "정인격(학습·보호)",
+  편인격: "편인격(관찰·직관)",
+  건록격: "건록격(독립·자립)",
+  양인격: "양인격(승부·결단)",
+  겁재격: "겁재격(경쟁·주도)",
+  평격: "평격(균형형)",
+};
+
+const strengthLabelMap = {
+  신강: "신강(내 힘으로 버티는 쪽)",
+  신약: "신약(주변 자극을 먼저 흡수하는 쪽)",
+};
+
+const sipsinLabelMap = {
+  비견: "비견(독립·내 기준)",
+  겁재: "겁재(경쟁·내 몫)",
+  식신: "식신(내 페이스·표현)",
+  상관: "상관(통제 거부·직설)",
+  정재: "정재(안정·계획)",
+  편재: "편재(기회·확장)",
+  정관: "정관(기준·책임)",
+  편관: "편관(압박·돌파)",
+  정인: "정인(보호·인정)",
+  편인: "편인(관찰·직관)",
+};
+
+const basis = [
+  dayGan
+    ? `${dayGanLabelMap[dayGan] || dayGan} 일간`
+    : "일간 확인",
+  gyeokLabelMap[gyeokName] || gyeokName,
+  strengthLabelMap[strength] || strength,
+  dominant
+    ? `${sipsinLabelMap[dominant] || dominant} 반복`
+    : "십신 분산",
+  strongest
+    ? `${strongest} 기운 강함`
+    : "",
+  weakest
+    ? `${weakest} 기운 약함`
+    : "",
+  hourKnown
+    ? "시주 포함"
+    : "시주 제외",
+]
+  .filter(Boolean)
+  .map(escapeHTML)
+  .join(" · ");
 
         return {
           badge: `${concernLabel} 속마음 적중`,
@@ -4122,13 +4276,13 @@
         const rawConcern = data.concernKey || "money";
 
         const concernNames = {
-          money: "재물·돈복",
-          career: "직장·이직",
-          love: "연애·썸",
-          path: "진로·미래",
-          people: "인간관계",
-          mental: "멘탈·번아웃",
-        };
+  money: "재물·돈복",
+  career: "학업·커리어",
+  love: "연애·썸",
+  path: "진로·미래",
+  people: "인간관계",
+  mental: "번아웃·멘탈",
+};
 
         const concernKey = concernNames[rawConcern] ? rawConcern : "money";
         const concernLabel = concernNames[concernKey];
@@ -5852,13 +6006,13 @@
             if (typingEl) typingEl.remove();
 
             const concernLabels = {
-              money: "돈복·텅장",
-              career: "취업·이직",
-              love: "연애·썸",
-              path: "진로·미래",
-              people: "인간관계",
-              mental: "번아웃·멘탈",
-            };
+  money: "돈복·텅장",
+  career: "학업·커리어",
+  love: "연애·썸",
+  path: "진로·미래",
+  people: "인간관계",
+  mental: "번아웃·멘탈",
+};
             const selectedConcernText = concernLabels[concernKey] || "고민";
 
             const rawN = name.trim();
