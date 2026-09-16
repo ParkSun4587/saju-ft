@@ -35,6 +35,7 @@ async function load(page) {
     typeof buildNoteOneInsight === 'function' &&
     typeof buildNoteTwoPattern === 'function' &&
     typeof buildNoteThreeBlindSpot === 'function' &&
+    typeof buildNoteFourPrescription === 'function' &&
     typeof analyzeDayMasterStrengthV2 === 'function',
     null, {timeout:60000}
   );
@@ -137,6 +138,50 @@ async function load(page) {
       assert(f.desc !== t.desc, `NOTE3 F/T collapsed ${key}`);
     }
     console.log('NOTE3_AUDIT_PASS', JSON.stringify(note3Audit.map(x => ({key:x.key,mode:x.mode,title:x.title}))));
+    const note4Audit = await page.evaluate(() => {
+      const labels = { money:'재물·돈복', career:'학업·커리어', love:'연애·썸', path:'진로·미래', people:'인간관계', mental:'번아웃·멘탈' };
+      const base = calculateAccurateManse(1998,2,21,'03:10','male');
+      const other = calculateAccurateManse(2001,5,6,'14:30','female');
+      const out = [];
+      for (const key of Object.keys(labels)) {
+        for (const mode of ['F','T']) {
+          const data = { ...base, concernKey:key };
+          const n = buildNoteFourPrescription(data, key, labels[key], mode === 'T');
+          const integrated = generateConcernNotes(data, mode)[3];
+          out.push({
+            key, mode,
+            title:n.title, badge:n.badge, desc:n.desc, checklist:n.checklist,
+            integratedTitle: integrated?.title || '',
+            integratedDesc: integrated?.desc || '',
+          });
+        }
+      }
+      const a = buildNoteFourPrescription({ ...base, concernKey:'career' }, 'career', labels.career, true);
+      const b = buildNoteFourPrescription({ ...other, concernKey:'career' }, 'career', labels.career, true);
+      return { out, personalized: a.desc !== b.desc, a:a.desc, b:b.desc };
+    });
+    assert(note4Audit.out.length === 12, `NOTE4 audit count ${note4Audit.out.length}`);
+    assert(new Set(note4Audit.out.map(x => x.title)).size === 12, 'NOTE4 titles are not concern/mode specific');
+    for (const n of note4Audit.out) {
+      assert(!!n.title && !!n.badge && !!n.desc && !!n.checklist, `NOTE4 empty field ${n.key}/${n.mode}`);
+      assert(n.desc.includes('오늘 바로'), `NOTE4 immediate action missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('7일 규칙'), `NOTE4 weekly rule missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('금지선'), `NOTE4 guardrail missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('성공 체크'), `NOTE4 success metric missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('왜 이 처방이 너한테 맞나'), `NOTE4 personalization evidence missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('취약축은'), `NOTE4 weak-axis evidence missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('보완축은'), `NOTE4 balance-axis evidence missing ${n.key}/${n.mode}`);
+      assert(!/(undefined|NaN|null)/.test(`${n.title}${n.badge}${n.desc}${n.checklist}`), `NOTE4 bad token ${n.key}/${n.mode}`);
+      assert(n.integratedTitle === n.title && n.integratedDesc === n.desc, `NOTE4 integration mismatch ${n.key}/${n.mode}`);
+    }
+    for (const key of ['money','career','love','path','people','mental']) {
+      const f = note4Audit.out.find(x => x.key===key && x.mode==='F');
+      const tt = note4Audit.out.find(x => x.key===key && x.mode==='T');
+      assert(f.desc !== tt.desc, `NOTE4 F/T collapsed ${key}`);
+    }
+    assert(note4Audit.personalized, 'NOTE4 does not change evidence across different charts');
+    console.log('NOTE4_AUDIT_PASS', JSON.stringify(note4Audit.out.map(x => ({key:x.key,mode:x.mode,title:x.title}))));
+
     await page.close();
   }
 
