@@ -53,7 +53,7 @@ const statusBroken = global.evaluateGyeokStatusV2(
 );
 assert(statusBroken.status === '파격', `정관격 with 傷官 expected 파격 got ${JSON.stringify(statusBroken)}`);
 
-// ⑥ 용·희·기신: 단일 최저오행이 아니라 억부+조후+통관+격국 점수가 합성되는지 검증.
+// ⑥ 용·희·기신: 단일 최저오행이 아니라 억부+한난조습+통관+격국 점수가 합성되는지 검증.
 const yStrong = global.selectYongshinV2({
   pillars: strong,
   strength: s1,
@@ -63,7 +63,7 @@ const yStrong = global.selectYongshinV2({
 assert(['mok','hwa','to','geum','su'].includes(yStrong.primary), 'invalid yongshin element');
 assert(yStrong.primary !== 'su', `very strong water chart should not select self water: ${JSON.stringify(yStrong)}`);
 assert(yStrong.detail[yStrong.primary].length > 0, 'yongshin evidence missing');
-assert(yStrong.method.includes('억부') && yStrong.method.includes('조후'), 'yongshin method layers missing');
+assert(yStrong.method.includes('억부') && yStrong.method.includes('한난조습'), 'yongshin method layers missing');
 
 const winterFire = P(
   {gan:'甲',zhi:'寅'}, {gan:'癸',zhi:'子'}, {gan:'丁',zhi:'卯'}, {gan:'乙',zhi:'卯'}
