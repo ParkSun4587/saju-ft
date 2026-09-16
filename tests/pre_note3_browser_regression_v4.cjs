@@ -147,7 +147,11 @@ async function load(page) {
         for (const mode of ['F','T']) {
           const data = { ...base, concernKey:key };
           const n = buildNoteFourPrescription(data, key, labels[key], mode === 'T');
-          const integrated = generateConcernNotes(data, mode)[3];
+          const wiredData = {
+            ...data,
+            rawSolutionTemplate: { F:{acts:[]}, T:{acts:[]} },
+          };
+          const integrated = generateConcernNotes(wiredData, mode)[3];
           out.push({
             key, mode,
             title:n.title, badge:n.badge, desc:n.desc, checklist:n.checklist,
