@@ -1,0 +1,35 @@
+name: Validate classical engine 5-7
+on:
+  push:
+    branches: [manse-korea-stage1]
+    paths:
+      - 'classical-engine-v2.js'
+      - 'index.html'
+      - 'tests/validate_classical_5_7.cjs'
+      - '.github/workflows/validate-classical-5-7.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Syntax checks
+        run: |
+          node --check classical-engine-v2.js
+          node --check manse-korea-v2.js
+          git diff --check
+      - name: Validate stages 5-7 engine
+        run: node tests/validate_classical_5_7.cjs
+      - name: Validate page integration
+        run: |
+          grep -q 'classical-engine-v2.js?v=2' index.html
+          grep -q 'analyzeDayMasterStrengthV2' index.html
+          grep -q 'selectYongshinV2' index.html
+          grep -q 'evaluateGyeokStatusV2' index.html
+          grep -q 'buildClassicalLayersV2' index.html
