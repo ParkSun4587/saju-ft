@@ -72,7 +72,7 @@
       a.minute === mi
     );
   }
-  function offsetMinutesAt(instantMs, timeZone) {
+  function offsetMillisecondsAt(instantMs, timeZone) {
     const p = partsAt(instantMs, timeZone);
     const representedAsUtc = Date.UTC(
       p.year,
@@ -82,21 +82,25 @@
       p.minute,
       p.second,
     );
-    return Math.round((representedAsUtc - instantMs) / 60000);
+    return representedAsUtc - instantMs;
   }
   function seoulWallTimeToUtcMs(y, m, d, h, mi) {
     const wallMs = Date.UTC(y, m - 1, d, h, mi, 0);
     const probeOffsets = new Set();
     for (const deltaHours of [-36, -12, 0, 12, 36]) {
       probeOffsets.add(
-        offsetMinutesAt(wallMs + deltaHours * 3600000, SEOUL_TZ),
+        offsetMillisecondsAt(wallMs + deltaHours * 3600000, SEOUL_TZ),
       );
     }
     const candidates = [];
-    for (const offset of probeOffsets) {
-      const candidate = wallMs - offset * 60000;
+    for (const offsetMs of probeOffsets) {
+      const candidate = wallMs - offsetMs;
       if (sameLocalParts(partsAt(candidate, SEOUL_TZ), y, m, d, h, mi)) {
-        candidates.push({ utcMs: candidate, offsetMinutes: offset });
+        candidates.push({
+          utcMs: candidate,
+          offsetMilliseconds: offsetMs,
+          offsetMinutes: offsetMs / 60000,
+        });
       }
     }
     const unique = [];
