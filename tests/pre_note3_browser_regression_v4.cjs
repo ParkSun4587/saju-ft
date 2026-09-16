@@ -34,6 +34,7 @@ async function load(page) {
     typeof generateConcernNotes === 'function' &&
     typeof buildNoteOneInsight === 'function' &&
     typeof buildNoteTwoPattern === 'function' &&
+    typeof buildNoteThreeBlindSpot === 'function' &&
     typeof analyzeDayMasterStrengthV2 === 'function',
     null, {timeout:60000}
   );
@@ -102,6 +103,40 @@ async function load(page) {
     const unexpected = errs.filter(x => !isExpectedBoundaryDiagnostic(x));
     assert(unexpected.length === 0, `core browser errors: ${unexpected.join(' | ')}`);
     console.log('CORE_PASS', JSON.stringify(r));
+
+    const note3Audit = await page.evaluate(() => {
+      const labels = { money:'재물·돈복', career:'학업·커리어', love:'연애·썸', path:'진로·미래', people:'인간관계', mental:'번아웃·멘탈' };
+      const base = calculateAccurateManse(1998,2,21,'03:10','male');
+      const data = { ...base, concernKey:'money' };
+      const out = [];
+      for (const key of Object.keys(labels)) {
+        for (const mode of ['F','T']) {
+          const n = buildNoteThreeBlindSpot(data, key, labels[key], mode === 'T');
+          out.push({ key, mode, title:n.title, badge:n.badge, desc:n.desc, checklist:n.checklist });
+        }
+      }
+      return out;
+    });
+    assert(note3Audit.length === 12, `NOTE3 audit count ${note3Audit.length}`);
+    assert(new Set(note3Audit.map(x => x.title)).size === 12, 'NOTE3 titles are not concern/mode specific');
+    for (const n of note3Audit) {
+      assert(!!n.title && !!n.badge && !!n.desc && !!n.checklist, `NOTE3 empty field ${n.key}/${n.mode}`);
+      assert(n.desc.includes('내가 문제라고 느끼는 지점:'), `NOTE3 assumed-problem missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('실제로 새는 지점:'), `NOTE3 actual-leak missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('특히 약한 연결고리:'), `NOTE3 weak-link missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('언니가 잡은 계산 근거'), `NOTE3 evidence missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('취약축:'), `NOTE3 vulnerable-axis missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('균형:'), `NOTE3 balance evidence missing ${n.key}/${n.mode}`);
+      assert(n.desc.includes('계절 보정:'), `NOTE3 climate evidence missing ${n.key}/${n.mode}`);
+      assert(!/(undefined|NaN|null)/.test(`${n.title}${n.badge}${n.desc}${n.checklist}`), `NOTE3 bad token ${n.key}/${n.mode}`);
+      assert(!n.desc.includes('적천수가 말하길') && !n.desc.includes('궁통보감이 말하길'), `NOTE3 overclaims classical source ${n.key}/${n.mode}`);
+    }
+    for (const key of ['money','career','love','path','people','mental']) {
+      const f = note3Audit.find(x => x.key===key && x.mode==='F');
+      const t = note3Audit.find(x => x.key===key && x.mode==='T');
+      assert(f.desc !== t.desc, `NOTE3 F/T collapsed ${key}`);
+    }
+    console.log('NOTE3_AUDIT_PASS', JSON.stringify(note3Audit.map(x => ({key:x.key,mode:x.mode,title:x.title}))));
     await page.close();
   }
 
@@ -192,7 +227,8 @@ async function load(page) {
       const notes = generateConcernNotes(data, c.mode);
       const n1 = buildNoteOneInsight(data, c.concern, labels[c.concern], c.mode === 'T');
       const n2 = buildNoteTwoPattern(data, c.concern, labels[c.concern], c.mode === 'T');
-      const generated = JSON.stringify([notes,n1,n2]);
+      const n3 = buildNoteThreeBlindSpot(data, c.concern, labels[c.concern], c.mode === 'T');
+      const generated = JSON.stringify([notes,n1,n2,n3]);
       const visible = document.body.innerText;
       return {
         ok:true,
@@ -212,6 +248,8 @@ async function load(page) {
         noteNums:Array.isArray(notes) ? notes.map(x=>x.themeNum) : [],
         note1Valid:!!(n1?.title && n1?.desc && n1?.checklist && n1.desc.includes('언니가 잡은 사주 근거')),
         note2Valid:!!(n2?.title && n2?.desc && n2?.checklist && n2.desc.includes('1. 시작 신호') && n2.desc.includes('왜 반복되냐면')),
+        note3Valid:!!(n3?.title && n3?.desc && n3?.checklist && n3.desc.includes('내가 문제라고 느끼는 지점:') && n3.desc.includes('실제로 새는 지점:') && n3.desc.includes('언니가 잡은 계산 근거')),
+        note3Integrated:!!(notes?.[2]?.title === n3.title && notes?.[2]?.desc === n3.desc && notes?.[2]?.checklist === n3.checklist),
         note6Valid:!!(notes?.[5]?.desc && notes[5].desc.includes('2026') && notes[5].desc.includes('2027')),
         badText:/(^|[^가-힣a-zA-Z])(undefined|NaN)([^가-힣a-zA-Z]|$)/.test(generated),
         failureToast:visible.includes('만세력 연산에 실패했습니다') || visible.includes('연산 중 오류가 발생했습니다'),
@@ -242,6 +280,8 @@ async function load(page) {
     assert(report.noteNums.join(',') === '01,02,03,04,05,06', `${c.id}: numbering ${report.noteNums.join(',')}`);
     assert(report.note1Valid, `${c.id}: NOTE1 structure/evidence block missing`);
     assert(report.note2Valid, `${c.id}: NOTE2 structure/reason block missing`);
+    assert(report.note3Valid, `${c.id}: NOTE3 blind-spot/evidence block missing`);
+    assert(report.note3Integrated, `${c.id}: NOTE3 builder not integrated into generated notes`);
     assert(report.note6Valid, `${c.id}: NOTE6 2026/2027 timeline missing`);
     assert(!report.badText, `${c.id}: undefined/NaN leaked into generated note text`);
     assert(!report.failureToast, `${c.id}: calculation failure toast visible`);
