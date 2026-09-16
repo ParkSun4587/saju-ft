@@ -4271,7 +4271,252 @@ const basis = [
         };
       }
 
-      function generateConcernNotes(data, mode) {
+      function buildNoteTwoPattern(
+  data,
+  concernKey,
+  concernLabel,
+  isT,
+) {
+  const profile = data.analysisProfile || {};
+  const dayMaster = profile.dayMaster || {};
+  const sipsin = profile.sipsin || {};
+  const relations = profile.relations || {};
+
+  const strength =
+    dayMaster.strength ||
+    (data.isDayMasterStrong ? "신강" : "신약");
+
+  const isStrong = strength === "신강";
+  const dominant = sipsin.dominant || "";
+
+  const dominantPatternMap = {
+    비견: "내 방식과 결정권을 지키려는 마음",
+    겁재: "비교에서 밀리거나 내 몫을 뺏기기 싫은 마음",
+    식신: "내 페이스와 편안함을 지키려는 마음",
+    상관: "통제받거나 무시당하기 싫은 마음",
+    정재: "예측 가능한 기준과 안정을 지키려는 마음",
+    편재: "기회와 재미를 놓치기 싫은 마음",
+    정관: "좋은 평가와 신뢰를 잃기 싫은 마음",
+    편관: "약해 보이거나 실패한 사람으로 보이기 싫은 마음",
+    정인: "충분히 이해받고 보호받고 싶은 마음",
+    편인: "상대의 숨은 의도를 먼저 알아내려는 마음",
+  };
+
+  const patterns = {
+    money: {
+      T: {
+        title:
+          "잔액을 확인하고도 지친 날 또 결제하게 되는 반복",
+        trigger:
+          "스트레스가 쌓였거나 남보다 뒤처진 것 같은 날",
+        reaction:
+          "‘이 정도는 괜찮아’라며 소비할 이유를 빠르게 만들어 결제해.",
+        cost:
+          "결제 직후에는 진정되지만 잔액을 보고 다시 통제 모드로 들어가.",
+        rule:
+          "사고 싶은 순간 결제 대신 장바구니에 넣고 24시간 뒤 다시 보기",
+      },
+      F: {
+        title:
+          "대신 내주고 돌아서서 혼자 아까워하는 반복",
+        trigger:
+          "누군가 곤란해 보이거나 계산 앞에서 분위기가 어색해질 때",
+        reaction:
+          "싫다는 말 대신 먼저 지갑을 열고 괜찮은 척 넘어가.",
+        cost:
+          "상대에게는 말하지 못한 채 나만 손해 본 것 같아 오래 서운해져.",
+        rule:
+          "대신 결제하기 전 ‘이번엔 각자 내자’는 말을 먼저 한 번 꺼내기",
+      },
+    },
+
+    career: {
+      T: {
+        title:
+          "준비는 계속하는데 제출·지원 직전에 멈추는 반복",
+        trigger:
+          "시험·과제·지원·업무처럼 실력을 평가받을 순간",
+        reaction:
+          "부족한 조건부터 찾아내며 계획과 자료를 다시 손봐.",
+        cost:
+          "완성도는 조금 오르지만 제출과 도전은 늦어져 기회를 놓쳐.",
+        rule:
+          "완성도 70%가 되면 수정 전에 먼저 제출·지원하기",
+      },
+      F: {
+        title:
+          "남들 기대에 맞추다 내 선택을 뒤로 미루는 반복",
+        trigger:
+          "선생님·가족·동료가 나를 믿고 기대하는 순간",
+        reaction:
+          "내가 원하는 방향보다 모두가 안심할 선택을 먼저 골라.",
+        cost:
+          "겉으로는 잘해내도 시간이 지날수록 내 길이 아닌 것 같아 지쳐.",
+        rule:
+          "선택 전에 ‘남이 원하는 답’과 ‘내가 원하는 답’을 따로 적기",
+      },
+    },
+
+    love: {
+      T: {
+        title:
+          "마음은 커지는데 오히려 연락을 줄여버리는 반복",
+        trigger:
+          "답장이나 태도가 애매해 상대 마음을 확신할 수 없을 때",
+        reaction:
+          "상처받기 전에 먼저 거리를 두고 관심 없는 척 반응해.",
+        cost:
+          "상대도 네 마음이 없는 줄 알고 물러나면서 불안이 현실이 돼.",
+        rule:
+          "혼자 결론 내리기 전에 궁금한 것을 한 번은 직접 물어보기",
+      },
+      F: {
+        title:
+          "서운함을 참다가 사소한 일에 한꺼번에 무너지는 반복",
+        trigger:
+          "평소와 다른 말투나 늦어진 답장처럼 작은 변화가 보일 때",
+        reaction:
+          "관계를 망칠까 봐 괜찮은 척하며 서운함을 안으로 삼켜.",
+        cost:
+          "쌓인 감정이 엉뚱한 순간 터지고 결국 내가 예민한 사람처럼 보여.",
+        rule:
+          "서운함이 생긴 당일에 사실과 감정을 한 문장씩 말하기",
+      },
+    },
+
+    path: {
+      T: {
+        title:
+          "정보는 늘어나는데 출발일은 계속 미뤄지는 반복",
+        trigger:
+          "여러 선택지 중 하나를 포기하고 결정해야 할 때",
+        reaction:
+          "더 좋은 답이 있을 것 같아 비교와 정보 수집을 다시 시작해.",
+        cost:
+          "아는 것은 많아지지만 실제 경험이 없어 확신은 더 줄어들어.",
+        rule:
+          "정답을 고르지 말고 14일 동안 시험할 선택 하나 정하기",
+      },
+      F: {
+        title:
+          "내가 원하는 길보다 모두가 안심할 길을 고르는 반복",
+        trigger:
+          "내 선택을 들은 가족이나 주변 사람이 걱정할 때",
+        reaction:
+          "갈등을 만들기 싫어 하고 싶은 마음부터 작게 설명해.",
+        cost:
+          "안전한 선택을 하고도 다른 길을 계속 떠올리며 후회가 남아.",
+        rule:
+          "조언을 듣기 전에 내가 원하는 선택과 이유를 먼저 적기",
+      },
+    },
+
+    people: {
+      T: {
+        title:
+          "웃어넘기고 속으로 감점하다 갑자기 끊어내는 반복",
+        trigger:
+          "상대가 선을 넘었지만 바로 따지기에는 애매한 순간",
+        reaction:
+          "그 자리에서는 넘어가고 혼자 상대의 점수를 계속 깎아.",
+        cost:
+          "상대는 이유를 모른 채 같은 행동을 반복하고 너는 더 지쳐.",
+        rule:
+          "두 번째로 불편해지기 전에 싫은 행동을 정확히 한 번 말하기",
+      },
+      F: {
+        title:
+          "상대 기분을 풀어주다 내 감정만 사라지는 반복",
+        trigger:
+          "상대 표정이 굳거나 대화 분위기가 어색해질 때",
+        reaction:
+          "내 잘못이 없어도 먼저 사과하거나 분위기를 풀려고 해.",
+        cost:
+          "관계는 유지되지만 내 서운함은 설명되지 않아 외로움이 커져.",
+        rule:
+          "상대를 달래기 전에 지금 내 감정부터 한 단어로 말하기",
+      },
+    },
+
+    mental: {
+      T: {
+        title:
+          "끝까지 버티다 숏폼으로 도망치고 다시 자책하는 반복",
+        trigger:
+          "계획이 틀어지거나 해야 할 일이 감당하기 벅차질 때",
+        reaction:
+          "쉬는 대신 가장 빠른 자극을 켜고 생각을 잠깐 꺼버려.",
+        cost:
+          "시간이 지난 뒤 할 일과 죄책감이 함께 커져 더 시작하기 어려워져.",
+        rule:
+          "숏폼을 켜기 전에 가장 작은 할 일 하나만 5분 실행하기",
+      },
+      F: {
+        title:
+          "남들 앞에서는 버티고 혼자 되면 완전히 방전되는 반복",
+        trigger:
+          "주변 사람이 힘들어하거나 나를 필요로 하는 순간",
+        reaction:
+          "내 상태는 숨기고 상대를 챙기며 맡은 역할을 끝까지 해내.",
+        cost:
+          "혼자가 되면 아무것도 못 하고, 쉬는 자신까지 다시 탓하게 돼.",
+        rule:
+          "도와주기 전에 지금 내 에너지가 10점 중 몇 점인지 확인하기",
+      },
+    },
+  };
+
+  const selected =
+    patterns[concernKey] || patterns.money;
+
+  const pattern =
+    isT ? selected.T : selected.F;
+
+  const dominantReason =
+    dominantPatternMap[dominant] ||
+    "상황을 내 힘으로 정리하려는 마음";
+
+  const strengthReason = isStrong
+    ? "버티는 힘이 강해서 불편해도 괜찮은 척 넘기는 시간이 길어지고"
+    : "주변 반응을 빠르게 흡수해서 작은 신호에도 마음이 먼저 흔들리고";
+
+  const relationReason = relations.hasChung
+    ? "참는 마음과 벗어나려는 마음이 부딪혀 마지막 반응이 갑자기 커지는 흐름이야."
+    : "충분히 참은 뒤에야 움직이는 흐름이라 같은 장면이 조용히 반복되기 쉬워.";
+
+  return {
+    badge: `${concernLabel} 반복 루프`,
+    title: pattern.title,
+    desc: `
+      <div class="space-y-2">
+        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
+          <b class="text-slate-900">1. 시작 신호</b><br>
+          ${escapeHTML(pattern.trigger)}
+        </div>
+
+        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
+          <b class="text-slate-900">2. 자동 반응</b><br>
+          ${escapeHTML(pattern.reaction)}
+        </div>
+
+        <div class="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2.5">
+          <b class="text-rose-700">3. 결국 남는 손해</b><br>
+          ${escapeHTML(pattern.cost)}
+        </div>
+      </div>
+
+      <div class="mt-3 text-slate-700">
+        왜 반복되냐면,
+        <b>${escapeHTML(dominantReason)}</b>이 강한 데다
+        ${escapeHTML(strengthReason)}
+        ${escapeHTML(relationReason)}
+      </div>
+    `,
+    checklist: pattern.rule,
+  };
+}
+
+function generateConcernNotes(data, mode) {
         const isT = mode === "T";
         const rawConcern = data.concernKey || "money";
 
@@ -4339,13 +4584,20 @@ const basis = [
         ];
 
         const noteOne = buildNoteOneInsight(
-          data,
-          concernKey,
-          concernLabel,
-          isT,
-        );
+  data,
+  concernKey,
+  concernLabel,
+  isT,
+);
 
-        return [
+const noteTwo = buildNoteTwoPattern(
+  data,
+  concernKey,
+  concernLabel,
+  isT,
+);
+
+return [
           {
             themeNum: "01",
             badge: noteOne.badge,
@@ -4354,18 +4606,12 @@ const basis = [
             checklist: noteOne.checklist,
           },
           {
-            themeNum: "02",
-            badge: badges[1],
-            title: titles[1],
-            desc: `${source.asset || ""}<br><br>${
-              isT
-                ? "이 장점이 과해지는 순간 오히려 내 발목을 잡는 패턴으로 바뀔 수 있어."
-                : "이건 부족해서가 아니라, 너무 진심으로 살아와서 생긴 패턴일 수 있어."
-            }`,
-            checklist: isT
-              ? `${concernLabel}에서 반복되는 행동을 하나 정하고 즉시 끊기`
-              : `내가 반복해온 행동을 자책하지 말고 천천히 관찰하기`,
-          },
+  themeNum: "02",
+  badge: noteTwo.badge,
+  title: noteTwo.title,
+  desc: noteTwo.desc,
+  checklist: noteTwo.checklist,
+},
           {
             themeNum: "03",
             badge: badges[2],
