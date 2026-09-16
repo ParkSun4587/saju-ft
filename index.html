@@ -3934,6 +3934,189 @@
           },
         };
       }
+      function buildNoteOneInsight(data, concernKey, concernLabel, isT) {
+        const profile = data.analysisProfile || {};
+        const dayMaster = profile.dayMaster || {};
+        const structure = profile.structure || {};
+        const elements = profile.elements || {};
+        const sipsin = profile.sipsin || {};
+        const relations = profile.relations || {};
+
+        const dayGan = dayMaster.gan || data.pillars?.day?.gan || "";
+        const strength =
+          dayMaster.strength || (data.isDayMasterStrong ? "신강" : "신약");
+        const isStrong = strength === "신강";
+        const gyeokName = structure.gyeokName || data.gyeokguk?.name || "평격";
+        const dominant = sipsin.dominant || "";
+        const strongest = elements.strongest?.name || "";
+        const weakest = elements.weakest?.name || "";
+        const hourKnown = data.userTimeKey && data.userTimeKey !== "unknown";
+
+        const dayNatureMap = {
+          甲: "한번 방향을 잡으면 쉽게 꺾이고 싶지 않은",
+          乙: "상황에 맞춰주면서도 속기준은 쉽게 바꾸지 않는",
+          丙: "반응이 빠르고 마음의 온도를 숨기기 어려운",
+          丁: "겉은 차분해도 속에서 감정이 오래 타는",
+          戊: "웬만한 일은 묵묵히 버티고 책임지려는",
+          己: "주변을 세심하게 챙기며 안정을 만들려는",
+          庚: "옳고 그름과 손익을 빠르게 가르는",
+          辛: "미묘한 차이와 작은 실수까지 예민하게 알아채는",
+          壬: "판 전체를 읽으며 선택지를 넓게 남겨두는",
+          癸: "말보다 분위기와 뉘앙스를 먼저 읽는",
+        };
+
+        const needMap = {
+          비견: "내 결정권을 빼앗기는 순간",
+          겁재: "남과 비교되거나 내 몫을 빼앗기는 순간",
+          식신: "내 페이스가 깨지고 억지로 재촉받는 순간",
+          상관: "내 생각을 무시당하거나 통제받는 순간",
+          정재: "예측하던 기준과 안정이 흔들리는 순간",
+          편재: "큰 기회나 재미를 놓쳤다는 느낌이 드는 순간",
+          정관: "평판이 흔들리거나 기준에 못 미쳤다는 느낌이 드는 순간",
+          편관: "실수하거나 무능해 보일 가능성이 생기는 순간",
+          정인: "충분히 이해받고 안전하다는 확신이 사라지는 순간",
+          편인: "상대 의도를 읽지 못해 허를 찔릴 가능성이 생기는 순간",
+        };
+
+        const scenes = {
+          money: {
+            titleT: "통장이 아니라 ‘내 선택권’이 흔들릴 때 불안해지는 타입",
+            titleF:
+              "내 몫에는 아끼면서 소중한 사람 앞에서는 먼저 지갑을 연 마음",
+            strongT:
+              "평소엔 쓸 때 크게 쓰면서도 ‘내가 손해 봤다’는 느낌이 들면 작은 금액도 오래 기억해. 돈 자체보다 내 판단이 틀렸다는 사실을 인정하기 싫어서 지출을 더 세게 통제하는 쪽이야.",
+            weakT:
+              "결제 전에는 후기와 잔액을 몇 번씩 확인하면서, 지친 날엔 갑자기 보상 소비로 무너지기 쉬워. 소비 습관만의 문제가 아니라 돈으로 불안을 잠깐 끄는 패턴에 가까워.",
+            strongF:
+              "내가 원하는 것에는 ‘다음에 사지 뭐’ 하면서도 소중한 사람이 필요하다고 하면 먼저 계산했지. 베푸는 마음 뒤에는 관계가 멀어지지 않았으면 하는 마음도 함께 숨어 있어.",
+            weakF:
+              "통장 잔액을 볼 때마다 불안하면서도 누군가 곤란하다고 하면 차마 외면하지 못했지. 돈이 부족해서만 힘든 게 아니라, 나를 먼저 챙기면 이기적으로 보일까 봐 마음이 불편했던 거야.",
+            checkT: "최근 7일 지출을 ‘필요’와 ‘불안 끄기’로 나눠 적어보기",
+            checkF: "나를 위해 쓴 돈과 미안해서 대신 낸 돈을 따로 적어보기",
+          },
+          career: {
+            titleT: "퇴사하고 싶다면서 마지막 뒷정리까지 떠안는 사람",
+            titleF: "내 일이 아닌 것까지 해내고도 ‘내가 부족했나’ 돌아본 마음",
+            strongT:
+              "조직의 비효율은 제일 먼저 보면서도 일이 망가지는 꼴은 못 봐서 결국 네가 수습했지. 그래서 불만은 쌓이는데 주변에서는 네가 잘 버티는 줄만 알아. 이직 욕구보다 ‘내가 빠져도 되나’라는 책임감이 발목을 잡는 쪽이야.",
+            weakT:
+              "지금 환경이 답답한 건 정확히 아는데, 다음 선택이 틀릴까 봐 자격증·포트폴리오·경력 조건을 끝없이 더 확인해. 준비가 부족한 게 아니라 실패했을 때 받을 평가를 미리 피하고 있는 거야.",
+            strongF:
+              "부탁받지 않은 일까지 먼저 챙기고, 힘들다는 말 대신 ‘제가 할게요’라고 했지. 인정받고 싶어서라기보다 누군가 곤란해지는 걸 보는 게 더 불편해서 네 몫을 자꾸 늘린 거야.",
+            weakF:
+              "작은 피드백 하나도 집에 와서 다시 떠올리며 ‘내가 민폐였나’ 자책했지. 실력이 없어서가 아니라 평가가 관계의 거절처럼 느껴져서 마음이 먼저 움츠러든 거야.",
+            checkT:
+              "오늘 맡은 일에서 ‘내 책임’과 ‘남이 넘긴 책임’을 한 줄씩 분리하기",
+            checkF:
+              "이번 주 해낸 일을 결과가 아니라 내가 기여한 행동으로 세 가지 적기",
+          },
+          love: {
+            titleT: "좋아할수록 확인하고, 확신이 없으면 먼저 식은 척하는 타입",
+            titleF: "답장 하나에도 마음이 흔들리면서 아무렇지 않은 척했던 밤",
+            strongT:
+              "호감이 생겨도 바로 표현하기보다 상대의 말과 행동이 일치하는지부터 봐. 애매하면 상처받기 전에 네가 먼저 거리를 두고 ‘원래 별로였어’라고 결론 내리는데, 사실 마음이 없어서가 아니라 주도권을 잃기 싫은 거야.",
+            weakT:
+              "답장 속도와 말투를 분석하면서도 직접 묻지는 못하고 혼자 결론을 내리기 쉬워. 상대를 보는 척하지만 실제로는 거절당했을 때 무너질 나를 미리 방어하는 쪽이야.",
+            strongF:
+              "좋아하는 사람의 작은 변화는 바로 알아채면서도 네 서운함은 분위기 망칠까 봐 삼켰지. 사랑받고 싶은 마음보다 상대를 실망시키면 관계가 깨질까 봐 두려운 마음이 먼저 움직인 거야.",
+            weakF:
+              "카톡 한 줄이 짧아지면 ‘내가 뭘 잘못했나’ 되짚고, 괜찮다는 확인을 받아야 마음이 놓였지. 예민해서가 아니라 관계가 멀어지는 신호를 남들보다 빨리 찾으려 했던 거야.",
+            checkT:
+              "상대의 마음을 추측하기 전에 내가 원하는 관계를 한 문장으로 적기",
+            checkF:
+              "서운함을 참기 전에 공격 없이 말할 수 있는 한 문장 만들어보기",
+          },
+          path: {
+            titleT:
+              "길을 몰라서가 아니라 하나를 고르면 다른 가능성을 잃을까 멈춘 타입",
+            titleF: "내가 원하는 길보다 모두가 안심할 길을 먼저 골랐던 마음",
+            strongT:
+              "머릿속에는 하고 싶은 게 여러 개인데 하나를 고르면 나머지를 포기하는 것 같아 계속 비교만 해. 능력이 없어서 못 정하는 게 아니라, 틀린 선택을 했다는 판정을 받기 싫어서 가능성만 들고 있는 거야.",
+            weakT:
+              "정보를 모으고 계획을 다듬는 동안 시작 시점은 자꾸 뒤로 밀려. 더 알아야 해서가 아니라 첫 결과가 기대보다 작을 때 자존심이 다칠까 봐 준비 단계에 머무는 쪽이야.",
+            strongF:
+              "가슴 뛰는 길이 따로 있어도 가족이나 주변이 걱정할 선택은 쉽게 못 했지. 네 꿈이 약해서가 아니라 소중한 사람을 불안하게 만들고 싶지 않아 마음을 접어둔 거야.",
+            weakF:
+              "남들보다 늦었다는 생각이 들면 내가 원하는지보다 ‘지금 시작해도 되나’를 먼저 물었지. 길이 없는 게 아니라 비교로 지친 마음이 출발할 힘을 잃은 거야.",
+            checkT: "평생의 정답 대신 14일 동안 검증할 작은 실험 하나 정하기",
+            checkF: "남의 기대를 뺀 뒤에도 해보고 싶은 일을 세 줄로 적어보기",
+          },
+          people: {
+            titleT: "괜찮다 해놓고 속으로 감점하다 어느 날 조용히 끊는 타입",
+            titleF: "상대 기분은 다 알아채면서 내 서운함은 뒤로 미뤄둔 마음",
+            strongT:
+              "선 넘는 말을 들어도 그 자리에서는 웃어넘기고 속으로만 점수를 깎아. 설명해도 안 바뀔 사람이라고 결론 나면 예고 없이 셔터를 내리는데, 차가워서가 아니라 더 얽혀 에너지 쓰는 걸 싫어하는 거야.",
+            weakT:
+              "불편해도 관계가 틀어질 장면부터 계산하느라 바로 말하지 못해. 그러다 혼자 복기하며 피로가 커지고, 결국 답장을 늦추는 방식으로 거리를 만드는 쪽이야.",
+            strongF:
+              "상대 표정이 굳으면 네가 잘못한 게 없어도 분위기를 먼저 풀었지. 모두 편했으면 하는 마음 때문에 정작 네 서운함은 늘 대화의 맨 뒤로 밀렸던 거야.",
+            weakF:
+              "무심한 말 한마디도 오래 남는데 예민해 보일까 봐 웃어넘겼지. 참을성이 많은 게 아니라 관계를 잃을까 봐 네 감정을 작게 만든 시간이 길었던 거야.",
+            checkT:
+              "불편함이 3까지 차기 전에 사실·감정·요청을 한 문장씩 말하기",
+            checkF:
+              "오늘 한 번은 상대 기분을 해결하기 전에 내 감정부터 이름 붙이기",
+          },
+          mental: {
+            titleT:
+              "무너지기 직전까지 멀쩡한 척하다 혼자 있을 때 전원 꺼지는 타입",
+            titleF: "쉬고 있어도 마음 한쪽에서는 계속 자신을 재촉했던 이유",
+            strongT:
+              "힘들수록 할 일을 더 쥐고 버티다가 안전한 공간에 들어가면 아무것도 못 하게 되지. 갑자기 게을러진 게 아니라 낮 동안 통제하던 피로가 한꺼번에 청구되는 거야.",
+            weakT:
+              "해야 할 일을 생각만 해도 머릿속에서 실패 장면부터 돌아가고, 피하려고 숏폼을 켰다가 더 자책하지. 의지가 약해서가 아니라 긴장한 뇌가 가장 쉬운 자극으로 도망가는 패턴이야.",
+            strongF:
+              "주변이 힘들 때는 누구보다 잘 버티면서 정작 네가 지치면 ‘이 정도로 힘들어하면 안 되는데’라고 눌렀지. 쉬지 못한 이유는 할 일이 많아서만이 아니라 멈추면 쓸모없는 사람이 된 것 같아서였어.",
+            weakF:
+              "쉬는 동안에도 밀린 일과 뒤처지는 장면이 떠올라 몸만 누워 있고 마음은 계속 일했지. 회복이 느린 게 아니라 죄책감 때문에 휴식이 휴식으로 끝나지 못했던 거야.",
+            checkT:
+              "오늘 할 일에서 반드시 끝낼 하나만 남기고 나머지는 내일로 보내기",
+            checkF: "30분만큼은 생산성 없이 쉬어도 된다고 일정표에 직접 적기",
+          },
+        };
+
+        const scene = scenes[concernKey] || scenes.money;
+        const title = isT ? scene.titleT : scene.titleF;
+        const opening = isT
+          ? isStrong
+            ? scene.strongT
+            : scene.weakT
+          : isStrong
+            ? scene.strongF
+            : scene.weakF;
+        const nature = dayNatureMap[dayGan] || "속기준을 쉽게 드러내지 않는";
+        const need =
+          needMap[dominant] || "내가 통제할 수 없는 상황이 생기는 순간";
+        const inner = isT
+          ? `${nature} 성향${dominant ? `에 <b>${escapeHTML(dominant)}</b> 기운이 겹쳐` : "이라"}, ${need} 방어가 먼저 켜져. 겉으로는 계산하고 정리하는 것처럼 보여도, 속마음의 핵심은 손해보다 <b>주도권을 잃지 않는 것</b>에 있어.`
+          : `${nature} 성향${dominant ? `에 <b>${escapeHTML(dominant)}</b> 기운이 겹쳐` : "이라"}, 사실 ${need} 마음이 가장 먼저 다쳐. 겉으로는 괜찮다고 넘겼지만, 속으로 원한 건 거창한 보상이 아니라 <b>안전하다는 확신</b>이었어.`;
+        const clash = relations.hasChung
+          ? isT
+            ? "원국의 충도 함께 보여서 오래 참다가 한 번에 방향을 바꾸는 반응이 더 선명해."
+            : "원국의 충도 함께 보여서 참고 싶은 마음과 벗어나고 싶은 마음이 안에서 자주 부딪혔어."
+          : "이번 원국에서는 감정을 즉시 뒤집기보다 속에서 충분히 판단한 뒤 움직이는 흐름이 더 보여.";
+
+        const basis = [
+          dayGan ? `${dayGan} 일간` : "일간 확인",
+          gyeokName,
+          strength,
+          dominant ? `${dominant} 반복` : "십신 분산",
+          strongest ? `${strongest} 강` : "",
+          weakest ? `${weakest} 약` : "",
+          hourKnown ? "시주 포함" : "시주 제외",
+        ]
+          .filter(Boolean)
+          .map(escapeHTML)
+          .join(" · ");
+
+        return {
+          badge: `${concernLabel} 속마음 적중`,
+          title,
+          desc: `${opening}<br><br>${inner} ${clash}<div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-[10.5px] leading-relaxed text-slate-600"><b class="text-slate-800">언니가 잡은 사주 근거</b><br>${basis}</div>`,
+          checklist: isT ? scene.checkT : scene.checkF,
+        };
+      }
+
       function generateConcernNotes(data, mode) {
         const isT = mode === "T";
         const rawConcern = data.concernKey || "money";
@@ -3957,11 +4140,6 @@
         if (!source) {
           return generateDynamicDeepSolution(data, mode);
         }
-
-        const previewText =
-          typeof source.preview === "function"
-            ? source.preview()
-            : source.preview || "";
 
         const act1 =
           source.acts && source.acts[0]
@@ -4006,15 +4184,20 @@
           "2026-2027 타임라인",
         ];
 
+        const noteOne = buildNoteOneInsight(
+          data,
+          concernKey,
+          concernLabel,
+          isT,
+        );
+
         return [
           {
             themeNum: "01",
-            badge: badges[0],
-            title: titles[0],
-            desc: previewText,
-            checklist: isT
-              ? `${concernLabel}에서 남들 기준 말고 내 기준부터 세우기`
-              : `${concernLabel} 때문에 힘들었던 내 마음부터 인정해주기`,
+            badge: noteOne.badge,
+            title: noteOne.title,
+            desc: noteOne.desc,
+            checklist: noteOne.checklist,
           },
           {
             themeNum: "02",
