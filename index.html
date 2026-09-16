@@ -7038,7 +7038,7 @@ return [
         const basis = document.getElementById("pillarBasisTag");
         if (basis) {
           const correction = data?.calendarMeta?.hourCorrectionMinutes;
-          basis.textContent = Number.isFinite(correction)
+          basis.textContent = data?.pillars?.hour && Number.isFinite(correction)
             ? `한국 만세력 기준 · 시간 ${correction > 0 ? "+" : ""}${correction}분 보정`
             : "한국 만세력 기준";
         }

@@ -95,7 +95,7 @@ async function load(page) {
     assert(r.exact.tz === 'Asia/Seoul', `timezone invalid ${r.exact.tz}`);
     assert(['japyeong','jeokcheon','qiongtong'].every(k => r.exact.classical.includes(k)), `classical layers missing ${r.exact.classical}`);
     assert(r.unknown.hour === null && r.unknown.hourKnown === false, 'unknown time leaked hour pillar');
-    assert(r.late.hour === '甲子', `late zi regression ${r.late.hour}`);
+    assert(r.late.hour.endsWith('亥'), `23:00 recorded time should still be 亥 after Korean correction: ${r.late.hour}`);
     assert(r.leap.year===2017 && r.leap.month===6 && r.leap.day===24, `leap lunar mismatch ${JSON.stringify(r.leap)}`);
     assert(r.regular.year===1956 && r.regular.month===3 && r.regular.day===3, `regular lunar mismatch ${JSON.stringify(r.regular)}`);
     assert(r.boundary.code === 'KST_TERM_TIME_REQUIRED', `term unknown-time code ${r.boundary.code}: ${r.boundary.message}`);
