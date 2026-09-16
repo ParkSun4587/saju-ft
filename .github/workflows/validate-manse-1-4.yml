@@ -1,4 +1,5 @@
 name: Validate Korean manse 1-4
+# Regression gate for Korean calendar stages 1-4.
 on:
   push:
     branches: [manse-korea-stage1]
