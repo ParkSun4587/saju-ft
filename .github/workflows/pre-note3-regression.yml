@@ -15,11 +15,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Install Playwright
+      - name: Install test dependencies
         run: |
           npm init -y >/dev/null 2>&1
-          npm install --no-save playwright >/dev/null
+          npm install --no-save playwright lunar-javascript korean-lunar-calendar >/dev/null
           npx playwright install --with-deps chromium >/dev/null
+          pip install sxtwl >/dev/null
       - name: Serve app
         run: |
           python3 -m http.server 4173 >/tmp/saju-http.log 2>&1 &
@@ -27,8 +28,6 @@ jobs:
           curl -f http://127.0.0.1:4173/index.html >/dev/null
       - name: Run existing manse 1-4 validation
         run: |
-          pip install sxtwl >/dev/null
-          node -e "require('child_process').execSync('npm install --no-save lunar-javascript korean-lunar-calendar', {stdio:'inherit'})"
           python3 tests/generate_sxtwl_cases.py
           node tests/validate_manse_1_4.cjs
       - name: Run existing classical 5-7 validation
