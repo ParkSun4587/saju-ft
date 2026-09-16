@@ -994,6 +994,67 @@
                     <p class="text-[11px] text-slate-600 font-bold tracking-tight">터치해서 모드 즉시 변경하기 🔄</p>
                 </div>
             </div>
+                </div>
+
+        <footer
+            id="mainFooter"
+            class="hidden w-full mt-8 mb-8 px-4 text-center space-y-3 border-t border-rose-200/50 pt-5"
+        >
+            <div class="text-[11px] text-slate-500 space-y-1 leading-relaxed font-medium">
+                <p>
+                    <span class="font-bold text-slate-700">상호:</span>
+                    어떤언니
+                    &nbsp;|&nbsp;
+                    <span class="font-bold text-slate-700">대표:</span>
+                    박소영
+                </p>
+
+                <p>
+                    <span class="font-bold text-slate-700">사업자등록번호:</span>
+                    424-40-01405
+                </p>
+
+                <p>
+                    <span class="font-bold text-slate-700">통신판매업 신고번호:</span>
+                    제 2026-울산남구-0547 호
+                </p>
+
+                <p>
+                    <span class="font-bold text-slate-700">소재지:</span>
+                    울산광역시 남구 중앙로214번길 12, 2층 202호 S25호
+                </p>
+
+                <p>
+                    <span class="font-bold text-slate-700">고객센터:</span>
+                    support@sajuft.com (070-4509-2503)
+                </p>
+            </div>
+
+            <div class="flex justify-center items-center gap-3 text-[11px] text-slate-600 font-bold pt-1">
+                <button
+                    type="button"
+                    onclick="openPolicyModal('terms')"
+                    class="hover:text-slate-900 underline bg-transparent border-0 cursor-pointer"
+                >
+                    이용약관 및 환불규정
+                </button>
+
+                <span>·</span>
+
+                <button
+                    type="button"
+                    onclick="openPolicyModal('privacy')"
+                    class="hover:text-slate-900 underline bg-transparent border-0 cursor-pointer"
+                >
+                    개인정보처리방침
+                </button>
+            </div>
+
+            <p class="text-[10px] text-slate-400 tracking-tight pb-2">
+                © 2026 어떤언니. All rights reserved.
+            </p>
+        </footer>
+
         </div>
     </main>
 
@@ -1064,44 +1125,7 @@
         </div>
     </div>
 
-    <!-- 7. 토스페이먼츠 심사 100% 통과용 콤팩트 푸터 (모바일 430px 폭 고정) -->
-    <footer id="mainFooter" class="hidden w-full max-w-[430px] mx-auto mt-8 mb-8 px-4 text-center space-y-3 border-t border-rose-200/50 pt-5">
-        
-        <!-- 법적 필수 사업자 정보 (즉시 노출형) -->
-        <div class="text-[11px] text-slate-500 space-y-1 leading-relaxed font-medium">
-            <p><span class="font-bold text-slate-700">상호:</span> 어떤언니 &nbsp;|&nbsp; <span class="font-bold text-slate-700">대표:</span> 박소영</p>
-            <p><span class="font-bold text-slate-700">사업자등록번호:</span> 424-40-01405</p>
-            <p><span class="font-bold text-slate-700">통신판매업 신고번호:</span> 제 2026-울산남구-0547 호</p>
-            <p><span class="font-bold text-slate-700">소재지:</span> 울산광역시 남구 중앙로214번길 12, 2층 202호 S25호</p>
-            <p><span class="font-bold text-slate-700">고객센터:</span> support@sajuft.com (070-4509-2503)</p>
-        </div>
-
-        <!-- 약관 및 개인정보처리방침 링크 -->
-        <div class="flex justify-center items-center gap-3 text-[11px] text-slate-600 font-bold pt-1">
-            <button type="button" onclick="openPolicyModal('terms')" class="hover:text-slate-900 underline bg-transparent border-0 cursor-pointer">이용약관 및 환불규정</button>
-            <span>·</span>
-            <button type="button" onclick="openPolicyModal('privacy')" class="hover:text-slate-900 underline bg-transparent border-0 cursor-pointer">개인정보처리방침</button>
-        </div>
-
-        <p class="text-[10px] text-slate-400 tracking-tight pb-2">
-            © 2026 어떤언니. All rights reserved.
-        </p>
-    </footer>
-
-    <!-- 사업자 정보 펼치기/접기 스크립트 -->
-    <script>
-        function toggleFooterBizInfo() {
-            const box = document.getElementById('footerBizBox');
-            const arrow = document.getElementById('bizToggleArrow');
-            if (box.classList.contains('hidden')) {
-                box.classList.remove('hidden');
-                arrow.innerText = '▲';
-            } else {
-                box.classList.add('hidden');
-                arrow.innerText = '▼';
-            }
-        }
-    </script>
+        <!-- 푸터는 결과 화면 내부에 배치했습니다. -->
 
     <script>
         
@@ -4214,15 +4238,24 @@ function renderResultView(data) {
             const isT = data.currentMode === 'T';
             updateResultContentByMode(data.currentMode);
 
-            resultSec.style.display = 'block';
-            
-            // 쫀득한 도파민 팝 애니메이션 클래스 부여
-            resultSec.classList.remove('dopamine-reveal');
-            void resultSec.offsetWidth; // 애니메이션 리셋 트리거
-            resultSec.classList.add('dopamine-reveal');
-            const mainFooter = document.getElementById('mainFooter');
-            if (mainFooter) mainFooter.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            resultSec.scrollTop = 0;
+resultSec.style.display = 'block';
+
+// 쫀득한 도파민 팝 애니메이션 클래스 부여
+resultSec.classList.remove('dopamine-reveal');
+void resultSec.offsetWidth;
+resultSec.classList.add('dopamine-reveal');
+
+const mainFooter =
+    document.getElementById('mainFooter');
+
+if (mainFooter) {
+    mainFooter.classList.remove('hidden');
+}
+
+requestAnimationFrame(() => {
+    resultSec.scrollTop = 0;
+});
 
             setTimeout(() => {
                 const s = data.stats;
@@ -4262,8 +4295,9 @@ function renderResultView(data) {
                     if (savedToken) {
                         verifyAccessToken(currentUniqueKey, savedToken).then(state => {
                             if (state === 'valid') {
-                                unlockFullReport();
-                            } else {
+    unlockFullReport(null, true);
+}
+                            else {
                                 if (state === 'invalid') localStorage.removeItem('tok_' + currentUniqueKey);
                                 showLockedOverlayState(overlay, wrapper, vipBadge, reAnalyzeBox);
                             }
@@ -4682,11 +4716,18 @@ if (paymentMethodsWidget) {
                 wrapper.classList.remove('pb-36');
                 wrapper.classList.remove('min-h-[640px]');
 
-                // 결제 해금 후 비밀 메모장 영역으로 부드럽게 자동 이동
-                const notesContainer = document.getElementById('notesListContainer');
-                if (notesContainer) {
-                    notesContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                // 실제 결제를 막 끝낸 경우에만 메모장으로 이동한다.
+if (!skipScroll) {
+    const notesContainer =
+        document.getElementById('notesListContainer');
+
+    if (notesContainer) {
+        notesContainer.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
             }
             
             if (msg) showToast(msg);
