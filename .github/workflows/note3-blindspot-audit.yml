@@ -6,29 +6,8 @@ on:
       - note3-blindspot-v1
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  patch:
-    if: ${{ !contains(github.event.head_commit.message, 'Apply NOTE3 blind spot builder') }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: note3-blindspot-v1
-      - name: Apply guarded NOTE3 patch
-        run: python3 tests/patch_note3_blindspot.py
-      - name: Commit patched NOTE3 and tests
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html tests/pre_note3_browser_regression_v4.cjs
-          git commit -m "Apply NOTE3 blind spot builder"
-          git push origin HEAD:note3-blindspot-v1
-
   regression:
-    if: ${{ contains(github.event.head_commit.message, 'Apply NOTE3 blind spot builder') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
