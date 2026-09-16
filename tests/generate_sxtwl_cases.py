@@ -17,6 +17,8 @@ JQ_NAMES = [
 JIE_INDEX = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23}
 BEIJING = dt.timezone(dt.timedelta(hours=8))
 SEOUL = ZoneInfo("Asia/Seoul")
+KOREAN_MANSE = dt.timezone(dt.timedelta(hours=8, minutes=30))
+UTC = dt.timezone.utc
 
 
 def gz(g):
@@ -65,17 +67,28 @@ while len(solar) < 3000:
 
 hour_cases = []
 for base in rng.sample(solar, 600):
-    day = sxtwl.fromSolar(base["Y"], base["M"], base["D"])
-    d_gz = day.getDayGZ()
     h = rng.randint(0, 23)
+    mi = rng.randint(0, 59)
+    # Input is a Korean wall clock. Convert that instant to the Korean manse
+    # reference meridian clock (+08:30) before choosing day/hour pillars.
+    wall = dt.datetime(base["Y"], base["M"], base["D"], h, mi, tzinfo=SEOUL)
+    manse = wall.astimezone(UTC).astimezone(KOREAN_MANSE)
+    day = sxtwl.fromSolar(manse.year, manse.month, manse.day)
+    d_gz = day.getDayGZ()
     hour_cases.append(
         {
             "Y": base["Y"],
             "M": base["M"],
             "D": base["D"],
             "h": h,
+            "mi": mi,
+            "manseY": manse.year,
+            "manseM": manse.month,
+            "manseD": manse.day,
+            "manseH": manse.hour,
+            "manseMi": manse.minute,
             "day": gz(d_gz),
-            "hour": gz(sxtwl.getShiGz(d_gz.tg, h)),
+            "hour": gz(sxtwl.getShiGz(d_gz.tg, manse.hour)),
         }
     )
 

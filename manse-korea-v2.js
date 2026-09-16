@@ -2,6 +2,10 @@
   "use strict";
   const SEOUL_TZ = "Asia/Seoul";
   const CST_OFFSET_MINUTES = 8 * 60;
+  // 한국식 만세력 호환 기준시각: 동경 127.5도(UTC+08:30).
+  // 현대 KST(UTC+09:00)에서는 출생기록 시각보다 30분 이르게 계산된다.
+  // 과거 표준시/서머타임은 IANA Asia/Seoul 실제 오프셋을 먼저 풀고 같은 기준시각으로 환산한다.
+  const KOREAN_MANSE_OFFSET_MINUTES = 8 * 60 + 30;
   const DAY_BOUNDARY_SECT = 2;
   const HIDDEN_GANS = {
     子: ["癸"],
@@ -146,6 +150,28 @@
       seoulOffsetMinutes: resolved.offsetMinutes,
     };
   }
+  function seoulWallToManseFields(y, m, d, h, mi) {
+    const resolved = seoulWallTimeToUtcMs(y, m, d, h, mi);
+    const fields = utcMsToFixedOffsetFields(
+      resolved.utcMs,
+      KOREAN_MANSE_OFFSET_MINUTES,
+    );
+    const inputWallMs = Date.UTC(y, m - 1, d, h, mi, 0);
+    const manseWallMs = Date.UTC(
+      fields.year,
+      fields.month - 1,
+      fields.day,
+      fields.hour,
+      fields.minute,
+      fields.second,
+    );
+    return {
+      ...fields,
+      utcMs: resolved.utcMs,
+      seoulOffsetMinutes: resolved.offsetMinutes,
+      correctionMinutes: Math.round((manseWallMs - inputWallMs) / 60000),
+    };
+  }
   function cstSolarToUtcMs(solarObj) {
     return (
       Date.UTC(
@@ -265,17 +291,29 @@
       err.code = "KST_TERM_TIME_REQUIRED";
       throw err;
     }
-    const civil = makeEightChar(y, m, d, h, mi);
+    // 입력한 병원/가족 기록 시각은 실제 한국 시각으로 먼저 해석한다.
+    const inputCivil = makeEightChar(y, m, d, h, mi);
+    // 일주·시주는 한국 만세력에서 널리 쓰는 127.5E 기준시각으로 환산한다.
+    // 예: 1998-02-21 03:10 KST -> 02:40 -> 축시.
+    const manseClock = seoulWallToManseFields(y, m, d, h, mi);
+    const pillarCivil = makeEightChar(
+      manseClock.year,
+      manseClock.month,
+      manseClock.day,
+      manseClock.hour,
+      manseClock.minute,
+    );
+    // 연주·월주의 절입 경계는 시계를 임의로 30분 당기지 않고 실제 순간으로 판정한다.
     const term = correctedTermPillars(y, m, d, h, mi);
     const daysFromJie = daysFromJieForTerm(term);
-    const baZi = buildHybridBaZi(civil.baZi, term.baZi);
-    const civilYear = `${civil.baZi.getYearGan()}${civil.baZi.getYearZhi()}`;
-    const civilMonth = `${civil.baZi.getMonthGan()}${civil.baZi.getMonthZhi()}`;
+    const baZi = buildHybridBaZi(pillarCivil.baZi, term.baZi);
+    const civilYear = `${inputCivil.baZi.getYearGan()}${inputCivil.baZi.getYearZhi()}`;
+    const civilMonth = `${inputCivil.baZi.getMonthGan()}${inputCivil.baZi.getMonthZhi()}`;
     const correctedYear = `${term.yearGan}${term.yearZhi}`;
     const correctedMonth = `${term.monthGan}${term.monthZhi}`;
     return {
-      solar: civil.solar,
-      lunar: civil.lunar,
+      solar: inputCivil.solar,
+      lunar: inputCivil.lunar,
       baZi,
       termBaZi: term.baZi,
       calendarMeta: {
@@ -284,7 +322,13 @@
         solarTermReference: "same-instant UTC+08 normalization",
         dayBoundarySect: DAY_BOUNDARY_SECT,
         dayBoundaryRule:
-          "23:00~23:59 일주는 당일 유지, 子시 시주는 야자시 시두 규칙 적용",
+          "한국 만세력 기준시각(동경 127.5도 환산)에서 23:00~23:59 일주는 당일 유지",
+        hourCorrectionRule:
+          "입력한 한국 현지시각을 실제 UTC 순간으로 해석한 뒤 동경 127.5도(UTC+08:30) 기준시각으로 환산",
+        manseReferenceOffsetMinutes: KOREAN_MANSE_OFFSET_MINUTES,
+        hourCorrectionMinutes: manseClock.correctionMinutes,
+        inputClock: `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")} ${String(h).padStart(2, "0")}:${String(mi).padStart(2, "0")}`,
+        manseClock: `${String(manseClock.year).padStart(4, "0")}-${String(manseClock.month).padStart(2, "0")}-${String(manseClock.day).padStart(2, "0")} ${String(manseClock.hour).padStart(2, "0")}:${String(manseClock.minute).padStart(2, "0")}`,
         hourKnown: !!hourKnown,
         termBoundaryAdjusted:
           civilYear !== correctedYear || civilMonth !== correctedMonth,
@@ -369,11 +413,12 @@
   global.koreanLunarToSolar = koreanLunarToSolar;
   global.createKoreanHybridBaZi = createKoreanHybridBaZi;
   global.__MANSE_KOREA_V2__ = {
-    version: "2.0.0",
+    version: "2.1.0",
     timeZone: SEOUL_TZ,
     dayBoundarySect: DAY_BOUNDARY_SECT,
     seoulWallTimeToUtcMs,
     seoulLocalToCstFields,
+    seoulWallToManseFields,
     isTermBoundaryDate,
     correctedTermPillars,
     daysFromJieForTerm,

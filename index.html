@@ -1479,6 +1479,31 @@
             </div>
           </div>
         </div>
+        <!-- [내 사주 원국 4주 카드] -->
+        <div class="card-box p-4 rounded-3xl text-left space-y-2.5">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+            <span class="text-xs font-black text-slate-800 tracking-wider">내 사주 원국</span>
+            <span id="pillarBasisTag" class="text-[10px] font-bold text-slate-500">한국 만세력 기준</span>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5 text-center">
+            <div class="rounded-xl bg-slate-50 border border-slate-100 px-1.5 py-2">
+              <div class="text-[9px] font-bold text-slate-400">년주</div>
+              <div id="pillarYear" class="mt-1 text-[14px] font-black text-slate-800">-</div>
+            </div>
+            <div class="rounded-xl bg-slate-50 border border-slate-100 px-1.5 py-2">
+              <div class="text-[9px] font-bold text-slate-400">월주</div>
+              <div id="pillarMonth" class="mt-1 text-[14px] font-black text-slate-800">-</div>
+            </div>
+            <div class="rounded-xl bg-slate-50 border border-slate-100 px-1.5 py-2">
+              <div class="text-[9px] font-bold text-slate-400">일주</div>
+              <div id="pillarDay" class="mt-1 text-[14px] font-black text-slate-800">-</div>
+            </div>
+            <div class="rounded-xl bg-slate-50 border border-slate-100 px-1.5 py-2">
+              <div class="text-[9px] font-bold text-slate-400">시주</div>
+              <div id="pillarHour" class="mt-1 text-[14px] font-black text-slate-800">-</div>
+            </div>
+          </div>
+        </div>
         <!-- [내 사주 5대 오행 분포 카드] -->
         <div class="card-box p-4 rounded-3xl text-left space-y-2.5">
           <div
@@ -1492,6 +1517,9 @@
               class="text-[11px] font-extrabold text-slate-600"
             ></span>
           </div>
+          <p class="text-[9.5px] font-semibold text-slate-400 leading-relaxed">
+            개수는 원국 겉글자 기준 · %는 지장간과 월령까지 반영한 실제 세력
+          </p>
           <div
             class="grid grid-cols-5 gap-1.5 text-center text-[10px] font-bold pt-1"
             id="ohengBarContainer"
@@ -6648,11 +6676,13 @@ return [
 
         const lowestStat = getLowestStatInfo(data.stats);
         const template = data.rawSolutionTemplate[mode];
+        renderPillarTable(data);
         renderOhengDistribution(
           data.elements,
           data.pillars && data.pillars.day ? data.pillars.day.gan : "甲",
           data.dayOheng,
           data.pillars,
+          data.elementProfiles || data.analysisProfile?.elementProfiles || null,
         );
 
         // 카톡 상담 결과 헤더 언니 프로필 및 맞춤 대사 연동
@@ -6982,12 +7012,46 @@ return [
         }
       } // <--- 바로 이 중괄호 밑에 엔터 치고 붙여넣기!
 
-      function renderOhengDistribution(elements, dayGan, dayOheng, pillars) {
+      function renderPillarTable(data) {
+        const GAN_KR = {
+          甲: "갑", 乙: "을", 丙: "병", 丁: "정", 戊: "무",
+          己: "기", 庚: "경", 辛: "신", 壬: "임", 癸: "계",
+        };
+        const ZHI_KR = {
+          子: "자", 丑: "축", 寅: "인", 卯: "묘", 辰: "진", 巳: "사",
+          午: "오", 未: "미", 申: "신", 酉: "유", 戌: "술", 亥: "해",
+        };
+        const toKr = (pillar) =>
+          pillar && pillar.gan && pillar.zhi
+            ? `${GAN_KR[pillar.gan] || pillar.gan}${ZHI_KR[pillar.zhi] || pillar.zhi}`
+            : "시간 모름";
+        const ids = {
+          year: "pillarYear",
+          month: "pillarMonth",
+          day: "pillarDay",
+          hour: "pillarHour",
+        };
+        Object.entries(ids).forEach(([key, id]) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = toKr(data?.pillars?.[key]);
+        });
+        const basis = document.getElementById("pillarBasisTag");
+        if (basis) {
+          const correction = data?.calendarMeta?.hourCorrectionMinutes;
+          basis.textContent = Number.isFinite(correction)
+            ? `한국 만세력 기준 · 시간 ${correction > 0 ? "+" : ""}${correction}분 보정`
+            : "한국 만세력 기준";
+        }
+      }
+
+      function renderOhengDistribution(elements, dayGan, dayOheng, pillars, elementProfiles) {
         const container = document.getElementById("ohengBarContainer");
         const summaryTxt = document.getElementById("ohengSummaryTxt");
         const dayMasterTag = document.getElementById("dayMasterTag");
         if (!container || !elements) return;
 
+        const weighted = elementProfiles?.influence || elements;
+        const profileRaw = elementProfiles?.raw || null;
         const rawChars = [];
         if (pillars) {
           if (pillars.year) rawChars.push(pillars.year.gan, pillars.year.zhi);
@@ -6996,23 +7060,33 @@ return [
           if (pillars.day) rawChars.push(pillars.day.gan, pillars.day.zhi);
           if (pillars.hour) rawChars.push(pillars.hour.gan, pillars.hour.zhi);
         }
-        const realCounts = { mok: 0, hwa: 0, to: 0, geum: 0, su: 0 };
-        rawChars.forEach((ch) => {
-          const t = OHENG_MAP[ch];
-          if (t) realCounts[t]++;
-        });
+        const realCounts = profileRaw
+          ? {
+              mok: profileRaw.mok || 0,
+              hwa: profileRaw.hwa || 0,
+              to: profileRaw.to || 0,
+              geum: profileRaw.geum || 0,
+              su: profileRaw.su || 0,
+            }
+          : { mok: 0, hwa: 0, to: 0, geum: 0, su: 0 };
+        if (!profileRaw) {
+          rawChars.forEach((ch) => {
+            const t = OHENG_MAP[ch];
+            if (t) realCounts[t]++;
+          });
+        }
 
         const total =
-          elements.mok +
-            elements.hwa +
-            elements.to +
-            elements.geum +
-            elements.su || 1;
-        const pMok = Math.round((elements.mok / total) * 100);
-        const pHwa = Math.round((elements.hwa / total) * 100);
-        const pTo = Math.round((elements.to / total) * 100);
-        const pGeum = Math.round((elements.geum / total) * 100);
-        const pSu = Math.round((elements.su / total) * 100);
+          weighted.mok +
+            weighted.hwa +
+            weighted.to +
+            weighted.geum +
+            weighted.su || 1;
+        const pMok = Math.round((weighted.mok / total) * 100);
+        const pHwa = Math.round((weighted.hwa / total) * 100);
+        const pTo = Math.round((weighted.to / total) * 100);
+        const pGeum = Math.round((weighted.geum / total) * 100);
+        const pSu = Math.round((weighted.su / total) * 100);
 
         const ohengList = [
           {

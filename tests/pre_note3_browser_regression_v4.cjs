@@ -63,7 +63,11 @@ async function load(page) {
         exact: {
           year: exact.pillars.year.gan + exact.pillars.year.zhi,
           month: exact.pillars.month.gan + exact.pillars.month.zhi,
+          day: exact.pillars.day.gan + exact.pillars.day.zhi,
           hour: exact.pillars.hour.gan + exact.pillars.hour.zhi,
+          correction: exact.calendarMeta?.hourCorrectionMinutes,
+          manseClock: exact.calendarMeta?.manseClock,
+          rawElements: exact.elementProfiles?.raw,
           strength: exact.analysisProfile?.dayMaster?.strength,
           ratio: exact.analysisProfile?.dayMaster?.supportRatio,
           gyeok: exact.gyeokguk?.name,
@@ -78,6 +82,12 @@ async function load(page) {
     });
     assert(r.exact.year === '戊寅', `1998 year drift ${r.exact.year}`);
     assert(r.exact.month === '甲寅', `1998 month drift ${r.exact.month}`);
+    assert(r.exact.day === '己亥', `1998 day drift ${r.exact.day}`);
+    assert(r.exact.hour === '乙丑', `1998 corrected hour drift ${r.exact.hour}`);
+    assert(r.exact.correction === -30, `1998 correction drift ${r.exact.correction}`);
+    assert(r.exact.manseClock.endsWith('02:40'), `1998 manse clock drift ${r.exact.manseClock}`);
+    assert(JSON.stringify(r.exact.rawElements) === JSON.stringify({mok:4,hwa:0,to:3,geum:0,su:1}),
+      `1998 raw element drift ${JSON.stringify(r.exact.rawElements)}`);
     assert(['신강','중화','신약'].includes(r.exact.strength), `strength invalid ${r.exact.strength}`);
     assert(Number.isFinite(r.exact.ratio), `strength ratio invalid ${r.exact.ratio}`);
     assert(r.exact.gyeok === '정관격', `1998 gyeok drift ${r.exact.gyeok}`);
@@ -207,6 +217,14 @@ async function load(page) {
         failureToast:visible.includes('만세력 연산에 실패했습니다') || visible.includes('연산 중 오류가 발생했습니다'),
         resultVisible:document.getElementById('resultSection')?.style.display !== 'none',
         firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('NOTE 01'),
+        pillarText:[
+          document.getElementById('pillarYear')?.innerText || '',
+          document.getElementById('pillarMonth')?.innerText || '',
+          document.getElementById('pillarDay')?.innerText || '',
+          document.getElementById('pillarHour')?.innerText || '',
+        ],
+        pillarBasis:document.getElementById('pillarBasisTag')?.innerText || '',
+        ohengText:document.getElementById('ohengBarContainer')?.innerText || '',
       };
     }, c);
 
@@ -229,6 +247,16 @@ async function load(page) {
     assert(!report.failureToast, `${c.id}: calculation failure toast visible`);
     assert(report.resultVisible, `${c.id}: result section not visible`);
     assert(report.firstNoteRendered, `${c.id}: NOTE01 not rendered into result DOM`);
+    if (c.id === 'user-exact-love-F') {
+      assert(report.pillarText.join(',') === '무인,갑인,기해,을축',
+        `${c.id}: pillar UI drift ${report.pillarText.join(',')}`);
+      assert(report.pillarBasis.includes('-30분 보정'),
+        `${c.id}: correction basis missing ${report.pillarBasis}`);
+      assert(report.ohengText.includes('목\n(4개)') || report.ohengText.includes('목 (4개)') || report.ohengText.includes('목(4개)'),
+        `${c.id}: mok raw count missing ${report.ohengText}`);
+      assert(report.ohengText.includes('화\n(0개)') || report.ohengText.includes('화 (0개)') || report.ohengText.includes('화(0개)'),
+        `${c.id}: hwa raw count should be zero ${report.ohengText}`);
+    }
     const unexpected = errs.filter(x => !isExpectedBoundaryDiagnostic(x));
     assert(unexpected.length === 0, `${c.id}: browser errors: ${unexpected.join(' | ')}`);
     reports.push({id:c.id, strength:report.strength, gyeok:report.gyeok, yongshin:report.yongshin});

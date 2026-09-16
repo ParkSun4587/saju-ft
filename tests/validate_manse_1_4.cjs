@@ -30,7 +30,7 @@ for (const c of ref.solar) {
 
 let hourOk = 0;
 for (const c of ref.hours) {
-  const r = global.createKoreanHybridBaZi(c.Y, c.M, c.D, c.h, 0, true);
+  const r = global.createKoreanHybridBaZi(c.Y, c.M, c.D, c.h, c.mi, true);
   assert(gzDay(r.baZi) === c.day, `hour-case day ${c.Y}-${c.M}-${c.D} ${c.h}:00`);
   assert(gzHour(r.baZi) === c.hour, `hour ${c.Y}-${c.M}-${c.D} ${c.h}:00: ${gzHour(r.baZi)} != ${c.hour}`);
   hourOk++;
@@ -71,17 +71,31 @@ for (const [Y,M,D,h,mi,expected] of offsets) {
   assert(got === expected, `Seoul UTC offset ${Y}-${M}-${D}: ${got} != ${expected}`);
 }
 
-const fixed23 = [
-  [2000,1,1,'甲子'],
-  [1990,5,15,'戊子'],
-  [1985,8,8,'丙子'],
-];
-for (const [Y,M,D,expectedHour] of fixed23) {
-  const r22 = global.createKoreanHybridBaZi(Y,M,D,22,0,true);
-  const r23 = global.createKoreanHybridBaZi(Y,M,D,23,0,true);
-  assert(gzDay(r22.baZi) === gzDay(r23.baZi), `${Y}-${M}-${D} 23:00 rolled day pillar`);
-  assert(gzHour(r23.baZi) === expectedHour, `${Y}-${M}-${D} 23:00 ${gzHour(r23.baZi)} != ${expectedHour}`);
-}
+// Korean manse reference clock shifts modern KST by -30 minutes.
+// Therefore the 子-hour boundary is 23:30 on the recorded modern wall clock.
+const beforeZi = global.createKoreanHybridBaZi(2000,1,1,23,29,true);
+const atZi = global.createKoreanHybridBaZi(2000,1,1,23,30,true);
+assert(beforeZi.baZi.getTimeZhi() === '亥', `23:29 should remain 亥, got ${beforeZi.baZi.getTimeZhi()}`);
+assert(atZi.baZi.getTimeZhi() === '子', `23:30 should enter 子, got ${atZi.baZi.getTimeZhi()}`);
+assert(gzDay(beforeZi.baZi) === gzDay(atZi.baZi), '23:30 子 boundary must not roll day under sect=2');
+
+// User-known fixed regression: 1998-02-21 03:10 KST -> 02:40 manse clock -> 乙丑.
+const userFixed = global.createKoreanHybridBaZi(1998,2,21,3,10,true);
+assert(gzDay(userFixed.baZi) === '己亥', `user day ${gzDay(userFixed.baZi)} != 己亥`);
+assert(gzHour(userFixed.baZi) === '乙丑', `user hour ${gzHour(userFixed.baZi)} != 乙丑`);
+assert(userFixed.calendarMeta.hourCorrectionMinutes === -30,
+  `user correction ${userFixed.calendarMeta.hourCorrectionMinutes} != -30`);
+assert(userFixed.calendarMeta.manseClock.endsWith('02:40'),
+  `user manse clock ${userFixed.calendarMeta.manseClock} != 02:40`);
+
+// Historical standard-time/DST handling must come from the actual instant,
+// not from blindly subtracting 30 minutes from every birth record.
+const hist1956 = global.createKoreanHybridBaZi(1956,1,1,12,0,true);
+assert(hist1956.calendarMeta.hourCorrectionMinutes === 0,
+  `1956 correction ${hist1956.calendarMeta.hourCorrectionMinutes} != 0`);
+const dst1988 = global.createKoreanHybridBaZi(1988,7,1,12,0,true);
+assert(dst1988.calendarMeta.hourCorrectionMinutes === -90,
+  `1988 DST correction ${dst1988.calendarMeta.hourCorrectionMinutes} != -90`);
 
 const Ctor = global.KoreanLunarCalendar;
 let lunarRoundTrips = 0;
@@ -113,7 +127,8 @@ const report = {
   unknownTimeBoundaryCases: unknownChecked,
   koreanLunarRoundTrips: lunarRoundTrips,
   historicalOffsetCases: offsets.length,
-  fixedLateZiCases: fixed23.length,
+  fixedLateZiCases: 2,
+  fixedKoreanHourCases: 3,
   status: 'PASS',
 };
 console.log(JSON.stringify(report, null, 2));
