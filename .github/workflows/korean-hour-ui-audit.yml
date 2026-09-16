@@ -6,12 +6,30 @@ on:
       - manse-korea-hour-ui-audit
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   regression:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: manse-korea-hour-ui-audit
+      - name: Apply audit follow-up patch
+        run: python3 tests/fix_korean_hour_audit_followup.py
+      - name: Commit follow-up if changed
+        run: |
+          if git diff --quiet -- index.html tests/pre_note3_browser_regression_v4.cjs; then
+            echo "No follow-up changes needed"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add index.html tests/pre_note3_browser_regression_v4.cjs
+            git commit -m "Tighten Korean hour UI regression"
+            git push origin HEAD:manse-korea-hour-ui-audit
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 24
