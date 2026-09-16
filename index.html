@@ -5610,9 +5610,9 @@ return [
             gyeokCandidates.push(hGan);
           }
 
-          const gyeokguk = determineGyeokguk(baZi, gyeokCandidates);
+          const gyeokguk = preliminaryGyeokV2;
           const pillarSipsin = getPillarSipsinSet(baZi, !!(hourKnown && hGan));
-          const gyeokStatus = evaluateGyeokStatus(gyeokguk, pillarSipsin);
+          const gyeokStatus = evaluateGyeokStatusV2(gyeokguk, pillarSipsin);
           const genderCode = gender === "male" ? 1 : 0;
           const realYeonun = getRealYeonunInfo(
             baZi,
@@ -5773,33 +5773,37 @@ return [
             throw new Error("계산된 성향 프로필을 찾을 수 없습니다.");
           }
 
-          // [이론 검증 1단계] 억부법(抑扶法) 기반 신강/신약 판정
-          // 일간을 돕는 세력(비겁+인성) vs 빼앗는 세력(식상+재성+관성)을 비교.
-          // 월지는 이미 counts 계산 단계에서 가중치 3.0으로 반영되어 있어 '득령' 여부가 자연스럽게 녹아 있음.
-          const helpForce = scoreBi + scoreIn;
-          const drainForce = scoreSike + scoreJae + scoreGwan;
-          const isDayMasterStrong = helpForce >= drainForce;
-
-          // [이론 검증 2단계] 억부법 기반 진짜 용신 도출 (기존 "오행 중 최소값" 방식 폐기)
-          // 신강(身强): 힘을 덜어내는 식상·재성·관성 중 가장 강한 오행이 용신 (넘치는 기운을 눌러줌)
-          // 신약(身弱): 힘을 보태는 비겁·인성 중 가장 약한 오행이 용신 (부족한 기운을 채워줌)
-          let yongshin;
-          if (isDayMasterStrong) {
-            const drainCandidates = [
-              [sikeOheng, scoreSike],
-              [jaeOheng, scoreJae],
-              [gwanOheng, scoreGwan],
-            ];
-            drainCandidates.sort((a, b) => b[1] - a[1]);
-            yongshin = drainCandidates[0][0];
-          } else {
-            const helpCandidates = [
-              [biOheng, scoreBi],
-              [inOheng, scoreIn],
-            ];
-            helpCandidates.sort((a, b) => a[1] - b[1]);
-            yongshin = helpCandidates[0][0];
+          // [명리 엔진 v2] 월령·통근·천간/지장간 세력을 분리해 신강·중화·신약을 판정한다.
+          if (typeof analyzeDayMasterStrengthV2 !== "function") {
+            throw new Error("명리 분석 엔진을 불러오지 못했습니다.");
           }
+          const classicalPillarsV2 = {
+            year: { gan: baZi.getYearGan(), zhi: baZi.getYearZhi() },
+            month: { gan: baZi.getMonthGan(), zhi: baZi.getMonthZhi() },
+            day: { gan: baZi.getDayGan(), zhi: baZi.getDayZhi() },
+            ...(hourKnown
+              ? { hour: { gan: baZi.getTimeGan(), zhi: baZi.getTimeZhi() } }
+              : {}),
+          };
+          const elementProfilesV2 = getElementProfilesV2(classicalPillarsV2);
+          const strengthV2 = analyzeDayMasterStrengthV2({
+            pillars: classicalPillarsV2,
+          });
+          // 기존 UI/문구의 boolean 호환은 유지하되, 실제 3분류 값은 strengthV2.verdict를 사용한다.
+          const isDayMasterStrong =
+            strengthV2.verdict === "신강" ||
+            (strengthV2.verdict === "중화" && strengthV2.supportRatio >= 0.5);
+          const preliminaryGyeokV2 = determineGyeokgukFromPillarsV2(
+            classicalPillarsV2,
+            calendarMeta || {},
+          );
+          const yongshinDetailV2 = selectYongshinV2({
+            pillars: classicalPillarsV2,
+            strength: strengthV2,
+            elementProfiles: elementProfilesV2,
+            gyeokguk: preliminaryGyeokV2,
+          });
+          const yongshin = yongshinDetailV2.primary;
           const analysisProfile = buildAnalysisProfile({
             dayGan: dGan,
             dayOheng: dayOheng,
@@ -5825,22 +5829,23 @@ return [
             },
             hasChung: hasChung,
           });
-          analysisProfile.classical = buildClassicalLayers({
-            dayGan: dGan,
-            monthZhi: mZhi,
-            dayOheng: dayOheng,
-            isDayMasterStrong: isDayMasterStrong,
-            yongshin: yongshin,
+          analysisProfile.dayMaster.strength = strengthV2.verdict;
+          analysisProfile.dayMaster.strengthScore = strengthV2.score;
+          analysisProfile.dayMaster.supportRatio = strengthV2.supportRatio;
+          analysisProfile.strengthDetail = strengthV2;
+          analysisProfile.elementProfiles = elementProfilesV2;
+          analysisProfile.yongshinDetail = yongshinDetailV2;
+          analysisProfile.structure.basis = gyeokguk.basis || "";
+          analysisProfile.structure.branchType = gyeokguk.branchType || "";
+          analysisProfile.structure.saryeongGan = gyeokguk.saryeongGan || "";
+          analysisProfile.structure.candidates = gyeokguk.candidates || [];
+          analysisProfile.classical = buildClassicalLayersV2({
+            pillars: classicalPillarsV2,
+            strength: strengthV2,
+            elementProfiles: elementProfilesV2,
             gyeokguk: gyeokguk,
-            gyeokStatus: gyeokStatus,
-            elements: counts,
-            sipsinScores: {
-              bi: scoreBi,
-              sike: scoreSike,
-              jae: scoreJae,
-              gwan: scoreGwan,
-              in: scoreIn,
-            },
+            yongshinDetail: yongshinDetailV2,
+            calendarMeta: calendarMeta || {},
           });
           return {
             mbtiKey: calculatedKey,
@@ -5857,6 +5862,9 @@ return [
             yongshin: yongshin,
             analysisProfile: analysisProfile,
             calendarMeta: calendarMeta || null,
+            strengthDetail: strengthV2,
+            yongshinDetail: yongshinDetailV2,
+            elementProfiles: elementProfilesV2,
             isDayMasterStrong: isDayMasterStrong,
             gyeokguk: gyeokguk,
             gyeokStatus: gyeokStatus,
@@ -8309,5 +8317,6 @@ return [
       </div>
     </div>
     <script src="./manse-korea-v2.js?v=2"></script>
+  <script src="./classical-engine-v2.js?v=2"></script>
 </body>
 </html>
