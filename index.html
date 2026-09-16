@@ -5610,17 +5610,6 @@ return [
             gyeokCandidates.push(hGan);
           }
 
-          const gyeokguk = preliminaryGyeokV2;
-          const pillarSipsin = getPillarSipsinSet(baZi, !!(hourKnown && hGan));
-          const gyeokStatus = evaluateGyeokStatusV2(gyeokguk, pillarSipsin);
-          const genderCode = gender === "male" ? 1 : 0;
-          const realYeonun = getRealYeonunInfo(
-            baZi,
-            dGan,
-            genderCode,
-            [2026, 2027],
-          );
-
           const allElements = [
             { ch: yGan, w: 1.0 },
             { ch: yZhi, w: 1.0 },
@@ -5796,6 +5785,16 @@ return [
           const preliminaryGyeokV2 = determineGyeokgukFromPillarsV2(
             classicalPillarsV2,
             calendarMeta || {},
+          );
+          const gyeokguk = preliminaryGyeokV2;
+          const pillarSipsin = getPillarSipsinSet(baZi, !!(hourKnown && hGan));
+          const gyeokStatus = evaluateGyeokStatusV2(gyeokguk, pillarSipsin);
+          const genderCode = gender === "male" ? 1 : 0;
+          const realYeonun = getRealYeonunInfo(
+            baZi,
+            dGan,
+            genderCode,
+            [2026, 2027],
           );
           const yongshinDetailV2 = selectYongshinV2({
             pillars: classicalPillarsV2,
