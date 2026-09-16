@@ -146,8 +146,8 @@
       seoulOffsetMinutes: resolved.offsetMinutes,
     };
   }
-  function cstSolarToSeoulParts(solarObj) {
-    const utcMs =
+  function cstSolarToUtcMs(solarObj) {
+    return (
       Date.UTC(
         solarObj.getYear(),
         solarObj.getMonth() - 1,
@@ -156,8 +156,11 @@
         typeof solarObj.getMinute === "function" ? solarObj.getMinute() : 0,
         typeof solarObj.getSecond === "function" ? solarObj.getSecond() : 0,
       ) -
-      CST_OFFSET_MINUTES * 60000;
-    return partsAt(utcMs, SEOUL_TZ);
+      CST_OFFSET_MINUTES * 60000
+    );
+  }
+  function cstSolarToSeoulParts(solarObj) {
+    return partsAt(cstSolarToUtcMs(solarObj), SEOUL_TZ);
   }
   function makeEightChar(y, m, d, h, mi) {
     if (typeof Solar === "undefined") {
@@ -195,6 +198,21 @@
       monthGan: term.baZi.getMonthGan(),
       monthZhi: term.baZi.getMonthZhi(),
     };
+  }
+  function daysFromJieForTerm(term) {
+    if (!term || !term.lunar || typeof term.lunar.getPrevJie !== "function") {
+      return null;
+    }
+    const prevJie = term.lunar.getPrevJie();
+    if (!prevJie || typeof prevJie.getSolar !== "function") return null;
+    const jieSolar = prevJie.getSolar();
+    const jieUtcMs = cstSolarToUtcMs(jieSolar);
+    const elapsedDays = (term.cst.utcMs - jieUtcMs) / 86400000;
+    // 정상적인 절입월은 약 30일이다. API 이상값은 격국 근거에 섞지 않는다.
+    if (!Number.isFinite(elapsedDays) || elapsedDays < -1 / 1440 || elapsedDays > 40) {
+      return null;
+    }
+    return Math.max(0, elapsedDays);
   }
   function isTermBoundaryDate(y, m, d) {
     const first = correctedTermPillars(y, m, d, 0, 0);
@@ -249,6 +267,7 @@
     }
     const civil = makeEightChar(y, m, d, h, mi);
     const term = correctedTermPillars(y, m, d, h, mi);
+    const daysFromJie = daysFromJieForTerm(term);
     const baZi = buildHybridBaZi(civil.baZi, term.baZi);
     const civilYear = `${civil.baZi.getYearGan()}${civil.baZi.getYearZhi()}`;
     const civilMonth = `${civil.baZi.getMonthGan()}${civil.baZi.getMonthZhi()}`;
@@ -273,6 +292,8 @@
         libraryCivilMonth: civilMonth,
         correctedYear,
         correctedMonth,
+        daysFromJie:
+          Number.isFinite(daysFromJie) ? Math.round(daysFromJie * 1000) / 1000 : null,
         cstClock: `${String(term.cst.year).padStart(4, "0")}-${String(term.cst.month).padStart(2, "0")}-${String(term.cst.day).padStart(2, "0")} ${String(term.cst.hour).padStart(2, "0")}:${String(term.cst.minute).padStart(2, "0")}`,
       },
     };
@@ -355,6 +376,7 @@
     seoulLocalToCstFields,
     isTermBoundaryDate,
     correctedTermPillars,
+    daysFromJieForTerm,
     getMonthGanZhiRangeKst,
   };
   try {
