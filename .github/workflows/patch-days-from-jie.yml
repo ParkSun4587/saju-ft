@@ -1,0 +1,31 @@
+name: Patch days-from-Jie metadata
+
+on:
+  push:
+    branches:
+      - pre-note3-regression
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, 'Apply days-from-Jie calendar metadata') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pre-note3-regression
+      - name: Patch calendar metadata
+        run: python3 tests/patch_days_from_jie.py
+      - name: Commit patch if changed
+        run: |
+          if git diff --quiet -- manse-korea-v2.js; then
+            echo "No manse changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manse-korea-v2.js
+          git commit -m "Apply days-from-Jie calendar metadata"
+          git push origin HEAD:pre-note3-regression
