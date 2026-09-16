@@ -1,0 +1,47 @@
+name: Fix runtime initialization order
+
+on:
+  push:
+    branches:
+      - runtime-smoke
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: runtime-smoke
+          fetch-depth: 0
+      - name: Patch index runtime order
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          early = '''          const gyeokguk = preliminaryGyeokV2;\n          const pillarSipsin = getPillarSipsinSet(baZi, !!(hourKnown && hGan));\n          const gyeokStatus = evaluateGyeokStatusV2(gyeokguk, pillarSipsin);\n          const genderCode = gender === "male" ? 1 : 0;\n          const realYeonun = getRealYeonunInfo(\n            baZi,\n            dGan,\n            genderCode,\n            [2026, 2027],\n          );\n\n'''
+          anchor = '''          const preliminaryGyeokV2 = determineGyeokgukFromPillarsV2(\n            classicalPillarsV2,\n            calendarMeta || {},\n          );\n'''
+          inserted = anchor + '''          const gyeokguk = preliminaryGyeokV2;\n          const pillarSipsin = getPillarSipsinSet(baZi, !!(hourKnown && hGan));\n          const gyeokStatus = evaluateGyeokStatusV2(gyeokguk, pillarSipsin);\n          const genderCode = gender === "male" ? 1 : 0;\n          const realYeonun = getRealYeonunInfo(\n            baZi,\n            dGan,\n            genderCode,\n            [2026, 2027],\n          );\n'''
+          if early in s:
+              s = s.replace(early, '', 1)
+          if inserted not in s:
+              if anchor not in s:
+                  raise SystemExit('anchor not found')
+              s = s.replace(anchor, inserted, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+          git diff --check
+      - name: Commit fix if changed
+        run: |
+          if git diff --quiet; then
+            echo "already patched"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Fix classical engine runtime initialization order"
+          git push origin HEAD:runtime-smoke
