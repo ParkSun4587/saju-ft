@@ -1,0 +1,44 @@
+name: Patch manse historical offset seconds
+on:
+  push:
+    branches: [manse-korea-stage1]
+    paths: ['.github/workflows/patch-manse-historical-seconds.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch sub-minute historical Seoul offsets
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('manse-korea-v2.js')
+          s=p.read_text()
+          old='''  function offsetMinutesAt(instantMs, timeZone) {\n    const p = partsAt(instantMs, timeZone);\n    const representedAsUtc = Date.UTC(\n      p.year,\n      p.month - 1,\n      p.day,\n      p.hour,\n      p.minute,\n      p.second,\n    );\n    return Math.round((representedAsUtc - instantMs) / 60000);\n  }'''
+          new='''  function offsetMillisecondsAt(instantMs, timeZone) {\n    const p = partsAt(instantMs, timeZone);\n    const representedAsUtc = Date.UTC(\n      p.year,\n      p.month - 1,\n      p.day,\n      p.hour,\n      p.minute,\n      p.second,\n    );\n    return representedAsUtc - instantMs;\n  }'''
+          if s.count(old)!=1: raise SystemExit(f'offset function match count={s.count(old)}')
+          s=s.replace(old,new)
+          old2='''      probeOffsets.add(\n        offsetMinutesAt(wallMs + deltaHours * 3600000, SEOUL_TZ),\n      );'''
+          new2='''      probeOffsets.add(\n        offsetMillisecondsAt(wallMs + deltaHours * 3600000, SEOUL_TZ),\n      );'''
+          if s.count(old2)!=1: raise SystemExit(f'probe match count={s.count(old2)}')
+          s=s.replace(old2,new2)
+          old3='''    for (const offset of probeOffsets) {\n      const candidate = wallMs - offset * 60000;\n      if (sameLocalParts(partsAt(candidate, SEOUL_TZ), y, m, d, h, mi)) {\n        candidates.push({ utcMs: candidate, offsetMinutes: offset });\n      }\n    }'''
+          new3='''    for (const offsetMs of probeOffsets) {\n      const candidate = wallMs - offsetMs;\n      if (sameLocalParts(partsAt(candidate, SEOUL_TZ), y, m, d, h, mi)) {\n        candidates.push({\n          utcMs: candidate,\n          offsetMilliseconds: offsetMs,\n          offsetMinutes: offsetMs / 60000,\n        });\n      }\n    }'''
+          if s.count(old3)!=1: raise SystemExit(f'candidate match count={s.count(old3)}')
+          s=s.replace(old3,new3)
+          p.write_text(s)
+          PY
+          node --check manse-korea-v2.js
+          git diff --check
+      - name: Commit patch and remove temporary workflow
+        run: |
+          rm .github/workflows/patch-manse-historical-seconds.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add manse-korea-v2.js .github/workflows/patch-manse-historical-seconds.yml
+          git commit -m 'Handle historical Seoul second offsets'
+          git push origin HEAD:manse-korea-stage1
