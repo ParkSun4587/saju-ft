@@ -1,0 +1,27 @@
+name: NOTE4 test fix
+
+on:
+  push:
+    branches:
+      - pre-note3-note4-v1
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, 'Fix NOTE4 integration audit fixture') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pre-note3-note4-v1
+      - name: Patch integration fixture
+        run: python3 tests/patch_note4_test_integration.py
+      - name: Commit fixture fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/pre_note3_browser_regression_v4.cjs
+          git commit -m "Fix NOTE4 integration audit fixture"
+          git push origin HEAD:pre-note3-note4-v1
