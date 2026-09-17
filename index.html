@@ -6377,6 +6377,14 @@ return [
           if (typeof createKoreanHybridBaZi !== "function") {
             throw new Error("한국 만세력 보정 모듈을 불러오지 못했습니다.");
           }
+          const manseEngineVersion = globalThis.__MANSE_KOREA_V2__?.version || "";
+          if (manseEngineVersion !== "2.2.0") {
+            const staleEngineError = new Error(
+              "만세력 엔진이 최신 버전으로 갱신되지 않았어요. 페이지를 새로고침한 뒤 다시 입력해주세요.",
+            );
+            staleEngineError.code = "MANSE_ENGINE_STALE";
+            throw staleEngineError;
+          }
           const { solar, lunar, baZi, calendarMeta } =
             createKoreanHybridBaZi(
               year,
@@ -9160,7 +9168,7 @@ return [
         </div>
       </div>
     </div>
-    <script src="./manse-korea-v2.js?v=2"></script>
+    <script src="./manse-korea-v2.js?v=2.2.0"></script>
   <script src="./classical-engine-v2.js?v=2"></script>
 </body>
 </html>

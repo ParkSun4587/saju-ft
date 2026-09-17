@@ -38,7 +38,8 @@ async function load(page) {
     typeof buildNoteFourPrescription === 'function' &&
     typeof buildNoteFiveEnvironmentFilter === 'function' &&
     typeof buildNoteSixTiming === 'function' &&
-    typeof analyzeDayMasterStrengthV2 === 'function',
+    typeof analyzeDayMasterStrengthV2 === 'function' &&
+    globalThis.__MANSE_KOREA_V2__?.version === '2.2.0',
     null, {timeout:60000}
   );
 }
@@ -63,7 +64,20 @@ async function load(page) {
       let boundary = {code:'', message:''};
       try { calculateAccurateManse(2026,2,4,null,'female'); }
       catch (e) { boundary = {code:e.code || '', message:e.message || ''}; }
+      const manseScriptSrc = Array.from(document.scripts)
+        .map((x) => x.getAttribute('src') || '')
+        .find((src) => src.includes('manse-korea-v2.js')) || '';
+      const runtimeVersion = globalThis.__MANSE_KOREA_V2__?.version || '';
+      let staleGuard = { code:'', message:'' };
+      const originalVersion = globalThis.__MANSE_KOREA_V2__.version;
+      globalThis.__MANSE_KOREA_V2__.version = 'stale-test';
+      try { calculateAccurateManse(1998,2,21,'03:10','male'); }
+      catch (e) { staleGuard = { code:e.code || '', message:e.message || '' }; }
+      globalThis.__MANSE_KOREA_V2__.version = originalVersion;
       return {
+        manseScriptSrc,
+        runtimeVersion,
+        staleGuard,
         exact: {
           year: exact.pillars.year.gan + exact.pillars.year.zhi,
           month: exact.pillars.month.gan + exact.pillars.month.zhi,
@@ -84,6 +98,9 @@ async function load(page) {
         leap, regular, boundary,
       };
     });
+    assert(r.manseScriptSrc.includes('manse-korea-v2.js?v=2.2.0'), `stale manse asset URL ${r.manseScriptSrc}`);
+    assert(r.runtimeVersion === '2.2.0', `stale manse runtime ${r.runtimeVersion}`);
+    assert(r.staleGuard.code === 'MANSE_ENGINE_STALE', `stale engine did not fail closed ${JSON.stringify(r.staleGuard)}`);
     assert(r.exact.year === '戊寅', `1998 year drift ${r.exact.year}`);
     assert(r.exact.month === '甲寅', `1998 month drift ${r.exact.month}`);
     assert(r.exact.day === '己亥', `1998 day drift ${r.exact.day}`);

@@ -413,7 +413,7 @@
   global.koreanLunarToSolar = koreanLunarToSolar;
   global.createKoreanHybridBaZi = createKoreanHybridBaZi;
   global.__MANSE_KOREA_V2__ = {
-    version: "2.1.0",
+    version: "2.2.0",
     timeZone: SEOUL_TZ,
     dayBoundarySect: DAY_BOUNDARY_SECT,
     seoulWallTimeToUtcMs,
