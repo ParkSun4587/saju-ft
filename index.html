@@ -1903,110 +1903,119 @@
       class="fixed inset-0 z-50 items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
     >
       <div class="w-full max-w-sm flex flex-col items-center">
-        <!-- [최신 디자인 동기화] 인스타 스토리 프리뷰 카드 -->
+        <!-- 인스타 스토리에 바로 올리는 9:16 본캐 카드 -->
         <div
           id="storyCard"
-          class="w-full bg-[#ffffff] border border-rose-200 rounded-3xl p-5 space-y-3.5 shadow-2xl text-left relative overflow-hidden"
+          data-share-version="2"
+          style="aspect-ratio: 9 / 16"
+          class="w-full bg-gradient-to-b from-[#fffafc] via-white to-[#fff8f2] border border-rose-200/80 rounded-[30px] p-5 shadow-2xl text-left relative overflow-hidden flex flex-col"
         >
-          <!-- 상단 알약 뱃지 -->
-          <div class="text-center relative z-10">
+          <div class="absolute -top-16 -right-16 w-44 h-44 rounded-full bg-rose-200/35 pointer-events-none"></div>
+          <div class="absolute top-52 -left-20 w-40 h-40 rounded-full bg-amber-100/55 pointer-events-none"></div>
+          <div class="absolute -bottom-20 right-8 w-44 h-44 rounded-full bg-sky-100/55 pointer-events-none"></div>
+
+          <div class="relative z-10 flex items-center justify-between gap-3">
+            <div>
+              <div class="text-[13px] font-black tracking-tight text-slate-900">어떤언니</div>
+              <div class="text-[8px] font-bold tracking-[0.18em] text-slate-400 mt-0.5">SAJU PERSONA CARD</div>
+            </div>
+            <img
+              id="cardSisterAvatar"
+              src="./로아.png"
+              alt=""
+              class="w-9 h-9 rounded-full object-cover border-2 border-white shadow-md"
+            />
+          </div>
+
+          <div class="relative z-10 text-center mt-3">
             <span
               id="cardModeBadge"
-              class="px-3.5 py-1.5 rounded-full text-[11px] font-black tracking-tight inline-block shadow-sm"
+              class="px-3 py-1 rounded-full text-[9.5px] font-black tracking-tight inline-block border shadow-sm"
             ></span>
           </div>
 
-          <!-- 거대 MBTI & 타이틀 -->
-          <div class="text-center relative z-10 space-y-1">
-            <div class="text-[10px] text-slate-400 font-bold pt-1">
-              ※ 질문지 검사 말고, 사주 데이터로 까본 내 진짜 MBTI
+          <div class="relative z-10 text-center mt-3">
+            <div class="text-[9px] text-slate-400 font-bold tracking-wide">
+              사주로 까본 내 본캐
             </div>
             <div
               id="cardBigMbti"
-              class="text-[52px] font-black tracking-widest font-mono leading-none py-1"
+              class="text-[54px] font-black tracking-[0.16em] font-mono leading-none mt-1"
             ></div>
             <h1
               id="cardMainTitle"
-              class="text-[16px] font-black text-slate-900 leading-snug break-keep px-2 pt-1"
+              class="text-[15px] font-black text-slate-900 leading-[1.45] break-keep px-1 mt-2"
+              style="text-wrap: balance"
             ></h1>
           </div>
 
-          <!-- 📌 3줄 요약 성향 분석 3줄 불렛 -->
-          <div
-            class="space-y-2 text-left bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 relative z-10"
-          >
-            <div
-              class="flex justify-between items-center pb-1 border-b border-slate-200/60"
-            >
-              <span
-                class="text-[11px] font-black text-slate-800 tracking-wider flex items-center gap-1"
-              >
-                <span>📌</span> <span>3줄 요약 성향 분석</span>
-              </span>
-              <span class="text-[9px] text-rose-500 font-bold"
-                >*사주 팩트 기반</span
-              >
+          <div class="relative z-10 grid grid-cols-3 gap-1.5 mt-3">
+            <div class="rounded-xl bg-white/85 border border-white shadow-sm px-2 py-2 text-center">
+              <div class="text-[7.5px] font-bold text-slate-400">내 본체</div>
+              <div id="cardCoreElement" class="text-[10px] font-black text-slate-800 mt-0.5"></div>
+            </div>
+            <div class="rounded-xl bg-white/85 border border-white shadow-sm px-2 py-2 text-center">
+              <div class="text-[7.5px] font-bold text-slate-400">제일 진한 힘</div>
+              <div id="cardStrongElement" class="text-[10px] font-black text-slate-800 mt-0.5"></div>
+            </div>
+            <div class="rounded-xl bg-white/85 border border-white shadow-sm px-2 py-2 text-center">
+              <div class="text-[7.5px] font-bold text-slate-400">챙기면 좋은 힘</div>
+              <div id="cardNeedElement" class="text-[10px] font-black text-slate-800 mt-0.5"></div>
+            </div>
+          </div>
+
+          <div class="relative z-10 mt-3 bg-white/88 border border-slate-200/70 rounded-2xl p-3.5 shadow-sm">
+            <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-100">
+              <span class="text-[10px] font-black text-slate-800">나를 설명하는 3문장</span>
+              <span class="text-[8px] font-bold text-slate-400">사주 데이터로 뽑음</span>
             </div>
             <div
               id="cardManualBulletList"
-              class="space-y-1.5 text-xs text-slate-800 font-bold leading-relaxed pt-0.5"
+              class="space-y-1.5 text-[10.5px] text-slate-700 font-bold leading-[1.55] pt-2"
+            ></div>
+          </div>
+
+          <div class="relative z-10 grid grid-cols-2 gap-2 mt-2.5">
+            <div
+              id="cardChemBestBox"
+              class="p-2.5 rounded-xl bg-rose-50/90 border border-rose-200 shadow-sm"
             >
-              <!-- JS에서 3줄 자동 주입 -->
+              <div class="text-[8px] font-black text-rose-500">같이 있으면 편한 타입</div>
+              <div class="flex items-end justify-between gap-1 mt-0.5">
+                <div id="cardChemBestMbti" class="text-[15px] font-black text-slate-900 font-mono"></div>
+                <div id="cardChemBestTag" class="text-[7.5px] text-slate-500 font-bold text-right"></div>
+              </div>
+            </div>
+            <div
+              id="cardChemWorstBox"
+              class="p-2.5 rounded-xl bg-slate-100/90 border border-slate-200 shadow-sm"
+            >
+              <div class="text-[8px] font-black text-slate-500">자주 삐걱대는 타입</div>
+              <div class="flex items-end justify-between gap-1 mt-0.5">
+                <div id="cardChemWorstMbti" class="text-[15px] font-black text-slate-900 font-mono"></div>
+                <div id="cardChemWorstTag" class="text-[7.5px] text-slate-500 font-bold text-right"></div>
+              </div>
             </div>
           </div>
 
-          <!-- 💖 깐부 vs 💣 상극 박스 (공유 모달용 정돈 버전) -->
-          <div class="grid grid-cols-2 gap-2 text-left relative z-10">
+          <div class="relative z-10 mt-auto pt-3">
             <div
-              class="p-2.5 rounded-xl bg-rose-50/80 border border-rose-200 shadow-sm flex flex-col justify-between"
+              id="cardStickerBox"
+              class="border border-dashed rounded-2xl px-3 py-2.5 text-center bg-white/65"
             >
-              <div
-                class="text-[9px] font-black text-rose-500 flex items-center gap-0.5 mb-0.5"
-              >
-                <span>💖</span> <span>잘 맞는 깐부</span>
-              </div>
-              <div
-                class="text-sm font-black text-slate-900 font-mono tracking-wide"
-                id="cardChemBestMbti"
-              ></div>
-              <div
-                class="text-[9px] text-slate-500 font-semibold truncate mt-0.5"
-                id="cardChemBestTag"
-              ></div>
+              <p id="cardStickerText" class="text-[9px] font-black">
+                링크 스티커는 여기
+              </p>
+              <p class="text-[7.5px] text-slate-400 mt-0.5 font-semibold">
+                친구들한테 “너도 본캐 까봐” 하고 던져두기
+              </p>
             </div>
-            <div
-              class="p-2.5 rounded-xl bg-slate-100/90 border border-slate-200 shadow-sm flex flex-col justify-between"
-            >
-              <div
-                class="text-[9px] font-black text-slate-600 flex items-center gap-0.5 mb-0.5"
-              >
-                <span>💣</span> <span>숨 막히는 상극</span>
-              </div>
-              <div
-                class="text-sm font-black text-slate-900 font-mono tracking-wide"
-                id="cardChemWorstMbti"
-              ></div>
-              <div
-                class="text-[9px] text-slate-500 font-semibold truncate mt-0.5"
-                id="cardChemWorstTag"
-              ></div>
+            <div class="flex items-center justify-between mt-2 px-0.5">
+              <span class="text-[7.5px] font-bold text-slate-400">어떤언니 · 사주로 찾는 내 본캐</span>
+              <span class="text-[7.5px] font-black text-slate-500">STORY CARD</span>
             </div>
-          </div>
-
-          <!-- 하단 링크 스티커 영역 -->
-          <div
-            id="cardStickerBox"
-            class="border-2 border-dashed rounded-xl p-2.5 text-center relative z-10"
-          >
-            <p id="cardStickerText" class="text-[10px] font-black">
-              🔗 [ 여기를 눌러서 내 본캐도 까보기 ]
-            </p>
-            <p class="text-[9px] text-slate-400 mt-0.5 font-medium">
-              인스타 스토리 링크 스티커를 여기에 붙여주세요
-            </p>
           </div>
         </div>
-
         <div class="w-full mt-4 space-y-2">
           <button
             type="button"
@@ -5255,6 +5264,7 @@ currentResultData = {
           data.dayOheng,
           data.pillars,
           data.elementProfiles || data.analysisProfile?.elementProfiles || null,
+          mode,
         );
 
         // 카톡 상담 결과 헤더 언니 프로필 및 맞춤 대사 연동
@@ -5609,7 +5619,7 @@ currentResultData = {
         });
       }
 
-      function renderOhengDistribution(elements, dayGan, dayOheng, pillars, elementProfiles) {
+      function renderOhengDistribution(elements, dayGan, dayOheng, pillars, elementProfiles, mode = "F") {
         const container = document.getElementById("ohengBarContainer");
         const summaryTxt = document.getElementById("ohengSummaryTxt");
         const dayMasterTag = document.getElementById("dayMasterTag");
@@ -5733,20 +5743,33 @@ currentResultData = {
           .map((o) => `${o.label}(${o.count}개)`)
           .join(", ");
 
-        // 오행별 가장 강할 때 나타나는 고유 성향 사전
-        const maxTraitMap = {
-          목: "앞만 보고 곧게 뻗어나가려는 강한 자존심과 승부욕이 너무 짙은 반면",
-          화: "순간적으로 확 타오르는 뜨거운 열정과 충동성이 지나치게 뚜렷한 반면",
-          토: "묵묵히 참아내며 꾹꾹 눌러담는 고집과 방어적인 성향이 강한 반면",
-          금: "칼같이 예리한 완벽주의와 타협 없는 잣대가 지나치게 센 반면",
-          수: "깊은 생각과 불안에 침잠하여 결정을 쉽게 내리지 못하는 성향이 짙은 반면",
+        const isT = mode === "T";
+        const strongestF = {
+          목: "하고 싶은 게 생기면 마음이 먼저 앞으로 가는 힘이 큰 편이야",
+          화: "좋고 싫은 감정이 마음 안에서 또렷하게 움직이는 편이야",
+          토: "웬만한 건 버티면서 네 몫을 묵묵히 해내는 힘이 큰 편이야",
+          금: "기준이 분명해서 어설픈 걸 그냥 넘기기 어려운 편이야",
+          수: "생각을 깊게 하고 사람 마음도 오래 들여다보는 편이야",
         };
-
-        const traitText =
-          maxTraitMap[maxOheng.name] || "이 성향이 겉으로 강하게 드러나는 반면";
+        const strongestT = {
+          목: "시작하고 밀어붙이는 힘이 가장 먼저 나온다",
+          화: "표현하고 반응을 만드는 힘이 가장 먼저 나온다",
+          토: "버티고 쌓아가는 힘이 가장 먼저 나온다",
+          금: "기준을 세우고 정리하는 힘이 가장 먼저 나온다",
+          수: "정보를 읽고 생각을 깊게 가져가는 힘이 가장 먼저 나온다",
+        };
+        const hasZero = minCount === 0;
+        const weakLeadF = hasZero
+          ? `<b>${minStr}</b> 쪽은 원국에서 비어 있어서`
+          : `반대로 <b>${minStr}</b> 쪽은 상대적으로 적어서`;
+        const weakLeadT = hasZero
+          ? `<b>${minStr}</b>은 0개라`
+          : `<b>${minStr}</b>은 상대적으로 적어서`;
 
         if (summaryTxt) {
-          summaryTxt.innerHTML = `💡 내 사주는 <b>${maxOheng.label}(${maxOheng.pct}%)</b> 기운이 너무 세서 ${traitText}, <b>${minStr}</b> 기운이 부족해서 이 공백이 자꾸 고민과 누수로 이어져요.`;
+          summaryTxt.innerHTML = isT
+            ? `서아가 딱 정리하면, <b>${maxOheng.label}(${maxOheng.pct}%)</b> 쪽이 제일 강해. ${strongestT[maxOheng.name] || "이 힘이 먼저 나온다"}. 반대로 ${weakLeadT} 자동으로 나오길 기대하면 안 돼. 결함이 아니라 <b>의식해서 챙길 포인트</b>라고 보면 돼.`
+            : `로아가 보기엔 <b>${maxOheng.label}(${maxOheng.pct}%)</b> 기운이 제일 눈에 띄어. ${strongestF[maxOheng.name] || "이 힘이 자연스럽게 먼저 나오는 편이야"}. ${weakLeadF} 바쁠수록 네가 놓치기 쉬울 수 있어. 부족하다고 겁먹지 말고, <b>“아, 여긴 내가 조금 더 챙겨주면 되는구나”</b> 정도로 같이 봐주면 돼.`;
         }
       }
 
@@ -5878,6 +5901,14 @@ currentResultData = {
           return;
         }
         const prof = SAZU_CHARACTER_PROFILES[mKey];
+        const storyCard = document.getElementById("storyCard");
+        const sisterAvatar = document.getElementById("cardSisterAvatar");
+        if (storyCard) {
+          storyCard.className = isT
+            ? "w-full bg-gradient-to-b from-[#f6fbff] via-white to-[#f4f8ff] border border-sky-200/80 rounded-[30px] p-5 shadow-2xl text-left relative overflow-hidden flex flex-col"
+            : "w-full bg-gradient-to-b from-[#fffafc] via-white to-[#fff8f2] border border-rose-200/80 rounded-[30px] p-5 shadow-2xl text-left relative overflow-hidden flex flex-col";
+        }
+        if (sisterAvatar) sisterAvatar.src = isT ? "./서아.png" : "./로아.png";
 
         // 1) 상단 알약 뱃지
         const modeBadge = document.getElementById("cardModeBadge");
@@ -5898,11 +5929,11 @@ currentResultData = {
             : `${displayName}가`;
 
           modeBadge.innerHTML = isT
-            ? `🧊 "T발 너 C야?" 소리 나오는 자비 없는 극딜 모드`
-            : `🌸 "우리 <span class="text-rose-700 font-black">${escapeHTML(nameSubject)}</span> 다 맞아" 극성 내 편 모드`;
+            ? `"T발 너 C야?" 소리 나오는 서아 모드`
+            : `"우리 <span class="text-rose-700 font-black">${escapeHTML(nameSubject)}</span> 다 맞아" 로아 모드`;
           modeBadge.className = isT
-            ? "px-3.5 py-1.5 bg-sky-50 text-sky-600 border border-sky-200 rounded-full text-[11px] font-black tracking-tight inline-block shadow-sm"
-            : "px-3.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-[11px] font-black tracking-tight inline-block shadow-sm";
+            ? "px-3 py-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-full text-[9.5px] font-black tracking-tight inline-block shadow-sm"
+            : "px-3 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-[9.5px] font-black tracking-tight inline-block shadow-sm";
         }
 
         // 2) 거대 MBTI & 메인 타이틀
@@ -5912,29 +5943,50 @@ currentResultData = {
         if (bigMbti) {
           bigMbti.innerText = mKey;
           bigMbti.className = isT
-            ? "text-[52px] font-black tracking-widest font-mono text-sky-600 leading-none pt-1"
-            : "text-[52px] font-black tracking-widest font-mono text-rose-500 leading-none pt-1";
+            ? "text-[54px] font-black tracking-[0.16em] font-mono text-sky-600 leading-none mt-1"
+            : "text-[54px] font-black tracking-[0.16em] font-mono text-rose-500 leading-none mt-1";
         }
         if (mainTitle) {
           mainTitle.innerText = `"${isT ? prof.title_T : prof.title_F}"`;
         }
 
-        // 3) 📌 공유 카드 3줄 불렛 주입 (줄바꿈 최적화)
+        const elementNames = {
+          mok: "목 · 나무",
+          hwa: "화 · 불",
+          to: "토 · 흙",
+          geum: "금 · 쇠",
+          su: "수 · 물",
+        };
+        const rawElements = data.elementProfiles?.raw || data.analysisProfile?.elementProfiles?.raw || data.elements || {};
+        const elementKeys = ["mok", "hwa", "to", "geum", "su"];
+        const strongestKey = elementKeys.reduce((best, key) =>
+          Number(rawElements[key] || 0) > Number(rawElements[best] || 0) ? key : best,
+        "mok");
+        const minRaw = Math.min(...elementKeys.map((key) => Number(rawElements[key] || 0)));
+        const weakestKeys = elementKeys.filter((key) => Number(rawElements[key] || 0) === minRaw);
+        const coreEl = document.getElementById("cardCoreElement");
+        const strongEl = document.getElementById("cardStrongElement");
+        const needEl = document.getElementById("cardNeedElement");
+        if (coreEl) coreEl.textContent = elementNames[data.dayOheng] || "내 본체";
+        if (strongEl) strongEl.textContent = elementNames[strongestKey] || "-";
+        if (needEl) needEl.textContent = weakestKeys.map((key) => (elementNames[key] || key).split(" · ")[0]).join(" · ");
+
+        // 3) 공유 카드 3줄 불렛 주입
         const bulletContainer = document.getElementById("cardManualBulletList");
         if (bulletContainer) {
           const bList = isT ? prof.bullets_T : prof.bullets_F;
-          const bulletColor = isT ? "text-sky-500" : "text-rose-500";
+          const bulletColor = isT ? "text-sky-500" : "text-rose-400";
           bulletContainer.innerHTML = `
                     <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0 mt-0.5">•</span>
+                        <span class="${bulletColor} font-black shrink-0">01</span>
                         <span class="flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[0]}</span>
                     </div>
                     <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0 mt-0.5">•</span>
+                        <span class="${bulletColor} font-black shrink-0">02</span>
                         <span class="flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[1]}</span>
                     </div>
                     <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0 mt-0.5">•</span>
+                        <span class="${bulletColor} font-black shrink-0">03</span>
                         <span class="flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[2]}</span>
                     </div>
                 `;
@@ -5951,16 +6003,23 @@ currentResultData = {
         if (worstMbtiEl) worstMbtiEl.innerText = prof.worst;
         if (worstTagEl) worstTagEl.innerText = prof.worstTag;
 
+        const bestBox = document.getElementById("cardChemBestBox");
+        const worstBox = document.getElementById("cardChemWorstBox");
+        if (bestBox) bestBox.className = isT
+          ? "p-2.5 rounded-xl bg-sky-50/90 border border-sky-200 shadow-sm"
+          : "p-2.5 rounded-xl bg-rose-50/90 border border-rose-200 shadow-sm";
+        if (worstBox) worstBox.className = "p-2.5 rounded-xl bg-slate-100/90 border border-slate-200 shadow-sm";
+
         // 5) 하단 링크 스티커 영역 스타일
         const stickerBox = document.getElementById("cardStickerBox");
         const stickerTxt = document.getElementById("cardStickerText");
         if (stickerBox && stickerTxt) {
           stickerBox.className = isT
-            ? "border-2 border-dashed border-sky-300 bg-sky-50/50 rounded-xl p-2.5 text-center relative z-10"
-            : "border-2 border-dashed border-rose-300 bg-rose-50/50 rounded-xl p-2.5 text-center relative z-10";
+            ? "border border-dashed border-sky-300 bg-sky-50/55 rounded-2xl px-3 py-2.5 text-center"
+            : "border border-dashed border-rose-300 bg-rose-50/55 rounded-2xl px-3 py-2.5 text-center";
           stickerTxt.className = isT
-            ? "text-[10px] font-black text-sky-600"
-            : "text-[10px] font-black text-rose-600";
+            ? "text-[9px] font-black text-sky-600"
+            : "text-[9px] font-black text-rose-500";
         }
 
         document.body.style.overflow = "hidden";
@@ -6262,8 +6321,10 @@ currentResultData = {
           button.textContent = "카드 만드는 중…";
         }
         try {
+          const cardWidth = Math.max(1, card.getBoundingClientRect().width);
+          const storyScale = 1080 / cardWidth;
           const canvas = await html2canvas(card, {
-            scale: 3,
+            scale: Math.max(2, storyScale),
             useCORS: true,
             allowTaint: false,
             backgroundColor: "#ffffff",
