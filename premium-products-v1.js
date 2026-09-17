@@ -605,7 +605,7 @@
         ${keepsakeCardHtml(productId, data, extra, mode)}
         <div style="display:grid;gap:8px;margin-top:14px">
           <button id="unniKeepsakeSave" type="button" disabled style="width:100%;border:0;border-radius:14px;padding:13px 14px;background:${isT ? "#0f172a" : "linear-gradient(90deg,#fb7185,#f472b6)"};color:white;font-size:13px;font-weight:950;cursor:pointer;opacity:.6">${isT ? "이미지 저장" : "사진으로 간직하기"}</button>
-          <button id="unniKeepsakeShare" type="button" disabled style="width:100%;border:1px solid #e2e8f0;border-radius:14px;padding:13px 14px;background:white;color:#334155;font-size:13px;font-weight:950;cursor:pointer;opacity:.6">${isT ? "바로 공유" : "스토리에 슬쩍 올리기"}</button>
+          <button id="unniKeepsakeShare" type="button" disabled style="width:100%;border:1px solid #e2e8f0;border-radius:14px;padding:13px 14px;background:white;color:#334155;font-size:13px;font-weight:950;cursor:pointer;opacity:.6">${global.__UNNI_IMAGE_EXPORT_V2__?.isKakaoInApp?.() ? (isT ? "인스타용 이미지 열기" : "인스타에 올릴 사진 열기") : global.__UNNI_IMAGE_EXPORT_V2__?.isMobileDevice?.() ? (isT ? "바로 공유" : "스토리에 슬쩍 올리기") : (isT ? "이미지 공유" : "친구한테 보내기")}</button>
           <div id="unniKeepsakeHint" style="font-size:10px;line-height:1.55;text-align:center;color:#94a3b8;font-weight:750">언니가 한 장으로 예쁘게 접는 중이야. 잠깐만.</div>
         </div>
       </div>`;
@@ -624,12 +624,14 @@
       try {
         const blob = paidKeepsakeAsset || await preparePaidKeepsake(root, productId, data, extra, mode);
         if (!blob) throw new Error("KEEP_ASSET_MISSING");
-        if (exporter?.isIOSDevice?.()) {
+        if (exporter?.isKakaoInApp?.()) {
+          await exporter.showImageSaveFallback(blob, "save");
+        } else if (exporter?.isIOSDevice?.()) {
           const shared = await exporter.nativeSharePng(blob, filename, PRODUCTS[productId]?.name || "어떤언니 리포트");
-          if (!shared) exporter.downloadPngBlob(blob, filename);
+          if (!shared) await exporter.showImageSaveFallback(blob, "save");
         } else {
           exporter.downloadPngBlob(blob, filename);
-          if (typeof showToast === "function") showToast(exporter?.isAndroidDevice?.() ? "사진으로 저장했어. 갤러리에서 확인해봐." : "PNG 이미지로 저장했어.");
+          if (typeof showToast === "function") showToast(exporter?.isAndroidDevice?.() ? "PNG로 저장했어. 갤러리나 다운로드에서 확인해봐." : "PNG 이미지로 저장했어.");
         }
       } catch (e) {
         if (e?.name !== "AbortError" && typeof showToast === "function") showToast("저장이 잠깐 꼬였어. 한 번만 다시 눌러줘.");
@@ -640,10 +642,14 @@
       try {
         const blob = paidKeepsakeAsset || await preparePaidKeepsake(root, productId, data, extra, mode);
         if (!blob) throw new Error("KEEP_ASSET_MISSING");
-        const shared = await exporter.nativeSharePng(blob, filename, PRODUCTS[productId]?.name || "어떤언니 리포트");
-        if (!shared) {
-          exporter.downloadPngBlob(blob, filename);
-          if (typeof showToast === "function") showToast("공유 기능이 없는 브라우저라 이미지를 저장해뒀어.");
+        if (exporter?.isKakaoInApp?.()) {
+          await exporter.showImageSaveFallback(blob, "share");
+        } else {
+          const shared = await exporter.nativeSharePng(blob, filename, PRODUCTS[productId]?.name || "어떤언니 리포트");
+          if (!shared) {
+            exporter.downloadPngBlob(blob, filename);
+            if (typeof showToast === "function") showToast(exporter?.isMobileDevice?.() ? "공유 기능이 막혀 있어서 PNG로 저장했어." : "PNG를 저장했어. 원하는 곳에 바로 올리면 돼.");
+          }
         }
       } catch (e) {
         if (e?.name !== "AbortError" && typeof showToast === "function") showToast("공유가 잠깐 꼬였어. 한 번만 다시 눌러줘.");
