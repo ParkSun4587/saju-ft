@@ -547,8 +547,8 @@
     const save = root.querySelector("#unniKeepsakeSave");
     const share = root.querySelector("#unniKeepsakeShare");
     const hint = root.querySelector("#unniKeepsakeHint");
-    if (save) save.disabled = !ready;
-    if (share) share.disabled = !ready;
+    if (save) { save.disabled = !ready; save.style.opacity = ready ? "1" : ".6"; }
+    if (share) { share.disabled = !ready; share.style.opacity = ready ? "1" : ".6"; }
     if (hint) hint.textContent = message || (ready
       ? (global.__UNNI_IMAGE_EXPORT_V2__?.isIOSDevice?.()
         ? "아이폰은 저장을 누른 뒤 ‘이미지 저장’을 고르면 사진 앱에 들어가."
@@ -581,7 +581,7 @@
         setPaidKeepsakeReady(root, true);
         return blob;
       } catch (e) {
-        console.error("유료 리포트 요약 카드 생성 실패:", e);
+        console.warn("유료 리포트 요약 카드 생성 실패:", e);
         setPaidKeepsakeReady(root, false, "이미지 준비가 잠깐 꼬였어. 리포트를 다시 열어줘.");
         return null;
       } finally {
@@ -619,9 +619,6 @@
       if (saveBtn) saveBtn.style.opacity = saveBtn.disabled ? ".6" : "1";
       if (shareBtn) shareBtn.style.opacity = shareBtn.disabled ? ".6" : "1";
     };
-    const observer = new MutationObserver(syncOpacity);
-    if (saveBtn) observer.observe(saveBtn, { attributes: true, attributeFilter: ["disabled"] });
-    if (shareBtn) observer.observe(shareBtn, { attributes: true, attributeFilter: ["disabled"] });
 
     saveBtn?.addEventListener("click", async () => {
       try {
