@@ -789,7 +789,7 @@
     action.onclick = async () => {
       action.disabled = true;
       try {
-        const base = location.origin + location.pathname;
+        const base = (location.hostname === "sajuft.com" || location.hostname === "www.sajuft.com" ? "https://sajuft.com" : location.origin) + location.pathname;
         const ticket = encodeURIComponent(order.ticket);
         await widget.requestPayment({ orderId: order.orderId, orderName: product.name, customerName: data.name || data.userName || "구매자", successUrl: `${base}?payment=success&state=${ticket}`, failUrl: `${base}?payment=fail&state=${ticket}` });
       } catch (e) {
