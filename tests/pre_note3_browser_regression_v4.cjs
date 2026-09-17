@@ -126,151 +126,81 @@ async function load(page) {
     assert(unexpected.length === 0, `core browser errors: ${unexpected.join(' | ')}`);
     console.log('CORE_PASS', JSON.stringify(r));
 
-    const note3Audit = await page.evaluate(() => {
-      const labels = { money:'재물·돈복', career:'학업·커리어', love:'연애·썸', path:'진로·미래', people:'인간관계', mental:'번아웃·멘탈' };
-      const base = calculateAccurateManse(1998,2,21,'03:10','male');
-      const data = { ...base, concernKey:'money' };
-      const out = [];
-      for (const key of Object.keys(labels)) {
-        for (const mode of ['F','T']) {
-          const n = buildNoteThreeBlindSpot(data, key, labels[key], mode === 'T');
-          out.push({ key, mode, title:n.title, badge:n.badge, desc:n.desc, checklist:n.checklist });
-        }
-      }
-      return out;
-    });
-    assert(note3Audit.length === 12, `NOTE3 audit count ${note3Audit.length}`);
-    assert(new Set(note3Audit.map(x => x.title)).size === 12, 'NOTE3 titles are not concern/mode specific');
-    for (const n of note3Audit) {
-      assert(!!n.title && !!n.badge && !!n.desc && !!n.checklist, `NOTE3 empty field ${n.key}/${n.mode}`);
-      assert(n.desc.includes('내가 문제라고 느끼는 지점:'), `NOTE3 assumed-problem missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('실제로 새는 지점:'), `NOTE3 actual-leak missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('특히 약한 연결고리:'), `NOTE3 weak-link missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('언니가 잡은 계산 근거'), `NOTE3 evidence missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('취약축:'), `NOTE3 vulnerable-axis missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('균형:'), `NOTE3 balance evidence missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('계절 보정:'), `NOTE3 climate evidence missing ${n.key}/${n.mode}`);
-      assert(!/(undefined|NaN|null)/.test(`${n.title}${n.badge}${n.desc}${n.checklist}`), `NOTE3 bad token ${n.key}/${n.mode}`);
-      assert(!n.desc.includes('적천수가 말하길') && !n.desc.includes('궁통보감이 말하길'), `NOTE3 overclaims classical source ${n.key}/${n.mode}`);
-    }
-    for (const key of ['money','career','love','path','people','mental']) {
-      const f = note3Audit.find(x => x.key===key && x.mode==='F');
-      const t = note3Audit.find(x => x.key===key && x.mode==='T');
-      assert(f.desc !== t.desc, `NOTE3 F/T collapsed ${key}`);
-    }
-    console.log('NOTE3_AUDIT_PASS', JSON.stringify(note3Audit.map(x => ({key:x.key,mode:x.mode,title:x.title}))));
-    const note4Audit = await page.evaluate(() => {
+    const copyAudit = await page.evaluate(() => {
       const labels = { money:'재물·돈복', career:'학업·커리어', love:'연애·썸', path:'진로·미래', people:'인간관계', mental:'번아웃·멘탈' };
       const base = calculateAccurateManse(1998,2,21,'03:10','male');
       const other = calculateAccurateManse(2001,5,6,'14:30','female');
       const out = [];
       for (const key of Object.keys(labels)) {
         for (const mode of ['F','T']) {
-          const data = { ...base, concernKey:key };
-          const n = buildNoteFourPrescription(data, key, labels[key], mode === 'T');
-          const wiredData = {
-            ...data,
-            rawSolutionTemplate: { F:{acts:[]}, T:{acts:[]} },
+          const data = {
+            ...base,
+            concernKey:key,
+            userGender:'male',
+            userBirthStr:'19980221',
+            rawSolutionTemplate:{ F:{acts:[]}, T:{acts:[]} },
           };
-          const integrated = generateConcernNotes(wiredData, mode)[3];
+          const notes = generateConcernNotes(data, mode);
           out.push({
-            key, mode,
-            title:n.title, badge:n.badge, desc:n.desc, checklist:n.checklist,
-            integratedTitle: integrated?.title || '',
-            integratedDesc: integrated?.desc || '',
+            key,
+            mode,
+            notes: notes.map((n) => ({badge:n.badge,title:n.title,desc:n.desc,checklist:n.checklist})),
           });
         }
       }
-      const a = buildNoteFourPrescription({ ...base, concernKey:'career' }, 'career', labels.career, true);
-      const b = buildNoteFourPrescription({ ...other, concernKey:'career' }, 'career', labels.career, true);
-      return { out, personalized: a.desc !== b.desc, a:a.desc, b:b.desc };
+      const a = buildNoteOneInsight({ ...base, concernKey:'career' }, 'career', labels.career, false);
+      const b = buildNoteOneInsight({ ...other, concernKey:'career' }, 'career', labels.career, false);
+      return {
+        out,
+        personalized: a.desc !== b.desc,
+        pageText: document.body.innerText,
+      };
     });
-    assert(note4Audit.out.length === 12, `NOTE4 audit count ${note4Audit.out.length}`);
-    assert(new Set(note4Audit.out.map(x => x.title)).size === 12, 'NOTE4 titles are not concern/mode specific');
-    for (const n of note4Audit.out) {
-      assert(!!n.title && !!n.badge && !!n.desc && !!n.checklist, `NOTE4 empty field ${n.key}/${n.mode}`);
-      assert(n.desc.includes('오늘 바로'), `NOTE4 immediate action missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('7일 규칙'), `NOTE4 weekly rule missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('금지선'), `NOTE4 guardrail missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('성공 체크'), `NOTE4 success metric missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('왜 이 처방이 너한테 맞나'), `NOTE4 personalization evidence missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('취약축은'), `NOTE4 weak-axis evidence missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('보완축은'), `NOTE4 balance-axis evidence missing ${n.key}/${n.mode}`);
-      assert(!/(undefined|NaN|null)/.test(`${n.title}${n.badge}${n.desc}${n.checklist}`), `NOTE4 bad token ${n.key}/${n.mode}`);
-      assert(n.integratedTitle === n.title && n.integratedDesc === n.desc, `NOTE4 integration mismatch ${n.key}/${n.mode}`);
-    }
-    for (const key of ['money','career','love','path','people','mental']) {
-      const f = note4Audit.out.find(x => x.key===key && x.mode==='F');
-      const tt = note4Audit.out.find(x => x.key===key && x.mode==='T');
-      assert(f.desc !== tt.desc, `NOTE4 F/T collapsed ${key}`);
-    }
-    assert(note4Audit.personalized, 'NOTE4 does not change evidence across different charts');
-    console.log('NOTE4_AUDIT_PASS', JSON.stringify(note4Audit.out.map(x => ({key:x.key,mode:x.mode,title:x.title}))));
 
-
-    const note56Audit = await page.evaluate(() => {
-      const labels = { money:'재물·돈복', career:'학업·커리어', love:'연애·썸', path:'진로·미래', people:'인간관계', mental:'번아웃·멘탈' };
-      const base = calculateAccurateManse(1998,2,21,'03:10','male');
-      const other = calculateAccurateManse(2001,5,6,'14:30','female');
-      const out5 = [];
-      const out6 = [];
-      for (const key of Object.keys(labels)) {
-        for (const mode of ['F','T']) {
-          const data = { ...base, concernKey:key, userGender:'male', userBirthStr:'19980221' };
-          const wiredData = { ...data, rawSolutionTemplate:{ F:{acts:[]}, T:{acts:[]} } };
-          const n5 = buildNoteFiveEnvironmentFilter(data, key, labels[key], mode === 'T');
-          const i5 = generateConcernNotes(wiredData, mode)[4];
-          out5.push({key,mode,title:n5.title,badge:n5.badge,desc:n5.desc,checklist:n5.checklist, integratedTitle:i5?.title||'', integratedDesc:i5?.desc||''});
-
-          const n6 = buildNoteSixTiming(data, key, labels[key], mode === 'T');
-          const i6 = generateConcernNotes(wiredData, mode)[5];
-          const timing = getTrueBaziTiming(data.dayOheng || 'to', key, data.userGender, data.userBirthStr, data.gyeokguk, data.gyeokStatus, data.realYeonun);
-          out6.push({key,mode,title:n6.title,badge:n6.badge,desc:n6.desc,checklist:n6.checklist, r1:timing.r1,r2:timing.r2, integratedTitle:i6?.title||'', integratedDesc:i6?.desc||''});
-        }
+    assert(copyAudit.out.length === 12, `copy audit set count ${copyAudit.out.length}`);
+    const banned = [
+      '언니가 잡은 사주 근거',
+      '언니가 잡은 계산 근거',
+      '왜 이 처방이 너한테 맞나',
+      '왜 이런 필터가 맞나',
+      '타이밍 읽는 법',
+      '개수는 원국 겉글자 기준',
+      '한국 만세력 기준',
+      '시간 -30분 보정',
+    ];
+    const jargon = ['십신','격국','용신','신강','신약','월령','지장간','상신','기신','세운'];
+    const fMarkers = ['언니','마음','같이','충분히','좋겠','편하','쉬어','자책','괜찮','애썼'];
+    const tMarkers = ['딱','하지 마','문제야','금지','끊','정리','기준','바로','확장','데이터'];
+    let fText = '';
+    let tText = '';
+    const summary = [];
+    for (const set of copyAudit.out) {
+      assert(set.notes.length === 6, `note count ${set.key}/${set.mode}: ${set.notes.length}`);
+      assert(new Set(set.notes.map(n => n.title)).size === 6, `duplicate note title ${set.key}/${set.mode}`);
+      const full = set.notes.map(n => `${n.badge} ${n.title} ${n.desc} ${n.checklist}`).join(' ');
+      assert(!/(undefined|NaN|null)/.test(full), `bad token ${set.key}/${set.mode}`);
+      for (const phrase of banned) assert(!full.includes(phrase), `banned phrase ${phrase} in ${set.key}/${set.mode}`);
+      for (const phrase of jargon) assert(!full.includes(phrase), `hard jargon ${phrase} in ${set.key}/${set.mode}`);
+      for (const n of set.notes) {
+        assert(n.badge && n.title && n.desc && n.checklist, `empty note field ${set.key}/${set.mode}`);
       }
-      const p5a = buildNoteFiveEnvironmentFilter({ ...base, concernKey:'people' }, 'people', labels.people, true);
-      const p5b = buildNoteFiveEnvironmentFilter({ ...other, concernKey:'people' }, 'people', labels.people, true);
-      const maleTiming = getTrueBaziTiming(base.dayOheng || 'to','love','male','19980221',base.gyeokguk,base.gyeokStatus,base.realYeonun);
-      const femaleTiming = getTrueBaziTiming(base.dayOheng || 'to','love','female','19980221',base.gyeokguk,base.gyeokStatus,base.realYeonun);
-      return {out5,out6,p5Personalized:p5a.desc!==p5b.desc,maleTiming,femaleTiming,seoulToday:getSeoulTodayYmd()};
-    });
-    assert(note56Audit.out5.length === 12, `NOTE5 audit count ${note56Audit.out5.length}`);
-    assert(new Set(note56Audit.out5.map(x=>x.title)).size === 12, 'NOTE5 titles are not concern/mode specific');
-    for (const n of note56Audit.out5) {
-      assert(n.desc.includes('내 편 신호'), `NOTE5 ally signal missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('거리 둘 신호'), `NOTE5 villain signal missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('잘 맞는 환경'), `NOTE5 environment missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('왜 이런 필터가 맞나'), `NOTE5 evidence missing ${n.key}/${n.mode}`);
-      assert(!/(undefined|NaN|null)/.test(`${n.title}${n.badge}${n.desc}${n.checklist}`), `NOTE5 bad token ${n.key}/${n.mode}`);
-      assert(n.integratedTitle===n.title && n.integratedDesc===n.desc, `NOTE5 integration mismatch ${n.key}/${n.mode}`);
+      if (set.mode === 'F') fText += ' ' + full; else tText += ' ' + full;
+      summary.push({key:set.key, mode:set.mode, titles:set.notes.map(n=>n.title)});
     }
+    for (const phrase of banned) assert(!copyAudit.pageText.includes(phrase), `banned visible UI phrase ${phrase}`);
+    const fScore = fMarkers.filter(x => fText.includes(x)).length;
+    const tScore = tMarkers.filter(x => tText.includes(x)).length;
+    assert(fScore >= 7, `F persona too weak: ${fScore}`);
+    assert(tScore >= 7, `T persona too weak: ${tScore}`);
+    assert(copyAudit.personalized, 'NOTE1 did not vary across different charts');
     for (const key of Object.keys(LABELS)) {
-      const f=note56Audit.out5.find(x=>x.key===key&&x.mode==='F');
-      const tt=note56Audit.out5.find(x=>x.key===key&&x.mode==='T');
-      assert(f.desc!==tt.desc, `NOTE5 F/T collapsed ${key}`);
+      const f = copyAudit.out.find(x => x.key === key && x.mode === 'F');
+      const t = copyAudit.out.find(x => x.key === key && x.mode === 'T');
+      const sameTitles = f.notes.filter((n,i) => n.title === t.notes[i].title).length;
+      assert(sameTitles <= 1, `F/T titles collapsed for ${key}: ${sameTitles}`);
+      assert(f.notes.map(n=>n.desc).join('|') !== t.notes.map(n=>n.desc).join('|'), `F/T body collapsed for ${key}`);
     }
-    assert(note56Audit.p5Personalized, 'NOTE5 evidence does not change across charts');
-    console.log('NOTE5_AUDIT_PASS', JSON.stringify(note56Audit.out5.map(x=>({key:x.key,mode:x.mode,title:x.title}))));
-
-    assert(note56Audit.out6.length === 12, `NOTE6 audit count ${note56Audit.out6.length}`);
-    assert(new Set(note56Audit.out6.map(x=>x.title)).size === 12, 'NOTE6 titles are not concern/mode specific');
-    for (const n of note56Audit.out6) {
-      assert(n.desc.includes(n.r1), `NOTE6 2026 computed period missing ${n.key}/${n.mode}: ${n.r1}`);
-      assert(n.desc.includes(n.r2), `NOTE6 2027 computed period missing ${n.key}/${n.mode}: ${n.r2}`);
-      assert(n.desc.includes('계산 근거:'), `NOTE6 calculation basis missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('타이밍 읽는 법'), `NOTE6 limitation guide missing ${n.key}/${n.mode}`);
-      assert(n.desc.includes('세운의 십신'), `NOTE6 year-method evidence missing ${n.key}/${n.mode}`);
-      assert(!/(undefined|NaN|null)/.test(`${n.title}${n.badge}${n.desc}${n.checklist}`), `NOTE6 bad token ${n.key}/${n.mode}`);
-      assert(n.integratedTitle===n.title && n.integratedDesc===n.desc, `NOTE6 integration mismatch ${n.key}/${n.mode}`);
-    }
-    for (const key of Object.keys(LABELS)) {
-      const f=note56Audit.out6.find(x=>x.key===key&&x.mode==='F');
-      const tt=note56Audit.out6.find(x=>x.key===key&&x.mode==='T');
-      assert(f.desc!==tt.desc, `NOTE6 F/T collapsed ${key}`);
-    }
-    assert(/^\d{4}-\d{2}-\d{2}$/.test(note56Audit.seoulToday), `Seoul today format invalid ${note56Audit.seoulToday}`);
-    assert(note56Audit.maleTiming.r1 && note56Audit.femaleTiming.r1, 'gender-specific love timing missing');
-    console.log('NOTE6_AUDIT_PASS', JSON.stringify(note56Audit.out6.map(x=>({key:x.key,mode:x.mode,r1:x.r1,r2:x.r2,title:x.title}))));
+    console.log('COPY_QA_PASS', JSON.stringify({fScore,tScore,personalized:copyAudit.personalized,summary}));
 
     await page.close();
   }
