@@ -35,6 +35,16 @@ function assert(cond, msg) {
     }
 
     const exactProfile = buildIntegratedSajuProfile(prepare(exact, 'love'));
+    renderOhengDistribution(
+      exact.elements,
+      exact.pillars.day.gan,
+      exact.dayOheng,
+      exact.pillars,
+      exact.elementProfiles || exact.analysisProfile?.elementProfiles || null,
+    );
+    const ohengCards = [...document.querySelectorAll('#ohengBarContainer > div')]
+      .map((el) => el.innerText.replace(/\s+/g, ' ').trim());
+
     const otherProfile = buildIntegratedSajuProfile({
       ...other,
       concernKey: 'love',
@@ -90,6 +100,7 @@ function assert(cond, msg) {
       wrapper: !!generateConcernNotes.__integratedProfileWrapped,
       exactPillars: [exact.pillars.year.gan + exact.pillars.year.zhi, exact.pillars.month.gan + exact.pillars.month.zhi, exact.pillars.day.gan + exact.pillars.day.zhi, exact.pillars.hour.gan + exact.pillars.hour.zhi],
       exactRaw: exact.elementProfiles.raw,
+      ohengCards,
       exactProfile,
       otherFingerprint: otherProfile.fingerprint,
       rows,
@@ -101,6 +112,9 @@ function assert(cond, msg) {
   assert(result.wrapper, 'generateConcernNotes wrapper not installed');
   assert(result.exactPillars.join(',') === '戊寅,甲寅,己亥,乙丑', `exact pillars drift: ${result.exactPillars.join(',')}`);
   assert(JSON.stringify(result.exactRaw) === JSON.stringify({mok:4,hwa:0,to:3,geum:0,su:1}), `exact raw elements drift: ${JSON.stringify(result.exactRaw)}`);
+  assert(result.ohengCards.length === 5, `oheng card count ${result.ohengCards.length}`);
+  assert(result.ohengCards[1].includes('(0개)') && result.ohengCards[1].includes('0%'), `zero fire must display 0%: ${result.ohengCards[1]}`);
+  assert(result.ohengCards[3].includes('(0개)') && result.ohengCards[3].includes('0%'), `zero metal must display 0%: ${result.ohengCards[3]}`);
   assert(result.exactProfile.fingerprint !== result.otherFingerprint, 'different charts share integrated fingerprint');
   assert(result.exactProfile.audit.missing.length === 0, `semantic layer coverage missing: ${result.exactProfile.audit.missing.join(',')}`);
   assert(result.rows.length === 12, `expected 12 concern/mode rows, got ${result.rows.length}`);
