@@ -58,7 +58,7 @@ function assert(cond, msg) {
           concern,
           mode,
           count: notes.length,
-          enriched: !!base && notes.every((n, i) => (n.desc || '').length > (base[i]?.desc || '').length),
+          enriched: !!base && notes.slice(0, 5).every((n, i) => (n.desc || '').length > (base[i]?.desc || '').length) && !!notes[5]?.__timingQA?.profileFingerprint,
           fingerprint: data.integratedSajuProfile?.fingerprint || '',
           missing: data.integratedSajuProfile?.audit?.missing || [],
           text: notes.map(n => `${n.title}\n${n.desc}\n${n.checklist || ''}`).join('\n'),
