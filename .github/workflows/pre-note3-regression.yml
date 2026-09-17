@@ -6,6 +6,7 @@ on:
       - main
       - 'pre-note3-*'
       - 'integrated-profile-*'
+      - 'product-ladder-*'
   workflow_dispatch:
 
 jobs:
@@ -40,3 +41,5 @@ jobs:
         run: node tests/pre_note3_browser_regression_v4.cjs
       - name: Run integrated profile regression
         run: node tests/integrated_profile_regression.cjs
+      - name: Run paid-value and product regression
+        run: node tests/paid_value_product_regression.cjs
