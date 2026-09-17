@@ -153,7 +153,6 @@
     const pillars = clonePillars(input && input.pillars ? input.pillars : input);
     if (!pillars.day || !pillars.month) throw new Error("신강·신약 판정에는 최소 월주와 일주가 필요합니다.");
     const dayGan = pillars.day.gan;
-    const dayEl = GAN_ELEMENT[dayGan];
     let supportForce = 0;
     let drainForce = 0;
     const evidence = [];
