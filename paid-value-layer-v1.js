@@ -98,7 +98,7 @@
     const pairedLabel = CONCERN_LABELS[pairedConcern] || pairedConcern;
     const text = isT
       ? `참고: ${pairedLabel}과 같은 시기가 잡힌 건 오류가 아니다. 네 사주에서는 두 고민이 같은 흐름에 반응하는 구간이 있어서 날짜가 겹칠 수 있어. 날짜는 같아도 실행 행동은 고민별로 다르게 써.`
-      : `참고로 ${pairedLabel}을 봤을 때도 같은 시기가 나올 수 있어. 복붙한 게 아니라 네 사주에서는 두 고민이 같이 반응하는 구간이 겹치는 거야. 날짜가 같아도 여기서는 ${CONCERN_LABELS[concernKey] || "지금 고민"}에 맞는 행동으로 따로 써주면 돼 💕`;
+      : `참고로 ${pairedLabel}을 봤을 때도 같은 시기가 나올 수 있어. 복붙한 게 아니라 네 사주에서는 두 고민이 같이 반응하는 구간이 겹치는 거야. 날짜가 같아도 여기서는 ${CONCERN_LABELS[concernKey] || "지금 고민"}에 맞는 행동으로 따로 써주면 돼.`;
     return { pairedConcern, same, text };
   }
 
@@ -153,7 +153,7 @@
     const secondDate = timing.r2 || "두 번째 흐름";
     const intro = isT
       ? "날짜만 두 개 던지는 건 의미 없어. 두 구간의 역할을 나눠서 쓸게."
-      : "우리 날짜만 보고 ‘이때 뭐가 생기나?’ 기다리진 말자. 같은 좋은 흐름도 어떻게 쓰느냐가 더 중요하니까, 언니가 첫 번째랑 두 번째 역할을 따로 나눠줄게 💕";
+      : "우리 날짜만 보고 ‘이때 뭐가 생기나?’ 기다리진 말자. 같은 좋은 흐름도 어떻게 쓰느냐가 더 중요하니까, 언니가 첫 번째랑 두 번째 역할을 따로 나눠줄게.";
 
     const overlap = sharedTimingOverlap(data, concernKey, timing, isT);
     const profile = data?.integratedSajuProfile || null;
