@@ -27,6 +27,7 @@ function norm(v) {
     window.gtag = () => {};
     const concerns = ['money','career','love','path','people','mental'];
     const exact = calculateAccurateManse(1998,2,21,'03:10','female');
+    const maleExact = calculateAccurateManse(1998,2,21,'03:10','male');
     const rows = [];
     for (const concern of concerns) {
       for (const mode of ['F','T']) {
@@ -60,12 +61,30 @@ function norm(v) {
         });
       }
     }
+    const maleBase = {
+      ...maleExact,
+      name:'박태양',
+      userBirthStr:'19980221',
+      userTimeKey:'03:10',
+      userGender:'male',
+      userCalendar:'solar',
+      currentMode:'F',
+    };
+    const maleMoney = generateConcernNotes({ ...maleBase, concernKey:'money' }, 'F')[5];
+    const maleLove = generateConcernNotes({ ...maleBase, concernKey:'love' }, 'F')[5];
+
     return {
       paidVersion:globalThis.__PAID_VALUE_LAYER_V1__,
       productVersion:globalThis.__UNNI_PRODUCTS_V1__,
       products:globalThis.__UNNI_PRODUCTS_V1__.products,
       wrappers:{ paid:!!generateConcernNotes.__paidValueWrapped, integrated:!!generateConcernNotes.__integratedProfileWrapped },
       rows,
+      maleShared: {
+        money: maleMoney?.__timingQA || {},
+        love: maleLove?.__timingQA || {},
+        moneyDesc: maleMoney?.desc || '',
+        loveDesc: maleLove?.desc || '',
+      },
     };
   });
 
@@ -76,6 +95,13 @@ function norm(v) {
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
   for (const [id, price] of Object.entries(expectedPrices)) assert(qa.products[id]?.price === price, `${id} price drift`);
   assert(qa.rows.length === 12, `expected 12 rows, got ${qa.rows.length}`);
+  assert(qa.maleShared.money.firstDate === qa.maleShared.love.firstDate, 'male money/love first timing should legitimately share the same sensitive axis');
+  assert(qa.maleShared.money.secondDate === qa.maleShared.love.secondDate, 'male money/love second timing should legitimately share the same sensitive axis');
+  assert(qa.maleShared.money.sharedTimingWith === 'love' && qa.maleShared.love.sharedTimingWith === 'money', 'shared timing pairing metadata missing');
+  assert(qa.maleShared.moneyDesc.includes('복붙한 게 아니라') && qa.maleShared.loveDesc.includes('복붙한 게 아니라'), 'shared timing explanation missing from F copy');
+  assert(norm(qa.maleShared.money.firstBody) !== norm(qa.maleShared.love.firstBody), 'same date must still produce concern-specific first action');
+  assert(norm(qa.maleShared.money.secondBody) !== norm(qa.maleShared.love.secondBody), 'same date must still produce concern-specific second action');
+
   for (const r of qa.rows) {
     assert(r.count === 6, `${r.concern}/${r.mode}: note count ${r.count}`);
     assert(r.first && r.second, `${r.concern}/${r.mode}: timing bodies missing`);
@@ -127,7 +153,10 @@ function norm(v) {
   assert(modal.includes('내 전체 사주판') && modal.includes('무료 이벤트로 미리보기'), 'full_saju modal setup missing');
   await page.locator('#unniProductAction').click();
   modal = await page.locator('#unniProductModal').innerText();
-  assert(modal.includes('너라는 사람의 중심') && modal.includes('앞으로 움직일 때'), 'full_saju preview content missing');
+  const fullSections = await page.locator('#unniProductBody section').count();
+  assert(fullSections === 12, `full_saju section count ${fullSections}`);
+  assert(modal.includes('내 사주 전체 한 줄 요약') && modal.includes('평생 가져갈 내 사용법 3가지'), 'full_saju preview content missing');
+  assert(modal.includes('지금 선택한 고민을 또 풀어쓰는 리포트가 아니야'), 'full_saju differentiation copy missing');
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('concern_bundle3'));
