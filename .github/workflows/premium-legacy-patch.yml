@@ -1,0 +1,31 @@
+name: Premium legacy assertion patch
+
+on:
+  push:
+    branches:
+      - product-ladder-note-qa-v2
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, 'Update premium legacy NOTE3 assertion') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: product-ladder-note-qa-v2
+      - name: Patch assertion
+        run: python3 tests/patch_premium_legacy_assertion.py
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/pre_note3_browser_regression_v4.cjs
+          if git diff --cached --quiet; then
+            echo "No assertion change"
+          else
+            git commit -m "Update premium legacy NOTE3 assertion"
+            git push origin HEAD:product-ladder-note-qa-v2
+          fi
