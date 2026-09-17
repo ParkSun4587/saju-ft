@@ -11,7 +11,7 @@ function assert(cond, msg) {
   page.on('pageerror', e => errors.push(`[pageerror] ${e.stack || e.message}`));
   page.on('console', m => { if (m.type() === 'error') errors.push(`[console] ${m.text()}`); });
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load' });
-  await page.waitForFunction(() => typeof buildIntegratedSajuProfile === 'function' && typeof generateConcernNotes === 'function');
+  await page.waitForFunction(() => typeof buildIntegratedSajuProfile === 'function' && typeof generateConcernNotes === 'function' && window.__UNNI_PRODUCT_CATALOG_V2__?.version === '2.0.0');
 
   const result = await page.evaluate(() => {
     window.gtag = () => {};
@@ -58,7 +58,7 @@ function assert(cond, msg) {
           concern,
           mode,
           count: notes.length,
-          enriched: !!base && notes.every((n, i) => (n.desc || '').length > (base[i]?.desc || '').length),
+          rewritten: !!base && notes.every((n, i) => (n.desc || '') !== (base[i]?.desc || '')),
           fingerprint: data.integratedSajuProfile?.fingerprint || '',
           missing: data.integratedSajuProfile?.audit?.missing || [],
           text: notes.map(n => `${n.title}\n${n.desc}\n${n.checklist || ''}`).join('\n'),
@@ -87,7 +87,7 @@ function assert(cond, msg) {
 
     return {
       engine: window.__INTEGRATED_SAJU_PROFILE_V1__,
-      wrapper: !!generateConcernNotes.__integratedProfileWrapped,
+      wrapper: !!generateConcernNotes.__premiumExperienceV2Wrapped && !!generateConcernNotes.__base?.__integratedProfileWrapped,
       exactPillars: [exact.pillars.year.gan + exact.pillars.year.zhi, exact.pillars.month.gan + exact.pillars.month.zhi, exact.pillars.day.gan + exact.pillars.day.zhi, exact.pillars.hour.gan + exact.pillars.hour.zhi],
       exactRaw: exact.elementProfiles.raw,
       exactProfile,
@@ -98,7 +98,7 @@ function assert(cond, msg) {
   });
 
   assert(result.engine?.version === '1.0.0', 'integrated profile engine version missing');
-  assert(result.wrapper, 'generateConcernNotes wrapper not installed');
+  assert(result.wrapper, 'integrated + premium generateConcernNotes wrapper chain not installed');
   assert(result.exactPillars.join(',') === '戊寅,甲寅,己亥,乙丑', `exact pillars drift: ${result.exactPillars.join(',')}`);
   assert(JSON.stringify(result.exactRaw) === JSON.stringify({mok:4,hwa:0,to:3,geum:0,su:1}), `exact raw elements drift: ${JSON.stringify(result.exactRaw)}`);
   assert(result.exactProfile.fingerprint !== result.otherFingerprint, 'different charts share integrated fingerprint');
@@ -108,13 +108,13 @@ function assert(cond, msg) {
   const jargon = /(신강|신약|중화|격국|용신|상신|기신|지장간|월령|조후|통관|사령)/;
   for (const row of result.rows) {
     assert(row.count === 6, `${row.concern}/${row.mode}: expected six notes`);
-    assert(row.enriched, `${row.concern}/${row.mode}: not all notes consumed integrated profile`);
+    assert(row.rewritten, `${row.concern}/${row.mode}: premium layer did not rewrite all six notes`);
     assert(row.fingerprint, `${row.concern}/${row.mode}: integrated fingerprint missing`);
     assert(row.missing.length === 0, `${row.concern}/${row.mode}: missing semantic layers ${row.missing.join(',')}`);
     assert(!jargon.test(row.text), `${row.concern}/${row.mode}: hard saju jargon leaked into user copy`);
     assert(!/(undefined|NaN|null)/.test(row.text), `${row.concern}/${row.mode}: bad token leaked`);
   }
-  assert(result.diffCount >= 5, `personalization too weak: only ${result.diffCount}/6 NOTE descs differ across charts`);
+  assert(result.diffCount === 6, `personalization too weak: only ${result.diffCount}/6 NOTE descs differ across charts`);
   assert(errors.length === 0, `browser errors: ${errors.join(' | ')}`);
 
   console.log('INTEGRATED_PROFILE_PASS', JSON.stringify({
