@@ -7694,6 +7694,14 @@ return [
           const restored = resultFromSnapshot(resume.data);
           renderResultView(restored, { resumeApproval: false });
           versionBefore = viewVersion;
+          if (
+            resume.productId &&
+            resume.productId !== "concern_single" &&
+            typeof window.handleUnniProductPaymentReturn === "function"
+          ) {
+            await window.handleUnniProductPaymentReturn(params, resume, restored, ticket);
+            return;
+          }
           if (params.get("payment") === "fail") {
             removeStore("unni_pending_approval", true);
             showToast("결제가 취소되었거나 실패했어. 입력 정보는 그대로 뒀어.");
@@ -8217,5 +8225,7 @@ return [
     <script src="./manse-korea-v2.js?v=2.2.0"></script>
   <script src="./classical-engine-v2.js?v=2"></script>
     <script src="./integrated-saju-profile-v1.js?v=1.0.0"></script>
+    <script src="./paid-value-layer-v1.js?v=1.0.0"></script>
+    <script src="./premium-products-v1.js?v=1.0.0"></script>
   </body>
 </html>
