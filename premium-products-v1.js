@@ -16,28 +16,28 @@
       name: "고민 3개 더 깊게",
       price: 2900,
       badge: "다른 고민도 궁금하다면",
-      desc: "지금 본 고민 말고 궁금한 고민 3개를 골라 NOTE 1~6 전체로 이어서 봐.",
+      desc: "지금 본 고민 말고 궁금한 고민 3개를 골라, 고민마다 NOTE 1~6을 전부 받아. 총 18개 메모로 이어서 보는 구성.",
     },
     full_saju: {
       id: "full_saju",
       name: "내 전체 사주판",
       price: 4900,
       badge: "정석 종합판",
-      desc: "지금 고민을 다시 푸는 상품이 아니라, 타고난 기질·강점·과부하·결정법·일·돈·사랑·관계·회복·변화 대응까지 원국 전체를 한 장으로 연결해 봐.",
+      desc: "지금 고민을 다시 푸는 상품이 아니라, 타고난 기질·강점·과부하·결정법·일·돈·사랑·관계·회복·변화 대응까지 사주 전체를 12개 챕터로 연결해 봐.",
     },
     compatibility: {
       id: "compatibility",
       name: "우리 둘 궁합",
       price: 5900,
       badge: "상대 생일 하나 더",
-      desc: "두 사람의 원국을 각각 계산한 뒤 끌리는 지점, 부딪히는 지점, 오래 가려면 필요한 방식을 봐.",
+      desc: "두 사람의 사주를 각각 계산해서 끌림·연애 방식·대화·갈등·화해·애정표현·거리감·생활·돈·장기 관계까지 16개 챕터로 깊게 봐.",
     },
     all_in_one: {
       id: "all_in_one",
       name: "어떤언니 올인원",
       price: 9900,
       badge: "가장 깊은 전체판",
-      desc: "전체 사주판 + 6가지 고민 NOTE 전부를 한 번에 보는 가장 큰 리포트야.",
+      desc: "전체 사주판 12개 챕터 + 6가지 고민 NOTE 36개를 한 번에 보는 가장 큰 리포트야.",
     },
   };
 
@@ -200,8 +200,8 @@
   function fullSajuHtml(data, mode) {
     const isT = mode === "T";
     const intro = isT
-      ? "이 리포트는 지금 선택한 고민 6개를 다시 요약하는 상품이 아니다. 원국 전체에서 반복되는 기질·강점·과부하·판단법·관계·회복·변화 대응을 한 번에 묶은 기본 지도다."
-      : "이건 지금 선택한 고민을 또 풀어쓰는 리포트가 아니야. 언니가 네 사주 원국 전체를 펼쳐놓고, 어떤 고민을 만나도 반복해서 나타나는 기질·강점·지치는 방식·사람 보는 법·회복법을 한 장으로 이어주는 ‘내 사용설명서’에 가까워 💕";
+      ? "이 리포트는 지금 선택한 고민 6개를 다시 요약하는 상품이 아니다. 사주 전체에서 반복되는 기질·강점·과부하·판단법·관계·회복·변화 대응을 한 번에 묶은 기본 지도다."
+      : "이건 지금 선택한 고민을 또 풀어쓰는 리포트가 아니야. 언니가 네 사주 사주 전체를 펼쳐놓고, 어떤 고민을 만나도 반복해서 나타나는 기질·강점·지치는 방식·사람 보는 법·회복법을 한 장으로 이어주는 ‘내 사용설명서’에 가까워 💕";
     const sections = fullSajuSections(data, mode);
     return `<div style="padding:14px 15px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;font-size:12.5px;line-height:1.8;color:#7c2d12;margin-bottom:8px"><b>이 리포트에서 보는 것</b><br>${intro}</div>${sections.map((s) => `<section style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:900;margin:0 0 8px">${s.title}</h4><div style="font-size:13px;line-height:1.85;color:#475569">${s.body}</div></section>`).join("")}`;
   }
@@ -260,17 +260,152 @@
     const isT = mode === "T";
     let partner;
     try { partner = partnerChart(extra); } catch (e) { partner = null; }
-    if (!partner) return `<p style="font-size:13px;line-height:1.8;color:#475569">상대 생년월일 정보를 다시 확인해줘. 정확한 원국이 계산돼야 궁합을 열 수 있어.</p>`;
-    const a = elementOf(data), b = elementOf(partner);
+    if (!partner) return `<p style="font-size:13px;line-height:1.8;color:#475569">상대 생년월일 정보를 다시 확인해줘. 정확한 사주가 계산돼야 궁합을 열 수 있어.</p>`;
+
     const pName = extra?.partner?.n || "상대";
-    const relation = relationCopy(a,b,isT);
+    const safeName = esc(pName);
+    const a = elementOf(data);
+    const b = elementOf(partner);
+    const relation = relationCopy(a, b, isT);
     const myP = getProfile(data);
-    const myNeed = myP?.elements?.primaryBehavior?.verb || "내 기준을 먼저 확인하는 것";
-    const conflict = myP?.relations?.hasClash
-      ? (isT ? "너는 불편함이 누적되면 한 번에 방향을 바꿀 수 있으니, 터진 뒤 수습보다 초기에 말하는 게 낫다." : "너는 참다가 마음이 확 돌아서는 순간이 생길 수 있어서, 작게 서운할 때 말하는 게 오히려 관계를 지켜줘.")
-      : (isT ? "작은 불편함을 오래 미루지 마. 애매한 상태를 길게 두는 게 더 큰 손실이야." : "괜찮은 척 오래 버티기보다 작은 불편함부터 말해도 괜찮아.");
-    return `<section style="padding:10px 0"><h4 style="font-size:16px;font-weight:900">둘이 처음 끌리는 지점</h4><p style="font-size:13px;line-height:1.8;color:#475569">${relation}</p></section><section style="padding:14px 0;border-top:1px solid #eef2f7"><h4 style="font-size:16px;font-weight:900">싸울 때 진짜 봐야 할 것</h4><p style="font-size:13px;line-height:1.8;color:#475569">${conflict}</p></section><section style="padding:14px 0;border-top:1px solid #eef2f7"><h4 style="font-size:16px;font-weight:900">오래 가려면</h4><p style="font-size:13px;line-height:1.8;color:#475569">너는 <b>${myNeed}</b>이 필요하고, ${esc(pName)}도 자기 방식대로 숨 돌릴 공간이 필요해. 둘 중 한 사람의 방식만 정답으로 만들지 않는 게 핵심이야.</p></section>`;
+    const partnerP = getProfile(partner);
+
+    if (!myP || !partnerP) {
+      return `<p style="font-size:13px;line-height:1.8;color:#475569">두 사람의 사주 정보를 충분히 읽지 못했어. 입력값을 다시 확인해줘.</p>`;
+    }
+
+    const myDom = myP.sipsin?.dominantHuman || "내 기준을 찾고 움직이는 성향";
+    const partnerDom = partnerP.sipsin?.dominantHuman || "자기 기준을 찾고 움직이는 성향";
+    const mySecond = myP.sipsin?.secondaryHuman || "";
+    const partnerSecond = partnerP.sipsin?.secondaryHuman || "";
+    const myStrong = ELEMENT_WORD[myP.elements?.influenceRank?.strongest] || "익숙한 방식으로 밀어가는 힘";
+    const partnerStrong = ELEMENT_WORD[partnerP.elements?.influenceRank?.strongest] || "익숙한 방식으로 밀어가는 힘";
+    const myWeak = ELEMENT_WORD[myP.elements?.influenceRank?.weakest] || "일부러 챙겨야 하는 힘";
+    const partnerWeak = ELEMENT_WORD[partnerP.elements?.influenceRank?.weakest] || "일부러 챙겨야 하는 힘";
+    const myNeed = myP.elements?.primaryBehavior?.verb || "내 기준을 먼저 확인하는 것";
+    const partnerNeed = partnerP.elements?.primaryBehavior?.verb || "자기 기준을 먼저 확인하는 것";
+    const mySecondNeed = myP.elements?.secondaryBehavior?.verb || myNeed;
+    const partnerSecondNeed = partnerP.elements?.secondaryBehavior?.verb || partnerNeed;
+    const myAvoid = myP.elements?.avoidBehavior?.verb || "한 가지 방식만 계속 밀어붙이는 것";
+    const partnerAvoid = partnerP.elements?.avoidBehavior?.verb || "한 가지 방식만 계속 밀어붙이는 것";
+    const myClimate = myP.balance?.climateHuman || "속도를 조절하면서 현실 반응을 확인하는 쪽";
+    const partnerClimate = partnerP.balance?.climateHuman || "속도를 조절하면서 현실 반응을 확인하는 쪽";
+    const myWeakStat = myP.behavior?.weakStatHuman || "내가 실제로 소모되는 지점을 확인하는 것";
+    const partnerWeakStat = partnerP.behavior?.weakStatHuman || "자기가 실제로 소모되는 지점을 확인하는 것";
+    const myClash = !!myP.relations?.hasClash;
+    const partnerClash = !!partnerP.relations?.hasClash;
+    const sameStrength = myP.strength?.code === partnerP.strength?.code;
+    const sameStrongElement = myP.elements?.influenceRank?.strongest === partnerP.elements?.influenceRank?.strongest;
+    const bothClash = myClash && partnerClash;
+
+    const intro = isT
+      ? `궁합은 ‘좋다/나쁘다’ 한 줄로 끝내면 쓸모가 없어. 너와 ${safeName}의 사주를 따로 본 다음, 실제 관계에서 어디가 맞고 어디서 충돌하는지 16개 항목으로 나눠서 볼게.`
+      : `궁합은 그냥 “둘이 잘 맞아” 한마디 듣고 끝내면 너무 아깝잖아. 언니가 너랑 ${safeName} 사주를 따로 펼쳐놓고, 왜 끌리고 어디서 서운해지고 어떻게 해야 오래 편한지까지 16개로 차근차근 풀어줄게.`;
+
+    const cards = [
+      {
+        title: "01 · 둘 사이를 한 문장으로 보면",
+        body: isT
+          ? `${relation} 너는 <b>${myDom}</b> 쪽, ${safeName}은 <b>${partnerDom}</b> 쪽이 강하다. 둘의 차이는 애정의 크기보다 반응 방식 차이로 보는 게 정확해.`
+          : `${relation} 너는 <b>${myDom}</b> 쪽으로 마음이 움직이고, ${safeName}은 <b>${partnerDom}</b> 쪽으로 반응하는 편이야. 그래서 같은 마음이어도 표현되는 모양은 꽤 다를 수 있어. 그 차이를 “나를 덜 좋아하나?”로 번역하지 않는 게 첫 번째야.`
+      },
+      {
+        title: "02 · 처음 서로에게 끌리는 이유",
+        body: isT
+          ? `너의 <b>${myStrong}</b>과 ${safeName}의 <b>${partnerStrong}</b>이 관계의 첫 인상을 만든다. ${sameStrongElement ? "강점이 비슷해서 상대 방식이 빨리 읽히는 조합이다." : "강점이 달라 서로에게 없는 면이 매력으로 보일 가능성이 있다."}`
+          : `처음에는 네 <b>${myStrong}</b>과 ${safeName}의 <b>${partnerStrong}</b>이 서로 눈에 들어오기 쉬워. ${sameStrongElement ? "둘이 비슷한 힘을 써서 ‘이 사람은 말 안 해도 좀 알겠다’ 싶은 순간이 생길 수 있어." : "서로 잘하는 방향이 달라서 ‘나한테 없는 게 저 사람한테 있네’ 하고 끌릴 수 있어."}`
+      },
+      {
+        title: "03 · 내가 사랑할 때 나오는 모습",
+        body: isT
+          ? `너는 연애에서도 <b>${myDom}</b>이 기본 반응으로 나온다. ${myP.strength?.T || ""}. 사랑한다고 해서 네 기본 작동 방식이 사라지지는 않아.`
+          : `너는 좋아하는 사람이 생겨도 기본적으로 <b>${myDom}</b> 쪽으로 마음을 써. ${myP.strength?.F || ""}. 그러니까 사랑할수록 잘해주려고 애쓰는 부분과, 혼자 견디려고 하는 부분을 같이 봐줘야 해.`
+      },
+      {
+        title: `04 · ${safeName}이 사랑할 때 나오는 모습`,
+        body: isT
+          ? `${safeName}은 <b>${partnerDom}</b> 쪽이 먼저 나온다${partnerSecond ? `, 그다음에는 ${partnerSecond}` : ""}. ${partnerP.strength?.T || ""}. 상대 반응을 네 방식으로만 해석하면 오판할 수 있어.`
+          : `${safeName}은 마음이 생겼을 때 <b>${partnerDom}</b> 쪽으로 먼저 표현하는 편이야${partnerSecond ? `. 그 안에는 ${partnerSecond}도 같이 있고` : ""}. ${partnerP.strength?.F || ""}. 네가 기대한 표현이 아니어도 저 사람 나름의 사랑 방식일 수 있다는 걸 같이 봐야 해.`
+      },
+      {
+        title: "05 · 말이 잘 통할 때와 엇갈릴 때",
+        body: isT
+          ? `대화가 잘 될 때는 서로 결론보다 기준을 먼저 공개할 때다. 너는 <b>${myNeed}</b>, ${safeName}은 <b>${partnerNeed}</b>이 필요하다. 상대가 알아서 눈치채길 기다리지 마.`
+          : `둘이 대화할 때 제일 중요한 건 “왜 그것밖에 몰라?”가 아니라 각자 필요한 걸 먼저 말해주는 거야. 너는 <b>${myNeed}</b>이 필요하고, ${safeName}은 <b>${partnerNeed}</b>이 필요해. 서로 마음을 맞히는 게임처럼 만들지 않았으면 좋겠어.`
+      },
+      {
+        title: "06 · 서운함이 시작되는 포인트",
+        body: isT
+          ? `너는 <b>${myWeak}</b> 쪽이 밀리면 피로가 커지고, ${safeName}은 <b>${partnerWeak}</b> 쪽이 밀릴 때 예민해질 수 있다. 겉으로 드러난 말보다 그 직전 무엇이 부족했는지 봐.`
+          : `싸움은 갑자기 생긴 것 같아도 그 전에 작은 서운함이 쌓여 있는 경우가 많아. 너는 <b>${myWeak}</b>이 부족해질 때 마음이 메말라지고, ${safeName}은 <b>${partnerWeak}</b>이 빠질 때 자기답지 않게 예민해질 수 있어. 그 순간을 빨리 알아보는 게 중요해.`
+      },
+      {
+        title: "07 · 싸움이 커지는 순서",
+        body: isT
+          ? `${bothClash ? "둘 다 누적 후 한 번에 뒤집는 반응이 가능해서 싸움이 시작되면 확 커질 수 있다." : myClash ? "너는 참다가 한 번에 방향을 바꾸는 반응을 조심해야 한다." : partnerClash ? safeName + " 쪽이 쌓아두다 한 번에 반응할 수 있다." : "둘 다 큰 사건보다 작은 불편함을 방치하는 게 더 위험하다."} 특히 너의 <b>${myAvoid}</b>, 상대의 <b>${partnerAvoid}</b>이 동시에 나오면 대화를 중단하고 식히는 게 낫다.`
+          : `${bothClash ? "둘 다 참다가 한 번에 확 돌아서는 순간이 생길 수 있어서, 작은 싸움도 타이밍이 나쁘면 크게 번질 수 있어." : myClash ? "너는 괜찮은 척 참다가 어느 순간 마음이 확 닫힐 수 있어." : partnerClash ? `${safeName}이 말이 없다가 갑자기 선을 긋는 순간이 생길 수 있어.` : "둘 다 작은 불편함을 ‘이 정도는 넘기자’ 하고 미루다가 서운함이 커질 수 있어."} 특히 네가 <b>${myAvoid}</b>, 상대가 <b>${partnerAvoid}</b>만 반복하고 있으면 그날은 결론까지 내지 말고 잠깐 식히자.`
+      },
+      {
+        title: "08 · 싸운 뒤 화해하는 법",
+        body: isT
+          ? `화해 순서는 감정 정리 → 사실 확인 → 다음 규칙 합의가 맞다. 너는 <b>${mySecondNeed}</b>, ${safeName}은 <b>${partnerSecondNeed}</b>을 넣어야 같은 싸움이 반복되지 않는다.`
+          : `화해할 때 “미안해, 됐지?”로 빨리 덮기보다 서로 뭐가 아팠는지 한 번은 확인해줘. 너한테는 <b>${mySecondNeed}</b>이 도움이 되고, ${safeName}에게는 <b>${partnerSecondNeed}</b>이 필요해. 사과보다 다음번에 달라지는 행동이 둘 마음을 더 안심시켜줘.`
+      },
+      {
+        title: "09 · 애정 표현이 어긋나는 순간",
+        body: isT
+          ? `같은Strength:${sameStrength ? "둘의 에너지 운용 방식이 비슷해서 표현 강도는 맞기 쉽다." : "에너지 운용 방식이 달라 한쪽은 충분히 표현했다고 느끼는데 다른 쪽은 부족하다고 느낄 수 있다."} 말, 연락, 행동 중 무엇을 애정의 증거로 보는지 직접 맞춰.`
+          : `${sameStrength ? "둘은 마음을 쓰는 속도가 비슷해서 어느 정도 리듬을 맞추기 쉬운 편이야." : "한 사람은 충분히 하고 있다고 생각하는데 다른 사람은 ‘왜 이렇게 멀지?’ 하고 느끼는 순간이 생길 수 있어."} 그래서 “난 연락이 이 정도면 안심돼”, “난 말보다 행동이 더 중요해”처럼 사랑받는 느낌이 드는 방식을 구체적으로 말해주는 게 좋아.`
+      },
+      {
+        title: "10 · 연락과 혼자 있는 시간",
+        body: isT
+          ? `너는 <b>${myClimate}</b>, ${safeName}은 <b>${partnerClimate}</b>이 편하다. 연락 빈도를 사랑의 점수로 쓰지 말고 각자 회복에 필요한 시간을 먼저 정해.`
+          : `연락이 많아야 사랑이고 혼자 있고 싶으면 식은 마음이라고 단정하지 말자. 너는 <b>${myClimate}</b>일 때 편하고, ${safeName}은 <b>${partnerClimate}</b>일 때 자기 리듬을 찾기 쉬워. 서로 숨 돌릴 시간을 인정해주면 오히려 관계가 덜 불안해져.`
+      },
+      {
+        title: "11 · 일상에서 같이 살기 편하려면",
+        body: isT
+          ? `연애 감정보다 생활 규칙에서 갈등이 오래 간다. 일정, 약속시간, 집안일, 휴식 방식 중 반복 충돌하는 항목은 담당과 기준을 명확히 해. 추측 대신 규칙이 낫다.`
+          : `좋아하는 마음이 커도 생활 리듬이 계속 안 맞으면 사소한 일로 지치기 쉬워. 약속시간, 쉬는 방식, 집안일, 주말 계획 같은 건 “사랑하면 알아서 맞겠지” 하지 말고 둘만의 기준을 만들어두는 게 훨씬 편해.`
+      },
+      {
+        title: "12 · 돈과 현실 문제를 같이 다룰 때",
+        body: isT
+          ? `관계에서 돈은 감정보다 기준 문제다. 너는 <b>${myWeakStat}</b>, ${safeName}은 <b>${partnerWeakStat}</b>을 놓치면 현실 스트레스가 관계 감정으로 번질 수 있다. 비용·선물·여행·저축 기준을 미리 말해.`
+          : `돈 얘기는 사랑이 부족해서 불편한 게 아니라 서로 기준이 다르면 누구나 조심스러워져. 너는 <b>${myWeakStat}</b>을, ${safeName}은 <b>${partnerWeakStat}</b>을 놓치지 않는 게 중요해. 데이트비, 선물, 여행, 큰 지출은 마음 눈치 보지 말고 미리 얘기하는 게 오히려 덜 상처받아.`
+      },
+      {
+        title: "13 · 질투·경계·사생활",
+        body: isT
+          ? `경계선은 애매하게 두지 마. 친구 관계, 전 연인, SNS, 연락 공개 범위처럼 싸움이 날 수 있는 항목은 허용/불편 기준을 구체적으로 맞춰. 통제와 배려를 섞지 않는 게 핵심이다.`
+          : `사랑하면 다 보여줘야 한다거나, 믿으면 아무 말도 하면 안 된다는 식으로 극단적으로 가지 않았으면 좋겠어. 친구, 전 연인, SNS, 개인시간처럼 민감한 부분은 “난 여기까지는 괜찮고 여기부터는 불편해”라고 말해도 돼. 경계를 말하는 건 상대를 못 믿는다는 뜻이 아니야.`
+      },
+      {
+        title: "14 · 오래 만날수록 좋아지는 부분",
+        body: isT
+          ? `${sameStrongElement ? "서로의 강점을 빠르게 이해하는 조합이라 역할만 잘 나누면 안정감이 커질 수 있다." : "서로 다른 강점을 실제 생활에서 보완 관계로 쓰면 시간이 갈수록 효율이 좋아질 수 있다."} 핵심은 상대를 바꾸는 게 아니라 각자 잘하는 영역을 인정하는 것.`
+          : `${sameStrongElement ? "시간이 지나면 서로 왜 그렇게 행동하는지 더 빨리 알아차릴 수 있어서 편안함이 커질 수 있어." : "서로 다른 장점을 경쟁시키지 않고 ‘이건 네가 더 잘하네’ 하고 맡길 수 있게 되면 관계가 훨씬 단단해질 수 있어."} 오래 갈수록 중요한 건 닮아지는 게 아니라 서로를 다루는 법을 익히는 거야.`
+      },
+      {
+        title: "15 · 이 관계에서 꼭 조심할 신호",
+        body: isT
+          ? `위험 신호는 세 가지다. <b>말 안 하고 시험하기</b>, <b>상대 방식만 문제라고 단정하기</b>, <b>작은 불편함을 쌓아 한 번에 정리하기</b>. 이 셋이 반복되면 궁합보다 운영 방식이 문제다.`
+          : `언니가 이 관계에서 제일 조심하라고 하고 싶은 건 세 가지야. 마음을 말하지 않고 상대가 알아채나 시험하는 것, 내 방식만 사랑의 정답이라고 생각하는 것, 괜찮은 척 쌓아두다가 한 번에 끝내버리는 것. 이게 반복되면 원래 잘 맞는 부분도 점점 안 보이게 돼.`
+      },
+      {
+        title: "16 · 둘이 실제로 지키면 좋은 약속",
+        body: isT
+          ? `<b>1.</b> 서운함은 24시간 안에 말하기.<br><b>2.</b> 싸울 때 관계 전체를 평가하지 않기.<br><b>3.</b> 연락·돈·개인시간 기준을 미리 합의하기.<br><b>4.</b> 너는 ${myNeed}, ${safeName}은 ${partnerNeed}을 존중하기.<br><b>5.</b> 같은 싸움이 세 번 반복되면 감정이 아니라 규칙을 바꾸기.`
+          : `언니가 마지막으로 둘한테 약속 다섯 개만 남겨줄게.<br><br><b>1.</b> 서운한 건 너무 오래 묵히지 않기.<br><b>2.</b> 싸운 날 “우리 원래 안 맞아”까지 가지 않기.<br><b>3.</b> 연락·돈·혼자 있는 시간은 미리 기준 맞추기.<br><b>4.</b> 너한테 필요한 <b>${myNeed}</b>과 ${safeName}에게 필요한 <b>${partnerNeed}</b>을 서로 존중하기.<br><b>5.</b> 같은 싸움이 반복되면 사랑을 의심하기 전에 둘의 방식부터 바꿔보기.<br><br>궁합은 둘 사이를 결정하는 판정표라기보다, 잘 맞는 부분은 더 잘 쓰고 부딪히는 부분은 덜 다치게 만드는 지도처럼 봐주면 돼.`
+      },
+    ];
+
+    const summary = `<div style="padding:15px;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;margin-bottom:10px"><div style="font-size:11px;font-weight:900;color:#c2410c;margin-bottom:6px">우리 둘 궁합 · 16개 챕터</div><div style="font-size:13px;line-height:1.85;color:#7c2d12">${intro}</div></div>`;
+    const pairCard = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 6px"><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">나</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(myDom)}</div></div><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">${safeName}</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(partnerDom)}</div></div></div>`;
+    return summary + pairCard + cards.map((s) => `<section style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:950;margin:0 0 8px;color:#0f172a">${s.title}</h4><div style="font-size:13px;line-height:1.9;color:#475569">${s.body}</div></section>`).join("");
   }
+
 
   function productBody(productId, data, extra) {
     const mode = getMode(data);
@@ -305,7 +440,23 @@
       return `<div style="font-size:12px;font-weight:800;margin-bottom:8px">더 보고 싶은 고민 3개를 골라</div><div id="unniBundleChecks" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${Object.keys(CONCERNS).filter((k) => k !== data?.concernKey).map((k) => `<label style="padding:10px;border:1px solid #e2e8f0;border-radius:12px;font-size:12px;font-weight:700"><input type="checkbox" value="${k}" ${defaults.has(k)?"checked":""}> ${CONCERNS[k]}</label>`).join("")}</div>`;
     }
     if (productId === "compatibility") {
-      return `<div style="display:grid;gap:9px"><input id="partnerName" placeholder="상대 이름 또는 별명" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><input id="partnerBirth" inputmode="numeric" maxlength="8" placeholder="생년월일 8자리 예: 19990214" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><select id="partnerGender" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="female">여성</option><option value="male">남성</option></select><select id="partnerCalendar" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="solar">양력</option><option value="lunar">음력</option></select></div><input id="partnerTime" placeholder="태어난 시간 HH:MM · 모르면 비워두기" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"></div>`;
+      const hourOpts = Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1}시</option>`).join("");
+      const minuteOpts = Array.from({ length: 60 }, (_, i) => `<option value="${String(i).padStart(2, "0")}">${String(i).padStart(2, "0")}분</option>`).join("");
+      return `<div style="display:grid;gap:10px">
+        <div><div style="font-size:11px;font-weight:900;color:#475569;margin:0 0 5px">상대 이름</div><input id="partnerName" placeholder="이름 또는 별명" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-radius:12px"></div>
+        <div><div style="font-size:11px;font-weight:900;color:#475569;margin:0 0 5px">상대 생년월일</div><input id="partnerBirth" inputmode="numeric" maxlength="8" placeholder="예: 1999년 2월 14일 → 19990214" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-radius:12px"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><select id="partnerGender" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="female">여성</option><option value="male">남성</option></select><select id="partnerCalendar" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="solar">양력 생일</option><option value="lunar">음력 생일</option></select></div>
+        <div style="padding:12px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0">
+          <div style="font-size:11px;font-weight:900;color:#334155;margin-bottom:7px">상대가 태어난 시간 <span style="font-weight:700;color:#94a3b8">(알면 선택)</span></div>
+          <div style="display:grid;grid-template-columns:.9fr 1fr 1fr;gap:6px">
+            <select id="partnerAmpm" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:10px;background:white"><option value="">오전/오후</option><option value="am">오전</option><option value="pm">오후</option></select>
+            <select id="partnerHour12" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:10px;background:white"><option value="">몇 시</option>${hourOpts}</select>
+            <select id="partnerMinute" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:10px;background:white"><option value="">몇 분</option>${minuteOpts}</select>
+          </div>
+          <label style="display:flex;align-items:center;gap:7px;margin-top:9px;font-size:11px;font-weight:800;color:#64748b;cursor:pointer"><input id="partnerTimeUnknown" type="checkbox"> 태어난 시간을 몰라요</label>
+          <div style="font-size:10px;line-height:1.5;color:#94a3b8;margin-top:6px">예: 오후 3시 20분이면 ‘오후 · 3시 · 20분’만 고르면 돼.</div>
+        </div>
+      </div>`;
     }
     return "";
   }
@@ -319,9 +470,17 @@
     if (productId === "compatibility") {
       const b = root.querySelector("#partnerBirth")?.value.replace(/\D/g, "") || "";
       if (!/^\d{8}$/.test(b)) throw new Error("상대 생년월일을 8자리로 입력해줘.");
-      const tRaw = root.querySelector("#partnerTime")?.value.trim() || "";
-      if (tRaw && !/^([01]\d|2[0-3]):[0-5]\d$/.test(tRaw)) throw new Error("상대 태어난 시간은 HH:MM 형식으로 입력해줘.");
-      return { partner: { n: root.querySelector("#partnerName")?.value.trim() || "상대", b, t: tRaw || "unknown", g: root.querySelector("#partnerGender")?.value || "female", c: root.querySelector("#partnerCalendar")?.value || "solar", l: false } };
+      const unknown = !!root.querySelector("#partnerTimeUnknown")?.checked;
+      let tRaw = "unknown";
+      if (!unknown) {
+        const ampm = root.querySelector("#partnerAmpm")?.value || "";
+        const hour12 = Number(root.querySelector("#partnerHour12")?.value || 0);
+        const minute = root.querySelector("#partnerMinute")?.value || "";
+        if (!ampm || !hour12 || minute === "") throw new Error("상대 태어난 시간을 골라줘. 모르면 ‘태어난 시간을 몰라요’를 체크해줘.");
+        const hour24 = (hour12 % 12) + (ampm === "pm" ? 12 : 0);
+        tRaw = `${String(hour24).padStart(2, "0")}:${minute}`;
+      }
+      return { partner: { n: root.querySelector("#partnerName")?.value.trim() || "상대", b, t: tRaw, g: root.querySelector("#partnerGender")?.value || "female", c: root.querySelector("#partnerCalendar")?.value || "solar", l: false } };
     }
     return {};
   }
