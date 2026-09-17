@@ -1,5 +1,6 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
+// Story-card v2 and persona-copy regressions live in this suite.
 
 function assert(cond, msg) { if (!cond) throw new Error(msg); }
 function norm(v) {
