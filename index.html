@@ -2448,19 +2448,7 @@
         saveInputDraft();
       }
 
-      const HEAVEN_GANS = [
-        "甲",
-        "乙",
-        "丙",
-        "丁",
-        "戊",
-        "己",
-        "庚",
-        "辛",
-        "壬",
-        "癸",
-      ];
-      const EARTH_ZHIS = [
+            const EARTH_ZHIS = [
         "子",
         "丑",
         "寅",
@@ -2475,31 +2463,7 @@
         "亥",
       ];
 
-      const HANJA_TO_KR = {
-        甲: "갑",
-        乙: "을",
-        丙: "병",
-        丁: "정",
-        戊: "무",
-        己: "기",
-        庚: "경",
-        辛: "신",
-        壬: "임",
-        癸: "계",
-        子: "자",
-        丑: "축",
-        寅: "인",
-        卯: "묘",
-        辰: "진",
-        巳: "사",
-        午: "오",
-        未: "미",
-        申: "신",
-        酉: "유",
-        戌: "술",
-        亥: "해",
-      };
-
+      
       const OHENG_MAP = {
         甲: "mok",
         乙: "mok",
@@ -2874,105 +2838,7 @@
       };
 
       // 1020 과몰입 유발: MBTI 찰떡 깐부 & 상극 사전
-      const MBTI_CHEMISTRY = {
-        INTJ: {
-          best: "ENFP",
-          bestTag: "서로 자극이 되는 조합",
-          worst: "ESFJ",
-          worstTag: "성향이 부딪히는 사이",
-        },
-        INTP: {
-          best: "ENTJ",
-          bestTag: "생각의 폭을 넓혀주는 사이",
-          worst: "ISFJ",
-          worstTag: "답답함이 쌓이는 관계",
-        },
-        ENTJ: {
-          best: "INTP",
-          bestTag: "결과를 만들어내는 콤비",
-          worst: "ISFP",
-          worstTag: "속도가 맞지 않는 사이",
-        },
-        ENTP: {
-          best: "INFJ",
-          bestTag: "텐션이 잘 맞는 조합",
-          worst: "ISTJ",
-          worstTag: "융통성이 부족한 관계",
-        },
-        INFJ: {
-          best: "ENTP",
-          bestTag: "마음이 편안해지는 사이",
-          worst: "ESTP",
-          worstTag: "에너지가 소모되는 관계",
-        },
-        INFP: {
-          best: "ENFJ",
-          bestTag: "온기를 나누는 힐링 조합",
-          worst: "ESTJ",
-          worstTag: "상처를 주기 쉬운 사이",
-        },
-        ENFJ: {
-          best: "INFP",
-          bestTag: "든든하게 의지하는 사이",
-          worst: "ISTP",
-          worstTag: "서로 지치는 관계",
-        },
-        ENFP: {
-          best: "INTJ",
-          bestTag: "지루할 틈 없는 꿀케미",
-          worst: "ISTJ",
-          worstTag: "지나치게 깐깐한 사이",
-        },
-        ISTJ: {
-          best: "ESFP",
-          bestTag: "안정감을 주는 든든한 조합",
-          worst: "ENFP",
-          worstTag: "무계획에 지치는 관계",
-        },
-        ISFJ: {
-          best: "ESTP",
-          bestTag: "묵묵히 믿고 맡기는 사이",
-          worst: "ENTP",
-          worstTag: "날 선 팩폭에 다치는 관계",
-        },
-        ESTJ: {
-          best: "ISFP",
-          bestTag: "실속을 챙겨주는 조합",
-          worst: "INFP",
-          worstTag: "템포가 맞지 않는 사이",
-        },
-        ESFJ: {
-          best: "ISTP",
-          bestTag: "분위기를 맞춰주는 사이",
-          worst: "INTP",
-          worstTag: "공감이 통하지 않는 관계",
-        },
-        ISTP: {
-          best: "ESFJ",
-          bestTag: "간섭 없이 편안한 조합",
-          worst: "ENFJ",
-          worstTag: "과한 간섭에 지치는 사이",
-        },
-        ISFP: {
-          best: "ESTJ",
-          bestTag: "페이스를 지켜주는 사이",
-          worst: "ENTJ",
-          worstTag: "기강을 잡히는 불편한 관계",
-        },
-        ESTP: {
-          best: "ISFJ",
-          bestTag: "환상의 액션 콤비",
-          worst: "INFJ",
-          worstTag: "답답함이 몰려오는 사이",
-        },
-        ESFP: {
-          best: "ISTJ",
-          bestTag: "주변을 밝혀주는 꿀조합",
-          worst: "INTJ",
-          worstTag: "지나치게 진지한 사이",
-        },
-      };
-
+      
       // 화면 분할 인트로: 스프링 팝업(0.18s) 후 카톡방 슬라이드-인 전환
       let isSplitSelecting = false;
       function selectSplitMode(mode) {
@@ -3145,13 +3011,7 @@
 
       // 한글 받침 여부에 따라 알맞은 조사를 자동으로 결합하는 함수
       // 스탯별 핵심 심리 기제 — 여러 해석 함수에서 공통으로 참조한다.
-      const STAT_CORE_TRAIT = {
-        wealth: "이해득실을 냉정하게 재는 감각",
-        mental: "작은 자극에도 쉽게 흔들리는 마음의 맷집",
-        drive: "재고 따지다 타이밍을 놓치는 신중함",
-        network: "나와 남 사이 경계를 긋는 감각",
-      };
-
+      
       function attachJosa(word, josaType = "을/를") {
         if (!word) return "";
         const lastChar = word.charCodeAt(word.length - 1);
@@ -5537,14 +5397,6 @@ return [
               : "음력 평달"
             : "양력";
 
-          // 현재 실시간 시간 구하기
-          const now = new Date();
-          let hrs = now.getHours();
-          const mins = now.getMinutes().toString().padStart(2, "0");
-          const ampm = hrs >= 12 ? "오후" : "오전";
-          hrs = hrs % 12 || 12;
-          const currentChatTime = `${ampm} ${hrs}:${mins}`;
-
           // 실시간 전송 시간 계산 함수
           const getCurrTime = () => {
             const now = new Date();
@@ -5873,8 +5725,7 @@ return [
       }
 
       
-      let teaserBuffer = null;
-
+      
       
       function updateResultContentByMode(mode) {
         const isT = mode === "T";
