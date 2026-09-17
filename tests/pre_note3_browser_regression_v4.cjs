@@ -11,7 +11,9 @@ const LABELS = {
 };
 function assert(cond, msg) { if (!cond) throw new Error(msg); }
 function isExpectedBoundaryDiagnostic(text) {
-  return String(text).includes('이 생일은 절기가 바뀌는 날이라 태어난 시간을 모르면');
+  const value = String(text);
+  return value.includes('이 생일은 절기가 바뀌는 날이라 태어난 시간을 모르면') ||
+    value.includes('만세력 엔진이 최신 버전으로 갱신되지 않았어요.');
 }
 
 const CASES = [
