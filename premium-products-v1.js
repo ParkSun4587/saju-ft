@@ -176,12 +176,7 @@
     const pName = extra?.partner?.n || "상대";
     const relation = relationCopy(a,b,isT);
     const myP = getProfile(data);
-    let otherP = null;
-    if (typeof global.buildIntegratedSajuProfile === "function") {
-      try { otherP = global.buildIntegratedSajuProfile(partner); } catch (_) {}
-    }
     const myNeed = myP?.elements?.primaryBehavior?.verb || "내 기준을 먼저 확인하는 것";
-    const otherNeed = otherP?.elements?.primaryBehavior?.verb || "상대가 자기 속도로 판단할 시간을 주는 것";
     const conflict = myP?.relations?.hasClash
       ? (isT ? "너는 불편함이 누적되면 한 번에 방향을 바꿀 수 있으니, 터진 뒤 수습보다 초기에 말하는 게 낫다." : "너는 참다가 마음이 확 돌아서는 순간이 생길 수 있어서, 작게 서운할 때 말하는 게 오히려 관계를 지켜줘.")
       : (isT ? "작은 불편함을 오래 미루지 마. 애매한 상태를 길게 두는 게 더 큰 손실이야." : "괜찮은 척 오래 버티기보다 작은 불편함부터 말해도 괜찮아.");
