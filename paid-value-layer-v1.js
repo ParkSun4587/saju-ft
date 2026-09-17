@@ -123,12 +123,16 @@
       ? "날짜만 두 개 던지는 건 의미 없어. 두 구간의 역할을 나눠서 쓸게."
       : "좋은 때가 와도 두 시기를 똑같이 쓰면 아깝잖아. 언니가 각각 어떻게 써야 하는지 나눠줄게.";
 
-    const desc = `${intro}<br><br><b>첫 번째 흐름 · ${firstDate}</b><br>${firstBody}<br><br><b>두 번째 흐름 · ${secondDate}</b><br>${secondBody}<br><br><b>두 시기의 차이</b><br>${comparisonLine(timing, concernKey, isT)}`;
+    const profile = data?.integratedSajuProfile || null;
+    const personalMove = profile
+      ? `${profile.balance?.climateHuman || "현실 반응을 보면서 속도를 조절하는 쪽"}. 특히 ${profile.elements?.primaryBehavior?.verb || "한 번에 하나씩 움직이는 것"}을 먼저 써.`
+      : "좋은 시기에도 한 번에 크게 뒤집기보다 현실 반응을 확인하면서 다음 행동을 정해.";
+    const desc = `${intro}<br><br><b>첫 번째 흐름 · ${firstDate}</b><br>${firstBody}<br><br><b>두 번째 흐름 · ${secondDate}</b><br>${secondBody}<br><br><b>두 시기의 차이</b><br>${comparisonLine(timing, concernKey, isT)}<br><br><b>너한테 맞는 움직임</b><br>${personalMove}`;
     const checklist = isT
       ? `${firstDate}에 할 ‘테스트 행동’ 1개와 ${secondDate}에 할 ‘확정 행동’ 1개를 각각 캘린더에 넣기`
       : `${firstDate}에는 가볍게 확인할 행동 하나, ${secondDate}에는 이어서 굳힐 행동 하나를 따로 적어두기`;
 
-    return { ...note, desc, checklist, __timingQA: { firstDate, secondDate, firstBody, secondBody } };
+    return { ...note, desc, checklist, __timingQA: { firstDate, secondDate, firstBody, secondBody, profileFingerprint: profile?.fingerprint || "" } };
   }
 
   function splitSentences(html) {
