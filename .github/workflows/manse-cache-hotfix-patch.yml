@@ -1,0 +1,27 @@
+name: Manse cache hotfix patch
+
+on:
+  push:
+    branches:
+      - pre-note3-manse-cache-hotfix
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, 'Apply manse cache hotfix') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pre-note3-manse-cache-hotfix
+      - name: Apply guarded manse cache hotfix
+        run: python3 tests/patch_manse_cache_hotfix.py
+      - name: Commit manse cache hotfix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html manse-korea-v2.js tests/pre_note3_browser_regression_v4.cjs
+          git commit -m "Apply manse cache hotfix"
+          git push origin HEAD:pre-note3-manse-cache-hotfix
