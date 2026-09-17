@@ -70,6 +70,38 @@
     }
   }
 
+  const CONCERN_LABELS = {
+    money: "재물·돈복",
+    career: "직장·커리어",
+    love: "연애·썸",
+    path: "진로·내 길",
+    people: "인간관계",
+    mental: "마음·회복",
+  };
+
+  function sharedTimingOverlap(data, concernKey, timing, isT) {
+    const male = data?.userGender === "male";
+    let pairedConcern = "";
+    if (male && concernKey === "money") pairedConcern = "love";
+    else if (male && concernKey === "love") pairedConcern = "money";
+    else if (!male && concernKey === "career") pairedConcern = "love";
+    else if (!male && concernKey === "love") pairedConcern = "career";
+    if (!pairedConcern) return null;
+
+    const paired = safeTiming(data, pairedConcern);
+    if (!paired) return null;
+    const same = [];
+    if (timing?.r1 && timing.r1 === paired.r1) same.push(timing.r1);
+    if (timing?.r2 && timing.r2 === paired.r2) same.push(timing.r2);
+    if (same.length === 0) return null;
+
+    const pairedLabel = CONCERN_LABELS[pairedConcern] || pairedConcern;
+    const text = isT
+      ? `참고: ${pairedLabel}과 같은 시기가 잡힌 건 오류가 아니다. 네 사주에서는 두 고민이 같은 흐름에 반응하는 구간이 있어서 날짜가 겹칠 수 있어. 날짜는 같아도 실행 행동은 고민별로 다르게 써.`
+      : `참고로 ${pairedLabel}을 봤을 때도 같은 시기가 나올 수 있어. 복붙한 게 아니라 네 사주에서는 두 고민이 같이 반응하는 구간이 겹치는 거야. 날짜가 같아도 여기서는 ${CONCERN_LABELS[concernKey] || "지금 고민"}에 맞는 행동으로 따로 써주면 돼 💕`;
+    return { pairedConcern, same, text };
+  }
+
   function momentumText(momentum, isT) {
     const row = MOMENTUM_LABEL[momentum] || MOMENTUM_LABEL.selective;
     return isT ? row.T : row.F;
@@ -121,18 +153,24 @@
     const secondDate = timing.r2 || "두 번째 흐름";
     const intro = isT
       ? "날짜만 두 개 던지는 건 의미 없어. 두 구간의 역할을 나눠서 쓸게."
-      : "좋은 때가 와도 두 시기를 똑같이 쓰면 아깝잖아. 언니가 각각 어떻게 써야 하는지 나눠줄게.";
+      : "우리 날짜만 보고 ‘이때 뭐가 생기나?’ 기다리진 말자. 같은 좋은 흐름도 어떻게 쓰느냐가 더 중요하니까, 언니가 첫 번째랑 두 번째 역할을 따로 나눠줄게 💕";
 
+    const overlap = sharedTimingOverlap(data, concernKey, timing, isT);
     const profile = data?.integratedSajuProfile || null;
     const personalMove = profile
-      ? `${profile.balance?.climateHuman || "현실 반응을 보면서 속도를 조절하는 쪽"}. 특히 ${profile.elements?.primaryBehavior?.verb || "한 번에 하나씩 움직이는 것"}을 먼저 써.`
-      : "좋은 시기에도 한 번에 크게 뒤집기보다 현실 반응을 확인하면서 다음 행동을 정해.";
-    const desc = `${intro}<br><br><b>첫 번째 흐름 · ${firstDate}</b><br>${firstBody}<br><br><b>두 번째 흐름 · ${secondDate}</b><br>${secondBody}<br><br><b>두 시기의 차이</b><br>${comparisonLine(timing, concernKey, isT)}<br><br><b>너한테 맞는 움직임</b><br>${personalMove}`;
+      ? (isT
+        ? `${profile.balance?.climateHuman || "현실 반응을 보면서 속도를 조절하는 쪽"}. 특히 ${profile.elements?.primaryBehavior?.verb || "한 번에 하나씩 움직이는 것"}부터 써.`
+        : `그리고 너는 <b>${profile.balance?.climateHuman || "현실 반응을 보면서 속도를 조절하는 쪽"}</b>으로 움직일 때 덜 지쳐. 언니는 특히 <b>${profile.elements?.primaryBehavior?.verb || "한 번에 하나씩 움직이는 것"}</b>부터 챙겨주고 싶어.`)
+      : (isT
+        ? "좋은 시기에도 한 번에 크게 뒤집지 말고 현실 반응을 확인하면서 다음 행동을 정해."
+        : "좋은 때라고 갑자기 다 바꾸지 않아도 돼. 한 번 움직여보고 마음이랑 현실 반응을 확인한 다음, 그다음 걸 정하면 충분해.");
+    const overlapHtml = overlap ? `<br><br><div style="padding:10px 12px;border-radius:12px;background:#fff7ed;color:#9a3412;font-size:12px;line-height:1.7"><b>같은 시기가 또 나왔다면?</b><br>${overlap.text}</div>` : "";
+    const desc = `${intro}${overlapHtml}<br><br><b>첫 번째 흐름 · ${firstDate}</b><br>${firstBody}<br><br><b>두 번째 흐름 · ${secondDate}</b><br>${secondBody}<br><br><b>두 시기의 차이</b><br>${comparisonLine(timing, concernKey, isT)}<br><br><b>너한테 맞는 움직임</b><br>${personalMove}`;
     const checklist = isT
       ? `${firstDate}에 할 ‘테스트 행동’ 1개와 ${secondDate}에 할 ‘확정 행동’ 1개를 각각 캘린더에 넣기`
-      : `${firstDate}에는 가볍게 확인할 행동 하나, ${secondDate}에는 이어서 굳힐 행동 하나를 따로 적어두기`;
+      : `언니랑 약속 하나만 하자. ${firstDate}엔 가볍게 확인할 행동 하나, ${secondDate}엔 이어서 굳힐 행동 하나를 따로 적어두기`;
 
-    return { ...note, desc, checklist, __timingQA: { firstDate, secondDate, firstBody, secondBody, profileFingerprint: profile?.fingerprint || "" } };
+    return { ...note, desc, checklist, __timingQA: { firstDate, secondDate, firstBody, secondBody, sharedTimingWith: overlap?.pairedConcern || "", sharedDates: overlap?.same || [], profileFingerprint: profile?.fingerprint || "" } };
   }
 
   function splitSentences(html) {
