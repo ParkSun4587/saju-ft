@@ -1,0 +1,27 @@
+name: Copy audit patch
+
+on:
+  push:
+    branches:
+      - pre-note3-copy-polish-final
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, 'Apply copy QA assertions') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pre-note3-copy-polish-final
+      - name: Apply QA patch
+        run: python3 tests/patch_copy_audit.py
+      - name: Commit QA patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/pre_note3_browser_regression_v4.cjs
+          git commit -m "Apply copy QA assertions"
+          git push origin HEAD:pre-note3-copy-polish-final
