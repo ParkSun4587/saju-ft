@@ -111,6 +111,7 @@ function norm(v) {
     assert(r.hardTerms.length === 0, `${r.concern}/${r.mode}: hard terms leaked ${JSON.stringify(r.hardTerms)}`);
     assert(r.toneScore >= 3, `${r.concern}/${r.mode}: persona tone too weak ${r.toneScore}`);
     assert(r.desc.includes('첫 번째 흐름') && r.desc.includes('두 번째 흐름') && r.desc.includes('두 시기의 차이'), `${r.concern}/${r.mode}: NOTE6 distinction headings missing`);
+    assert(!/[💕❤♥💖💗💓💞💘💝]/u.test(r.desc), `${r.concern}/${r.mode}: decorative heart leaked into NOTE6`);
     assert(!/(undefined|NaN|null)/.test(r.allText), `${r.concern}/${r.mode}: bad token leaked`);
   }
 
@@ -133,6 +134,17 @@ function norm(v) {
     const notes = generateConcernNotes(currentResultData, 'F');
     const note6 = notes[5];
     const catalog = document.getElementById('unniProductLadder');
+    openShareModal();
+    const story = document.getElementById('storyCard');
+    const share = {
+      version: story?.dataset?.shareVersion || '',
+      text: story?.innerText || '',
+      core: document.getElementById('cardCoreElement')?.innerText || '',
+      strong: document.getElementById('cardStrongElement')?.innerText || '',
+      need: document.getElementById('cardNeedElement')?.innerText || '',
+      avatar: document.getElementById('cardSisterAvatar')?.getAttribute('src') || '',
+    };
+    closeShareModal();
     return {
       result:!!currentResultData,
       catalog:!!catalog,
@@ -140,12 +152,17 @@ function norm(v) {
       note6First:note6?.__timingQA?.firstBody || '',
       note6Second:note6?.__timingQA?.secondBody || '',
       note6Text:note6?.desc || '',
+      share,
     };
   });
   assert(ui.result, 'production-like result missing');
   assert(ui.catalog, 'product catalog not rendered');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
+  assert(ui.share.version === '2', `story card version ${ui.share.version}`);
+  assert(ui.share.text.includes('사주로 까본 내 본캐') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('링크 스티커는 여기'), 'story card identity/share copy missing');
+  assert(ui.share.core && ui.share.strong && ui.share.need, `story card element strip missing: ${JSON.stringify(ui.share)}`);
+  assert(ui.share.avatar === './로아.png', `F story avatar mismatch: ${ui.share.avatar}`);
 
   await page.evaluate(() => openUnniProduct('full_saju'));
   await page.waitForSelector('#unniProductModal', { state:'visible' });
