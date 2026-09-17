@@ -1,8 +1,16 @@
-// Cloudflare Pages Functions: 기존 환경변수 2개와 990원 가격을 유지합니다.
-const PRICE = 990;
+// Cloudflare Pages Functions: 기존 990원 상품과 구매 토큰은 그대로 호환하면서 상품별 가격을 서버에서만 결정합니다.
+const LEGACY_PRICE = 990;
 const TTL = 7 * 24 * 60 * 60 * 1000;
 const enc = new TextEncoder();
 const concerns = ["money", "career", "love", "path", "people", "mental"];
+const PRODUCTS = Object.freeze({
+  concern_single: { price: 990 },
+  concern_pack3: { price: 2900 },
+  full_saju: { price: 4900 },
+  compatibility: { price: 3900 },
+  premium_all: { price: 9900 },
+});
+const DEFAULT_PRODUCT = "concern_single";
 
 function reply(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -45,6 +53,31 @@ function equal(a, b) {
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
+function validName(value, fallback = "") {
+  const out = typeof value === "string" ? value.trim() : fallback;
+  if (!out || out.length > 40 || /[\x00-\x1f]/.test(out)) throw new Error("INPUT");
+  return out;
+}
+function partnerSnapshot(input) {
+  if (!input || typeof input !== "object") throw new Error("INPUT");
+  const x = {
+    n: validName(input.n || "상대"),
+    b: input.b,
+    t: input.t,
+    g: input.g,
+    c: input.c,
+    l: input.l === true,
+  };
+  if (
+    !/^\d{8}$/.test(x.b) ||
+    !(x.t === "unknown" || /^([01]\d|2[0-3]):[0-5]\d$/.test(x.t)) ||
+    !["female", "male"].includes(x.g) ||
+    !["solar", "lunar"].includes(x.c) ||
+    (x.c === "solar" && x.l)
+  )
+    throw new Error("INPUT");
+  return x;
+}
 function snapshot(input) {
   if (!input || typeof input !== "object") throw new Error("INPUT");
   const d = {
@@ -56,6 +89,9 @@ function snapshot(input) {
     k: input.k,
     m: input.m,
     l: input.l === true,
+    p: typeof input.p === "string" && input.p ? input.p : DEFAULT_PRODUCT,
+    s: Array.isArray(input.s) ? input.s.slice() : [],
+    x: input.x || null,
   };
   if (
     typeof d.n !== "string" ||
@@ -68,13 +104,39 @@ function snapshot(input) {
     !["solar", "lunar"].includes(d.c) ||
     !concerns.includes(d.k) ||
     !["F", "T"].includes(d.m) ||
-    (d.c === "solar" && d.l)
+    (d.c === "solar" && d.l) ||
+    !PRODUCTS[d.p]
   )
     throw new Error("INPUT");
+
+  if (d.p === "concern_pack3") {
+    d.s = Array.from(new Set(d.s));
+    if (d.s.length !== 3 || d.s.some((key) => !concerns.includes(key)))
+      throw new Error("INPUT");
+  } else {
+    d.s = [];
+  }
+
+  if (d.p === "compatibility") d.x = partnerSnapshot(d.x);
+  else d.x = null;
+
   return d;
 }
+function priceOf(d) {
+  const product = PRODUCTS[d && d.p ? d.p : DEFAULT_PRODUCT];
+  if (!product) throw new Error("INPUT");
+  return product.price;
+}
 function resultKey(d) {
-  return "sazu_v2_" + JSON.stringify([d.n, d.b, d.t, d.g, d.c, d.l, d.k]);
+  const base = [d.n, d.b, d.t, d.g, d.c, d.l, d.k];
+  if (!d.p || d.p === DEFAULT_PRODUCT)
+    return "sazu_v2_" + JSON.stringify(base);
+  const extra = d.p === "concern_pack3"
+    ? d.s.slice().sort()
+    : d.p === "compatibility"
+      ? [d.x.b, d.x.t, d.x.g, d.x.c, d.x.l]
+      : [];
+  return "sazu_product_v1_" + JSON.stringify([...base, d.p, extra]);
 }
 async function aesKey(secret) {
   const digest = await crypto.subtle.digest(
@@ -130,13 +192,13 @@ async function toss(path, secret, options = {}) {
     data: await response.json(),
   };
 }
-function paid(data, paymentKey, orderId) {
+function paid(data, paymentKey, orderId, expectedAmount) {
   return (
     data.status === "DONE" &&
     data.paymentKey === paymentKey &&
     data.orderId === orderId &&
-    data.totalAmount === PRICE &&
-    data.balanceAmount === PRICE &&
+    data.totalAmount === expectedAmount &&
+    data.balanceAmount === expectedAmount &&
     data.currency === "KRW"
   );
 }
@@ -161,6 +223,7 @@ export async function onRequestPost({ request, env }) {
   try {
     if (body.action === "prepare") {
       const data = snapshot(body.data);
+      const amount = priceOf(data);
       const orderId = "SAJU2_" + crypto.randomUUID().replace(/-/g, "");
       const ticket = await seal(
         { v: 2, orderId, data, exp: Date.now() + TTL },
@@ -171,7 +234,8 @@ export async function onRequestPost({ request, env }) {
         orderId,
         ticket,
         userKey: resultKey(data),
-        amount: PRICE,
+        productId: data.p,
+        amount,
       });
     }
     if (body.action === "resume") {
@@ -181,13 +245,15 @@ export async function onRequestPost({ request, env }) {
         orderId: order.orderId,
         data: order.data,
         userKey: resultKey(order.data),
+        productId: order.data.p,
+        amount: priceOf(order.data),
       });
     }
     if (body.action === "verify") {
       const { userKey, token } = body;
       if (
         typeof userKey !== "string" ||
-        userKey.length > 1000 ||
+        userKey.length > 1500 ||
         typeof token !== "string" ||
         token.length > 4096
       )
@@ -209,11 +275,13 @@ export async function onRequestPost({ request, env }) {
           { ok: false, message: "구매 확인 서버에 연결하지 못했어요." },
           503,
         );
-      return reply({ ok: paid(payment.data, grant.paymentKey, grant.orderId) });
+      const expectedAmount = Number.isFinite(Number(grant.amount))
+        ? Number(grant.amount)
+        : LEGACY_PRICE;
+      return reply({ ok: paid(payment.data, grant.paymentKey, grant.orderId, expectedAmount) });
     }
     if (body.action === "confirm") {
       if (
-        Number(body.amount) !== PRICE ||
         typeof body.paymentKey !== "string" ||
         !body.paymentKey ||
         body.paymentKey.length > 200
@@ -221,6 +289,9 @@ export async function onRequestPost({ request, env }) {
         return reply({ ok: false, message: "결제 정보를 확인해주세요." }, 400);
       // 미서명 옛 주문은 다른 결과에 재사용될 수 있어 신규 승인하지 않습니다.
       const order = await unseal(body.ticket, signing);
+      const expectedAmount = priceOf(order.data);
+      if (Number(body.amount) !== expectedAmount)
+        return reply({ ok: false, message: "결제 금액이 상품 가격과 일치하지 않아요." }, 400);
       const userKey = resultKey(order.data);
       if (body.orderId !== order.orderId || body.userKey !== userKey)
         return reply(
@@ -235,7 +306,7 @@ export async function onRequestPost({ request, env }) {
           body: JSON.stringify({
             paymentKey: body.paymentKey,
             orderId: order.orderId,
-            amount: PRICE,
+            amount: expectedAmount,
           }),
         });
       } catch {
@@ -253,7 +324,7 @@ export async function onRequestPost({ request, env }) {
           },
           503,
         );
-      if (!paid(payment.data, body.paymentKey, order.orderId))
+      if (!paid(payment.data, body.paymentKey, order.orderId, expectedAmount))
         return reply(
           {
             ok: false,
@@ -268,12 +339,14 @@ export async function onRequestPost({ request, env }) {
             userKey,
             orderId: order.orderId,
             paymentKey: body.paymentKey,
+            amount: expectedAmount,
+            productId: order.data.p,
           }),
         ),
       );
       const token =
         "v2." + payload + "." + (await hmac("v2." + payload, signing));
-      return reply({ ok: true, token });
+      return reply({ ok: true, token, productId: order.data.p });
     }
     return reply({ ok: false, message: "지원하지 않는 요청이에요." }, 400);
   } catch (error) {
