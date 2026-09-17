@@ -4172,7 +4172,7 @@ function buildNoteTwoPattern(data, concernKey, concernLabel, isT) {
     return {
       badge: `${concernLabel} · 반복 패턴`,
       title,
-      desc: `<b>트리거</b> — ${p.trigger}.<br><br><b>자동반응</b> — ${p.reaction}.<br><br><b>대가</b> — ${p.cost}.<br><br>${strengthLine} 그래서 끊을 지점은 감정이 아니라 행동 순서야.`,
+      desc: `<b>시작</b> — ${p.trigger}.<br><br><b>네가 바로 하는 반응</b> — ${p.reaction}.<br><br><b>결국 남는 것</b> — ${p.cost}.<br><br>${strengthLine} 그래서 끊을 지점은 감정이 아니라 행동 순서야.`,
       checklist: `규칙 하나만 적용: ${p.rule}`,
     };
   }
@@ -4206,12 +4206,12 @@ function buildNoteThreeBlindSpot(data, concernKey, concernLabel, isT) {
   };
   const title = (titles[concernKey] || titles.money)[isT ? "T" : "F"];
   return isT ? {
-    badge: `${concernLabel} · 블라인드스팟`,
+    badge: `${concernLabel} · 놓친 포인트`,
     title,
-    desc: `<b>네가 문제라고 본 것:</b> ${p.assumed}.<br><br><b>실제 누수:</b> ${p.actual}.<br><br>특히 네가 놓치기 쉬운 건 <b>${personal}</b> 쪽이야. 원인 잘못 잡고 더 열심히 하지 마.`,
+    desc: `<b>네가 문제라고 본 것:</b> ${p.assumed}.<br><br><b>실제로 새는 곳:</b> ${p.actual}.<br><br>특히 네가 놓치기 쉬운 건 <b>${personal}</b> 쪽이야. 원인 잘못 잡고 더 열심히 하지 마.`,
     checklist: p.move,
   } : {
-    badge: `${concernLabel} · 블라인드스팟`,
+    badge: `${concernLabel} · 놓친 포인트`,
     title,
     desc: `너는 자꾸 <b>${p.assumed}</b>고 생각했을 수 있어. 근데 언니가 보기엔 진짜 새는 곳은 <b>${p.actual}</b> 쪽에 더 가까워.<br><br>그리고 네가 유독 놓치기 쉬운 건 <b>${personal}</b>이야. 그러니까 괜히 네 능력이나 매력부터 의심하지 않았으면 좋겠어.`,
     checklist: `이번엔 나를 탓하기 전에 이것부터 해보자: ${p.move}`,
@@ -4275,15 +4275,18 @@ function buildNoteFiveEnvironmentFilter(data, concernKey, concernLabel, isT) {
     mental: { F: "아무것도 안 해도 곁에서 편하게 해주는 사람이 네 안식처야", T: "더 몰아붙이는 사람 말고 회복을 지켜주는 사람을 둬" },
   };
   const title = (titles[concernKey] || titles.money)[isT ? "T" : "F"];
+  const relationPersonal = isT
+    ? `너는 ${ctx.dominantHuman}이 올라오는 순간 관계에서 판단을 오래 끌 수 있어. 그 마음을 더 자극하는 사람은 굳이 가까이 둘 필요 없어.`
+    : `너는 ${ctx.dominantHuman}이 올라오면 혼자 더 애쓰는 쪽이야. 그래서 네가 애쓰지 않아도 편한 사람이 훨씬 잘 맞아.`;
   return isT ? {
     badge: `${concernLabel} · 사람 필터`,
     title,
-    desc: `<b>남길 사람</b><br>${p.keep}.<br><br><b>거리 둘 사람</b><br>${p.cut}.<br><br><b>잘 맞는 환경</b><br>${p.place}.<br><br>${extra}`,
+    desc: `<b>남길 사람</b><br>${p.keep}.<br><br><b>거리 둘 사람</b><br>${p.cut}.<br><br><b>잘 맞는 환경</b><br>${p.place}.<br><br>${relationPersonal}<br><br>${extra}`,
     checklist: "사람 하나 떠올리고 ‘만난 뒤 에너지가 늘었나 줄었나’만 체크하기",
   } : {
     badge: `${concernLabel} · 사람 필터`,
     title,
-    desc: `<b>곁에 둘 사람</b><br>${p.keep}.<br><br><b>조금 멀리해도 되는 사람</b><br>${p.cut}.<br><br><b>네가 숨 쉬기 편한 곳</b><br>${p.place}.<br><br>${extra} 사람 때문에 힘들 때마다 네가 더 잘하면 된다고 생각하지 않았으면 좋겠어.`,
+    desc: `<b>곁에 둘 사람</b><br>${p.keep}.<br><br><b>조금 멀리해도 되는 사람</b><br>${p.cut}.<br><br><b>네가 숨 쉬기 편한 곳</b><br>${p.place}.<br><br>${relationPersonal}<br><br>${extra} 사람 때문에 힘들 때마다 네가 더 잘하면 된다고 생각하지 않았으면 좋겠어.`,
     checklist: "이번 주 한 사람에게서 느낀 ‘편안함 / 소모감’을 한 단어로 적어보기",
   };
 }
