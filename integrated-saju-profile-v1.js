@@ -332,13 +332,13 @@
       if (isT) {
         return `네 기본 반응은 <b>${dominant}</b> 쪽이 강하고${second ? `, 그다음엔 ${second}` : ""}. 실제 힘은 <b>${strongB.noun}</b>에 더 몰리고 <b>${weakB.noun}</b>은 상대적으로 약해. ${profile.strength.T}.`;
       }
-      return `언니가 너를 한마디로 보면 <b>${dominant}</b> 쪽이 먼저 보여${second ? `, 그 안에 ${second}도 같이 있어` : ""}. 특히 <b>${strongB.noun}</b>은 자연스럽게 나오는데 <b>${weakB.noun}</b>은 마음먹고 챙겨야 해. ${profile.strength.F}.`;
+      return `언니가 너를 오래 봤을 때 제일 먼저 느껴지는 건 <b>${dominant}</b> 쪽이야${second ? `. 그 안에는 ${second}도 같이 있고` : ""}. <b>${strongB.noun}</b>은 네가 힘주지 않아도 자연스럽게 나오는데, <b>${weakB.noun}</b>은 바쁠수록 자꾸 뒤로 밀릴 수 있어. ${profile.strength.F}. 그러니까 이건 부족하다는 뜻보다, 네가 어디서 덜 애써도 되고 어디를 조금 더 챙기면 편해지는지 알려주는 힌트로 봐줘.`;
     }
 
     if (noteNum === 2) {
       const structure = profile.structure.statusHuman;
       if (isT) return `${structure}. ${clashLineT} 그래서 ${c}에서는 네 감정보다 <b>반복되는 행동 순서</b>를 먼저 끊는 게 맞아.`;
-      return `${structure}이야. ${clashLineF} 그래서 ${c}에서 또 같은 일이 생겼다고 네 성격부터 탓할 필요는 없어. 반복이 시작되는 지점을 먼저 알아채면 돼.`;
+      return `${structure}이야. ${clashLineF} 그래서 ${c}에서 비슷한 일이 또 생겨도 ‘내가 왜 이러지’부터 하지 않았으면 좋겠어. 언니가 같이 찾고 싶은 건 네 잘못이 아니라, 마음이 지치기 시작하는 첫 장면이야. 거기만 조금 빨리 알아채도 뒤가 훨씬 덜 힘들어.`;
     }
 
     if (noteNum === 3) {
@@ -349,7 +349,7 @@
         ? "겉으로 드러나는 모습과 실제 힘의 중심이 다르다. 원인 오판이 생기기 쉬운 구조야"
         : "겉과 실제 힘의 방향은 크게 다르지 않다. 핵심은 인식보다 실행 지연이야";
       if (isT) return `${mismatchT}. 또 ${profile.structure.depthHuman}. 그러니까 ${c}의 원인을 하나로 단정하지 말고 <b>겉으로 보인 문제와 실제 반복된 행동</b>을 분리해.`;
-      return `${mismatchF}. 게다가 ${profile.structure.depthHuman}. 그래서 언니는 ${c}에서 네가 처음 떠올린 이유 하나만 믿기보다, 실제로 반복된 장면을 같이 보라고 말해주고 싶어.`;
+      return `${mismatchF}. 게다가 ${profile.structure.depthHuman}. 그래서 ${c} 때문에 마음 복잡할수록 첫 번째 이유 하나로 너를 단정하지 말자. 언니는 네가 실제로 반복했던 장면을 같이 봐야 진짜 원인이 더 선명해진다고 봐.`;
     }
 
     if (noteNum === 4) {
@@ -360,14 +360,14 @@
         ? "상반된 힘이 부딪히는 구조라 중간 단계 하나가 필요해. 바로 결론내리지 마."
         : "변수 여러 개를 동시에 바꾸지 마. 하나씩 고정하고 결과를 봐.";
       if (isT) return `처방의 우선순위는 <b>${primaryB.verb}</b>, 그다음 <b>${secondaryB.verb}</b>이야. 반대로 <b>${avoidB.verb}</b>을 과하게 쓰면 다시 꼬인다. ${bridgeT} 특히 ${profile.behavior.weakStatHuman}을 숫자로 확인해.`;
-      return `너한테 필요한 방향은 먼저 <b>${primaryB.verb}</b>이야. 그다음엔 <b>${secondaryB.verb}</b>을 조금씩 붙여보자. 반대로 <b>${avoidB.verb}</b>만 계속하면 더 지칠 수 있어. ${bridgeF} 그리고 ${profile.behavior.weakStatHuman}도 꼭 챙겨줘.`;
+      return `우리 너무 한꺼번에 바꾸지는 말자. 너한테는 먼저 <b>${primaryB.verb}</b>이 제일 잘 맞고, 그게 조금 익숙해지면 <b>${secondaryB.verb}</b>을 붙이면 돼. 반대로 <b>${avoidB.verb}</b>만 계속하면 잘하려고 애쓴 만큼 더 지칠 수 있어. ${bridgeF} 그리고 ${profile.behavior.weakStatHuman}도 언니랑 같이 챙긴다고 생각해줘.`;
     }
 
     if (noteNum === 5) {
       const help = TEN_GOD_HELP[profile.structure.sangsin] || TEN_GOD_HELP[profile.sipsin.dominant] || "네 선택과 속도를 존중해주는 사람";
       const drain = TEN_GOD_DRAIN[profile.structure.gisin] || TEN_GOD_DRAIN[profile.sipsin.dominant] || "네 기준을 흐리고 계속 긴장시키는 관계";
       if (isT) return `사람 필터는 감정이 아니라 반응으로 봐. <b>${help}</b>은 남기고, <b>${drain}</b>은 거리를 둬. ${profile.relations.hasClash ? "특히 갈등이 생겼을 때 바로 끊기보다 경계선을 먼저 말해보고 반응을 확인해." : "불편함을 오래 참은 뒤 한 번에 정리하지 말고 작은 선부터 빨리 보여줘."}`;
-      return `너한테 잘 맞는 사람은 <b>${help}</b>이야. 반대로 <b>${drain}</b>에서는 네가 생각보다 빨리 소모될 수 있어. ${profile.relations.hasClash ? "마음이 확 돌아서기 전에 작은 불편함부터 말해보자." : "괜찮은 척 오래 참기 전에 작은 선부터 보여줘도 돼."}`;
+      return `이건 꼭 기억해줘. 너한테 잘 맞는 사람은 <b>${help}</b>이야. 반대로 <b>${drain}</b>에서는 네가 괜찮은 척해도 마음이 생각보다 빨리 닳을 수 있어. ${profile.relations.hasClash ? "마음이 확 돌아서기 전에 작은 불편함부터 말해보자. 그걸 받아주는 사람인지 보는 것도 사랑이고 관계야." : "괜찮은 척 오래 참기 전에 작은 선부터 보여줘도 돼. 네가 편해야 좋은 관계도 오래 가."}`;
     }
 
     if (noteNum === 6) {
@@ -383,7 +383,7 @@
         "밀 달과 지킬 달의 속도를 같게 두지 마. 실행 구간에 행동을 몰아.",
       ][phase];
       if (isT) return `${phaseT} 전체 흐름에서 네가 결과를 만들기 쉬운 방식은 <b>${profile.balance.climateHuman}</b>이야.`;
-      return `${phaseF} 특히 너는 <b>${profile.balance.climateHuman}</b>으로 움직일 때 훨씬 덜 소모되면서 결과를 만들기 쉬워.`;
+      return `${phaseF} 그리고 언니가 네 사주에서 꼭 챙겨주고 싶은 건 <b>${profile.balance.climateHuman}</b>이야. 남들 속도 말고 네 리듬으로 움직일 때 훨씬 덜 지치고, 결과도 오래 남아.`;
     }
 
     return "";
