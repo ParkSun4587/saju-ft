@@ -311,7 +311,7 @@
 
   function determineGyeokgukV2(baZi, candidateGans, calendarMeta) {
     const p = pillarsFromBaZi(baZi, true);
-    // candidateGans는 기존 호출부 호환용. 실제 판정은 원국 천간을 직접 사용한다.
+    // candidateGans는 기존 호출부 호환용. 실제 판정은 사주 천간을 직접 사용한다.
     return determineGyeokgukFromPillarsV2(p, calendarMeta || {});
   }
 
@@ -439,7 +439,7 @@
       if (share > 0.34) {
         const penalty = Math.min(1.25, (share - 0.34) * 6);
         scores[e] -= penalty;
-        detail[e].push({ layer: "과다", value: -penalty, reason: `원국 영향도 ${Math.round(share*100)}%로 이미 과다` });
+        detail[e].push({ layer: "과다", value: -penalty, reason: `사주 영향도 ${Math.round(share*100)}%로 이미 과다` });
       }
     }
 
