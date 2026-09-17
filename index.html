@@ -6384,31 +6384,59 @@ currentResultData = {
         if (document.fonts?.ready) {
           try { await document.fonts.ready; } catch (_) {}
         }
-        await waitForCardImages(element);
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-        const rect = element.getBoundingClientRect();
-        const width = Math.max(1, rect.width || element.offsetWidth || 360);
-        const scale = Math.max(2, Math.min(4, targetWidth / width));
-        const canvas = await html2canvas(element, {
-          scale,
-          useCORS: true,
-          allowTaint: false,
-          backgroundColor: "#ffffff",
-          logging: false,
-          imageTimeout: 5000,
-          scrollX: 0,
-          scrollY: -window.scrollY,
-          windowWidth: document.documentElement.clientWidth,
-          windowHeight: document.documentElement.clientHeight,
-        });
-        return await new Promise((resolve, reject) =>
-          canvas.toBlob(
-            (value) => value ? resolve(value) : reject(new Error("EMPTY_IMAGE")),
-            "image/png",
-            1,
-          ),
-        );
+        const sourceRect = element.getBoundingClientRect();
+        const sourceWidth = Math.max(1, sourceRect.width || element.offsetWidth || 360);
+        const clone = element.cloneNode(true);
+        clone.removeAttribute("id");
+        clone.querySelectorAll?.("[id]").forEach((node) => node.removeAttribute("id"));
+        clone.style.position = "fixed";
+        clone.style.left = "-12000px";
+        clone.style.top = "0";
+        clone.style.width = sourceWidth + "px";
+        clone.style.maxWidth = "none";
+        clone.style.margin = "0";
+        clone.style.visibility = "visible";
+        clone.style.pointerEvents = "none";
+        clone.style.zIndex = "-1";
+        if (getComputedStyle(element).display === "none") clone.style.display = "flex";
+        document.body.appendChild(clone);
+
+        try {
+          await waitForCardImages(clone);
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const rect = clone.getBoundingClientRect();
+          if (!rect.width || !rect.height) throw new Error("EXPORT_ZERO_SIZE");
+
+          const scale = Math.max(2, Math.min(4, targetWidth / rect.width));
+          const canvas = await html2canvas(clone, {
+            scale,
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: "#ffffff",
+            logging: false,
+            imageTimeout: 5000,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: Math.max(document.documentElement.clientWidth, Math.ceil(rect.width)),
+            windowHeight: Math.max(document.documentElement.clientHeight, Math.ceil(rect.height)),
+          });
+
+          const blob = await new Promise((resolve) => {
+            try { canvas.toBlob((value) => resolve(value || null), "image/png", 1); }
+            catch (_) { resolve(null); }
+          });
+          if (blob) return blob;
+
+          const dataUrl = canvas.toDataURL("image/png", 1);
+          const base64 = dataUrl.split(",")[1] || "";
+          const binary = atob(base64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          return new Blob([bytes], { type: "image/png" });
+        } finally {
+          clone.remove();
+        }
       }
 
       function makePngFile(blob, filename) {
@@ -6503,7 +6531,7 @@ currentResultData = {
             setStoryExportReady(true);
             return blob;
           } catch (error) {
-            console.error("스토리 카드 이미지 생성 실패:", error);
+            console.warn("스토리 카드 이미지 생성 실패:", error);
             setStoryExportReady(false, "이미지 준비가 잠깐 꼬였어. 닫았다가 다시 열어줘.");
             return null;
           } finally {
