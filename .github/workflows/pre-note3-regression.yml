@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'pre-note3-*'
+      - 'integrated-profile-*'
   workflow_dispatch:
 
 jobs:
@@ -37,3 +38,5 @@ jobs:
         run: node tests/validate_classical_5_7.cjs
       - name: Run full browser regression
         run: node tests/pre_note3_browser_regression_v4.cjs
+      - name: Run integrated profile regression
+        run: node tests/integrated_profile_regression.cjs
