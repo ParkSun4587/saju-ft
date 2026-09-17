@@ -14,7 +14,7 @@
     <!-- 구글/네이버 검색엔진 최적화(SEO) 표준 메타 태그 -->
     <meta
       name="description"
-      content="사주 원국과 MBTI로 까보는 내 진짜 성향! 무조건 내 편 들어주는 로아 언니(F)와 뼈 때리는 서아 언니(T) 중 당신의 선택은?"
+      content="사주과 MBTI로 까보는 내 진짜 성향! 무조건 내 편 들어주는 로아 언니(F)와 뼈 때리는 서아 언니(T) 중 당신의 선택은?"
     />
     <meta
       name="keywords"
@@ -965,7 +965,7 @@
             <p
               class="text-[10.5px] font-extrabold text-slate-800 border-b border-slate-100 pb-1 mb-1.5 flex items-center gap-1"
             >
-              <span>📋</span> 정확한 만세력 원국 조회를 위해 적어줘
+              <span>📋</span> 정확한 만세력 조회를 위해 적어줘
             </p>
 
             <form
@@ -1479,10 +1479,10 @@
             </div>
           </div>
         </div>
-        <!-- [내 사주 원국 4주 카드] -->
+        <!-- [내 사주 4주 카드] -->
         <div class="card-box p-4 rounded-3xl text-left space-y-2.5">
           <div class="flex items-center justify-between pb-1 border-b border-slate-100">
-            <span class="text-xs font-black text-slate-800 tracking-wider">내 사주 원국</span>
+            <span class="text-xs font-black text-slate-800 tracking-wider">내 사주</span>
           </div>
           <div class="grid grid-cols-4 gap-1.5 text-center">
             <div class="rounded-xl bg-slate-50 border border-slate-100 px-1.5 py-2">
@@ -1569,7 +1569,7 @@
                   </h3>
                 </div>
                 <p class="text-[11px] text-slate-500 font-medium pl-6">
-                  사주 원국이랑 진짜 성향 날것 그대로 적어둔 솔직 처방전
+                  사주이랑 진짜 성향 날것 그대로 적어둔 솔직 처방전
                 </p>
               </div>
 
@@ -2907,7 +2907,7 @@
             if (senderTitle) senderTitle.textContent = "서아 언니 (T)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔어? 시간 낭비 말고 본론부터 가자.<br>사주 원국 깔 테니까 이름이랑 생년월일시 똑바로 찍어.";
+                "왔어? 시간 낭비 말고 본론부터 가자.<br>사주 깔 테니까 이름이랑 생년월일시 똑바로 찍어.";
             }
           }
 
@@ -5107,7 +5107,7 @@ currentResultData = {
                 removeLiveTyping("liveT1");
                 appendSisterMsg(
                   isT
-                    ? `잠깐만 기다려봐. 태어난 날짜 원국 8글자부터 제대로 펼쳐볼게.`
+                    ? `잠깐만 기다려봐. 태어난 날짜 사주 8글자부터 제대로 펼쳐볼게.`
                     : `잠깐만 기다려봐, ${callVoc}! 언니가 만세력 책부터 꼼꼼히 펼쳐볼게.`,
                   false,
                 );
@@ -5625,7 +5625,7 @@ currentResultData = {
         const dayMasterTag = document.getElementById("dayMasterTag");
         if (!container || !elements) return;
 
-        // 화면의 "5대 오행 분포"는 원국 8글자의 실제 개수와 같은 기준으로 표시한다.
+        // 화면의 "5대 오행 분포"는 사주 8글자의 실제 개수와 같은 기준으로 표시한다.
         // 내부 해석에서는 elementProfiles.influence 가중 세력을 계속 사용하지만,
         // UI에서 0개인데 2%·10%처럼 보이는 혼선을 막기 위해 표시 퍼센트는 raw 기준이다.
         const profileRaw = elementProfiles?.raw || null;
@@ -5760,7 +5760,7 @@ currentResultData = {
         };
         const hasZero = minCount === 0;
         const weakLeadF = hasZero
-          ? `<b>${minStr}</b> 쪽은 원국에서 비어 있어서`
+          ? `<b>${minStr}</b> 쪽은 사주에서 비어 있어서`
           : `반대로 <b>${minStr}</b> 쪽은 상대적으로 적어서`;
         const weakLeadT = hasZero
           ? `<b>${minStr}</b>은 0개라`
