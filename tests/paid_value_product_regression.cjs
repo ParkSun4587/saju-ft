@@ -133,7 +133,8 @@ function norm(v) {
   await page.evaluate(() => openUnniProduct('concern_bundle3'));
   await page.locator('#unniProductAction').click();
   modal = await page.locator('#unniProductModal').innerText();
-  assert((modal.match(/NOTE 0[1-6]/g) || []).length >= 18, 'bundle3 did not render three six-note reports');
+  const bundleArticles = await page.locator('#unniProductBody article').count();
+  assert(bundleArticles === 18, `bundle3 NOTE card count ${bundleArticles}`);
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('compatibility'));
