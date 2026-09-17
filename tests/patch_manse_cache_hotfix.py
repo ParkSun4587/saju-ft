@@ -47,8 +47,12 @@ p.write_text(s, encoding='utf-8')
 p = Path('tests/pre_note3_browser_regression_v4.cjs')
 s = p.read_text(encoding='utf-8')
 old_wait = '''    typeof buildNoteFourPrescription === 'function' &&
+    typeof buildNoteFiveEnvironmentFilter === 'function' &&
+    typeof buildNoteSixTiming === 'function' &&
     typeof analyzeDayMasterStrengthV2 === 'function','''
 new_wait = '''    typeof buildNoteFourPrescription === 'function' &&
+    typeof buildNoteFiveEnvironmentFilter === 'function' &&
+    typeof buildNoteSixTiming === 'function' &&
     typeof analyzeDayMasterStrengthV2 === 'function' &&
     globalThis.__MANSE_KOREA_V2__?.version === '2.2.0','''
 s = replace_once(s, old_wait, new_wait, 'browser wait for manse 2.2.0')
