@@ -1,0 +1,21 @@
+name: Unified saju v3 patch
+on:
+  push:
+    branches: [unified-saju-v3]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, 'Apply unified saju profile v3') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: unified-saju-v3
+      - run: python3 tests/patch_unified_saju_v3.py
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Apply unified saju profile v3"
+          git push origin HEAD:unified-saju-v3
