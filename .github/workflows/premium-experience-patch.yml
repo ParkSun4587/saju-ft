@@ -1,0 +1,31 @@
+name: Premium experience patch
+
+on:
+  push:
+    branches:
+      - product-ladder-note-qa-v2
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, 'Wire premium experience script') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: product-ladder-note-qa-v2
+      - name: Patch index include
+        run: python3 tests/patch_premium_experience_include.py
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No index change"
+          else
+            git commit -m "Wire premium experience script"
+            git push origin HEAD:product-ladder-note-qa-v2
+          fi
