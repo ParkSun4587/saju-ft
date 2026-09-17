@@ -95,6 +95,10 @@ function norm(v) {
   assert(qa.wrappers.integrated, 'integrated wrapper metadata lost');
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
   for (const [id, price] of Object.entries(expectedPrices)) assert(qa.products[id]?.price === price, `${id} price drift`);
+  assert(qa.products.concern_bundle3.desc.includes('총 18개'), 'bundle3 delivered-volume copy missing');
+  assert(qa.products.full_saju.desc.includes('12개 챕터'), 'full-saju delivered-volume copy missing');
+  assert(qa.products.compatibility.desc.includes('16개 챕터'), 'compatibility delivered-volume copy missing');
+  assert(qa.products.all_in_one.desc.includes('NOTE 36개'), 'all-in-one delivered-volume copy missing');
   assert(qa.rows.length === 12, `expected 12 rows, got ${qa.rows.length}`);
   assert(qa.maleShared.money.firstDate === qa.maleShared.love.firstDate, 'male money/love first timing should legitimately share the same sensitive axis');
   assert(qa.maleShared.money.secondDate === qa.maleShared.love.secondDate, 'male money/love second timing should legitimately share the same sensitive axis');
@@ -185,18 +189,28 @@ function norm(v) {
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('compatibility'));
+  modal = await page.locator('#unniProductModal').innerText();
+  assert(modal.includes('오전/오후') && modal.includes('몇 시') && modal.includes('몇 분') && modal.includes('태어난 시간을 몰라요'), 'human-readable partner time UI missing');
+  assert(!modal.includes('HH:MM'), 'technical HH:MM leaked into compatibility UI');
   await page.fill('#partnerName', '상대');
   await page.fill('#partnerBirth', '19990511');
-  await page.fill('#partnerTime', '12:00');
+  await page.selectOption('#partnerAmpm', 'pm');
+  await page.selectOption('#partnerHour12', '12');
+  await page.selectOption('#partnerMinute', '00');
   await page.locator('#unniProductAction').click();
   modal = await page.locator('#unniProductModal').innerText();
-  assert(modal.includes('둘이 처음 끌리는 지점') && modal.includes('싸울 때 진짜 봐야 할 것') && modal.includes('오래 가려면'), 'compatibility preview content missing');
+  const compatibilitySections = await page.locator('#unniProductBody section').count();
+  assert(compatibilitySections === 16, `compatibility section count ${compatibilitySections}`);
+  assert(modal.includes('우리 둘 궁합 · 16개 챕터'), 'compatibility chapter intro missing');
+  assert(modal.includes('처음 서로에게 끌리는 이유') && modal.includes('싸움이 커지는 순서') && modal.includes('싸운 뒤 화해하는 법') && modal.includes('돈과 현실 문제를 같이 다룰 때') && modal.includes('둘이 실제로 지키면 좋은 약속'), 'compatibility deep content missing');
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('all_in_one'));
   await page.locator('#unniProductAction').click();
   modal = await page.locator('#unniProductModal').innerText();
   for (const label of ['재물·돈복','직장·커리어','연애·썸','진로·내 길','인간관계','마음·회복']) assert(modal.includes(label), `all-in-one missing ${label}`);
+  const allInOneArticles = await page.locator('#unniProductBody article').count();
+  assert(allInOneArticles === 36, `all-in-one NOTE card count ${allInOneArticles}`);
   await page.locator('#unniProductClose').click();
 
   const html = fs.readFileSync('index.html','utf8');
@@ -205,6 +219,11 @@ function norm(v) {
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
+
+  for (const prodPath of ['index.html','premium-products-v1.js','paid-value-layer-v1.js','integrated-saju-profile-v1.js','classical-engine-v2.js','manse-korea-v2.js']) {
+    const prodText = fs.readFileSync(prodPath, 'utf8');
+    assert(!prodText.includes('원국'), `technical 원국 wording remains in ${prodPath}`);
+  }
 
   const server = fs.readFileSync('functions/api/confirm-payment.js','utf8');
   for (const [id, price] of Object.entries({concern_single:990, ...expectedPrices})) {
