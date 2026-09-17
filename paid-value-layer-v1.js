@@ -180,7 +180,9 @@
       return polishPaidValueNotes(base(data, mode), data || {}, mode || "F");
     };
     wrapped.__paidValueWrapped = true;
-    wrapped.__base = base;
+    wrapped.__integratedProfileWrapped = !!base.__integratedProfileWrapped;
+    wrapped.__base = base.__base || base;
+    wrapped.__integratedBase = base;
     global.generateConcernNotes = wrapped;
   }
 })(globalThis);
