@@ -163,7 +163,7 @@ function norm(v) {
   assert(ui.catalog, 'product catalog not rendered');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
-  assert(ui.share.version === '2', `story card version ${ui.share.version}`);
+  assert(ui.share.version === '3', `story card version ${ui.share.version}`);
   assert(ui.share.text.includes('사주로 까본 내 본캐') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('링크 스티커는 여기'), 'story card identity/share copy missing');
   assert(ui.share.core && ui.share.strong && ui.share.need, `story card element strip missing: ${JSON.stringify(ui.share)}`);
   assert(ui.share.avatar === './로아.png', `F story avatar mismatch: ${ui.share.avatar}`);
@@ -190,7 +190,40 @@ function norm(v) {
     return { version:engine?.version, called, fileCount, ok };
   });
   assert(shareEngine.version === '2.0.0' && shareEngine.ok && shareEngine.called && shareEngine.fileCount === 1, `native mobile share path failed: ${JSON.stringify(shareEngine)}`);
-  await page.evaluate(() => closeShareModal());
+
+  const mobileCardBox = await page.locator('#storyCard').boundingBox();
+  assert(mobileCardBox && mobileCardBox.x >= 0 && mobileCardBox.y >= 0 && mobileCardBox.width <= 332, `mobile story card clipped/oversized: ${JSON.stringify(mobileCardBox)}`);
+
+  await page.evaluate(() => history.back());
+  await page.waitForFunction(() => !isShareModalOpen());
+  const backState = await page.evaluate(() => ({
+    modalOpen:isShareModalOpen(),
+    resultDisplay:getComputedStyle(document.getElementById('resultSection')).display,
+    hasResult:!!currentResultData,
+  }));
+  assert(!backState.modalOpen && backState.hasResult && backState.resultDisplay !== 'none', `browser back did not return to result: ${JSON.stringify(backState)}`);
+
+  const originalUA = await page.evaluate(() => navigator.userAgent);
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable:true,
+      get:() => 'Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 KAKAOTALK/25.7.1',
+    });
+    openShareModal();
+  });
+  await page.waitForSelector('#storySaveBtn:not([disabled])', { timeout:15000 });
+  assert((await page.locator('#storyShareBtn').innerText()).includes('인스타에 올릴 사진 열기'), 'Kakao in-app share label missing');
+  await page.locator('#storySaveBtn').click();
+  await page.waitForSelector('#unniImageFallback', { state:'visible', timeout:15000 });
+  const fallbackText = await page.locator('#unniImageFallback').innerText();
+  assert(fallbackText.includes('카카오톡 안에서는 파일 다운로드가 막히는 경우'), 'Kakao image-save fallback missing');
+  assert(await page.evaluate(() => window.__UNNI_IMAGE_EXPORT_V2__.isKakaoInApp('KAKAOTALK/25.7.1')), 'Kakao UA detection failed');
+  await page.locator('#unniImageFallbackClose').click();
+  await page.evaluate((ua) => {
+    Object.defineProperty(navigator, 'userAgent', { configurable:true, get:() => ua });
+    history.back();
+  }, originalUA);
+  await page.waitForFunction(() => !isShareModalOpen());
 
   await page.evaluate(() => openUnniProduct('full_saju'));
   await page.waitForSelector('#unniProductModal', { state:'visible' });
@@ -253,6 +286,8 @@ function norm(v) {
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
   assert(html.includes('__UNNI_IMAGE_EXPORT_V2__'), 'shared image export engine missing');
+  assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
+  assert(html.includes('history.pushState({ ...(history.state || {}), view: "result", shareModal: true }'), 'share modal history guard missing');
   for (const staleCopy of ['내 본캐 스탯','내 사주 본캐 카드 저장하기','본캐 카드 저장']) assert(!html.includes(staleCopy), `stale share copy remains: ${staleCopy}`);
 
   for (const prodPath of ['index.html','premium-products-v1.js','paid-value-layer-v1.js','integrated-saju-profile-v1.js','classical-engine-v2.js','manse-korea-v2.js']) {
