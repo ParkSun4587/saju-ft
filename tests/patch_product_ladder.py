@@ -21,4 +21,18 @@ if 'resume.productId !== "concern_single"' not in s:
     s = s.replace(anchor, replacement, 1)
 
 p.write_text(s, encoding='utf-8')
-print('PRODUCT_LADDER_INDEX_PATCHED')
+
+# Preserve the metadata chain used by the permanent integrated regression. The paid-value
+# wrapper is the outer wrapper, but the integrated profile layer must remain discoverable,
+# and __base must keep pointing at the original un-enriched NOTE builder for length audits.
+pp = Path('paid-value-layer-v1.js')
+ps = pp.read_text(encoding='utf-8')
+old_meta = '''    wrapped.__paidValueWrapped = true;\n    wrapped.__base = base;\n    global.generateConcernNotes = wrapped;'''
+new_meta = '''    wrapped.__paidValueWrapped = true;\n    wrapped.__integratedProfileWrapped = !!base.__integratedProfileWrapped;\n    wrapped.__base = base.__base || base;\n    wrapped.__integratedBase = base;\n    global.generateConcernNotes = wrapped;'''
+if new_meta not in ps:
+    if old_meta not in ps:
+        raise SystemExit('paid wrapper metadata anchor not found')
+    ps = ps.replace(old_meta, new_meta, 1)
+    pp.write_text(ps, encoding='utf-8')
+
+print('PRODUCT_LADDER_INDEX_AND_WRAPPER_PATCHED')
