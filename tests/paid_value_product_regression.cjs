@@ -149,7 +149,6 @@ function norm(v) {
       need: document.getElementById('cardNeedElement')?.innerText || '',
       avatar: document.getElementById('cardSisterAvatar')?.getAttribute('src') || '',
     };
-    closeShareModal();
     return {
       result:!!currentResultData,
       catalog:!!catalog,
@@ -168,6 +167,30 @@ function norm(v) {
   assert(ui.share.text.includes('사주로 까본 내 본캐') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('링크 스티커는 여기'), 'story card identity/share copy missing');
   assert(ui.share.core && ui.share.strong && ui.share.need, `story card element strip missing: ${JSON.stringify(ui.share)}`);
   assert(ui.share.avatar === './로아.png', `F story avatar mismatch: ${ui.share.avatar}`);
+  assert(await page.locator('#mainShareBtnText').innerText() === '이거, 한 장으로 예쁘게 뽑아볼까?', 'F share CTA persona copy missing');
+  await page.waitForSelector('#storySaveBtn:not([disabled])', { timeout: 15000 });
+  const storyDownload = await Promise.all([
+    page.waitForEvent('download', { timeout: 15000 }),
+    page.locator('#storySaveBtn').click(),
+  ]).then(([download]) => download);
+  assert(storyDownload.suggestedFilename().endsWith('.png'), `story save filename ${storyDownload.suggestedFilename()}`);
+  const shareEngine = await page.evaluate(async () => {
+    const engine = window.__UNNI_IMAGE_EXPORT_V2__;
+    let called = false;
+    let fileCount = 0;
+    Object.defineProperty(navigator, 'share', {
+      configurable: true,
+      value: async (payload) => { called = true; fileCount = payload?.files?.length || 0; },
+    });
+    Object.defineProperty(navigator, 'canShare', {
+      configurable: true,
+      value: (payload) => Array.isArray(payload?.files) && payload.files.length > 0,
+    });
+    const ok = await engine.nativeSharePng(new Blob(['png'], { type:'image/png' }), 'mobile-test.png', 'test');
+    return { version:engine?.version, called, fileCount, ok };
+  });
+  assert(shareEngine.version === '2.0.0' && shareEngine.ok && shareEngine.called && shareEngine.fileCount === 1, `native mobile share path failed: ${JSON.stringify(shareEngine)}`);
+  await page.evaluate(() => closeShareModal());
 
   await page.evaluate(() => openUnniProduct('full_saju'));
   await page.waitForSelector('#unniProductModal', { state:'visible' });
@@ -179,6 +202,13 @@ function norm(v) {
   assert(fullSections === 12, `full_saju section count ${fullSections}`);
   assert(modal.includes('내 사주 전체 한 줄 요약') && modal.includes('평생 가져갈 내 사용법 3가지'), 'full_saju preview content missing');
   assert(modal.includes('지금 선택한 고민을 또 풀어쓰는 리포트가 아니야'), 'full_saju differentiation copy missing');
+  assert(await page.locator('#unniKeepsakeCard').getAttribute('data-product') === 'full_saju', 'full_saju keepsake missing');
+  await page.waitForSelector('#unniKeepsakeSave:not([disabled])', { timeout: 15000 });
+  const keepsakeDownload = await Promise.all([
+    page.waitForEvent('download', { timeout: 15000 }),
+    page.locator('#unniKeepsakeSave').click(),
+  ]).then(([download]) => download);
+  assert(keepsakeDownload.suggestedFilename().endsWith('.png'), `keepsake save filename ${keepsakeDownload.suggestedFilename()}`);
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('concern_bundle3'));
@@ -186,6 +216,7 @@ function norm(v) {
   modal = await page.locator('#unniProductModal').innerText();
   const bundleArticles = await page.locator('#unniProductBody article').count();
   assert(bundleArticles === 18, `bundle3 NOTE card count ${bundleArticles}`);
+  assert(await page.locator('#unniKeepsakeCard').getAttribute('data-product') === 'concern_bundle3', 'bundle3 keepsake missing');
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('compatibility'));
@@ -203,6 +234,7 @@ function norm(v) {
   assert(compatibilitySections === 16, `compatibility section count ${compatibilitySections}`);
   assert(modal.includes('우리 둘 궁합 · 16개 챕터'), 'compatibility chapter intro missing');
   assert(modal.includes('처음 서로에게 끌리는 이유') && modal.includes('싸움이 커지는 순서') && modal.includes('싸운 뒤 화해하는 법') && modal.includes('돈과 현실 문제를 같이 다룰 때') && modal.includes('둘이 실제로 지키면 좋은 약속'), 'compatibility deep content missing');
+  assert(await page.locator('#unniKeepsakeCard').getAttribute('data-product') === 'compatibility', 'compatibility keepsake missing');
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('all_in_one'));
@@ -211,6 +243,7 @@ function norm(v) {
   for (const label of ['재물·돈복','직장·커리어','연애·썸','진로·내 길','인간관계','마음·회복']) assert(modal.includes(label), `all-in-one missing ${label}`);
   const allInOneArticles = await page.locator('#unniProductBody article').count();
   assert(allInOneArticles === 36, `all-in-one NOTE card count ${allInOneArticles}`);
+  assert(await page.locator('#unniKeepsakeCard').getAttribute('data-product') === 'all_in_one', 'all-in-one keepsake missing');
   await page.locator('#unniProductClose').click();
 
   const html = fs.readFileSync('index.html','utf8');
@@ -219,6 +252,8 @@ function norm(v) {
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
+  assert(html.includes('__UNNI_IMAGE_EXPORT_V2__'), 'shared image export engine missing');
+  for (const staleCopy of ['내 본캐 스탯','내 사주 본캐 카드 저장하기','본캐 카드 저장']) assert(!html.includes(staleCopy), `stale share copy remains: ${staleCopy}`);
 
   for (const prodPath of ['index.html','premium-products-v1.js','paid-value-layer-v1.js','integrated-saju-profile-v1.js','classical-engine-v2.js','manse-korea-v2.js']) {
     const prodText = fs.readFileSync(prodPath, 'utf8');
