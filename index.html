@@ -1483,7 +1483,6 @@
         <div class="card-box p-4 rounded-3xl text-left space-y-2.5">
           <div class="flex items-center justify-between pb-1 border-b border-slate-100">
             <span class="text-xs font-black text-slate-800 tracking-wider">내 사주 원국</span>
-            <span id="pillarBasisTag" class="text-[10px] font-bold text-slate-500">한국 만세력 기준</span>
           </div>
           <div class="grid grid-cols-4 gap-1.5 text-center">
             <div class="rounded-xl bg-slate-50 border border-slate-100 px-1.5 py-2">
@@ -1517,9 +1516,6 @@
               class="text-[11px] font-extrabold text-slate-600"
             ></span>
           </div>
-          <p class="text-[9.5px] font-semibold text-slate-400 leading-relaxed">
-            개수는 원국 겉글자 기준 · %는 지장간과 월령까지 반영한 실제 세력
-          </p>
           <div
             class="grid grid-cols-5 gap-1.5 text-center text-[10px] font-bold pt-1"
             id="ohengBarContainer"
@@ -3986,1194 +3982,239 @@
           },
         };
       }
-      function buildNoteOneInsight(data, concernKey, concernLabel, isT) {
-        const profile = data.analysisProfile || {};
-        const dayMaster = profile.dayMaster || {};
-        const structure = profile.structure || {};
-        const elements = profile.elements || {};
-        const sipsin = profile.sipsin || {};
-        const relations = profile.relations || {};
-
-        const dayGan = dayMaster.gan || data.pillars?.day?.gan || "";
-        const strength =
-          dayMaster.strength || (data.isDayMasterStrong ? "신강" : "신약");
-        const supportRatio = Number(dayMaster.supportRatio);
-        const isBalanced = strength === "중화";
-        const leansStrong =
-          strength === "신강" ||
-          (isBalanced && Number.isFinite(supportRatio) && supportRatio >= 0.5);
-        const gyeokName = structure.gyeokName || data.gyeokguk?.name || "평격";
-        const dominant = sipsin.dominant || "";
-        const strongest = elements.strongest?.name || "";
-const weakest = elements.weakest?.name || "";
-const hourKnown =
-  data.userTimeKey &&
-  data.userTimeKey !== "unknown";
-
-const birthDigits = String(
-  data.userBirthStr || ""
-).replace(/\D/g, "");
-
-const birthYear = Number(
-  birthDigits.slice(0, 4)
-);
-const birthMonth = Number(
-  birthDigits.slice(4, 6)
-);
-const birthDay = Number(
-  birthDigits.slice(6, 8)
-);
-
-const today = new Date();
-
-const hasValidBirthDate =
-  birthDigits.length === 8 &&
-  birthYear >= 1900 &&
-  birthMonth >= 1 &&
-  birthMonth <= 12 &&
-  birthDay >= 1 &&
-  birthDay <= 31;
-
-let userAge = 25;
-
-if (hasValidBirthDate) {
-  userAge =
-    today.getFullYear() - birthYear;
-
-  const birthdayHasPassed =
-    today.getMonth() + 1 > birthMonth ||
-    (
-      today.getMonth() + 1 === birthMonth &&
-      today.getDate() >= birthDay
-    );
-
-  if (!birthdayHasPassed) {
-    userAge -= 1;
-  }
-}
-
-const careerStage =
-  userAge <= 19
-    ? "teen"
-    : userAge <= 24
-      ? "early20"
-      : "adult";
-        const dayNatureMap = {
-          甲: "한번 방향을 잡으면 쉽게 꺾이고 싶지 않은",
-          乙: "상황에 맞춰주면서도 속기준은 쉽게 바꾸지 않는",
-          丙: "반응이 빠르고 마음의 온도를 숨기기 어려운",
-          丁: "겉은 차분해도 속에서 감정이 오래 타는",
-          戊: "웬만한 일은 묵묵히 버티고 책임지려는",
-          己: "주변을 세심하게 챙기며 안정을 만들려는",
-          庚: "옳고 그름과 손익을 빠르게 가르는",
-          辛: "미묘한 차이와 작은 실수까지 예민하게 알아채는",
-          壬: "판 전체를 읽으며 선택지를 넓게 남겨두는",
-          癸: "말보다 분위기와 뉘앙스를 먼저 읽는",
-        };
-
-        const needMap = {
-          비견: "내 결정권을 빼앗기는 순간",
-          겁재: "남과 비교되거나 내 몫을 빼앗기는 순간",
-          식신: "내 페이스가 깨지고 억지로 재촉받는 순간",
-          상관: "내 생각을 무시당하거나 통제받는 순간",
-          정재: "예측하던 기준과 안정이 흔들리는 순간",
-          편재: "큰 기회나 재미를 놓쳤다는 느낌이 드는 순간",
-          정관: "평판이 흔들리거나 기준에 못 미쳤다는 느낌이 드는 순간",
-          편관: "실수하거나 무능해 보일 가능성이 생기는 순간",
-          정인: "충분히 이해받고 안전하다는 확신이 사라지는 순간",
-          편인: "상대 의도를 읽지 못해 허를 찔릴 가능성이 생기는 순간",
-        };
-
-        const scenes = {
-          money: {
-            titleT: "통장이 아니라 ‘내 선택권’이 흔들릴 때 불안해지는 타입",
-            titleF:
-              "내 몫에는 아끼면서 소중한 사람 앞에서는 먼저 지갑을 연 마음",
-            strongT:
-              "평소엔 쓸 때 크게 쓰면서도 ‘내가 손해 봤다’는 느낌이 들면 작은 금액도 오래 기억해. 돈 자체보다 내 판단이 틀렸다는 사실을 인정하기 싫어서 지출을 더 세게 통제하는 쪽이야.",
-            weakT:
-              "결제 전에는 후기와 잔액을 몇 번씩 확인하면서, 지친 날엔 갑자기 보상 소비로 무너지기 쉬워. 소비 습관만의 문제가 아니라 돈으로 불안을 잠깐 끄는 패턴에 가까워.",
-            strongF:
-              "내가 원하는 것에는 ‘다음에 사지 뭐’ 하면서도 소중한 사람이 필요하다고 하면 먼저 계산했지. 베푸는 마음 뒤에는 관계가 멀어지지 않았으면 하는 마음도 함께 숨어 있어.",
-            weakF:
-              "통장 잔액을 볼 때마다 불안하면서도 누군가 곤란하다고 하면 차마 외면하지 못했지. 돈이 부족해서만 힘든 게 아니라, 나를 먼저 챙기면 이기적으로 보일까 봐 마음이 불편했던 거야.",
-            checkT: "최근 7일 지출을 ‘필요’와 ‘불안 끄기’로 나눠 적어보기",
-            checkF: "나를 위해 쓴 돈과 미안해서 대신 낸 돈을 따로 적어보기",
-          },
-          career: {
-  titleT:
-    "퇴사하고 싶다면서 마지막 뒷정리까지 떠안는 사람",
-  titleF:
-    "내 일이 아닌 것까지 해내고도 ‘내가 부족했나’ 돌아본 마음",
-  strongT:
-    "조직의 비효율은 제일 먼저 보면서도 일이 망가지는 꼴은 못 봐서 결국 네가 수습했지. 그래서 불만은 쌓이는데 주변에서는 네가 잘 버티는 줄만 알아. 이직 욕구보다 ‘내가 빠져도 되나’라는 책임감이 발목을 잡는 쪽이야.",
-  weakT:
-    "지금 환경이 답답한 건 정확히 아는데, 다음 선택이 틀릴까 봐 자격증·포트폴리오·경력 조건을 끝없이 더 확인해. 준비가 부족한 게 아니라 실패했을 때 받을 평가를 미리 피하고 있는 거야.",
-  strongF:
-    "부탁받지 않은 일까지 먼저 챙기고, 힘들다는 말 대신 ‘제가 할게요’라고 했지. 인정받고 싶어서라기보다 누군가 곤란해지는 걸 보는 게 더 불편해서 네 몫을 자꾸 늘린 거야.",
-  weakF:
-    "작은 피드백 하나도 집에 와서 다시 떠올리며 ‘내가 민폐였나’ 자책했지. 실력이 없어서가 아니라 평가가 관계의 거절처럼 느껴져서 마음이 먼저 움츠러든 거야.",
-  checkT:
-    "오늘 맡은 일에서 ‘내 책임’과 ‘남이 넘긴 책임’을 한 줄씩 분리하기",
-  checkF:
-    "이번 주 해낸 일을 결과가 아니라 내가 기여한 행동으로 세 가지 적기",
-},
-
-careerTeen: {
-  titleT:
-    "공부가 싫은 게 아니라, 못했을 때 평가받는 게 싫어서 미루는 타입",
-  titleF:
-    "성적보다 ‘실망시킬까 봐’ 더 마음 졸였던 이유",
-  strongT:
-    "시험이나 수행평가에서 기준이 마음에 안 들어도 결과가 망가지는 건 못 봐서 결국 조별과제까지 네가 정리했지. 잘하는 애라는 기대를 내려놓기 싫어서 힘들어도 먼저 손을 놓지 못하는 쪽이야.",
-  weakT:
-    "계획표와 공부법은 계속 바꾸는데 막상 시작하려면 ‘이번에도 못하면 어떡하지’가 먼저 떠오르지. 공부가 싫어서가 아니라 노력한 뒤에도 원하는 결과가 안 나올까 봐 출발을 늦추는 거야.",
-  strongF:
-    "친구 과제와 분위기는 먼저 챙기면서 네가 힘든 건 티 내지 않았지. 성적 자체보다 선생님이나 가족을 실망시키면 기대까지 잃을 것 같아 혼자 더 버틴 거야.",
-  weakF:
-    "점수 하나가 기대보다 낮으면 ‘나는 왜 이것밖에 안 되지’ 하며 오래 마음 아파했지. 한 번의 결과를 네 가능성 전체로 받아들여서 마음이 먼저 움츠러든 거야.",
-  checkT:
-    "이번 공부에서 점수가 아니라 오늘 끝낼 분량 하나만 숫자로 정하기",
-  checkF:
-    "결과와 상관없이 이번 주 내가 꾸준히 해낸 행동 세 가지 적기",
-},
-
-careerEarly20: {
-  titleT:
-    "스펙은 쌓는데 지원 버튼 앞에서 자꾸 멈추는 타입",
-  titleF:
-    "내 진로보다 모두가 안심할 선택을 먼저 고민했던 마음",
-  strongT:
-    "팀플·인턴·알바에서 답답한 부분이 보이면 결국 네가 정리했지. 실력은 이미 행동으로 보여주면서도 지원할 때는 조건을 더 채워야 한다며 미루는 건, 첫 평가에서 밀리고 싶지 않아서야.",
-  weakT:
-    "자격증·포트폴리오·공고를 계속 확인하지만 막상 지원 버튼 앞에서는 부족한 것만 보여. 준비가 덜된 게 아니라 탈락을 능력 전체의 판정처럼 받아들일까 봐 안전한 준비 단계에 머무는 거야.",
-  strongF:
-    "팀플이나 첫 사회생활에서 누군가 곤란해지면 네 몫이 아닌 일도 먼저 챙겼지. 인정받고 싶어서라기보다 민폐가 되거나 분위기를 망치고 싶지 않아 책임을 더 가져온 거야.",
-  weakF:
-    "면접·발표·피드백이 끝나면 작은 실수까지 다시 떠올리며 ‘내가 부족했나’ 자책했지. 결과보다 사람들의 실망한 표정을 상상하는 일이 더 무서웠던 거야.",
-  checkT:
-    "오늘 공고 하나를 골라 부족한 조건보다 이미 충족한 조건부터 표시하기",
-  checkF:
-    "합격 여부와 분리해서 이번 주 내가 시도한 행동 세 가지 적기",
-},
-          love: {
-            titleT: "좋아할수록 확인하고, 확신이 없으면 먼저 식은 척하는 타입",
-            titleF: "답장 하나에도 마음이 흔들리면서 아무렇지 않은 척했던 밤",
-            strongT:
-              "호감이 생겨도 바로 표현하기보다 상대의 말과 행동이 일치하는지부터 봐. 애매하면 상처받기 전에 네가 먼저 거리를 두고 ‘원래 별로였어’라고 결론 내리는데, 사실 마음이 없어서가 아니라 주도권을 잃기 싫은 거야.",
-            weakT:
-              "답장 속도와 말투를 분석하면서도 직접 묻지는 못하고 혼자 결론을 내리기 쉬워. 상대를 보는 척하지만 실제로는 거절당했을 때 무너질 나를 미리 방어하는 쪽이야.",
-            strongF:
-              "좋아하는 사람의 작은 변화는 바로 알아채면서도 네 서운함은 분위기 망칠까 봐 삼켰지. 사랑받고 싶은 마음보다 상대를 실망시키면 관계가 깨질까 봐 두려운 마음이 먼저 움직인 거야.",
-            weakF:
-              "카톡 한 줄이 짧아지면 ‘내가 뭘 잘못했나’ 되짚고, 괜찮다는 확인을 받아야 마음이 놓였지. 예민해서가 아니라 관계가 멀어지는 신호를 남들보다 빨리 찾으려 했던 거야.",
-            checkT:
-              "상대의 마음을 추측하기 전에 내가 원하는 관계를 한 문장으로 적기",
-            checkF:
-              "서운함을 참기 전에 공격 없이 말할 수 있는 한 문장 만들어보기",
-          },
-          path: {
-            titleT:
-              "길을 몰라서가 아니라 하나를 고르면 다른 가능성을 잃을까 멈춘 타입",
-            titleF: "내가 원하는 길보다 모두가 안심할 길을 먼저 골랐던 마음",
-            strongT:
-              "머릿속에는 하고 싶은 게 여러 개인데 하나를 고르면 나머지를 포기하는 것 같아 계속 비교만 해. 능력이 없어서 못 정하는 게 아니라, 틀린 선택을 했다는 판정을 받기 싫어서 가능성만 들고 있는 거야.",
-            weakT:
-              "정보를 모으고 계획을 다듬는 동안 시작 시점은 자꾸 뒤로 밀려. 더 알아야 해서가 아니라 첫 결과가 기대보다 작을 때 자존심이 다칠까 봐 준비 단계에 머무는 쪽이야.",
-            strongF:
-              "가슴 뛰는 길이 따로 있어도 가족이나 주변이 걱정할 선택은 쉽게 못 했지. 네 꿈이 약해서가 아니라 소중한 사람을 불안하게 만들고 싶지 않아 마음을 접어둔 거야.",
-            weakF:
-              "남들보다 늦었다는 생각이 들면 내가 원하는지보다 ‘지금 시작해도 되나’를 먼저 물었지. 길이 없는 게 아니라 비교로 지친 마음이 출발할 힘을 잃은 거야.",
-            checkT: "평생의 정답 대신 14일 동안 검증할 작은 실험 하나 정하기",
-            checkF: "남의 기대를 뺀 뒤에도 해보고 싶은 일을 세 줄로 적어보기",
-          },
-          people: {
-            titleT: "괜찮다 해놓고 속으로 감점하다 어느 날 조용히 끊는 타입",
-            titleF: "상대 기분은 다 알아채면서 내 서운함은 뒤로 미뤄둔 마음",
-            strongT:
-              "선 넘는 말을 들어도 그 자리에서는 웃어넘기고 속으로만 점수를 깎아. 설명해도 안 바뀔 사람이라고 결론 나면 예고 없이 셔터를 내리는데, 차가워서가 아니라 더 얽혀 에너지 쓰는 걸 싫어하는 거야.",
-            weakT:
-              "불편해도 관계가 틀어질 장면부터 계산하느라 바로 말하지 못해. 그러다 혼자 복기하며 피로가 커지고, 결국 답장을 늦추는 방식으로 거리를 만드는 쪽이야.",
-            strongF:
-              "상대 표정이 굳으면 네가 잘못한 게 없어도 분위기를 먼저 풀었지. 모두 편했으면 하는 마음 때문에 정작 네 서운함은 늘 대화의 맨 뒤로 밀렸던 거야.",
-            weakF:
-              "무심한 말 한마디도 오래 남는데 예민해 보일까 봐 웃어넘겼지. 참을성이 많은 게 아니라 관계를 잃을까 봐 네 감정을 작게 만든 시간이 길었던 거야.",
-            checkT:
-              "불편함이 3까지 차기 전에 사실·감정·요청을 한 문장씩 말하기",
-            checkF:
-              "오늘 한 번은 상대 기분을 해결하기 전에 내 감정부터 이름 붙이기",
-          },
-          mental: {
-            titleT:
-              "무너지기 직전까지 멀쩡한 척하다 혼자 있을 때 전원 꺼지는 타입",
-            titleF: "쉬고 있어도 마음 한쪽에서는 계속 자신을 재촉했던 이유",
-            strongT:
-              "힘들수록 할 일을 더 쥐고 버티다가 안전한 공간에 들어가면 아무것도 못 하게 되지. 갑자기 게을러진 게 아니라 낮 동안 통제하던 피로가 한꺼번에 청구되는 거야.",
-            weakT:
-              "해야 할 일을 생각만 해도 머릿속에서 실패 장면부터 돌아가고, 피하려고 숏폼을 켰다가 더 자책하지. 의지가 약해서가 아니라 긴장한 뇌가 가장 쉬운 자극으로 도망가는 패턴이야.",
-            strongF:
-              "주변이 힘들 때는 누구보다 잘 버티면서 정작 네가 지치면 ‘이 정도로 힘들어하면 안 되는데’라고 눌렀지. 쉬지 못한 이유는 할 일이 많아서만이 아니라 멈추면 쓸모없는 사람이 된 것 같아서였어.",
-            weakF:
-              "쉬는 동안에도 밀린 일과 뒤처지는 장면이 떠올라 몸만 누워 있고 마음은 계속 일했지. 회복이 느린 게 아니라 죄책감 때문에 휴식이 휴식으로 끝나지 못했던 거야.",
-            checkT:
-              "오늘 할 일에서 반드시 끝낼 하나만 남기고 나머지는 내일로 보내기",
-            checkF: "30분만큼은 생산성 없이 쉬어도 된다고 일정표에 직접 적기",
-          },
-        };
-
-        const scene =
-  concernKey === "career" &&
-  careerStage === "teen"
-    ? scenes.careerTeen
-    : concernKey === "career" &&
-        careerStage === "early20"
-      ? scenes.careerEarly20
-      : scenes[concernKey] ||
-        scenes.money;
-        const title = isT ? scene.titleT : scene.titleF;
-        const opening = isT
-          ? leansStrong
-            ? scene.strongT
-            : scene.weakT
-          : leansStrong
-            ? scene.strongF
-            : scene.weakF;
-        const nature = dayNatureMap[dayGan] || "속기준을 쉽게 드러내지 않는";
-        const need =
-          needMap[dominant] || "내가 통제할 수 없는 상황이 생기는 순간";
-        const inner = isT
-          ? `${nature} 성향${dominant ? `에 <b>${escapeHTML(dominant)}</b> 기운이 겹쳐` : "이라"}, ${need} 방어가 먼저 켜져. 겉으로는 계산하고 정리하는 것처럼 보여도, 속마음의 핵심은 손해보다 <b>주도권을 잃지 않는 것</b>에 있어.`
-          : `${nature} 성향${dominant ? `에 <b>${escapeHTML(dominant)}</b> 기운이 겹쳐` : "이라"}, 사실 ${need} 마음이 가장 먼저 다쳐. 겉으로는 괜찮다고 넘겼지만, 속으로 원한 건 거창한 보상이 아니라 <b>안전하다는 확신</b>이었어.`;
-        const clash = relations.hasChung
-          ? isT
-            ? "원국의 충도 함께 보여서 오래 참다가 한 번에 방향을 바꾸는 반응이 더 선명해."
-            : "원국의 충도 함께 보여서 참고 싶은 마음과 벗어나고 싶은 마음이 안에서 자주 부딪혔어."
-          : "이번 원국에서는 감정을 즉시 뒤집기보다 속에서 충분히 판단한 뒤 움직이는 흐름이 더 보여.";
-        const balanceNote = isBalanced
-          ? " <b>중화</b>라 한쪽 반응으로 고정되기보다, 상황에 따라 버티는 쪽과 주변 반응을 흡수하는 쪽이 번갈아 나타나는 편이야."
-          : "";
-
-        const dayGanLabelMap = {
-  甲: "甲(갑목)",
-  乙: "乙(을목)",
-  丙: "丙(병화)",
-  丁: "丁(정화)",
-  戊: "戊(무토)",
-  己: "己(기토)",
-  庚: "庚(경금)",
-  辛: "辛(신금)",
-  壬: "壬(임수)",
-  癸: "癸(계수)",
-};
-
-const gyeokLabelMap = {
-  정관격: "정관격(규칙·신뢰)",
-  편관격: "편관격(압박·돌파)",
-  정재격: "정재격(관리·안정)",
-  편재격: "편재격(기회·확장)",
-  식신격: "식신격(표현·생산)",
-  상관격: "상관격(독창·직설)",
-  정인격: "정인격(학습·보호)",
-  편인격: "편인격(관찰·직관)",
-  건록격: "건록격(독립·자립)",
-  양인격: "양인격(승부·결단)",
-  겁재격: "겁재격(경쟁·주도)",
-  평격: "평격(균형형)",
-};
-
-const strengthLabelMap = {
-  신강: "신강(내 힘으로 버티는 쪽)",
-  중화: "중화(한쪽으로 치우치지 않은 균형형)",
-  신약: "신약(주변 자극을 먼저 흡수하는 쪽)",
-};
-
-const sipsinLabelMap = {
-  비견: "비견(독립·내 기준)",
-  겁재: "겁재(경쟁·내 몫)",
-  식신: "식신(내 페이스·표현)",
-  상관: "상관(통제 거부·직설)",
-  정재: "정재(안정·계획)",
-  편재: "편재(기회·확장)",
-  정관: "정관(기준·책임)",
-  편관: "편관(압박·돌파)",
-  정인: "정인(보호·인정)",
-  편인: "편인(관찰·직관)",
-};
-
-const basis = [
-  dayGan
-    ? `${dayGanLabelMap[dayGan] || dayGan} 일간`
-    : "일간 확인",
-  gyeokLabelMap[gyeokName] || gyeokName,
-  strengthLabelMap[strength] || strength,
-  dominant
-    ? `${sipsinLabelMap[dominant] || dominant} 반복`
-    : "십신 분산",
-  strongest
-    ? `${strongest} 기운 강함`
-    : "",
-  weakest
-    ? `${weakest} 기운 약함`
-    : "",
-  hourKnown
-    ? "시주 포함"
-    : "시주 제외",
-]
-  .filter(Boolean)
-  .map(escapeHTML)
-  .join(" · ");
-
-        return {
-          badge: `${concernLabel} 속마음 적중`,
-          title,
-          desc: `${opening}<br><br>${inner} ${clash}${balanceNote}<div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-[10.5px] leading-relaxed text-slate-600"><b class="text-slate-800">언니가 잡은 사주 근거</b><br>${basis}</div>`,
-          checklist: isT ? scene.checkT : scene.checkF,
-        };
-      }
-
-      function buildNoteTwoPattern(
-  data,
-  concernKey,
-  concernLabel,
-  isT,
-) {
-  const profile = data.analysisProfile || {};
-  const dayMaster = profile.dayMaster || {};
-  const sipsin = profile.sipsin || {};
-  const relations = profile.relations || {};
-
-  const strength =
-    dayMaster.strength ||
-    (data.isDayMasterStrong ? "신강" : "신약");
-  const dominant = sipsin.dominant || "";
-
-  const dominantPatternMap = {
-    비견: "내 방식과 결정권을 지키려는 마음",
-    겁재: "비교에서 밀리거나 내 몫을 뺏기기 싫은 마음",
-    식신: "내 페이스와 편안함을 지키려는 마음",
+      function getUnniCopyContext(data) {
+  const profile = data?.analysisProfile || {};
+  const strength = profile?.dayMaster?.strength || (data?.isDayMasterStrong ? "신강" : "신약");
+  const dominantRaw = profile?.sipsin?.dominant;
+  const dominant = typeof dominantRaw === "string" ? dominantRaw : (dominantRaw?.name || "");
+  const lowest = data?.stats ? getLowestStatInfo(data.stats) : null;
+  const hasClash = !!profile?.relations?.hasChung;
+  const dominantHuman = ({
+    비견: "내 방식은 내가 지키고 싶은 마음",
+    겁재: "비교에서 밀리기 싫은 마음",
+    식신: "내 페이스를 깨고 싶지 않은 마음",
     상관: "통제받거나 무시당하기 싫은 마음",
-    정재: "예측 가능한 기준과 안정을 지키려는 마음",
-    편재: "기회와 재미를 놓치기 싫은 마음",
-    정관: "좋은 평가와 신뢰를 잃기 싫은 마음",
-    편관: "약해 보이거나 실패한 사람으로 보이기 싫은 마음",
-    정인: "충분히 이해받고 보호받고 싶은 마음",
-    편인: "상대의 숨은 의도를 먼저 알아내려는 마음",
-  };
+    정재: "예측 가능한 안정감을 지키고 싶은 마음",
+    편재: "기회나 재미를 놓치기 싫은 마음",
+    정관: "좋은 평가와 신뢰를 잃고 싶지 않은 마음",
+    편관: "약해 보이거나 실패한 사람처럼 보이기 싫은 마음",
+    정인: "충분히 이해받고 안전하다고 느끼고 싶은 마음",
+    편인: "상대 속뜻을 먼저 읽고 대비하려는 마음",
+  })[dominant] || "혼자서라도 상황을 정리하려는 마음";
+  const weakHuman = ({
+    wealth: "돈과 선택을 숫자로 확인하는 습관",
+    mental: "마음이 지치기 전에 멈추는 감각",
+    drive: "생각을 행동으로 옮기는 첫걸음",
+    network: "혼자 해결하지 않고 사람을 쓰는 감각",
+  })[lowest?.type] || "마지막 한 끗을 챙기는 습관";
+  const strengthF = strength === "신강"
+    ? "겉으로는 괜찮아 보여도 혼자 버티는 시간이 길어지는 편이야"
+    : strength === "신약"
+      ? "상황과 사람의 분위기를 빨리 읽는 만큼 네 마음이 뒤로 밀리기 쉬워"
+      : "버틸 때와 내려놓을 때를 꽤 잘 아는데, 애매한 순간엔 오래 재는 편이야";
+  const strengthT = strength === "신강"
+    ? "너는 버티는 힘이 있어서 문제를 늦게 끊는 쪽이야"
+    : strength === "신약"
+      ? "너는 주변 변수에 반응이 빠른 대신 네 기준이 늦게 나오는 쪽이야"
+      : "너는 균형은 괜찮은데 애매하면 결정을 미루는 쪽이야";
+  return { strength, dominantHuman, weakHuman, hasClash, strengthF, strengthT };
+}
 
-  const patterns = {
+function buildNoteOneInsight(data, concernKey, concernLabel, isT) {
+  const ctx = getUnniCopyContext(data);
+  const copy = {
     money: {
-      T: {
-        title:
-          "잔액을 확인하고도 지친 날 또 결제하게 되는 반복",
-        trigger:
-          "스트레스가 쌓였거나 남보다 뒤처진 것 같은 날",
-        reaction:
-          "‘이 정도는 괜찮아’라며 소비할 이유를 빠르게 만들어 결제해.",
-        cost:
-          "결제 직후에는 진정되지만 잔액을 보고 다시 통제 모드로 들어가.",
-        rule:
-          "사고 싶은 순간 결제 대신 장바구니에 넣고 24시간 뒤 다시 보기",
-      },
       F: {
-        title:
-          "대신 내주고 돌아서서 혼자 아까워하는 반복",
-        trigger:
-          "누군가 곤란해 보이거나 계산 앞에서 분위기가 어색해질 때",
-        reaction:
-          "싫다는 말 대신 먼저 지갑을 열고 괜찮은 척 넘어가.",
-        cost:
-          "상대에게는 말하지 못한 채 나만 손해 본 것 같아 오래 서운해져.",
-        rule:
-          "대신 결제하기 전 ‘이번엔 각자 내자’는 말을 먼저 한 번 꺼내기",
+        title: "너 돈 못 모으는 사람이 아니라, 마음 흔들릴 때 돈이 대신 움직이는 편이야",
+        body: "평소엔 생각보다 계산 잘해. 근데 속상하거나 불안하거나, ‘나 이 정도는 해도 되지’ 싶은 날엔 결제가 위로 역할을 해버려. 그래서 사고 나서 후회하는 게 아니라, 결제 전에 이미 마음이 지쳐 있었던 경우가 많아.",
+        check: "다음 결제 직전에 ‘지금 필요한 건 물건이야, 기분전환이야?’ 한 번만 물어보기",
+      },
+      T: {
+        title: "돈 새는 구멍은 소비습관보다 ‘흔들릴 때 결제하는 순간’이야",
+        body: "평소 소비가 문제라기보다 감정이 흔들린 날 판단 기준이 풀리는 게 문제야. 그 순간만 잡으면 지출 전체를 억지로 줄일 필요도 없어. 네 돈 문제는 ‘얼마 썼냐’보다 ‘언제 기준을 놨냐’를 보는 게 더 정확해.",
+        check: "최근 충동결제 3건 옆에 그날 기분을 한 단어로 적기",
       },
     },
-
     career: {
-      T: {
-        title:
-          "준비는 계속하는데 제출·지원 직전에 멈추는 반복",
-        trigger:
-          "시험·과제·지원·업무처럼 실력을 평가받을 순간",
-        reaction:
-          "부족한 조건부터 찾아내며 계획과 자료를 다시 손봐.",
-        cost:
-          "완성도는 조금 오르지만 제출과 도전은 늦어져 기회를 놓쳐.",
-        rule:
-          "완성도 70%가 되면 수정 전에 먼저 제출·지원하기",
-      },
       F: {
-        title:
-          "남들 기대에 맞추다 내 선택을 뒤로 미루는 반복",
-        trigger:
-          "선생님·가족·동료가 나를 믿고 기대하는 순간",
-        reaction:
-          "내가 원하는 방향보다 모두가 안심할 선택을 먼저 골라.",
-        cost:
-          "겉으로는 잘해내도 시간이 지날수록 내 길이 아닌 것 같아 지쳐.",
-        rule:
-          "선택 전에 ‘남이 원하는 답’과 ‘내가 원하는 답’을 따로 적기",
+        title: "너 능력 없는 거 아니야. 너무 오래 ‘더 잘해야 말할 수 있지’ 하고 있었어",
+        body: "잘하고도 스스로 먼저 부족한 점부터 찾아. 그래서 남들은 결과를 내보일 때 너는 한 번 더 다듬고, 한 번 더 참아. 언니가 보기엔 실력이 모자란 장면보다 네 몫을 네가 작게 말한 장면이 더 많아.",
+        check: "이번 주 한 일 중 남에게 보여줄 결과물 하나를 딱 골라두기",
+      },
+      T: {
+        title: "커리어에서 막히는 건 실력보다 ‘증거를 늦게 내놓는 습관’이야",
+        body: "잘하는 것과 인정받는 건 다른 문제야. 너는 준비는 오래 하는데 결과물 공개, 지원, 협상은 뒤로 미루는 쪽이 보여. 회사나 환경 탓이 아예 없다는 뜻이 아니라, 네가 통제할 수 있는 누수부터 막아야 해.",
+        check: "말로 설명할 성과 하나를 숫자·결과물·전후비교 중 하나로 바꾸기",
       },
     },
-
     love: {
-      T: {
-        title:
-          "마음은 커지는데 오히려 연락을 줄여버리는 반복",
-        trigger:
-          "답장이나 태도가 애매해 상대 마음을 확신할 수 없을 때",
-        reaction:
-          "상처받기 전에 먼저 거리를 두고 관심 없는 척 반응해.",
-        cost:
-          "상대도 네 마음이 없는 줄 알고 물러나면서 불안이 현실이 돼.",
-        rule:
-          "혼자 결론 내리기 전에 궁금한 것을 한 번은 직접 물어보기",
-      },
       F: {
-        title:
-          "서운함을 참다가 사소한 일에 한꺼번에 무너지는 반복",
-        trigger:
-          "평소와 다른 말투나 늦어진 답장처럼 작은 변화가 보일 때",
-        reaction:
-          "관계를 망칠까 봐 괜찮은 척하며 서운함을 안으로 삼켜.",
-        cost:
-          "쌓인 감정이 엉뚱한 순간 터지고 결국 내가 예민한 사람처럼 보여.",
-        rule:
-          "서운함이 생긴 당일에 사실과 감정을 한 문장씩 말하기",
+        title: "너 사랑을 못 받는 게 아니라, 상대 마음까지 네가 먼저 책임지려는 편이야",
+        body: "좋아하면 더 조심스러워지고, 서운해도 ‘괜히 부담 주나’부터 생각하지? 그러다 네 마음은 점점 뒤로 밀리고 상대 반응만 크게 보여. 네가 예민한 게 아니라 좋아하는 사람 앞에서 너무 많이 이해하려고 한 거야.",
+        check: "다음엔 상대 마음 추측하기 전에 네 감정을 한 문장으로 먼저 말해보기",
+      },
+      T: {
+        title: "연애가 꼬이는 순간은 상대가 애매할 때보다 네가 확인을 미룰 때야",
+        body: "신호를 오래 분석할수록 정확해지는 게 아니야. 애매한 행동을 해석하느라 시간을 쓰고, 정작 필요한 질문은 늦게 해. 좋은 사람을 못 만나는 문제와 애매한 사람을 오래 두는 문제를 분리해야 해.",
+        check: "애매한 관계 하나에 ‘나는 지금 뭘 확인해야 하지?’ 질문 한 개만 적기",
       },
     },
-
     path: {
-      T: {
-        title:
-          "정보는 늘어나는데 출발일은 계속 미뤄지는 반복",
-        trigger:
-          "여러 선택지 중 하나를 포기하고 결정해야 할 때",
-        reaction:
-          "더 좋은 답이 있을 것 같아 비교와 정보 수집을 다시 시작해.",
-        cost:
-          "아는 것은 많아지지만 실제 경험이 없어 확신은 더 줄어들어.",
-        rule:
-          "정답을 고르지 말고 14일 동안 시험할 선택 하나 정하기",
-      },
       F: {
-        title:
-          "내가 원하는 길보다 모두가 안심할 길을 고르는 반복",
-        trigger:
-          "내 선택을 들은 가족이나 주변 사람이 걱정할 때",
-        reaction:
-          "갈등을 만들기 싫어 하고 싶은 마음부터 작게 설명해.",
-        cost:
-          "안전한 선택을 하고도 다른 길을 계속 떠올리며 후회가 남아.",
-        rule:
-          "조언을 듣기 전에 내가 원하는 선택과 이유를 먼저 적기",
+        title: "네가 길을 못 찾는 게 아니라, 남들 안심시키느라 네 마음을 너무 늦게 들었어",
+        body: "하고 싶은 게 생겨도 바로 설레기보다 ‘현실적으로 되나, 주변이 뭐라 하나’부터 보지? 그래서 꿈이 없는 것처럼 느껴질 수 있어. 근데 네 안엔 방향이 없는 게 아니라 허락받기 전까지 꺼내지 않는 선택지가 많은 편이야.",
+        check: "아무도 평가하지 않는다고 치고 해보고 싶은 것 3개 적기",
+      },
+      T: {
+        title: "진로가 안 보이는 게 아니라 확신 100%를 기다리느라 실험을 안 한 거야",
+        body: "생각으로 진로를 확정하려고 하면 계속 제자리야. 네 경우엔 머릿속 비교를 더 늘리는 것보다 작은 실행에서 데이터를 얻는 게 빠르다. 확신은 시작 전에 생기는 게 아니라 해본 뒤 쌓이는 거야.",
+        check: "고민 중인 선택지 하나를 7일짜리 작은 실험으로 바꾸기",
       },
     },
-
     people: {
-      T: {
-        title:
-          "웃어넘기고 속으로 감점하다 갑자기 끊어내는 반복",
-        trigger:
-          "상대가 선을 넘었지만 바로 따지기에는 애매한 순간",
-        reaction:
-          "그 자리에서는 넘어가고 혼자 상대의 점수를 계속 깎아.",
-        cost:
-          "상대는 이유를 모른 채 같은 행동을 반복하고 너는 더 지쳐.",
-        rule:
-          "두 번째로 불편해지기 전에 싫은 행동을 정확히 한 번 말하기",
-      },
       F: {
-        title:
-          "상대 기분을 풀어주다 내 감정만 사라지는 반복",
-        trigger:
-          "상대 표정이 굳거나 대화 분위기가 어색해질 때",
-        reaction:
-          "내 잘못이 없어도 먼저 사과하거나 분위기를 풀려고 해.",
-        cost:
-          "관계는 유지되지만 내 서운함은 설명되지 않아 외로움이 커져.",
-        rule:
-          "상대를 달래기 전에 지금 내 감정부터 한 단어로 말하기",
+        title: "너 사람을 못 보는 게 아니라, 불편해도 너무 오래 이해해주는 편이야",
+        body: "처음엔 분명 ‘이건 좀 아닌데’ 느껴. 근데 상대 사정도 생각하고, 분위기도 생각하고, 괜히 내가 예민한가 싶어서 한 번 더 넘겨. 그러다 진짜 지쳤을 때 갑자기 마음이 닫히는 거지.",
+        check: "최근 참았던 관계 하나에서 첫 번째로 불편했던 순간을 적어보기",
+      },
+      T: {
+        title: "인간관계 문제는 사람 보는 눈보다 ‘경계선이 늦게 나오는 것’에 가까워",
+        body: "이상한 사람을 못 알아보는 게 아니야. 알아보고도 한두 번 더 기회를 주는 게 문제야. 불편함을 증거 부족으로 취급하지 마. 반복되면 그게 데이터야.",
+        check: "다음에 같은 불편함이 두 번 반복되면 바로 말할 문장 하나 정해두기",
       },
     },
-
     mental: {
-      T: {
-        title:
-          "끝까지 버티다 숏폼으로 도망치고 다시 자책하는 반복",
-        trigger:
-          "계획이 틀어지거나 해야 할 일이 감당하기 벅차질 때",
-        reaction:
-          "쉬는 대신 가장 빠른 자극을 켜고 생각을 잠깐 꺼버려.",
-        cost:
-          "시간이 지난 뒤 할 일과 죄책감이 함께 커져 더 시작하기 어려워져.",
-        rule:
-          "숏폼을 켜기 전에 가장 작은 할 일 하나만 5분 실행하기",
-      },
       F: {
-        title:
-          "남들 앞에서는 버티고 혼자 되면 완전히 방전되는 반복",
-        trigger:
-          "주변 사람이 힘들어하거나 나를 필요로 하는 순간",
-        reaction:
-          "내 상태는 숨기고 상대를 챙기며 맡은 역할을 끝까지 해내.",
-        cost:
-          "혼자가 되면 아무것도 못 하고, 쉬는 자신까지 다시 탓하게 돼.",
-        rule:
-          "도와주기 전에 지금 내 에너지가 10점 중 몇 점인지 확인하기",
+        title: "너 멘탈 약한 거 아니야. 네 마음 말고 남의 마음까지 너무 많이 들고 있었어",
+        body: "겉으로 별일 없어 보여도 머릿속에 사람 말, 해야 할 일, 미뤄둔 감정이 같이 돌아가. 그러니 쉬어도 쉰 것 같지 않은 거야. 네가 유난인 게 아니라 마음에 들어온 걸 밖으로 빼는 시간이 부족했던 거야.",
+        check: "오늘 머릿속 걱정을 ‘내 일 / 남의 일’ 두 칸으로 나눠 적기",
+      },
+      T: {
+        title: "멘탈이 약한 게 아니라 회복 전에 다음 일을 또 넣는 게 문제야",
+        body: "지치면 쉬어야 하는데 너는 효율 떨어진 상태로 계속 밀어붙이는 쪽이 보여. 그러면 작은 일도 크게 느껴진다. 의지 문제가 아니라 회복 순서를 무시한 거야.",
+        check: "오늘 일정에서 성과랑 상관없는 회복시간 30분을 먼저 잠그기",
       },
     },
   };
-
-  const selected =
-    patterns[concernKey] || patterns.money;
-
-  const pattern =
-    isT ? selected.T : selected.F;
-
-  const dominantReason =
-    dominantPatternMap[dominant] ||
-    "상황을 내 힘으로 정리하려는 마음";
-
-  const strengthReason =
-    strength === "신강"
-      ? "버티는 힘이 강해서 불편해도 괜찮은 척 넘기는 시간이 길어지고"
-      : strength === "신약"
-        ? "주변 반응을 빠르게 흡수해서 작은 신호에도 마음이 먼저 흔들리고"
-        : "신강·신약 한쪽으로 치우치지 않아 상황에 따라 버티기와 주변 반응 흡수가 번갈아 나타나고";
-
-  const relationReason = relations.hasChung
-    ? "참는 마음과 벗어나려는 마음이 부딪혀 마지막 반응이 갑자기 커지는 흐름이야."
-    : "충분히 참은 뒤에야 움직이는 흐름이라 같은 장면이 조용히 반복되기 쉬워.";
-
+  const selected = copy[concernKey] || copy.money;
+  const note = selected[isT ? "T" : "F"];
+  const personal = isT
+    ? `${ctx.strengthT} 그리고 ${ctx.dominantHuman}이 먼저 튀는 편이라 이 패턴이 더 빨리 굳어.`
+    : `${ctx.strengthF}. 특히 ${ctx.dominantHuman} 때문에 네가 네 마음보다 상황을 먼저 정리하려고 할 때가 있어.`;
   return {
-    badge: `${concernLabel} 반복 루프`,
-    title: pattern.title,
-    desc: `
-      <div class="space-y-2">
-        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
-          <b class="text-slate-900">1. 시작 신호</b><br>
-          ${escapeHTML(pattern.trigger)}
-        </div>
-
-        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
-          <b class="text-slate-900">2. 자동 반응</b><br>
-          ${escapeHTML(pattern.reaction)}
-        </div>
-
-        <div class="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2.5">
-          <b class="text-rose-700">3. 결국 남는 손해</b><br>
-          ${escapeHTML(pattern.cost)}
-        </div>
-      </div>
-
-      <div class="mt-3 text-slate-700">
-        왜 반복되냐면,
-        <b>${escapeHTML(dominantReason)}</b>이 강한 데다
-        ${escapeHTML(strengthReason)}
-        ${escapeHTML(relationReason)}
-      </div>
-    `,
-    checklist: pattern.rule,
+    badge: `${concernLabel} · 첫 번째 힌트`,
+    title: note.title,
+    desc: `${note.body}<br><br>${personal}`,
+    checklist: note.check,
   };
 }
 
-function buildNoteThreeBlindSpot(
-  data,
-  concernKey,
-  concernLabel,
-  isT,
-) {
-  const profile = data?.analysisProfile || {};
-  const dayMaster = profile.dayMaster || {};
-  const structure = profile.structure || {};
-  const classical = profile.classical || {};
-  const stats = data?.stats || profile.stats || {};
-
-  const safe = (value) =>
-    String(value ?? "").replace(/[&<>"']/g, (ch) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    })[ch]);
-
-  let lowest = null;
-  try {
-    lowest = getLowestStatInfo({
-      wealth: Number(stats.wealth) || 0,
-      mental: Number(stats.mental) || 0,
-      drive: Number(stats.drive) || 0,
-      network: Number(stats.network) || 0,
-    });
-  } catch (_) {}
-  if (!lowest) {
-    const fallback = [
-      { type: "wealth", name: "돈 냄새 맡는 촉", score: Number(stats.wealth) || 0 },
-      { type: "mental", name: "멘탈 방어력", score: Number(stats.mental) || 0 },
-      { type: "drive", name: "기회 포착력", score: Number(stats.drive) || 0 },
-      { type: "network", name: "인생 역전 귀인복", score: Number(stats.network) || 0 },
-    ];
-    fallback.sort((a, b) => a.score - b.score);
-    lowest = fallback[0];
+function buildNoteTwoPattern(data, concernKey, concernLabel, isT) {
+  const ctx = getUnniCopyContext(data);
+  const copy = {
+    money: { trigger: "불안하거나 보상받고 싶은 날", reaction: "평소 세워둔 기준이 잠깐 느슨해지고 ‘이 정도는 괜찮지’로 넘어가", cost: "결제 뒤에 돈보다 자책이 더 남아", rule: "기분이 흔들린 날은 장바구니에만 넣고 다음 날 결제하기" },
+    career: { trigger: "평가받거나 비교되는 순간", reaction: "바로 보여주기보다 더 준비하고 더 완벽하게 만들려고 해", cost: "실력은 쌓이는데 기회와 인정은 늦게 와", rule: "80% 완성되면 하나는 밖으로 내보내기" },
+    love: { trigger: "상대 반응이 평소보다 차갑거나 애매할 때", reaction: "질문보다 해석을 먼저 하고 네 표현은 줄여", cost: "상대는 네 마음을 모르고 너는 혼자 더 불안해져", rule: "추측이 두 번 시작되면 질문 한 번 하기" },
+    path: { trigger: "선택해야 하는데 실패 가능성이 보일 때", reaction: "정보를 더 모으고 비교표를 더 만들면서 시작을 늦춰", cost: "생각은 많아지는데 내 경험 데이터는 안 생겨", rule: "고민이 3일 넘으면 7일 실험 하나 시작하기" },
+    people: { trigger: "상대가 선을 넘었는데 분위기가 깨질 것 같을 때", reaction: "일단 웃고 넘긴 뒤 혼자 의미를 곱씹어", cost: "한 번의 불편함이 오래 쌓여 관계 전체가 싫어져", rule: "두 번째 불편함 전에 짧게 선 말하기" },
+    mental: { trigger: "일이 밀리거나 누군가 기대하는 게 많아질 때", reaction: "쉬는 시간을 먼저 없애고 더 버텨", cost: "회복이 늦어져 사소한 일에도 감정 소모가 커져", rule: "일정이 밀릴수록 수면·식사·30분 휴식부터 지키기" },
+  };
+  const p = copy[concernKey] || copy.money;
+  const strengthLine = isT ? ctx.strengthT : ctx.strengthF;
+  if (isT) {
+    return {
+      badge: `${concernLabel} · 반복 패턴`,
+      title: "이건 우연이 아니라 네가 반복하는 순서야",
+      desc: `<b>트리거</b> — ${p.trigger}.<br><br><b>자동반응</b> — ${p.reaction}.<br><br><b>대가</b> — ${p.cost}.<br><br>${strengthLine} 그래서 끊을 지점은 감정이 아니라 행동 순서야.`,
+      checklist: `규칙 하나만 적용: ${p.rule}`,
+    };
   }
-
-  const patterns = {
-    money: {
-      T: {
-        title: "돈이 안 모이는 이유, 수입보다 먼저 새는 구멍",
-        assumed: "돈이 부족한 건 결국 수입이 작거나 운이 아직 안 터져서라고 보기 쉬워.",
-        actual: "그런데 네 원국에서 먼저 확인할 건 큰 한 방보다 반복되는 작은 판단이야. 스트레스 받을 때 기준 없는 결제, 기회가 보일 때 조급한 선택, 손해를 인정하기 싫어 미루는 행동이 누적되면 수입이 늘어도 체감은 그대로일 수 있어.",
-        rule: "이번 주 지출 중 '필요해서 쓴 돈'과 '감정 때문에 쓴 돈'을 딱 두 칸으로 나눠 기록하기",
-      },
-      F: {
-        title: "텅장의 원인이 '내가 못 벌어서'만은 아닌 이유",
-        assumed: "돈 걱정이 생기면 내가 능력이 부족해서, 더 못 벌어서 그런가 하고 나부터 탓하기 쉬워.",
-        actual: "실제로는 마음의 안전을 돈으로 대신 사는 순간이 더 큰 누수가 될 수 있어. 관계를 어색하게 만들기 싫어 대신 내거나, 지친 날 나를 달래려고 쓰거나, 거절하기 미안해서 내 몫보다 더 부담하는 식이야.",
-        rule: "돈이 나가기 직전에 '이건 필요 비용인지, 미안함·불안 비용인지' 한 번만 구분하기",
-      },
-    },
-    career: {
-      T: {
-        title: "회사 탓보다 더 오래 발목 잡는 커리어 누수",
-        assumed: "환경이 별로거나 제대로 된 기회가 안 와서 커리어가 막힌다고 느끼기 쉬워.",
-        actual: "하지만 실제 누수는 성과를 밖으로 꺼내는 시점에서 생기기 쉬워. 준비가 더 필요하다는 이유로 지원·포트폴리오 공개·연봉 협상을 늦추면 실력은 쌓이는데 시장에서 확인되는 값은 그대로 남아.",
-        rule: "이번 주 안에 성과 하나를 숫자로 정리해서 이력서·포트폴리오에 실제로 반영하기",
-      },
-      F: {
-        title: "능력 부족이 아니라 '내 몫을 말하지 못한 것'",
-        assumed: "인정받지 못하면 내가 아직 부족해서 그런가 하고 더 열심히 해야 한다고 생각하기 쉬워.",
-        actual: "그런데 네가 놓치기 쉬운 건 실력 자체보다 내 성과를 드러내고 요구하는 과정이야. 관계가 불편해질까 봐 공을 나누고, 부탁을 먼저 받아주고, 평가받는 순간엔 내 몫을 작게 말하면 계속 저평가될 수 있어.",
-        rule: "이번 주 내가 만든 결과 3개를 적고, 그중 하나는 누구의 도움 없이 내가 한 몫을 분명하게 적기",
-      },
-    },
-    love: {
-      T: {
-        title: "사람이 없는 게 아니라 확신을 기다리다 놓치는 지점",
-        assumed: "괜찮은 사람이 없거나 상대가 애매해서 연애가 꼬인다고 보기 쉬워.",
-        actual: "실제로는 마음이 생긴 뒤에도 안전하다는 확신을 너무 오래 확인하려는 쪽에서 누수가 생길 수 있어. 관심은 있는데 표현은 줄이고, 상대 반응을 테스트하고, 먼저 움직이면 손해 보는 것처럼 버티면 좋은 관계도 애매한 채 끝나기 쉬워.",
-        rule: "호감 있는 사람에게 떠보기 대신 내가 원하는 반응이나 약속을 한 문장으로 직접 말하기",
-      },
-      F: {
-        title: "상대의 온도보다 먼저 확인해야 할 내 연애 습관",
-        assumed: "상대가 식었나, 내가 매력이 부족한가를 먼저 의심하기 쉬워.",
-        actual: "그런데 더 자주 새는 곳은 상대 반응을 내 책임으로 번역하는 습관이야. 답장이 늦거나 표정이 달라지면 이유를 확인하기 전에 내 잘못부터 찾고, 불안을 없애려고 더 맞춰주면 관계의 균형이 점점 기울어져.",
-        rule: "불안해졌을 때 추측 3개를 만들지 말고, 확인할 사실 1개만 직접 묻기",
-      },
-    },
-    path: {
-      T: {
-        title: "길을 못 찾는 게 아니라 확신이 생길 때까지 멈춰 있는 것",
-        assumed: "아직 나한테 딱 맞는 진로를 못 찾아서 출발을 못 한다고 생각하기 쉬워.",
-        actual: "실제 누수는 선택보다 검증 단계에서 생겨. 완벽한 답을 머릿속에서 찾으려 오래 비교하면 정보는 늘어나도 내 데이터는 안 생겨. 작은 실전 결과가 없는 상태에서 고민만 길어지는 게 가장 비싼 비용이야.",
-        rule: "고민 중인 방향 하나를 7일짜리 작은 실험으로 바꿔 실제 결과를 하나 만들기",
-      },
-      F: {
-        title: "꿈이 현실적이지 않은 게 아니라 남의 안심을 먼저 챙긴 것",
-        assumed: "내가 원하는 길이 불안정하거나 현실성이 부족해서 망설인다고 느끼기 쉬워.",
-        actual: "하지만 실제로는 내 선택 때문에 주변이 걱정하거나 실망할까 봐 안전한 답을 먼저 고르는 순간에 방향이 흐려질 수 있어. 하고 싶은 것보다 설명하기 쉬운 것을 택하면 시간이 갈수록 마음과 현실이 따로 놀아.",
-        rule: "누구에게도 설명할 필요가 없다면 하고 싶은 선택을 한 줄로 적고, 이번 주 30분만 그쪽에 쓰기",
-      },
-    },
-    people: {
-      T: {
-        title: "사람 보는 눈보다 먼저 고쳐야 할 '늦은 경계선'",
-        assumed: "이상한 사람이 자꾸 붙거나 주변에 피곤한 사람이 많아서 인간관계가 꼬인다고 느끼기 쉬워.",
-        actual: "실제 누수는 사람을 잘못 고르는 순간보다 불편함을 느끼고도 초반에 선을 안 긋는 데서 생길 수 있어. 참을 만큼 참다가 한 번에 끊으면 매번 '또 이상한 사람을 만났다'는 결론만 남아.",
-        rule: "이번 주 불편한 부탁 하나에는 즉답 대신 '확인하고 말할게'로 시간을 벌고 기준부터 확인하기",
-      },
-      F: {
-        title: "내가 예민한 게 아니라 남의 감정까지 내 몫으로 들고 온 것",
-        assumed: "관계에서 힘들면 내가 너무 예민하거나 사람을 편하게 못 대하는 탓이라고 생각하기 쉬워.",
-        actual: "그런데 실제 누수는 상대 기분까지 내가 책임지려는 순간이야. 상대가 서운해할까 봐 거절을 미루고, 분위기가 나쁘면 내가 풀어야 할 것 같아 움직이면 관계가 많아질수록 내 에너지가 먼저 바닥나.",
-        rule: "오늘 한 번은 상대가 실망할 가능성을 감수하고도 내 일정과 체력을 기준으로 대답하기",
-      },
-    },
-    mental: {
-      T: {
-        title: "의지가 약한 게 아니라 회복 전에 또 밀어붙이는 구조",
-        assumed: "집중이 깨지고 지치면 요즘 내가 나약해졌거나 의지가 부족해졌다고 보기 쉬워.",
-        actual: "실제 누수는 회복 신호를 문제로 취급하고 계속 밀어붙이는 데서 생길 수 있어. 쉬는 동안에도 해결책을 찾고, 뒤처질까 불안해서 다시 일을 잡으면 몸은 멈춰도 머리는 계속 근무 중이야.",
-        rule: "오늘 30분은 생산성 없는 휴식으로 비워두고 그 시간에 성과를 만들려는 행동을 금지하기",
-      },
-      F: {
-        title: "멘탈이 약한 게 아니라 감정의 출처가 너무 많이 섞인 것",
-        assumed: "마음이 자주 흔들리면 내가 유난이거나 멘탈이 약해서 그렇다고 생각하기 쉬워.",
-        actual: "그런데 실제 누수는 내 감정과 남의 감정을 분리하지 못한 채 계속 받아들이는 데서 생길 수 있어. 누군가 힘들어하면 같이 가라앉고, 분위기가 차가우면 이유를 내 안에서 찾다 보면 쉬어도 피로가 남아.",
-        rule: "오늘 불편했던 감정 하나를 '내 문제 / 남의 문제 / 아직 모름' 셋 중 하나로 분류하기",
-      },
-    },
-  };
-
-  const weaknessMap = {
-    wealth: "손익과 내 몫을 숫자로 끊어 보는 지점",
-    mental: "불편한 감정이 올라왔을 때 선을 긋고 회복하는 지점",
-    drive: "생각을 실행으로 옮기고 타이밍을 잡는 지점",
-    network: "혼자 버티지 않고 도움과 연결을 실제로 쓰는 지점",
-  };
-  const strengthMap = {
-    신강: "버티는 힘이 강한 편이라 문제를 알아도 '이 정도는 괜찮다'며 늦게 끊기 쉽고,",
-    신약: "주변 자극에 쓰는 에너지가 큰 편이라 핵심 행동보다 반응과 방어가 먼저 나오기 쉽고,",
-    중화: "한쪽으로 크게 치우치진 않지만 상황에 맞추는 동안 내 기준이 흐려지면 결정이 늦어질 수 있고,",
-  };
-  const statusMap = {
-    성격: "격의 흐름은 비교적 정리돼 있어서 능력 부족보다 장점을 잘못 쓰는 순간을 보는 게 중요해.",
-    성중유패: "잘 풀리는 축과 걸리는 축이 함께 보여서 장점이 과해질 때 약점으로 뒤집히는 순간을 봐야 해.",
-    파격: "걸림이 되는 축이 겉으로 드러나 있어 스트레스 상황에서 같은 약점이 반복되는지 확인할 가치가 커.",
-    평격: "한 가지 공식으로 단순화하기보다 실제 생활에서 반복되는 선택 습관을 직접 확인하는 게 중요해.",
-  };
-
-  const selected = patterns[concernKey] || patterns.money;
-  const pattern = isT ? selected.T : selected.F;
-  const strength = dayMaster.strength || (data?.isDayMasterStrong ? "신강" : "신약");
-  const gyeokName = structure.gyeokName || data?.gyeokguk?.name || "평격";
-  const status = structure.status || data?.gyeokStatus?.status || "평격";
-  const sangsin = structure.sangsin || data?.gyeokStatus?.sangsinFound || "";
-  const gisin = structure.gisin || data?.gyeokStatus?.gisinFound || "";
-  const weakPoint = weaknessMap[lowest.type] || "반복되는 선택을 끊는 지점";
-  const scoreNum = Number(lowest.score);
-  const scoreText = Number.isFinite(scoreNum) ? `${Math.round(scoreNum)}점` : "점수 확인 중";
-
-  const jeokcheon = classical.jeokcheon || {};
-  const supportForce = Number(jeokcheon.supportForce);
-  const drainForce = Number(jeokcheon.drainForce);
-  const balanceBasis =
-    Number.isFinite(supportForce) && Number.isFinite(drainForce)
-      ? `${strength} · 받치는 힘 ${supportForce.toFixed(1)} / 빠지는 힘 ${drainForce.toFixed(1)}`
-      : `${strength} 균형 판정`;
-  const qiongtong = classical.qiongtong || {};
-  const climateBasis =
-    qiongtong.direction || "계절의 한난조습이 극단적으로 치우치지 않은 편";
-  const statusExtra = [sangsin ? `도움축 ${sangsin}` : "", gisin ? `걸림축 ${gisin}` : ""]
-    .filter(Boolean)
-    .join(" · ");
-
-  const mechanism = `${strengthMap[strength] || "원국 전체 균형을 보면,"} ${statusMap[status] || statusMap.평격}`;
-  const evidence = `<div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-[10.5px] leading-relaxed text-slate-600"><b class="text-slate-800">언니가 잡은 계산 근거</b><br>취약축: ${safe(lowest.name)} ${safe(scoreText)} · ${safe(gyeokName)} · ${safe(status)}${statusExtra ? ` · ${safe(statusExtra)}` : ""}<br>균형: ${safe(balanceBasis)}<br>계절 보정: ${safe(climateBasis)}<br><span class="text-[9.5px] text-slate-400">※ 고전 원리는 계산 기준으로 쓰고, 위 행동 패턴은 그 계산을 현대 생활에 맞춰 번역한 해석이야.</span></div>`;
-
   return {
+    badge: `${concernLabel} · 반복 패턴`,
+    title: "자꾸 같은 데서 힘들었던 데는 이유가 있었어",
+    desc: `언니가 네 흐름을 보면 시작은 보통 <b>${p.trigger}</b>이야. 그때 ${p.reaction}. 그러고 나면 결국 ${p.cost}.<br><br>${strengthLine}. 그러니까 또 반복됐다고 너 자신부터 뭐라 하지 마. 대신 딱 한 군데만 바꾸자.`,
+    checklist: `이번엔 이것만 같이 지켜보자: ${p.rule}`,
+  };
+}
+
+function buildNoteThreeBlindSpot(data, concernKey, concernLabel, isT) {
+  const ctx = getUnniCopyContext(data);
+  const copy = {
+    money: { assumed: "내가 돈을 적게 벌어서 안 모인다", actual: "돈이 아니라 불안한 순간에 기준이 풀리는 게 더 큰 누수다", move: "수입 목표보다 감정결제 패턴부터 끊기" },
+    career: { assumed: "내가 아직 실력이 부족하다", actual: "실력보다 결과를 보여주고 요구하는 타이밍이 늦다", move: "더 배우기 전에 이미 한 일을 보이게 만들기" },
+    love: { assumed: "상대가 나를 충분히 좋아하지 않는다", actual: "상대 마음을 오래 추측하면서 네 기준과 질문이 뒤로 밀린다", move: "좋아하는지 해석보다 내가 원하는 관계인지 먼저 보기" },
+    path: { assumed: "아직 내 적성을 못 찾았다", actual: "확신이 생길 때까지 경험을 미뤄서 적성을 확인할 재료가 부족하다", move: "정답 찾기보다 작은 실험으로 반응 확인하기" },
+    people: { assumed: "내가 사람 보는 눈이 없다", actual: "첫 불편함을 알아차리고도 너무 오래 이해해준다", move: "사람 판별보다 경계선을 더 빨리 꺼내기" },
+    mental: { assumed: "내 멘탈이 약하다", actual: "회복 전에 다음 부담을 계속 얹어서 마음이 비워질 틈이 없다", move: "강해지기보다 회복 순서를 먼저 지키기" },
+  };
+  const p = copy[concernKey] || copy.money;
+  const personal = ctx.weakHuman;
+  return isT ? {
     badge: `${concernLabel} · 블라인드스팟`,
-    title: pattern.title,
-    desc: `<b>내가 문제라고 느끼는 지점:</b> ${pattern.assumed}<br><br><b>실제로 새는 지점:</b> ${pattern.actual}<br><br><b>특히 약한 연결고리:</b> ${safe(weakPoint)}. ${mechanism}${evidence}`,
-    checklist: pattern.rule,
+    title: "네가 원인이라고 찍은 데랑 실제 새는 데가 달라",
+    desc: `<b>네가 문제라고 본 것:</b> ${p.assumed}.<br><br><b>실제 누수:</b> ${p.actual}.<br><br>특히 네가 놓치기 쉬운 건 <b>${personal}</b> 쪽이야. 원인 잘못 잡고 더 열심히 하지 마.`,
+    checklist: p.move,
+  } : {
+    badge: `${concernLabel} · 블라인드스팟`,
+    title: "혹시 네가 엉뚱한 데서 너 자신을 탓하고 있었던 건 아닐까",
+    desc: `너는 자꾸 <b>${p.assumed}</b>고 생각했을 수 있어. 근데 언니가 보기엔 진짜 새는 곳은 <b>${p.actual}</b> 쪽에 더 가까워.<br><br>그리고 네가 유독 놓치기 쉬운 건 <b>${personal}</b>이야. 그러니까 괜히 네 능력이나 매력부터 의심하지 않았으면 좋겠어.`,
+    checklist: `이번엔 나를 탓하기 전에 이것부터 해보자: ${p.move}`,
   };
 }
 
-function buildNoteFourPrescription(
-  data,
-  concernKey,
-  concernLabel,
-  isT,
-) {
-  const profile = data?.analysisProfile || {};
-  const dayMaster = profile.dayMaster || {};
-  const structure = profile.structure || {};
-  const stats = data?.stats || profile.stats || {};
-
-  const safe = (value) =>
-    String(value ?? "").replace(/[&<>"']/g, (ch) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    })[ch]);
-
-  let lowest = null;
-  try {
-    lowest = getLowestStatInfo({
-      wealth: Number(stats.wealth) || 0,
-      mental: Number(stats.mental) || 0,
-      drive: Number(stats.drive) || 0,
-      network: Number(stats.network) || 0,
-    });
-  } catch (_) {}
-  if (!lowest) {
-    const fallback = [
-      { type: "wealth", name: "돈 냄새 맡는 촉", score: Number(stats.wealth) || 0 },
-      { type: "mental", name: "멘탈 방어력", score: Number(stats.mental) || 0 },
-      { type: "drive", name: "기회 포착력", score: Number(stats.drive) || 0 },
-      { type: "network", name: "인생 역전 귀인복", score: Number(stats.network) || 0 },
-    ];
-    fallback.sort((a, b) => a.score - b.score);
-    lowest = fallback[0];
-  }
-
-  const prescriptions = {
-    money: {
-      T: {
-        title: "돈복 기다리지 말고 7일 안에 새는 돈부터 막는 처방",
-        now: "최근 7일 결제내역을 열고 가장 자주 반복된 비필수 지출 하나를 고른 뒤, 다음 결제의 상한액을 숫자로 정해.",
-        week: "7일 동안 비필수 결제는 무조건 24시간 보류해. 다음 날에도 필요하면 사고, 이유가 흐려지면 넘겨.",
-        stop: "수익 인증, 친구 추천, 세일 마감만 보고 그날 바로 결제하거나 돈을 넣는 행동은 금지.",
-        check: "7일 뒤 '기준 없이 쓴 돈'이 몇 번이었는지 세고, 지난주보다 횟수가 줄었으면 성공.",
-        rule: "오늘 거래내역 7일치에서 가장 반복된 누수 하나에 상한선 숫자 붙이기",
-      },
-      F: {
-        title: "불안해서 쓰는 돈과 나를 지키는 돈을 갈라놓는 7일 처방",
-        now: "최근 지출 중 '필요해서 쓴 돈'과 '미안해서·지쳐서 쓴 돈'을 한 건씩만 찾아봐. 후자에는 작은 표시를 해둬.",
-        week: "돈이 들어오면 금액이 작아도 먼저 '내 안전 몫'을 따로 남겨. 남을 챙기거나 기분을 달래는 소비는 그다음이야.",
-        stop: "거절하면 미안할 것 같아서 대신 내주거나, 힘든 날 기분부터 달래려고 바로 결제하는 건 30분만 미뤄.",
-        check: "7일 동안 내 마음과 상관없이 떠밀려 쓴 돈이 한 번이라도 줄었으면 충분히 잘한 거야.",
-        rule: "오늘 지출 하나를 '필요 비용 / 미안함·불안 비용'으로 구분해서 표시하기",
-      },
-    },
-    career: {
-      T: {
-        title: "준비만 더 하지 말고 결과물 하나를 밖으로 내보내는 처방",
-        now: "공부·지원·업무 중 지금 제일 중요한 결과물 하나를 골라 60% 상태라도 오늘 끝낼 범위를 숫자로 정해.",
-        week: "7일 안에 지원, 제출, 공개, 피드백 요청 중 하나를 실제로 실행해. 준비 시간이 아니라 밖으로 나간 결과물 수를 세는 거야.",
-        stop: "새 자격증·강의·자료를 더 찾는 걸 '준비'라고 부르면서 제출 시점을 미루는 행동은 금지.",
-        check: "일주일 뒤 남에게 보여준 결과물이 최소 1개 있으면 성공. 완성도보다 외부 피드백을 얻었는지가 기준이야.",
-        rule: "오늘 60%짜리 결과물 하나의 제출·공개 날짜를 캘린더에 박기",
-      },
-      F: {
-        title: "더 열심히가 아니라 내 몫을 보이게 만드는 7일 처방",
-        now: "최근에 해낸 일 세 가지를 적고, 각 항목 옆에 '내가 직접 한 행동'을 한 줄씩 붙여봐.",
-        week: "이번 주 한 번은 도움 요청, 역할 조정, 일정 협의 중 하나를 말로 꺼내. 혼자 다 떠안지 않는 연습이 처방이야.",
-        stop: "누가 곤란해 보인다는 이유만으로 내 일정 확인도 안 하고 '제가 할게요'부터 말하는 건 잠깐 멈춰.",
-        check: "7일 뒤 내 기여를 분명히 말한 장면이 1번, 남의 몫을 돌려준 장면이 1번 있으면 성공.",
-        rule: "오늘 내가 만든 결과 3개와 그 안에서 내 기여를 한 줄씩 적기",
-      },
-    },
-    love: {
-      T: {
-        title: "상대 분석은 줄이고 확인 질문 하나로 끝내는 연애 처방",
-        now: "지금 가장 신경 쓰이는 상대 행동 하나를 '사실'과 '내 추측' 두 줄로 나눠 적어. 추측은 아직 결론이 아니야.",
-        week: "7일 안에 떠보기 대신 내가 궁금한 것 또는 원하는 관계 기준을 한 문장으로 직접 확인해.",
-        stop: "답장 속도, 말투, SNS만 보고 혼자 결론 낸 뒤 일부러 늦게 답하거나 거리를 두는 테스트는 금지.",
-        check: "일주일 뒤 혼자 만든 가설 수보다 직접 확인한 사실 수가 많아졌으면 성공.",
-        rule: "오늘 상대 행동 하나를 '사실 1줄 / 추측 1줄'로 분리해서 적기",
-      },
-      F: {
-        title: "상대 마음을 대신 해석하지 않고 내 마음부터 말하는 7일 처방",
-        now: "서운하거나 불안했던 장면 하나를 떠올리고 '상대가 한 행동'과 '내가 느낀 감정'을 따로 적어봐.",
-        week: "이번 주 한 번은 괜찮은 척 넘기지 말고 '나는 이럴 때 이렇게 느껴'라는 문장으로 내 마음을 말해.",
-        stop: "상대가 힘들어 보인다는 이유로 내 서운함까지 없던 일로 만들거나, 확인받으려고 더 맞춰주는 행동은 멈춰.",
-        check: "7일 안에 내 감정을 숨기지 않고 말한 장면이 1번만 생겨도 성공이야.",
-        rule: "오늘 서운했던 장면 하나를 '사실 / 내 감정' 두 칸으로 나눠 적기",
-      },
-    },
-    path: {
-      T: {
-        title: "정답 찾기 대신 7일짜리 실험으로 진로를 검증하는 처방",
-        now: "고민 중인 방향 하나를 골라 7일 안에 끝낼 수 있는 가장 작은 결과물로 바꿔. 조사 말고 실제 산출물이 있어야 해.",
-        week: "7일 동안 시간·재미·반응 세 항목을 10점 만점으로 기록하고, 끝난 뒤 계속할지 버릴지 결정해.",
-        stop: "비교 영상, 후기, 적성검사만 계속 보면서 직접 해보는 시점을 미루는 행동은 금지.",
-        check: "일주일 뒤 '생각'이 아니라 내가 만든 결과물 1개와 점수 3개가 남아 있으면 성공.",
-        rule: "오늘 고민 하나를 7일짜리 실험으로 바꾸고 결과물의 형태를 한 줄로 정하기",
-      },
-      F: {
-        title: "남들이 안심할 답 말고 내 마음이 움직이는 쪽을 시험하는 처방",
-        now: "누구에게도 설명할 필요가 없다고 가정하고 지금 끌리는 방향 하나를 적어. 현실성 평가는 그다음이야.",
-        week: "그 방향에 7일 동안 하루 30분만 써봐. 인생을 확 바꾸는 게 아니라 내 반응을 확인하는 실험이면 돼.",
-        stop: "가족·친구가 걱정할 장면을 미리 상상해서 내가 해보기도 전에 선택지를 지우는 건 멈춰.",
-        check: "7일 뒤 '더 해보고 싶다 / 별로다 / 아직 모르겠다' 셋 중 하나를 내 경험으로 고를 수 있으면 성공이야.",
-        rule: "오늘 남의 의견을 빼고 내가 궁금한 방향 하나에 30분 쓰기",
-      },
-    },
-    people: {
-      T: {
-        title: "손절까지 참지 말고 첫 불편함에서 선 긋는 7일 처방",
-        now: "최근 짜증났던 부탁 하나를 골라, 그때 바로 말했어야 할 기준을 한 문장으로 다시 써봐.",
-        week: "이번 주 갑작스러운 부탁에는 즉답하지 말고 '확인하고 말할게'를 먼저 써. 그다음 시간·돈·체력 중 하나라도 손해면 조정해.",
-        stop: "괜찮은 척 다 받아준 뒤 속으로 점수 깎다가 한 번에 차단하는 방식은 금지.",
-        check: "7일 안에 관계를 끊지 않고도 작은 거절이나 조건 조정을 1번 했으면 성공.",
-        rule: "오늘 불편했던 부탁 하나에 내가 지킬 기준을 한 문장으로 다시 쓰기",
-      },
-      F: {
-        title: "상대 기분보다 내 체력을 먼저 확인하는 관계 처방",
-        now: "오늘 들어온 부탁 하나를 떠올리고, 대답하기 전 내 시간·체력·마음 여유가 각각 몇 점이었는지 적어봐.",
-        week: "7일 동안 부탁을 받을 때 바로 대답하지 말고 내 상태부터 확인해. 여유가 없으면 이유를 길게 설명하지 않아도 돼.",
-        stop: "상대가 서운해할까 봐 내 일정과 컨디션을 무시하고 약속부터 잡는 행동은 멈춰.",
-        check: "일주일 동안 '미안하지만 이번엔 어려워' 같은 작은 경계선을 1번이라도 세웠으면 성공이야.",
-        rule: "오늘 부탁 하나에 답하기 전 내 시간·체력부터 먼저 확인하기",
-      },
-    },
-    mental: {
-      T: {
-        title: "더 버티는 계획 말고 회복 시간을 먼저 잠그는 처방",
-        now: "오늘 해야 할 일의 종료 시각을 먼저 정하고, 그 뒤 30분은 문제 해결·검색·업무 메시지를 모두 끊어.",
-        week: "7일 동안 하루 한 번 '일 종료' 시간을 기록해. 못 지킨 날은 일을 더 넣지 말고 다음 날 첫 할 일을 하나 줄여.",
-        stop: "쉬는 시간에 생산성 영상, 업무 검색, 할 일 정리를 하면서 그걸 휴식이라고 부르는 건 금지.",
-        check: "7일 중 4일 이상 정한 종료 시각을 지켰다면 성공. 기분보다 실제 종료 횟수로 판단해.",
-        rule: "오늘 일·공부 종료 시각 하나를 정하고 그 뒤 30분은 완전히 비우기",
-      },
-      F: {
-        title: "내 감정과 남의 감정을 분리해서 마음을 쉬게 하는 7일 처방",
-        now: "오늘 마음에 남은 감정 하나를 '내 문제 / 남의 문제 / 아직 모름' 셋 중 하나로만 분류해봐.",
-        week: "7일 동안 하루 한 번 감정의 출처를 분류하고, 남의 문제로 표시한 건 그날 해결하려고 움직이지 않아도 돼.",
-        stop: "누군가 힘들다는 말을 들은 뒤 내가 해결책을 찾아주거나 같이 가라앉을 때까지 계속 붙잡고 있는 행동은 멈춰.",
-        check: "일주일 뒤 남의 감정 때문에 하루 전체가 흔들린 횟수가 한 번이라도 줄었다면 성공이야.",
-        rule: "오늘 가장 오래 남은 감정 하나의 출처를 세 칸 중 하나로 분류하기",
-      },
-    },
+function buildNoteFourPrescription(data, concernKey, concernLabel, isT) {
+  const ctx = getUnniCopyContext(data);
+  const copy = {
+    money: ["오늘 최근 지출 5개를 ‘필요 / 기분전환’ 둘로만 나눠", "7일 동안 기분전환 지출은 하루 묵혔다 결제해", "이번 주엔 돈 아끼기보다 충동결제 1번 막는 걸 성공으로 쳐"],
+    career: ["오늘 보여줄 수 있는 결과물 하나를 골라", "7일 안에 누군가에게 보여주거나 지원·제안에 써", "새 공부 시작 전에 이미 한 일 하나를 밖으로 꺼내"],
+    love: ["오늘 네가 원하는 관계 기준을 3개만 적어", "7일 동안 추측 대신 확인 질문을 최소 한 번 해", "애매한 행동을 대신 해석해주지 마"],
+    path: ["오늘 고민 중인 선택지 하나를 고르고", "7일짜리 체험·샘플·작업으로 직접 해봐", "결정 못 했다는 이유로 정보만 더 모으지 마"],
+    people: ["오늘 최근 불편했던 관계 하나를 골라", "다음 불편함엔 24시간 안에 짧게 말해", "상대 사정 이해한다고 네 기준까지 없애지 마"],
+    mental: ["오늘 회복시간 30분을 일정에 먼저 넣어", "7일 동안 잠·밥·휴식 중 하나는 무조건 지켜", "지쳤을 때 계획을 더 세우는 걸 멈춰"],
   };
-
-  const selected = prescriptions[concernKey] || prescriptions.money;
-  const pattern = isT ? selected.T : selected.F;
-
-  const strength =
-    dayMaster.strength || (data?.isDayMasterStrong ? "신강" : "신약");
-  const strengthGuide = {
-    신강: "버티는 힘이 센 편이라 '더 하기'보다 멈출 기준을 먼저 세우는 게 핵심이야.",
-    신약: "주변 자극을 많이 받는 편이라 의지로 크게 바꾸기보다 행동 단위를 작게 만들어야 오래 가.",
-    중화: "한쪽 반응으로 고정되기보다 상황 영향을 받는 편이라 한 번에 변수 하나만 바꾸고 결과를 확인하는 게 좋아.",
-  }[strength] || "한 번에 크게 바꾸기보다 작은 행동 하나를 반복해서 확인하는 게 좋아.";
-
-  const weakGuideMap = {
-    wealth: "손익과 내 몫을 느낌이 아니라 숫자로 끊어 보는 연습을 먼저 잡아야 해.",
-    mental: "문제 해결보다 회복 시간과 감정 경계선을 먼저 확보해야 해.",
-    drive: "생각을 더 늘리기보다 마감과 첫 행동을 밖에 고정하는 게 중요해.",
-    network: "혼자 해결하려 하지 말고 도움 요청·협의·연결을 실제 행동으로 써야 해.",
-  };
-  const weakGuide = weakGuideMap[lowest.type] || "가장 약한 연결고리 하나만 먼저 보완하는 게 좋아.";
-
-  const yongKey = data?.yongshin || "";
-  const yongMap = {
-    mok: { label: "목", tactic: "새 선택을 작게 시작하고 키우는 방식" },
-    hwa: { label: "화", tactic: "생각을 밖으로 표현하고 반응을 확인하는 방식" },
-    to: { label: "토", tactic: "루틴·기록·저장으로 생활에 굳히는 방식" },
-    geum: { label: "금", tactic: "기준을 숫자로 세우고 불필요한 선택을 잘라내는 방식" },
-    su: { label: "수", tactic: "정보와 여백을 확보한 뒤 유연하게 판단하는 방식" },
-  };
-  const yong = yongMap[yongKey] || { label: "균형", tactic: "한 가지 행동을 작게 반복해 반응을 확인하는 방식" };
-
-  const score = Number(lowest.score);
-  const scoreText = Number.isFinite(score) ? `${Math.round(score)}점` : "확인값";
-  const gyeokName = structure.gyeokName || data?.gyeokguk?.name || "원국 구조";
-  const status = structure.status || data?.gyeokStatus?.status || "균형 확인";
-
-  const evidence = `
-    <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-[10.5px] leading-relaxed text-slate-600">
-      <b class="text-slate-800">왜 이 처방이 너한테 맞나</b><br>
-      ${safe(strengthGuide)} ${safe(weakGuide)}<br>
-      취약축은 <b>${safe(lowest.name)} ${safe(scoreText)}</b>, 앱이 잡은 보완축은 <b>${safe(yong.label)}</b>이라 생활에선 ${safe(yong.tactic)}으로 풀었어.
-      <span class="text-slate-400">(${safe(gyeokName)} · ${safe(status)})</span>
-    </div>`;
-
-  return {
-    badge: `${concernLabel} 실전 처방`,
-    title: pattern.title,
-    desc: `
-      <div class="space-y-2">
-        <div class="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5">
-          <b class="text-amber-800">오늘 바로</b><br>
-          ${safe(pattern.now)}
-        </div>
-        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
-          <b class="text-slate-900">7일 규칙</b><br>
-          ${safe(pattern.week)}
-        </div>
-        <div class="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2.5">
-          <b class="text-rose-700">금지선</b><br>
-          ${safe(pattern.stop)}
-        </div>
-        <div class="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2.5">
-          <b class="text-emerald-800">성공 체크</b><br>
-          ${safe(pattern.check)}
-        </div>
-      </div>
-      ${evidence}
-    `,
-    checklist: pattern.rule,
+  const steps = copy[concernKey] || copy.money;
+  const last = ctx.hasClash ? "특히 관계나 일정이 갑자기 꼬이는 날엔 평소 기준보다 더 빨리 멈추는 게 좋아." : "완벽하게 지킬 필요 없어. 한 번이라도 예전 반응 대신 새 반응을 고르면 성공이야.";
+  return isT ? {
+    badge: `${concernLabel} · 7일 처방`,
+    title: "복잡하게 하지 마. 7일 동안 딱 세 가지만 해",
+    desc: `<b>1.</b> ${steps[0]}.<br><br><b>2.</b> ${steps[1]}.<br><br><b>3.</b> ${steps[2]}.<br><br>${last}`,
+    checklist: "7일 뒤 ‘몇 번 했는지’만 숫자로 체크하기",
+  } : {
+    badge: `${concernLabel} · 7일 처방`,
+    title: "너 더 몰아붙이는 처방은 안 줄게. 언니랑 7일만 이렇게 해보자",
+    desc: `첫째, <b>${steps[0]}</b>.<br><br>둘째, <b>${steps[1]}</b>.<br><br>셋째, <b>${steps[2]}</b>.<br><br>${last} 너 지금까지 충분히 애썼으니까 이번엔 ‘더 열심히’ 말고 ‘덜 소모되게’ 가보자.`,
+    checklist: "7일 뒤 잘한 거 하나만 골라서 스스로 인정해주기",
   };
 }
 
-
-function buildNoteFiveEnvironmentFilter(
-  data,
-  concernKey,
-  concernLabel,
-  isT,
-) {
-  const profile = data?.analysisProfile || {};
-  const dayMaster = profile.dayMaster || {};
-  const sipsin = profile.sipsin || {};
-  const relations = profile.relations || {};
-
-  const safe = (value) =>
-    String(value ?? "").replace(/[&<>"']/g, (ch) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    })[ch]);
-
-  const filters = {
-    money: {
-      T: {
-        title: "돈 얘기할수록 더 차분해지는 사람이 네 편이야",
-        ally: "수익 자랑보다 손실·조건·계약부터 같이 확인하고, 네가 안 한다고 해도 태도가 달라지지 않는 사람",
-        villain: "마감·수익 인증·지인 찬스를 들이밀며 지금 안 하면 손해라고 조급하게 만드는 사람",
-        place: "비용·역할·정산 기준이 말이 아니라 숫자와 기록으로 남는 환경",
-        test: "돈 제안이 오면 '최악의 손실이 얼마야?'를 물어보고 답을 흐리면 바로 보류하기",
-      },
-      F: {
-        title: "네가 돈을 안 써도 따뜻함이 그대로인 사람이 진짜 내 편",
-        ally: "각자 계산해도 어색해하지 않고, 네 형편과 거절을 관계의 애정도와 연결하지 않는 사람",
-        villain: "미안함과 정을 건드려 대신 내게 하거나, 네가 베푸는 걸 당연한 역할처럼 받는 사람",
-        place: "돈을 쓰지 않아도 환대받고, 비용 기준을 편하게 말할 수 있는 환경",
-        test: "이번 주 한 번은 먼저 계산하지 말고 각자 내자고 말한 뒤 상대 반응 보기",
-      },
-    },
-    career: {
-      T: {
-        title: "좋은 상사는 응원보다 평가 기준을 먼저 보여준다",
-        ally: "해야 할 일·마감·평가 기준을 분명히 말하고 결과가 좋으면 권한과 보상도 같이 키워주는 사람",
-        villain: "기준은 계속 바꾸면서 열정과 충성만 요구하고, 잘하면 다음 잡무를 보상처럼 얹는 사람",
-        place: "역할·권한·피드백이 구체적이고 성과를 외부에 보여줄 수 있는 환경",
-        test: "새 일을 맡기 전 '완료 기준과 내 권한이 어디까지인지' 두 가지부터 확인하기",
-      },
-      F: {
-        title: "네 성실함을 공짜 노동으로 쓰지 않는 곳이 맞는 자리야",
-        ally: "네 수고를 알아보고 도움 요청이나 역할 조정을 무능력으로 취급하지 않는 사람",
-        villain: "착하고 책임감 있다는 이유로 남의 몫까지 조용히 넘기고 고마움은 생략하는 사람",
-        place: "내 몫과 남의 몫이 나뉘고, 힘들다고 말해도 관계가 깨지지 않는 환경",
-        test: "이번 주 부탁 하나에는 바로 '네' 하지 말고 내 일정 확인 후 답하겠다고 말하기",
-      },
-    },
-    love: {
-      T: {
-        title: "밀당 잘하는 사람보다 말과 행동이 맞는 사람이 맞아",
-        ally: "애매한 질문을 피하지 않고 약속·연락·관계 의도를 행동으로 확인시켜 주는 사람",
-        villain: "관심을 줬다 거뒀다 하며 네 반응을 시험하고, 직접 물으면 농담이나 회피로 빠지는 사람",
-        place: "떠보기보다 확인 질문을 해도 자존심 싸움으로 번지지 않는 관계",
-        test: "애매한 행동 하나를 해석하지 말고 한 문장으로 직접 물어본 뒤 답변의 명확성 보기",
-      },
-      F: {
-        title: "서운하다고 말해도 사랑이 줄지 않는 사람이 맞는 인연",
-        ally: "네 감정을 과하다고 평가하지 않고, 서운함을 말했을 때 설명하고 조율하려는 사람",
-        villain: "불안을 만들어놓고 네가 더 맞춰주면 그때만 다정해지는 사람",
-        place: "기분을 숨기지 않아도 안전하고 서로의 감정이 각자의 책임으로 존중되는 관계",
-        test: "작은 서운함 하나를 숨기지 않고 말해본 뒤 상대가 방어하는지 조율하는지 보기",
-      },
-    },
-    path: {
-      T: {
-        title: "정답 알려주는 사람보다 실험하게 해주는 사람이 귀인이야",
-        ally: "네 선택을 대신 정하지 않고 작은 실험·결과·피드백으로 판단하게 도와주는 사람",
-        villain: "자기 성공 공식을 정답처럼 강요하면서 네가 직접 해보기 전부터 가능성을 잘라내는 사람",
-        place: "실패 비용이 작고 결과물을 빨리 만들어 실제 반응을 볼 수 있는 환경",
-        test: "조언을 들으면 바로 따르지 말고 '7일 동안 뭘 시험해볼 수 있지?'로 바꿔보기",
-      },
-      F: {
-        title: "걱정해도 네 선택권까지 가져가지 않는 사람이 내 편이야",
-        ally: "현실적인 걱정은 말해도 마지막 선택은 네 몫으로 남겨두고 시도 자체를 응원하는 사람",
-        villain: "실망·불안·안정이라는 말을 이용해 네가 원하는 방향을 포기하게 만드는 사람",
-        place: "매번 허락받거나 설명하지 않아도 작은 도전을 해볼 수 있는 환경",
-        test: "내가 원하는 선택을 먼저 말한 뒤 상대가 질문하는지 바로 반대부터 하는지 보기",
-      },
-    },
-    people: {
-      T: {
-        title: "선을 말했을 때 고치는 사람이 남길 사람이다",
-        ally: "불편하다고 말하면 변명보다 행동을 조정하고 같은 선을 두 번 넘지 않는 사람",
-        villain: "농담이었다며 반복해서 선을 넘고 네가 예민하다는 말로 책임을 돌리는 사람",
-        place: "거절·이견을 말해도 뒤끝이나 보복 없이 다시 일상으로 돌아오는 관계",
-        test: "작은 경계선 하나를 먼저 말해보고 다음 행동이 실제로 달라지는지 확인하기",
-      },
-      F: {
-        title: "네가 상대 기분을 관리하지 않아도 편한 사람이 귀인이야",
-        ally: "자기 감정을 네게 쏟아놓고 해결까지 맡기지 않으며 네 상태도 같이 물어보는 사람",
-        villain: "힘들 때마다 네게 감정을 배출하고 네가 거리를 두면 죄책감을 주는 사람",
-        place: "침묵·거리·혼자 있는 시간을 설명하지 않아도 존중받는 관계",
-        test: "오늘 한 번은 상대 기분을 풀어주려 움직이지 말고 내 상태부터 말해보기",
-      },
-    },
-    mental: {
-      T: {
-        title: "더 몰아붙이는 사람보다 회복 시간을 지켜주는 사람이 필요해",
-        ally: "문제가 생겼을 때 무조건 해결책부터 던지지 않고 네 일정과 회복 한계를 같이 지켜주는 사람",
-        villain: "쉴 때마다 뒤처진다며 성과 비교와 생산성 압박을 계속 주는 사람",
-        place: "알림·업무·대화를 끊고 완전히 쉬는 시간이 실제로 보장되는 환경",
-        test: "회복 시간이 필요하다고 말했을 때 존중하는지 설득해서 다시 일시키는지 보기",
-      },
-      F: {
-        title: "아무것도 해주지 않아도 곁에 남는 사람이 진짜 안식처야",
-        ally: "네가 밝게 반응하지 않아도 서운해하지 않고 조용히 쉬게 두는 사람",
-        villain: "자기 힘든 이야기를 반복해서 쏟으며 네가 받아줘야 관계가 유지되는 사람",
-        place: "감정 노동을 하지 않아도 소속감을 잃지 않고 혼자 회복할 수 있는 환경",
-        test: "컨디션이 낮은 날 억지로 맞장구치지 말고 쉬겠다고 말한 뒤 관계 온도 확인하기",
-      },
-    },
+function buildNoteFiveEnvironmentFilter(data, concernKey, concernLabel, isT) {
+  const ctx = getUnniCopyContext(data);
+  const copy = {
+    money: { keep: "돈 얘기를 해도 체면 세우게 만들지 않고 현실적으로 같이 정리해주는 사람", cut: "비교심 자극하고 ‘이 정도도 못 써?’ 하며 소비를 부추기는 사람", place: "가격·역할·보상이 미리 분명한 환경" },
+    career: { keep: "네 성실함을 당연하게 먹지 않고 결과와 역할을 분명히 인정해주는 사람", cut: "일은 더 얹으면서 평가 기준은 계속 바꾸는 사람", place: "책임 범위와 피드백 기준이 분명한 팀" },
+    love: { keep: "서운함을 말해도 비꼬지 않고 말과 행동을 맞춰주는 사람", cut: "확신은 안 주면서 네 반응만 확인하려는 사람", place: "밀당보다 약속과 소통이 예측 가능한 관계" },
+    path: { keep: "걱정은 해도 네 선택권까지 뺏지 않고 직접 해보게 두는 사람", cut: "자기 기준의 안전한 답만 정답처럼 강요하는 사람", place: "작게 실험하고 수정할 수 있는 환경" },
+    people: { keep: "네가 선을 말했을 때 변명보다 행동을 고치는 사람", cut: "네 불편함을 예민함으로 돌리거나 계속 떠보는 사람", place: "눈치보다 규칙과 존중이 먼저인 관계" },
+    mental: { keep: "네가 쉬어도 죄책감 주지 않고 가만히 있어도 편한 사람", cut: "힘들다는데 해결책·비교·훈계부터 쏟는 사람", place: "혼자 있는 시간과 회복 리듬을 지킬 수 있는 환경" },
   };
-
-  const needMap = {
-    비견: "내 선택권과 독립성을 존중하는 관계",
-    겁재: "비교와 경쟁으로 내 몫을 흔들지 않는 관계",
-    식신: "내 페이스를 재촉하지 않는 관계",
-    상관: "의견을 말해도 통제하거나 찍어누르지 않는 관계",
-    정재: "약속과 기준이 자주 바뀌지 않는 관계",
-    편재: "재미와 기회만큼 책임과 정산도 분명한 관계",
-    정관: "신뢰와 역할 기준이 명확한 관계",
-    편관: "실수했을 때 겁주기보다 해결에 집중하는 관계",
-    정인: "설명과 이해를 충분히 주는 관계",
-    편인: "숨은 의도를 떠보게 만들지 않는 투명한 관계",
-  };
-  const strengthMap = {
-    신강: "버티는 힘이 강해 안 맞는 환경에서도 오래 남기 쉬우니 초반 기준이 특히 중요해.",
-    신약: "주변 자극을 크게 받는 편이라 사람과 환경의 질이 컨디션에 직접 영향을 주기 쉬워.",
-    중화: "상황 적응력은 괜찮지만 기준을 미리 정하지 않으면 분위기에 따라 선택이 달라질 수 있어.",
-  };
-  const yongMap = {
-    mok: "새 시도를 막지 않고 성장 여지를 주는 환경",
-    hwa: "표현과 피드백이 빠르게 오가는 환경",
-    to: "약속·루틴·역할이 안정적으로 굳어 있는 환경",
-    geum: "기준·경계·책임이 명확한 환경",
-    su: "생각할 여백과 선택지를 충분히 주는 환경",
-  };
-
-  const pattern = (filters[concernKey] || filters.money)[isT ? "T" : "F"];
-  const dominant = sipsin.dominant || "";
-  const strength = dayMaster.strength || (data?.isDayMasterStrong ? "신강" : "신약");
-  const need = needMap[dominant] || "내 기준을 존중하면서 말과 행동이 일치하는 관계";
-  const yongGuide = yongMap[data?.yongshin] || "내가 과하게 소모되지 않고 기준을 지킬 수 있는 환경";
-  const clashGuide = relations.hasChung
-    ? "원국에 충이 보여 불편함을 오래 참으면 마지막 반응이 커질 수 있으니, 작은 선을 초반에 말하는 편이 좋아."
-    : "큰 충돌보다 조용히 누적되는 쪽이라, 괜찮은 척 넘긴 횟수를 기준으로 관계를 점검하는 편이 좋아.";
-
-  return {
-    badge: `${concernLabel} 사람·환경 필터`,
-    title: pattern.title,
-    desc: `
-      <div class="space-y-2">
-        <div class="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2.5">
-          <b class="text-emerald-800">내 편 신호</b><br>${safe(pattern.ally)}
-        </div>
-        <div class="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2.5">
-          <b class="text-rose-700">거리 둘 신호</b><br>${safe(pattern.villain)}
-        </div>
-        <div class="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5">
-          <b class="text-slate-900">잘 맞는 환경</b><br>${safe(pattern.place)}
-        </div>
-      </div>
-      <div class="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[10.5px] leading-relaxed text-slate-600">
-        <b class="text-slate-800">왜 이런 필터가 맞나</b><br>
-        ${dominant ? `<b>${safe(dominant)}</b> 기운이 두드러져 ` : "원국의 관계 반응을 보면 "}${safe(need)}가 중요해. ${safe(strengthMap[strength] || strengthMap.중화)}<br>
-        보완축을 생활로 번역하면 <b>${safe(yongGuide)}</b>이 맞고, ${safe(clashGuide)}
-      </div>
-    `,
-    checklist: pattern.test,
+  const p = copy[concernKey] || copy.money;
+  const extra = ctx.hasClash
+    ? "너는 관계가 꼬이면 한꺼번에 지치기 쉬운 편이라 ‘조금 불편한데?’ 싶을 때 빨리 선을 확인하는 게 중요해."
+    : "너한테 좋은 관계는 강렬한 사람보다 같이 있을수록 네 에너지가 덜 새는 사람이야.";
+  return isT ? {
+    badge: `${concernLabel} · 사람 필터`,
+    title: "남길 사람, 거리 둘 사람. 기준은 생각보다 단순해",
+    desc: `<b>남길 사람</b><br>${p.keep}.<br><br><b>거리 둘 사람</b><br>${p.cut}.<br><br><b>잘 맞는 환경</b><br>${p.place}.<br><br>${extra}`,
+    checklist: "사람 하나 떠올리고 ‘만난 뒤 에너지가 늘었나 줄었나’만 체크하기",
+  } : {
+    badge: `${concernLabel} · 사람 필터`,
+    title: "네가 편해지는 사람이 진짜 네 편이야. 자꾸 긴장하게 만드는 사람 말고",
+    desc: `<b>곁에 둘 사람</b><br>${p.keep}.<br><br><b>조금 멀리해도 되는 사람</b><br>${p.cut}.<br><br><b>네가 숨 쉬기 편한 곳</b><br>${p.place}.<br><br>${extra} 사람 때문에 힘들 때마다 네가 더 잘하면 된다고 생각하지 않았으면 좋겠어.`,
+    checklist: "이번 주 한 사람에게서 느낀 ‘편안함 / 소모감’을 한 단어로 적어보기",
   };
 }
 
-function buildNoteSixTiming(
-  data,
-  concernKey,
-  concernLabel,
-  isT,
-) {
-  const safe = (value) =>
-    String(value ?? "").replace(/[&<>"']/g, (ch) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    })[ch]);
-
+function buildNoteSixTiming(data, concernKey, concernLabel, isT) {
   const timing = getTrueBaziTiming(
     data?.dayOheng || "to",
     concernKey,
@@ -5183,116 +4224,50 @@ function buildNoteSixTiming(
     data?.gyeokStatus,
     data?.realYeonun,
   );
-
   const titles = {
-    money: {
-      T: "돈은 운 좋은 달보다 '어떻게 움직일 달인지'가 더 중요해",
-      F: "돈 때문에 조급해지지 않도록 2026-2027 흐름을 미리 잡아둘게",
-    },
-    career: {
-      T: "지원·협상·이동을 아무 달에나 던지지 않는 2년 타이밍",
-      F: "내 노력이 밖에서 인정받기 좋은 흐름을 미리 준비하는 2년",
-    },
-    love: {
-      T: "애매한 인연에 시간 쓰지 않게 2026-2027 연애 흐름 정리",
-      F: "마음을 서두르지 않아도 되게 2026-2027 인연 흐름을 짚어줄게",
-    },
-    path: {
-      T: "진로를 확 뒤집기 전에 써먹을 2026-2027 실행 타이밍",
-      F: "내 길을 조금씩 확인해가기 좋은 2026-2027 흐름",
-    },
-    people: {
-      T: "사람을 늘릴 때와 정리할 때를 구분하는 2026-2027 흐름",
-      F: "내 편은 남기고 소모되는 관계는 덜어낼 2026-2027 흐름",
-    },
-    mental: {
-      T: "밀어붙일 때와 회복을 잠글 때를 나누는 2026-2027 리듬",
-      F: "마음이 덜 흔들리도록 미리 보는 2026-2027 회복 리듬",
-    },
-  };
-
-  const verdictLabel = {
-    favorable: "받쳐주는 해",
-    unfavorable: "방어가 필요한 해",
-    neutral: "기본기 쌓는 해",
-  };
-  const momentumLabel = {
-    strong: "집중 실행",
-    mixed: "선별 실행",
-    mild: "유지·준비",
-    caution: "방어 우선",
-    passed: "지난 구간",
+    money: { F: "돈 때문에 마음 급해지지 않게, 언니가 움직일 때를 딱 짚어줄게", T: "돈은 아무 때나 움직이지 마. 쓸 달과 지킬 달을 나눠" },
+    career: { F: "네 노력이 밖에서 보이기 좋은 때, 그냥 흘려보내지 말자", T: "지원·협상·이동은 타이밍 타. 좋은 달에 행동을 몰아" },
+    love: { F: "마음 서두르지 않아도 돼. 인연 흐름이 열릴 때를 같이 보자", T: "애매한 인연에 시간 쓰지 말고 반응 볼 시기를 정해" },
+    path: { F: "네 길을 확인하기 좋은 때가 와. 그때는 겁보다 경험 쪽으로 가자", T: "진로는 한 번에 뒤집지 말고 움직일 달에 실험해" },
+    people: { F: "내 편은 남기고, 지치는 관계는 덜어내기 좋은 흐름이 있어", T: "사람 늘릴 때와 정리할 때를 구분해. 둘 다 동시에 하지 마" },
+    mental: { F: "마음이 덜 흔들리는 리듬이 있어. 힘줄 때랑 쉴 때를 나눠보자", T: "계속 밀어붙이지 마. 회복을 잠글 시기도 일정이다" },
   };
   const actions = {
-    money: {
-      strong: "수입·계약·부수입 기회는 숫자 검증 뒤 실행하고, 생긴 여유는 먼저 남겨.",
-      mixed: "확실한 현금흐름만 잡고 장기 베팅이나 지인 돈거래는 작게 제한해.",
-      mild: "수익 확대보다 고정지출과 비상금 구조를 정리해 다음 기회를 받을 그릇을 만들어.",
-      caution: "큰 투자·대여·충동 결제는 미루고 현금 방어를 우선해.",
-    },
-    career: {
-      strong: "지원·제출·협상처럼 밖에서 평가받는 행동을 실제 일정으로 잡아.",
-      mixed: "여러 선택지를 벌리기보다 가장 조건이 명확한 한 자리·한 결과물에 집중해.",
-      mild: "이력서·포트폴리오·실력 데이터를 쌓아서 다음 움직임의 근거를 만들어.",
-      caution: "홧김 퇴사나 준비 없는 이동은 피하고 현재 자리에서 협상 재료부터 모아.",
-    },
-    love: {
-      strong: "호감이 있으면 표현하고 관계 기준이나 약속을 직접 확인해.",
-      mixed: "여러 사람의 반응을 재기보다 신뢰가 확인되는 한 관계에만 에너지를 써.",
-      mild: "관계를 억지로 진전시키기보다 말과 행동이 일치하는지 천천히 봐.",
-      caution: "연락 텀이나 한 번의 다툼만으로 결론 내리지 말고 감정이 가라앉은 뒤 확인해.",
-    },
-    path: {
-      strong: "이미 시험해본 방향이 있다면 결과물 규모를 한 단계 키워.",
-      mixed: "선택지를 한꺼번에 바꾸지 말고 가장 가능성 높은 하나만 실험해.",
-      mild: "작은 프로젝트·수업·경험으로 내 데이터를 계속 쌓아.",
-      caution: "큰 방향 전환은 보류하고 비용 적은 실험으로만 검증해.",
-    },
-    people: {
-      strong: "도움이 오가는 관계는 먼저 연결하고 함께할 일을 구체화해.",
-      mixed: "사람 수보다 약속을 지키는 사람 한두 명에 집중해.",
-      mild: "새 인맥을 무리하게 늘리기보다 기존 관계의 경계와 역할을 정리해.",
-      caution: "돈·감정·책임을 대신 떠안는 관계는 확장하지 말고 선부터 세워.",
-    },
-    mental: {
-      strong: "컨디션이 올라오면 중요한 루틴 하나를 늘리되 회복 시간도 같이 고정해.",
-      mixed: "해야 할 일 하나와 회복 시간 하나만 남겨 과부하를 막아.",
-      mild: "수면·식사·알림 차단처럼 기본 리듬을 흔들리지 않게 유지해.",
-      caution: "성과를 더 내려고 밀어붙이기보다 일정과 자극을 줄여 회복부터 확보해.",
-    },
+    money: "수입·가격·협상처럼 돈이 실제로 움직이는 행동 하나를 잡아",
+    career: "지원·면담·포트폴리오 공개처럼 밖으로 보이는 행동 하나를 잡아",
+    love: "새 만남이든 관계 확인이든 애매함을 줄이는 행동 하나를 잡아",
+    path: "작은 프로젝트·체험·지원처럼 직접 해보는 행동 하나를 잡아",
+    people: "새 인연을 넓히거나 오래 끌던 관계 기준을 정리해",
+    mental: "일정을 줄이거나 회복 루틴을 고정해서 몸부터 안정시켜",
   };
-
-  const key = concernKey in actions ? concernKey : "money";
-  const actionFor = (momentum) => actions[key][momentum] || actions[key].mild;
-  const card = (year, period, reason, detail, verdict, momentum) => `
-    <div class="rounded-xl ${verdict === "unfavorable" ? "bg-rose-50 border-rose-200" : verdict === "favorable" ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200"} border px-3 py-2.5">
-      <div class="flex items-center justify-between gap-2">
-        <b class="text-slate-900">${year} · ${safe(period)}</b>
-        <span class="text-[9.5px] font-bold text-slate-500">${safe(verdictLabel[verdict] || verdictLabel.neutral)} · ${safe(momentumLabel[momentum] || momentumLabel.mild)}</span>
-      </div>
-      <div class="mt-1.5 text-slate-700"><b>${safe(reason)}</b>. ${safe(actionFor(momentum))}</div>
-      <div class="mt-1.5 text-[10px] leading-relaxed text-slate-500">계산 근거: ${safe(detail)}</div>
-    </div>`;
-
+  const action = actions[concernKey] || actions.money;
+  function card(year, when, momentum) {
+    const m = String(momentum || "");
+    let fLine = `이때는 ${action}. 완벽하게 하려 하지 말고 한 번 움직여보는 게 좋아.`;
+    let tLine = `${action}. 생각 더 늘리지 말고 행동 하나로 확인해.`;
+    if (m.includes("방어")) {
+      fLine = "이때는 크게 벌이기보다 네 체력과 기준부터 지켜. 쉬어가는 것도 흐름을 잘 쓰는 거야.";
+      tLine = "이때는 확장 금지. 손실·과로·감정소모부터 막아.";
+    } else if (m.includes("준비") || m.includes("유지")) {
+      fLine = "이때는 결과를 급하게 만들기보다 준비를 다져두자. 다음 움직임이 훨씬 편해져.";
+      tLine = "이때는 판 키우지 말고 준비·정리. 다음 실행을 위한 재료를 쌓아.";
+    } else if (m.includes("선별")) {
+      fLine = "기회가 와도 다 잡지 말고 네 마음이 진짜 가는 쪽만 골라. 선택을 줄이는 게 포인트야.";
+      tLine = "다 하지 마. 조건 좋은 것 하나만 골라서 밀어.";
+    }
+    return `<div class="rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-3"><div class="flex items-center justify-between gap-2"><b class="text-slate-900">${year}</b><span class="text-[11px] font-black text-slate-700">${when || "흐름 확인"}</span></div><div class="mt-2 text-[12px] leading-relaxed text-slate-700">${isT ? tLine : fLine}</div></div>`;
+  }
+  const title = (titles[concernKey] || titles.money)[isT ? "T" : "F"];
   const intro = isT
-    ? "시기가 좋다고 자동으로 일이 풀리는 건 아니야. 계산상 힘이 붙는 구간에는 실행을 몰고, 불리한 구간에는 손실을 줄이는 식으로 써야 해."
-    : "좋은 흐름은 마음을 놓으라는 뜻이 아니라 조금 덜 힘들게 움직일 수 있는 창구에 가까워. 조심스러운 흐름도 미리 알면 충분히 편하게 지나갈 수 있어.";
-
+    ? "날짜를 맞히는 게 목적이 아니라, 네 행동을 언제 몰아줄지 정하는 게 목적이야."
+    : "운이 다 해준다는 얘기 아니야. 다만 같은 노력을 해도 덜 버겁게 움직일 때가 있으니까, 그때를 놓치지 말자는 거야.";
   return {
-    badge: `2026-2027 ${concernLabel} 타임라인`,
-    title: (titles[concernKey] || titles.money)[isT ? "T" : "F"],
-    desc: `
-      <div class="mb-3 text-slate-700">${safe(intro)}</div>
-      <div class="space-y-2">
-        ${card("2026", timing.r1, timing.reason, timing.detail, timing.verdict1, timing.momentum1)}
-        ${card("2027", timing.r2, timing.reasonR2, timing.detailR2, timing.verdict2, timing.momentum2)}
-      </div>
-      <div class="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[10px] leading-relaxed text-slate-500">
-        <b class="text-slate-700">타이밍 읽는 법</b><br>
-        연도 판정은 세운의 십신을 격국의 도움축·걸림축과 대조하고, 월 구간은 네 고민과 연결되는 십신과 격국 도움축을 함께 비교해 고른 값이야. 월 표시는 절기 구간 기준이라 특정 사건이 반드시 생기는 날짜를 뜻하진 않아.
-      </div>
-    `,
-    checklist: `${timing.r1}과 ${timing.r2}에 할 행동을 캘린더에 한 줄씩 미리 적어두기`,
+    badge: `2026-2027 ${concernLabel} 흐름`,
+    title,
+    desc: `<div class="mb-3 text-slate-700">${intro}</div><div class="space-y-2">${card("2026", timing.r1, timing.momentum1)}${card("2027", timing.r2, timing.momentum2)}</div>`,
+    checklist: isT
+      ? `${timing.r1} / ${timing.r2} 중 하나를 골라 실제 행동 하나를 캘린더에 넣기`
+      : `${timing.r1} / ${timing.r2} 중 마음이 가는 시기에 해볼 행동 하나를 미리 적어두기`,
   };
 }
 
@@ -7806,13 +6781,6 @@ return [
           const el = document.getElementById(id);
           if (el) el.textContent = toKr(data?.pillars?.[key]);
         });
-        const basis = document.getElementById("pillarBasisTag");
-        if (basis) {
-          const correction = data?.calendarMeta?.hourCorrectionMinutes;
-          basis.textContent = data?.pillars?.hour && Number.isFinite(correction)
-            ? `한국 만세력 기준 · 시간 ${correction > 0 ? "+" : ""}${correction}분 보정`
-            : "한국 만세력 기준";
-        }
       }
 
       function renderOhengDistribution(elements, dayGan, dayOheng, pillars, elementProfiles) {
