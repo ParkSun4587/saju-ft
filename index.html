@@ -1900,15 +1900,16 @@
     <div
       id="shareModal"
       style="display: none"
-      class="fixed inset-0 z-50 items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+      class="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-slate-950/80 backdrop-blur-sm px-3 py-3 sm:p-4"
+      style="-webkit-overflow-scrolling:touch;padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom))"
     >
-      <div class="w-full max-w-sm flex flex-col items-center">
+      <div class="w-full max-w-sm mx-auto flex min-h-full flex-col items-center justify-start py-1 sm:py-4">
         <!-- 인스타 스토리에 바로 올리는 9:16 본캐 카드 -->
         <div
           id="storyCard"
-          data-share-version="2"
-          style="aspect-ratio: 9 / 16"
-          class="w-full bg-gradient-to-b from-[#fffafc] via-white to-[#fff8f2] border border-rose-200/80 rounded-[30px] p-5 shadow-2xl text-left relative overflow-hidden flex flex-col"
+          data-share-version="3"
+          style="aspect-ratio:9 / 16;width:min(100%,330px);flex:none"
+          class="bg-gradient-to-b from-[#fffafc] via-white to-[#fff8f2] border border-rose-200/80 rounded-[28px] p-4 sm:p-5 shadow-2xl text-left relative overflow-hidden flex flex-col"
         >
           <div class="absolute -top-16 -right-16 w-44 h-44 rounded-full bg-rose-200/35 pointer-events-none"></div>
           <div class="absolute top-52 -left-20 w-40 h-40 rounded-full bg-amber-100/55 pointer-events-none"></div>
@@ -5923,8 +5924,8 @@ currentResultData = {
         const sisterAvatar = document.getElementById("cardSisterAvatar");
         if (storyCard) {
           storyCard.className = isT
-            ? "w-full bg-gradient-to-b from-[#f6fbff] via-white to-[#f4f8ff] border border-sky-200/80 rounded-[30px] p-5 shadow-2xl text-left relative overflow-hidden flex flex-col"
-            : "w-full bg-gradient-to-b from-[#fffafc] via-white to-[#fff8f2] border border-rose-200/80 rounded-[30px] p-5 shadow-2xl text-left relative overflow-hidden flex flex-col";
+            ? "bg-gradient-to-b from-[#f6fbff] via-white to-[#f4f8ff] border border-sky-200/80 rounded-[28px] p-4 sm:p-5 shadow-2xl text-left relative overflow-hidden flex flex-col"
+            : "bg-gradient-to-b from-[#fffafc] via-white to-[#fff8f2] border border-rose-200/80 rounded-[28px] p-4 sm:p-5 shadow-2xl text-left relative overflow-hidden flex flex-col";
         }
         if (sisterAvatar) sisterAvatar.src = isT ? "./서아.png" : "./로아.png";
 
@@ -6049,17 +6050,37 @@ currentResultData = {
 
         const saveText = document.getElementById("storySaveBtnText");
         const shareText = document.getElementById("storyShareBtnText");
+        const isMobile = isMobileDevice();
+        const kakaoInApp = isKakaoInApp();
         if (saveText) saveText.textContent = isT ? "이미지 저장" : "사진으로 간직하기";
-        if (shareText) shareText.textContent = isT ? "바로 공유" : "스토리에 슬쩍 올리기";
+        if (shareText) {
+          shareText.textContent = kakaoInApp
+            ? (isT ? "인스타용 이미지 열기" : "인스타에 올릴 사진 열기")
+            : isMobile
+              ? (isT ? "바로 공유" : "스토리에 슬쩍 올리기")
+              : (isT ? "이미지 공유" : "친구한테 보내기");
+        }
+        if (!history.state?.shareModal) {
+          history.pushState({ ...(history.state || {}), view: "result", shareModal: true }, "", location.href);
+        }
         queueMicrotask(() => prepareStoryCardAsset(true));
       }
 
-      function closeShareModal() {
+      function isShareModalOpen() {
+        const shareModal = document.getElementById("shareModal");
+        return !!shareModal && shareModal.style.display !== "none";
+      }
+
+      function closeShareModal(fromHistory = false) {
+        const wasOpen = isShareModalOpen();
         document.body.style.overflow = "auto";
         const shareModal = document.getElementById("shareModal");
         if (shareModal) {
           shareModal.classList.add("hidden");
           shareModal.style.display = "none";
+        }
+        if (!fromHistory && wasOpen && history.state?.shareModal) {
+          history.back();
         }
       }
 
@@ -6344,6 +6365,60 @@ currentResultData = {
         return /Android/i.test(navigator.userAgent || "");
       }
 
+      function isMobileDevice() {
+        const ua = navigator.userAgent || "";
+        return /Android|iPhone|iPad|iPod|Mobile/i.test(ua) ||
+          (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      }
+
+      function isKakaoInApp(ua = navigator.userAgent || "") {
+        return /KAKAOTALK/i.test(ua);
+      }
+
+      function blobToDataUrl(blob) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = () => reject(reader.error || new Error("IMAGE_READ_FAILED"));
+          reader.readAsDataURL(blob);
+        });
+      }
+
+      async function showImageSaveFallback(blob, purpose = "save") {
+        const dataUrl = await blobToDataUrl(blob);
+        let layer = document.getElementById("unniImageFallback");
+        if (!layer) {
+          layer = document.createElement("div");
+          layer.id = "unniImageFallback";
+          layer.style.cssText = "position:fixed;inset:0;z-index:1000000;background:rgba(15,23,42,.94);overflow:auto;padding:14px;box-sizing:border-box;-webkit-overflow-scrolling:touch";
+          document.body.appendChild(layer);
+        }
+        const isShare = purpose === "share";
+        layer.innerHTML = `
+          <div style="max-width:390px;margin:0 auto;padding:6px 0 max(18px,env(safe-area-inset-bottom))">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 2px 10px;color:white">
+              <div>
+                <div style="font-size:16px;font-weight:950">${isShare ? "카톡 안에서는 사진 먼저 꺼내줄게." : "이 사진 그대로 저장하면 돼."}</div>
+                <div style="font-size:11px;line-height:1.6;color:#cbd5e1;margin-top:3px">${isShare ? "이미지를 길게 눌러 저장한 다음 인스타 스토리에서 불러오면 돼." : "아래 이미지를 길게 눌러 ‘이미지 저장’ 또는 ‘다운로드’를 골라줘."}</div>
+              </div>
+              <button id="unniImageFallbackClose" type="button" style="flex:none;width:36px;height:36px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);color:white;font-size:22px;line-height:1;cursor:pointer">×</button>
+            </div>
+            <div style="padding:8px;border-radius:24px;background:white;box-shadow:0 22px 70px rgba(0,0,0,.35)">
+              <img src="${dataUrl}" alt="저장할 이미지" style="display:block;width:100%;height:auto;border-radius:18px;-webkit-touch-callout:default;user-select:auto" />
+            </div>
+            <div style="margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.08);color:#e2e8f0;font-size:10.5px;line-height:1.65;text-align:center;font-weight:750">
+              카카오톡 안에서는 파일 다운로드가 막히는 경우가 있어서<br>파일 대신 <b style="color:white">진짜 이미지</b>로 열어뒀어.
+            </div>
+          </div>`;
+        layer.style.display = "block";
+        document.body.style.overflow = "hidden";
+        layer.querySelector("#unniImageFallbackClose")?.addEventListener("click", () => {
+          layer.style.display = "none";
+          document.body.style.overflow = isShareModalOpen() ? "hidden" : "auto";
+        }, { once: true });
+        return true;
+      }
+
       function waitForCardImages(root) {
         const images = [...(root?.querySelectorAll?.("img") || [])];
         return Promise.all(
@@ -6484,6 +6559,9 @@ currentResultData = {
         makePngFile,
         isIOSDevice,
         isAndroidDevice,
+        isMobileDevice,
+        isKakaoInApp,
+        showImageSaveFallback,
       };
 
       function storyAssetSignature(card) {
@@ -6552,18 +6630,14 @@ currentResultData = {
           const blob = storyCardAsset || await prepareStoryCardAsset(false);
           if (!blob) throw new Error("STORY_ASSET_NOT_READY");
 
-          if (isIOSDevice()) {
+          if (isKakaoInApp()) {
+            await showImageSaveFallback(blob, "save");
+          } else if (isIOSDevice()) {
             const shared = await nativeSharePng(blob, filename, "어떤언니에서 본 내 결과");
-            if (!shared) {
-              const url = URL.createObjectURL(blob);
-              const opened = window.open(url, "_blank", "noopener");
-              if (!opened) downloadPngBlob(blob, filename);
-              setTimeout(() => URL.revokeObjectURL(url), 30000);
-              showToast("이미지를 열었어. 길게 눌러 사진에 저장해줘.");
-            }
+            if (!shared) await showImageSaveFallback(blob, "save");
           } else {
             downloadPngBlob(blob, filename);
-            showToast(isAndroidDevice() ? "사진으로 저장했어. 갤러리에서 확인해봐." : "PNG 이미지로 저장했어.");
+            showToast(isAndroidDevice() ? "PNG로 저장했어. 갤러리나 다운로드에서 확인해봐." : "PNG 이미지로 저장했어.");
           }
         } catch (error) {
           if (error?.name !== "AbortError") {
@@ -6588,10 +6662,14 @@ currentResultData = {
           const blob = storyCardAsset || await prepareStoryCardAsset(false);
           if (!blob) throw new Error("STORY_ASSET_NOT_READY");
           const filename = "어떤언니_내결과.png";
-          const shared = await nativeSharePng(blob, filename, "어떤언니에서 본 내 결과");
-          if (!shared) {
-            downloadPngBlob(blob, filename);
-            showToast("공유 기능이 없는 브라우저라 이미지를 저장해뒀어.");
+          if (isKakaoInApp()) {
+            await showImageSaveFallback(blob, "share");
+          } else {
+            const shared = await nativeSharePng(blob, filename, "어떤언니에서 본 내 결과");
+            if (!shared) {
+              downloadPngBlob(blob, filename);
+              showToast(isMobileDevice() ? "공유 기능이 막혀 있어서 PNG로 저장했어." : "PNG를 저장했어. 원하는 곳에 바로 올리면 돼.");
+            }
           }
         } catch (error) {
           if (error?.name !== "AbortError") {
@@ -7074,7 +7152,7 @@ currentResultData = {
         invalidateResultView();
         currentResultData = null;
         selectedSplitMode = null;
-        closeShareModal();
+        closeShareModal(true);
         closePolicyModal();
         clearConversationReplies();
         document.getElementById("sazuForm").reset();
@@ -7129,7 +7207,11 @@ currentResultData = {
       });
       window.addEventListener("popstate", (event) => {
         clearAllTimeouts();
-        closeShareModal();
+        if (isShareModalOpen()) {
+          closeShareModal(true);
+          return;
+        }
+        closeShareModal(true);
         closePolicyModal();
         if (event.state?.view === "result" && currentResultData?.stats) {
           renderResultView(currentResultData);
