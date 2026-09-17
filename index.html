@@ -3144,8 +3144,7 @@
       }
 
       // 한글 받침 여부에 따라 알맞은 조사를 자동으로 결합하는 함수
-      // 스탯별 핵심 심리 기제 — 여러 함수(getTrueBaziSolutions, generateDynamicDeepSolution)에서
-      // 공통으로 참조하므로 반드시 전역에 둔다. 함수 안에 두면 다른 함수에서 ReferenceError가 발생함.
+      // 스탯별 핵심 심리 기제 — 여러 해석 함수에서 공통으로 참조한다.
       const STAT_CORE_TRAIT = {
         wealth: "이해득실을 냉정하게 재는 감각",
         mental: "작은 자극에도 쉽게 흔들리는 마음의 맷집",
@@ -4364,57 +4363,6 @@ function generateConcernNotes(data, mode) {
         const concernKey = concernNames[rawConcern] ? rawConcern : "money";
         const concernLabel = concernNames[concernKey];
 
-        const source =
-          data.rawSolutionTemplate && data.rawSolutionTemplate[mode];
-
-        // 기존 맞춤 데이터가 없을 때만 기존 함수로 안전하게 대체
-        if (!source) {
-          return generateDynamicDeepSolution(data, mode);
-        }
-
-        const act1 =
-          source.acts && source.acts[0]
-            ? source.acts[0]
-            : {
-                t: "내 상황에 맞는 실전 룰",
-                d: "작은 행동부터 하나씩 시작해.",
-              };
-
-        const act2 =
-          source.acts && source.acts[1]
-            ? source.acts[1]
-            : {
-                t: "사람과 환경 필터",
-                d: "나를 지치게 하는 관계와 거리를 둬.",
-              };
-
-        const titles = isT
-          ? [
-              `${concernLabel} 앞에서 쿨한 척 버티는 내 진짜 속마음`,
-              `${concernLabel} 때문에 자꾸 반복되는 그 장면`,
-              `${concernLabel}이 새는 결정적인 이유`,
-              `${concernLabel} 흐름을 살리는 나만의 실전 룰`,
-              `${concernLabel}에서 내 편과 빌런을 가르는 기준`,
-              `2026-2027 ${concernLabel} 승부 타이밍`,
-            ]
-          : [
-              `${concernLabel} 때문에 혼자 속앓이했던 마음의 기록`,
-              `${concernLabel} 앞에서 자꾸 작아졌던 진짜 이유`,
-              `아무에게도 말하지 못했던 ${concernLabel}의 숨은 상처`,
-              `${concernLabel}을 편안하게 풀어내는 나만의 방법`,
-              `${concernLabel}에서 나를 지켜줄 사람과 거리 둘 사람`,
-              `2026-2027 ${concernLabel} 반등의 계절`,
-            ];
-
-        const badges = [
-          `${concernLabel} 속마음`,
-          `${concernLabel} 반복 패턴`,
-          "숨겨진 누수 원인",
-          "맞춤 실전 처방",
-          "사람·환경 필터",
-          "2026-2027 타임라인",
-        ];
-
         const noteOne = buildNoteOneInsight(
   data,
   concernKey,
@@ -4502,308 +4450,7 @@ return [
           },
         ];
       }
-      function generateDynamicDeepSolution(data, mode) {
-        const isT = mode === "T";
-        const s = data.stats;
-        const dm = data.dayOheng || "to";
-        const yong = data.yongshin || "mok";
-        const lowestStat = getLowestStatInfo(s);
-
-        const dayGan =
-          data.pillars && data.pillars.day ? data.pillars.day.gan : "甲";
-        const dayZhi =
-          data.pillars && data.pillars.day ? data.pillars.day.zhi : "子";
-
-        const natureMap = {
-          甲: "곧게 뻗어가는 아름드리 거목",
-          乙: "바위틈에서도 피어나는 들꽃",
-          丙: "세상을 비추는 뜨거운 태양",
-          丁: "어둠을 밝히는 은은한 모닥불",
-          戊: "만물을 품어내는 거대한 산",
-          己: "씨앗을 길러내는 기름진 평야",
-          庚: "단단하고 서슬 퍼런 바위와 검",
-          辛: "정교하게 세공된 빛나는 보석",
-          壬: "끝없이 출렁이는 드넓은 바다",
-          癸: "가뭄을 적시는 생명수와 옹달샘",
-        };
-        const myNature = natureMap[dayGan] || "단단한 자연의 기운";
-
-        const gyeokName =
-          data.gyeokguk && data.gyeokguk.name ? data.gyeokguk.name : "본원격";
-        const gyeokDataMap = {
-          정관격: {
-            role: "원칙 지키며 단단하게 신뢰를 쌓는 힘",
-            leak: "남들 시선이랑 평판 의식하느라 불합리해도 꾹 참는 버릇",
-            wealthRoute: "체계 잡힌 조직 승진과 공인 라이선스 기반의 정석 루트",
-            loveTrait: "체면 차리느라 좋아하는 티도 못 내고 뚝딱거리는",
-          },
-          편관격: {
-            role: "위기 터졌을 때 판 뒤집는 독보적 돌파력",
-            leak: "혼자 모든 리스크 떠안고 총대 메다 몸 사리는 고질병",
-            wealthRoute:
-              "남들이 피하는 난제 해결과 특수 영역 선점을 통한 성과 독점",
-            loveTrait: "일엔 강하면서 정작 다정한 사람 앞에선 방어벽부터 치는",
-          },
-          정재격: {
-            role: "작은 오차도 없이 실속 챙기는 현실 계산력",
-            leak: "작은 손실에도 덜덜 떨며 안전지대에만 안주하려는 소심함",
-            wealthRoute: "고정 매출 파이프라인 구축과 철저한 리스크 분산 관리",
-            loveTrait:
-              "재고 따지는 습관 때문에 확신 서기 전엔 절대 마음 안 여는",
-          },
-          편재격: {
-            role: "기회 포착해서 판 확 키우는 사업 감각",
-            leak: "도파민에 취해 앞뒤 안 가리고 무리수 던지는 충동성",
-            wealthRoute:
-              "트렌드 시세 차익 포착과 사람·자본을 엮는 플랫폼 비즈니스",
-            loveTrait: "초반엔 불같이 직진하다가 확신 들기도 전에 식어버리는",
-          },
-          식신격: {
-            role: "꽂힌 분야 파고들어 끝장 보는 장인급 집중력",
-            leak: "현실적인 일정이나 돈 계산 무시하고 혼자만의 완벽에 갇히는 태도",
-            wealthRoute: "대체 불가능한 독보적 기술과 시그니처 콘텐츠 창출",
-            loveTrait: "내 템포와 취향에 안 맞으면 슬그머니 마음 접어버리는",
-          },
-          상관격: {
-            role: "판 뒤엎고 대중 마음 단숨에 훔치는 센스",
-            leak: "필터 없는 직설 화법으로 굳이 안 겪어도 될 적을 만드는 성향",
-            wealthRoute: "퍼스널 브랜딩과 틈새를 찌르는 혁신적 아이디어 상품화",
-            loveTrait: "상대 떠보듯 뼈 때리다가 진심 들킬까 봐 농담으로 넘기는",
-          },
-          정인격: {
-            role: "방대한 정보 스펀지처럼 흡수하는 지적 습득력",
-            leak: "행동은 안 하고 침대에서 시뮬레이션만 돌리는 우유부단함",
-            wealthRoute:
-              "전문 지식 가공, 자격증, 연구·교육 기반의 지식 비즈니스",
-            loveTrait: "머릿속으로 시나리오 백 번 돌리다 타이밍 다 놓치는",
-          },
-          편인격: {
-            role: "이면의 원리와 사람 심리 꿰뚫는 예리한 촉",
-            leak: "세상 불신하고 의심하느라 혼자만의 동굴로 숨는 회피 버릇",
-            wealthRoute: "비주류 틈새시장 선점과 심리·데이터 분석 기획 컨설팅",
-            loveTrait: "속마음 분석하려다 눈앞의 순수한 호의까지 의심하는",
-          },
-          건록격: {
-            role: "아쉬운 소리 안 하고 내 힘으로 일어서는 자수성가력",
-            leak: "도움 청하는 걸 패배라 여겨 혼자 끙끙 앓다 방전되는 고집",
-            wealthRoute: "간섭 없는 독립 전문직과 내 실력 기반 1인 사업",
-            loveTrait: "누군가에게 기대는 걸 약점이라 느껴 혼자 속앓이하는",
-          },
-          양인격: {
-            role: "경쟁 속에서도 절대 안 밀리는 압도적 승부욕",
-            leak: "지나친 자존심 때문에 타협할 순간에 판 엎어버리는 급발진",
-            wealthRoute:
-              "승자독식 시장 장악과 결단력이 요구되는 하이 리스크 분야",
-            loveTrait: "먼저 좋아하면 지는 것 같아서 자존심 부리다 놓치는",
-          },
-          겁재격: {
-            role: "경쟁자 의식하며 스스로 한계 깨부수는 추진력",
-            leak: "남과의 비교에 사로잡혀 조급하게 따라 하다 손해 보는 패턴",
-            wealthRoute: "팀 프로젝트 주도와 성과 공유제 기반 확장 비즈니스",
-            loveTrait: "남들 연애와 비교하며 조급해하다 눈앞의 인연을 놓치는",
-          },
-        };
-        const currentGyeok = gyeokDataMap[gyeokName] || gyeokDataMap["건록격"];
-
-        const gStat = data.gyeokStatus || {
-          status: "평격",
-          sangsinFound: null,
-          gisinFound: null,
-        };
-        const statusNarrative = {
-          성격: {
-            desc: "사주 원국에 흐름을 돕는 에너지가 뚜렷하게 자리 잡아, 방향만 명확히 잡으면 노력 대비 성과가 일사천리로 터지는 순항형 구조",
-            cause:
-              "성공의 발판은 이미 갖춰져 있으므로, 딴생각을 버리고 정해진 길로 직진하기만 하면 됩니다.",
-          },
-          성중유패: {
-            desc: "무기와 재능은 출중하나 결정적 순간에 불필요한 잡생각이 끼어들어 일의 마무리를 흔들고 뒷심을 깎아먹는 성장통 구조",
-            cause:
-              "다 차린 밥상에서 엉뚱한 실수나 감정적 충동으로 숟가락을 엎는 패턴을 철저히 경계해야 합니다.",
-          },
-          파격: {
-            desc: "가진 잠재력은 크지만 주변 환경의 제약이나 방해로 인해 초반에 잦은 시행착오를 겪으며 칼을 갈아야 하는 대기만성 구조",
-            cause:
-              "초반의 정체는 실패가 아니라 내 내공을 쌓는 담금질 과정이므로, 환경을 탓하지 말고 실력을 축적해야 합니다.",
-          },
-          평격: {
-            desc: "외부의 극단적인 조력이나 방해 없이, 온전히 내 선택과 실행력에 따라 인생의 성패가 정직하게 갈리는 자수성가 구조",
-            cause:
-              "남 탓이나 요행을 바라지 않고, 내 루틴을 얼마나 칼같이 지키느냐가 유일한 성공 척도입니다.",
-          },
-        };
-        const curStatus =
-          statusNarrative[gStat.status] || statusNarrative["평격"];
-        // "[X]입니다" 형태(서술격 조사가 뒤에 고정으로 붙는 문형)에 그대로 꽂아 쓰므로,
-        // sangsinText 자체에는 주격조사를 붙이지 않은 순수 명사(구)만 담는다.
-        const sangsinText = gStat.sangsinFound || "스스로 일궈내는 자립의 기운";
-
-        const tTiming = getTrueBaziTiming(
-          dm,
-          data.concernKey || "money",
-          data.userGender,
-          data.userBirthStr,
-          data.gyeokguk,
-          data.gyeokStatus,
-          data.realYeonun,
-        );
-
-        // 고민별 2026 세운 전략 매핑 (연애, 돈, 이직 등 100% 일치)
-        const STRATEGY_BY_CONCERN = {
-          money: {
-            fav: "사주에 잠자던 재물운이 트이며 확실한 자산 증식의 발판을 마련하는 시점",
-            unfav:
-              "지출과 손실의 위험이 숨어 있어 무리한 투자보다 시드머니를 안전하게 지켜야 하는 시점",
-            neu: "급격한 등락 없이 평온하게 고정 수입을 차곡차곡 쌓아가는 시점",
-          },
-          career: {
-            fav: "그동안의 노력을 인정받아 이직이나 승진 등 커리어 도약의 기회가 열리는 시점",
-            unfav:
-              "성급한 퇴사나 이직보다 현재 자리에서 내실을 다지고 실력을 쌓아야 하는 시점",
-            neu: "큰 변동 없이 성실하게 맡은 몫을 해내며 역량을 다져가는 시점",
-          },
-          love: {
-            fav: "묵은 관계가 정리되고 마음 깊이 통하는 소중한 인연의 문이 활짝 열리는 시점",
-            unfav:
-              "사소한 오해로 감정이 상하기 쉬우니 섣부른 판단을 피하고 마음의 여유를 가져야 하는 시점",
-            neu: "조급하게 애태우지 않아도 자연스럽고 편안한 흐름 속에서 관계가 이어지는 시점",
-          },
-          path: {
-            fav: "나만의 잠재력이 빛을 발하며 새로운 도전과 목표를 향해 힘차게 나아갈 시점",
-            unfav:
-              "방향 전환에 신중을 기하고 준비가 덜 된 상태에서의 무리수를 경계해야 하는 시점",
-            neu: "차분하게 기초를 다지며 앞으로 나아갈 준비를 탄탄히 하는 시점",
-          },
-          people: {
-            fav: "나를 소모시키던 악연은 정리되고 진짜 내 편이 되어줄 귀인이 찾아오는 시점",
-            unfav:
-              "주변의 감정 쓰레기통 역할을 경계하고 내 마음의 건강한 경계선을 세워야 하는 시점",
-            neu: "불필요한 갈등 없이 주변과 원만한 거리를 유지하는 평온한 시점",
-          },
-          mental: {
-            fav: "오랫동안 짓누르던 불안과 번아웃이 걷히고 몸과 마음의 생체 에너지가 리셋되는 시점",
-            unfav:
-              "스스로를 가혹하게 몰아세우지 말고 온전한 휴식과 마음 관리에 집중해야 하는 시점",
-            neu: "일상의 일정한 루틴을 지키며 안정된 마음 상태를 유지하는 시점",
-          },
-        };
-        const curConcernKey = data.concernKey || "money";
-        const stratObj =
-          STRATEGY_BY_CONCERN[curConcernKey] || STRATEGY_BY_CONCERN.money;
-        const seyunStrategy2026 =
-          tTiming.verdict1 === "favorable"
-            ? stratObj.fav
-            : tTiming.verdict1 === "unfavorable"
-              ? stratObj.unfav
-              : stratObj.neu;
-
-        const dynamicBadge01 = "내 진짜 정체";
-        const dynamicBadge02 = "숨겨진 고질병";
-        const dynamicBadge03 = "재물운";
-        const dynamicBadge06 = "2026-2027 운세";
-
-        return [
-          {
-            themeNum: "01",
-            badge: dynamicBadge01,
-            title: isT
-              ? `낮엔 사회생활 만렙 '넵'봇, 밤엔 침대 다이빙하는 방구석 이중생활`
-              : `남들 눈치 보느라 쿨한 척 가면 쓰고, 혼자 끙끙 앓았던 새벽의 기록`,
-            desc: isT
-              ? `밖에서는 갈등 만들기 싫어서 영혼 없이 '넵!!' 치며 다 맞춰주고, 집에 오자마자 도어락 소리와 함께 바닥에 쓰러지지? 네 사주는 <b>${myNature}</b>의 기운과 <b>${gyeokName}</b>의 뼈대야. 고유 주특기인 <b>"${currentGyeok.role}"</b>을 네 인생에 안 쓰고 남 뒤치다꺼리에 낭비하니까 매번 방전되는 거야. 쓸데없는 총대 그만 메고 네 밥그릇부터 챙겨.`
-              : `남한테 폐 끼치기 싫어서 늘 웃으며 다정하게 대하느라 그동안 진짜 애썼어. 네 사주는 <b>${myNature}</b>의 따뜻한 온기에 <b>${gyeokName}</b>의 뼈대를 품고 있어. 네 소중한 재능인 <b>"${currentGyeok.role}"</b>을 주변 사람들 배려하는 데 다 쏟아붓다 보니 번아웃이 온 거야. 그 따뜻함은 원래 널 위해 먼저 써야 해. 이제 무거운 가면은 벗어두고 푹 쉬어.`,
-            checklist: isT
-              ? "퇴근·하교 후엔 단톡방 알림 끄고 남의 일 강제 로그아웃하기"
-              : "오늘 하루 남들 비위 맞추느라 고생한 나를 꽉 안아주기",
-          },
-          {
-            themeNum: "02",
-            badge: "연애운",
-            title: isT
-              ? `좋아할수록 쿨한 척 선 긋다 망하는 연애 블랙박스 & 똥차 감별법`
-              : `상처받기 두려워 마음 문 닫아걸고 혼자 눈물 삼키던 연애의 상처`,
-            desc: isT
-              ? `호감 가는 상대 앞에선 로봇처럼 뚝딱대고 자존심 세우다 기회 날려먹고, 정작 말만 번지르르한 회피형 빌런한텐 질질 끌려다니지 않았어? <b>${gyeokName}</b> 특유의 <b>${currentGyeok.loveTrait}</b> 태도 때문이야. 애매하게 간 보는 똥차는 3진 아웃으로 쳐내고, 확실하게 신뢰 주는 담백한 사람한테만 직진해.`
-              : `상대의 무심한 카톡 텀 하나에도 "내 탓인가" 온종일 심장이 쿵쾅거리고, 다툼이 생길까 봐 서운한 것도 다 속으로 삭여왔구나. <b>${gyeokName}</b> 기운 탓에 <b>${currentGyeok.loveTrait}</b> 마음이 자꾸 앞서는 거야. 널 안달 나게 만드는 관계는 독이야. 네 불안을 다정하게 안아주고 말과 행동이 일치하는 따뜻한 인연을 만나야 해.`,
-            checklist: isT
-              ? "애매한 태도로 간 보는 상대는 3진 아웃 룰로 즉시 차단하기"
-              : "서운한 점을 털어놓아도 흔들리지 않고 들어주는 사람 만나기",
-          },
-          {
-            themeNum: "03",
-            badge: "인간관계",
-            title: isT
-              ? `앞에선 다 맞춰주고 뒤에서 셔터 내리는 손절 방어벽`
-              : `온 세상 감정 쓰레기통 자처하다 상처투성이로 돌아선 인간관계`,
-            desc: isT
-              ? `불편한 내색 하나 안 하고 속으로 점수 깎다가, 한계치 넘으면 예고 없이 안 읽씹하고 셔터 내려버리지? 착한 사람 콤플렉스 때문에 면전에서 거절을 못 하니까 에너지만 털리는 거야. 만날 때마다 기 빨아먹는 흡혈귀 인맥은 오늘 당장 단톡방부터 나가고, 네 실속 챙겨줄 찐인맥만 남겨.`
-              : `상대가 선을 넘어도 분위기 깰까 봐 어색하게 웃어넘기고 집에 와서 억울해 한 적 많지? 네 배려를 당연하게 아는 사람들한테 진심 낭비하지 마. 네게 필요한 인연은 침묵까지 편안하게 존중해 주는 사람이야. 널 지키기 위해 관계를 끊어내는 건 절대 나쁜 게 아니니까 마음의 방어벽을 세워도 돼.`,
-            checklist: isT
-              ? "푸념만 늘어놓는 마이너스 인맥 정리하고 실속 있는 관계에 집중하기"
-              : "상대의 감정은 상대의 몫임을 명심하고, 내 평화부터 1순위로 두기",
-          },
-          {
-            themeNum: "04",
-            badge: dynamicBadge03,
-            title: isT
-              ? `남들 따라 기웃거리다 털리지 말고, 내 사주 돈맥으로 굳히는 법`
-              : `마음 졸이며 불안해하던 텅장을 든든하게 채워줄 나만의 재물 그릇`,
-            desc: isT
-              ? `남들 돈 벌었다는 소리에 휩쓸려 무리수 뒀다가 물린 적 있지? 네 사주를 살려주는 성공의 열쇠는 <b>[${sangsinText}]</b>야. 뻔한 방식 말고 네 찐 수익 루트인 <b>"${currentGyeok.wealthRoute}"</b>에 집중해. 사주가 지정한 네 고유 무기로 몸값과 권한부터 끌어올려야 진짜 네 통장에 돈이 안전하게 쌓여.`
-              : `통장 잔고 볼 때마다 막연한 불안감에 혼자 한숨 쉰 날들 많았지? 네 사주를 든든하게 지켜주는 기운은 <b>[${sangsinText}]</b>야. 남들과 치열하게 뺏고 뺏기는 방식보다 <b>"${currentGyeok.wealthRoute}"</b> 방식으로 차분하게 영역을 넓혀갈 때 돈이 저절로 모이는 팔자거든. 무리하지 말고 네 결대로 가자.`,
-            checklist: isT
-              ? "근거 없는 투자 권유 차단하고, 내 본업 몸값 올리는 루틴 세팅하기"
-              : "스트레스성 보상 소비 멈추고, 나를 위한 안전 통장 분리하기",
-          },
-          {
-            themeNum: "05",
-            badge: dynamicBadge02,
-            title: isT
-              ? `'준비 덜 됐다' 핑계 대고 침대에서 숏폼 넘기는 고질적 회피 루프`
-              : `완벽하게 해내려다 지쳐서 시작조차 두려웠던 여린 방어기제`,
-            desc: isT
-              ? `머릿속으론 이미 빌딩 세우고 갓생 살았는데, 현실은 '5분 뒤에 일어난다' 하면서 2시간째 릴스만 넘기고 있지? 넌 게으른 게 아니라 네 사주의 치명적 약점인 <b>"${currentGyeok.leak}"</b> 때문이야. 완벽하게 못할까 봐 회피하는 버릇 안 고치면 평생 제자리야. 60%만 완성돼도 일단 현실에 던지고 부딪혀.`
-              : `시작하기도 전에 온갖 걱정이 꼬리를 물어서 첫 발 떼기가 너무 무거웠지? 네 사주 뼈대에 숨겨진 <b>"${currentGyeok.leak}"</b> 성향 때문에 혼자 속앓이를 많이 했을 거야. 넌 나태한 게 아니라 남들보다 매사에 진심이고 조심스러웠을 뿐이야. 스스로를 너무 자책하지 마, 조금 서툴러도 다 괜찮으니까.`,
-            checklist: isT
-              ? "완벽한 타이밍 기다리지 말고, 60% 상태에서 무조건 부딪히기"
-              : "타인과 비교하며 조급해하지 말고, 나만의 템포 온전히 인정하기",
-          },
-          {
-            themeNum: "06",
-            badge: dynamicBadge06,
-            title: isT
-              ? `2026-2027 운의 흐름이 집중되는 핵심 타임라인`
-              : `기나긴 정체기가 끝나고 마침내 운의 물꼬가 트이는 2026-2027 반등의 계절`,
-            desc: isT
-              ? `2026-2027년 흐름을 팩트로 짚어줄게. ${tTiming.r1} 전후로는 ${tTiming.fullSentenceT} 이어 ${tTiming.r2}에는 ${tTiming.fullSentenceR2T}`
-              : `그동안 터널 속에서 홀로 버티느라 고생 많았어. ${tTiming.r1} 무렵엔 ${tTiming.fullSentenceF} 이어 ${tTiming.r2}엔 ${tTiming.fullSentenceR2F}`,
-            checklist: (() => {
-              const CK_MAP = {
-                money: isT
-                  ? `돈맥이 열리기 전까지 충동 소비를 묶고 시드머니를 확실히 확보하기`
-                  : `반등기 타이밍에 맞춰 통장 걱정은 내려놓고 마음의 여유 채우기`,
-                career: isT
-                  ? `승부 타이밍에 맞춰 이력서와 포트폴리오를 미리 세팅하기`
-                  : `좋은 기회를 편안하게 맞이할 수 있도록 멘탈 단단히 충전하기`,
-                love: isT
-                  ? `불필요한 자존심을 과감히 버리고 솔직하게 마음 표현하기`
-                  : `다가올 따뜻한 인연을 위해 상처받은 내 마음 먼저 안아주기`,
-                path: isT
-                  ? `완벽함을 찾지 말고 60% 완성도로 빠르게 결과물 던지기`
-                  : `성과에 집착하지 말고 나만의 고유한 속도로 차분히 나아가기`,
-                people: isT
-                  ? `기 빨아먹는 마이너스 인연들은 3진 아웃으로 칼같이 정리하기`
-                  : `감정 쓰레기통 자처하지 말고 내 마음의 평화를 1순위로 두기`,
-                mental: isT
-                  ? `멘탈 리셋 구간에 맞춰 수면 루틴과 디지털 디톡스 실행하기`
-                  : `억지로 무언가 하려 하지 말고 온전히 쉬어가는 연습하기`,
-              };
-              return CK_MAP[data.concernKey || "money"] || CK_MAP.money;
-            })(),
-          },
-        ];
-      }
-
+      
       // 개별 아코디언 열기/닫기 이벤트 핸들러
       window.toggleAccordion = function (btn) {
         if (!btn) return;
@@ -4853,43 +4500,7 @@ return [
         偏印: "편인",
         日主: "일간",
       };
-      function determineGyeokguk(baZi, candidateGans) {
-        const dGan = baZi.getDayGan();
-        const monthHideGan = baZi.getMonthHideGan(); // 예: ['甲','丙','戊'] (정기 우선 순서)
-        const monthShiShenZhi = baZi.getMonthShiShenZhi(); // 위 배열과 1:1 대응하는 십신(한자)
-
-        let useIndex = -1;
-        for (let i = 0; i < monthHideGan.length; i++) {
-          if (candidateGans.includes(monthHideGan[i])) {
-            useIndex = i;
-            break;
-          }
-        }
-        const touchul = useIndex !== -1; // 실제로 천간에 투출했는지 여부
-        if (useIndex === -1) useIndex = 0; // 미투출 시 정기(본기)를 그대로 격으로 삼음
-
-        const rawSipsin = monthShiShenZhi[useIndex];
-        const sipsinKr = SHI_SHEN_KR[rawSipsin] || rawSipsin;
-        const gyeokGanChar = monthHideGan[useIndex];
-
-        let gyeokName;
-        if (sipsinKr === "비견") {
-          gyeokName = "건록격";
-        } else if (sipsinKr === "겁재") {
-          const isYangGan = ["甲", "丙", "戊", "庚", "壬"].includes(dGan);
-          gyeokName = isYangGan ? "양인격" : "겁재격";
-        } else {
-          gyeokName = sipsinKr + "격";
-        }
-
-        return {
-          name: gyeokName,
-          sipsin: sipsinKr,
-          basisGan: gyeokGanChar,
-          touchul: touchul,
-        };
-      }
-
+      
       // [자평진전 1단계 보강] 4주(년/월/일/시) 천간·지지 십신 계산 — 화면·해설 텍스트에 그대로 쓰기 위한 헬퍼.
       // 지지 십신은 지장간이 1~3개라 배열로 나오는데, 여기서는 정기(배열의 첫 번째) 기준 대표값만 사용한다.
       function getPillarSipsinSet(baZi, hourKnown) {
@@ -4991,140 +4602,7 @@ return [
       };
       // 상신/기신 후보가 실제 사주(연간·월간·시간, 일간 제외)에 투출해 있는지로 성격/파격을 판정.
       // 상신 있고 기신 없음=성격, 상신·기신 둘 다 있음=성중유패, 상신 없이 기신만=파격, 둘 다 없음=평격.
-      function evaluateGyeokStatus(gyeokguk, pillarSipsin) {
-        const rule = GYEOK_RULE[gyeokguk.name];
-        if (!rule)
-          return {
-            status: "평격",
-            sangsinFound: null,
-            gisinFound: null,
-            rule: null,
-          };
-
-        const candidates = [pillarSipsin.year.gan, pillarSipsin.month.gan];
-        if (pillarSipsin.hour) candidates.push(pillarSipsin.hour.gan);
-
-        const sangsinFound =
-          rule.sangsin.find((s) => candidates.includes(s)) || null;
-        const gisinFound =
-          rule.gisin.find((s) => candidates.includes(s)) || null;
-
-        let status;
-        if (sangsinFound && !gisinFound) status = "성격";
-        else if (sangsinFound && gisinFound) status = "성중유패";
-        else if (!sangsinFound && gisinFound) status = "파격";
-        else status = "평격";
-
-        return {
-          status: status,
-          sangsinFound: sangsinFound,
-          gisinFound: gisinFound,
-          flow: rule.flow,
-        };
-      }
-      function buildClassicalLayers(input) {
-        const elements = input.elements || {};
-        const scores = input.sipsinScores || {};
-        const monthZhi = input.monthZhi || "";
-
-        const seasonMap = {
-          寅: "봄",
-          卯: "봄",
-          辰: "봄",
-          巳: "여름",
-          午: "여름",
-          未: "여름",
-          申: "가을",
-          酉: "가을",
-          戌: "가을",
-          亥: "겨울",
-          子: "겨울",
-          丑: "겨울",
-        };
-
-        const season = seasonMap[monthZhi] || "중립";
-
-        const supportForce = Number(scores.bi || 0) + Number(scores.in || 0);
-
-        const drainForce =
-          Number(scores.sike || 0) +
-          Number(scores.jae || 0) +
-          Number(scores.gwan || 0);
-
-        let climateType = "중립";
-
-        const fireScore = Number(elements.hwa || 0);
-        const waterScore = Number(elements.su || 0);
-        const earthScore = Number(elements.to || 0);
-
-        if (
-          season === "여름" ||
-          (fireScore >= waterScore + 2 && fireScore >= earthScore)
-        ) {
-          climateType = "열조";
-        } else if (
-          season === "겨울" ||
-          (waterScore >= fireScore + 2 && waterScore >= earthScore)
-        ) {
-          climateType = "한습";
-        } else if (earthScore >= 5 && waterScore <= 2) {
-          climateType = "조토";
-        }
-
-        let climateDirection = "현재 용신과 원국 전체의 균형을 함께 확인";
-
-        if (climateType === "열조") {
-          climateDirection =
-            "수(水) 기운으로 과한 열기와 건조함을 조절하는 방향";
-        } else if (climateType === "한습") {
-          climateDirection = "화(火) 기운으로 차갑고 눅눅한 흐름을 덥히는 방향";
-        } else if (climateType === "조토") {
-          climateDirection =
-            "수(水) 기운으로 메마른 토(土)의 흐름을 부드럽게 하는 방향";
-        }
-
-        let energyDirection = "기세가 비교적 균형적";
-
-        if (supportForce >= drainForce * 1.25) {
-          energyDirection = "나를 돕는 기운이 강해 과잉을 덜어내는 조절이 중요";
-        } else if (drainForce >= supportForce * 1.25) {
-          energyDirection = "나를 소모시키는 기운이 강해 회복과 보호가 중요";
-        }
-
-        return {
-          japyeong: {
-            principle: "월령과 격국을 중심으로 원국의 성패 구조를 판단",
-            gyeokName:
-              input.gyeokguk && input.gyeokguk.name
-                ? input.gyeokguk.name
-                : "평격",
-            status:
-              input.gyeokStatus && input.gyeokStatus.status
-                ? input.gyeokStatus.status
-                : "평격",
-            sangsin: input.gyeokStatus
-              ? input.gyeokStatus.sangsinFound || ""
-              : "",
-            gisin: input.gyeokStatus ? input.gyeokStatus.gisinFound || "" : "",
-          },
-
-          jeokcheon: {
-            principle: "일간의 강약과 전체 기세의 흐름을 중심으로 판단",
-            dayMasterStrength: input.isDayMasterStrong ? "신강" : "신약",
-            supportForce: Math.round(supportForce * 100) / 100,
-            drainForce: Math.round(drainForce * 100) / 100,
-            direction: energyDirection,
-          },
-
-          qiongtong: {
-            principle: "월령의 계절과 원국의 한난조습을 보정",
-            season: season,
-            climateType: climateType,
-            direction: climateDirection,
-          },
-        };
-      }
-      function buildAnalysisProfile(input) {
+                  function buildAnalysisProfile(input) {
         const elements = input.elements || {};
         const pillars = input.pillars || {};
         const gyeokguk = input.gyeokguk || {};
@@ -5757,36 +5235,7 @@ return [
       }
 
       // 이하 UI 렌더링 및 기능 함수 모음 (그대로 유지)
-      function calculateSazuGrade(elements, stats) {
-        const counts = [
-          elements.mok || 0,
-          elements.hwa || 0,
-          elements.to || 0,
-          elements.geum || 0,
-          elements.su || 0,
-        ];
-        let score = 55;
-        const missing = counts.filter((c) => c === 0).length;
-        const dominant = counts.filter((c) => c >= 4.0).length;
-        if (missing === 0) score += 28;
-        else if (missing === 1) score += 14;
-        else score -= missing * 7;
-        if (dominant > 0) score -= 12;
-        const avgStat =
-          (stats.wealth + stats.mental + stats.drive + stats.network) / 4;
-        score += Math.round((avgStat - 50) * 0.25);
-
-        if (score >= 85)
-          return { grade: "S+", title: "👑 상위 0.1% 황금 밸런스" };
-        else if (score >= 72)
-          return { grade: "S", title: "💎 무결점 확신형 리더" };
-        else if (score >= 60)
-          return { grade: "A", title: "🎯 압도적 특화 전문가" };
-        else if (score >= 48)
-          return { grade: "포텐", title: "🌱 잠재력 폭발 대기만성" };
-        else return { grade: "히든", title: "🔥 한방 쾌감 드라마틱 역전" };
-      }
-
+      
       function formatBirthDate(el) {
         const value = el.value.replace(/\D/g, "").slice(0, 8);
         // 입력한 날짜를 임의로 다른 생일로 고치지 않습니다. 유효성은 전송 전에 확인합니다.
@@ -6423,50 +5872,10 @@ return [
         return list[0];
       }
 
-      function getHighestStatInfo(stats) {
-        const list = [
-          {
-            type: "wealth",
-            name: "돈 냄새 맡는 촉",
-            score: stats.wealth,
-            cap: "Wealth",
-          },
-          {
-            type: "mental",
-            name: "멘탈 방어력",
-            score: stats.mental,
-            cap: "Mental",
-          },
-          {
-            type: "drive",
-            name: "기회 포착력",
-            score: stats.drive,
-            cap: "Drive",
-          },
-          {
-            type: "network",
-            name: "인생 역전 귀인복",
-            score: stats.network,
-            cap: "Network",
-          },
-        ];
-        list.sort((a, b) => b.score - a.score);
-        return list[0];
-      }
-
+      
       let teaserBuffer = null;
 
-      function paintPremiumArea() {
-        const container = document.getElementById("accordionContainer");
-        if (!container) return;
-
-        if (isUnlocked && premiumBuffer) {
-          container.innerHTML = premiumBuffer.accordion;
-        } else if (teaserBuffer) {
-          container.innerHTML = teaserBuffer.accordion;
-        }
-      }
-
+      
       function updateResultContentByMode(mode) {
         const isT = mode === "T";
         const payBoxHookMsg = document.getElementById("payBoxHookMsg");
@@ -7231,15 +6640,7 @@ return [
 
       // [P0] 전역 즉시 초기화 제거.
       // SDK 로드 실패 시 여기서 에러가 터져 아래 DOMContentLoaded / popstate / policyTexts가 통째로 죽었음.
-      function getTossSDK() {
-        if (typeof TossPayments === "undefined") return null;
-        try {
-          return TossPayments(TOSS_CLIENT_KEY);
-        } catch (e) {
-          return null;
-        }
-      }
-
+      
       // ================================================================
       // [결제 보안] 서버 승인 전용 함수 2종
       //  - confirmPaymentOnServer : 토스 결제 승인 + 접근 토큰 발급
@@ -7563,47 +6964,9 @@ return [
         }
       }
       // 캔버스 둥근 모서리 지원 헬퍼
-      function roundRect(ctx, x, y, width, height, radius) {
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + width - radius, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-        ctx.lineTo(x + width, y + height - radius);
-        ctx.quadraticCurveTo(
-          x + width,
-          y + height,
-          x + width - radius,
-          y + height,
-        );
-        ctx.lineTo(x + radius, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-        ctx.lineTo(x, y + radius);
-        ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath();
-      }
-
+      
       // 타이틀 자동 줄바꿈 헬퍼
-      function drawWrappedTitle(ctx, text, x, y, maxWidth, lineHeight) {
-        const words = text.split(" ");
-        let line = "";
-        let currentY = y;
-        let lineCount = 0;
-
-        for (let n = 0; n < words.length; n++) {
-          const testLine = line + words[n] + " ";
-          const metrics = ctx.measureText(testLine);
-          if (metrics.width > maxWidth && n > 0) {
-            ctx.fillText(line.trim(), x, currentY);
-            line = words[n] + " ";
-            currentY += lineHeight;
-            lineCount++;
-          } else {
-            line = testLine;
-          }
-        }
-        ctx.fillText(line.trim(), x, currentY);
-      }
-
+      
       const policyTexts = {
         terms: {
           title: "어떤언니 이용약관 및 환불규정",
@@ -7671,10 +7034,7 @@ return [
           document.body.style.overflow = "";
         }
       }
-      function goToLandingForNewConcern() {
-        restartAnalysisWithOtherConcern();
-      }
-
+      
       async function handlePaymentReturn(params) {
         const ticket = params.get("state");
         const paymentKey = params.get("paymentKey");
