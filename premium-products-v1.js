@@ -407,6 +407,255 @@
   }
 
 
+  let paidKeepsakeAsset = null;
+  let paidKeepsakeKey = "";
+  let paidKeepsakePromise = null;
+
+  function plainText(v) {
+    const div = document.createElement("div");
+    div.innerHTML = String(v == null ? "" : v);
+    return (div.textContent || div.innerText || "").replace(/\s+/g, " ").trim();
+  }
+
+  function shortText(v, max = 82) {
+    const s = plainText(v);
+    return s.length > max ? s.slice(0, max - 1).trim() + "…" : s;
+  }
+
+  function displayUserName(data) {
+    const raw = String(data?.name || "").trim();
+    if (!raw) return "나";
+    return raw.length >= 2 ? raw.slice(1) : raw;
+  }
+
+  function keepsakeModel(productId, data, extra, mode) {
+    const isT = mode === "T";
+    const p = getProfile(data);
+    const name = displayUserName(data);
+    const product = PRODUCTS[productId];
+    const strong = ELEMENT_WORD[p?.elements?.influenceRank?.strongest] || "내가 자연스럽게 잘 쓰는 힘";
+    const weakStat = p?.behavior?.weakStatHuman || "내가 지치는 순간을 먼저 확인하기";
+    const primary = p?.elements?.primaryBehavior?.verb || "한 번에 하나씩 움직이기";
+    const dominant = p?.sipsin?.dominantHuman || "내 기준을 찾고 움직이는 성향";
+
+    if (productId === "compatibility") {
+      let partner = null;
+      try { partner = partnerChart(extra); } catch (_) {}
+      const pp = getProfile(partner);
+      const partnerName = extra?.partner?.n || "상대";
+      const partnerDom = pp?.sipsin?.dominantHuman || "자기 기준을 찾고 움직이는 성향";
+      const partnerNeed = pp?.elements?.primaryBehavior?.verb || "자기 리듬을 지키는 것";
+      const rel = partner ? relationCopy(elementOf(data), elementOf(partner), isT) : "서로의 기준을 말로 맞추는 게 중요한 관계";
+      return {
+        eyebrow: "우리 둘 궁합 · 16개 챕터",
+        title: `${name} × ${partnerName}`,
+        subtitle: isT ? "관계에서 반복될 핵심만 한 장" : "언니가 둘 사이 핵심만 한 장에 접어뒀어",
+        rows: [
+          ["둘의 기본 결", shortText(rel, 72)],
+          ["나는", shortText(dominant, 58)],
+          [`${partnerName}은`, shortText(partnerDom, 58)],
+          ["오래 가려면", shortText(`나는 ${primary}, 상대는 ${partnerNeed}`, 70)],
+        ],
+        footer: "잘 맞는 건 더 잘 쓰고, 부딪히는 건 덜 다치게",
+      };
+    }
+
+    if (productId === "concern_bundle3") {
+      const keys = Array.isArray(extra?.concerns) ? extra.concerns : [];
+      const rows = keys.slice(0, 3).map((key) => {
+        const notes = typeof global.generateConcernNotes === "function"
+          ? global.generateConcernNotes({ ...data, concernKey: key }, mode)
+          : [];
+        return [CONCERNS[key] || key, shortText(notes?.[0]?.desc || notes?.[0]?.title || "언니가 같이 본 고민", 70)];
+      });
+      rows.push(["오늘의 한 줄", isT ? "생각 끝났으면 하나부터 실행." : "한꺼번에 다 해결하지 않아도 돼. 하나씩 가자."]);
+      return {
+        eyebrow: "고민 3개 · NOTE 18개",
+        title: `${name}의 요즘 마음`,
+        subtitle: isT ? "세 고민에서 반복된 핵심만 정리" : "언니가 세 고민에서 겹쳐 보인 것만 챙겨놨어",
+        rows,
+        footer: "생각날 때 다시 꺼내보는 한 장",
+      };
+    }
+
+    if (productId === "all_in_one") {
+      return {
+        eyebrow: "전체 사주 12개 + 고민 NOTE 36개",
+        title: `${name}의 사주 올인원`,
+        subtitle: isT ? "긴 결과에서 반복된 핵심만 압축" : "여기까지 봤으면 이 정도는 꼭 챙겨가자",
+        rows: [
+          ["내 기본 반응", shortText(dominant, 68)],
+          ["잘 쓰는 힘", shortText(strong, 60)],
+          ["바쁠수록", shortText(weakStat, 64)],
+          ["움직일 때", shortText(primary, 64)],
+        ],
+        footer: "어떤 고민이 와도 다시 돌아올 내 기준",
+      };
+    }
+
+    return {
+      eyebrow: "내 전체 사주 · 12개 챕터",
+      title: `${name}의 사주 사용설명서`,
+      subtitle: isT ? "전체 결과에서 계속 반복된 네 운영법" : "언니가 네 사주에서 꼭 기억했으면 하는 것",
+      rows: [
+        ["내 기본 반응", shortText(dominant, 68)],
+        ["잘 쓰는 힘", shortText(strong, 60)],
+        ["바쁠수록", shortText(weakStat, 64)],
+        ["움직일 때", shortText(primary, 64)],
+      ],
+      footer: product?.name ? `${product.name}에서 챙긴 한 장` : "생각날 때 다시 꺼내봐",
+    };
+  }
+
+  function keepsakeCardHtml(productId, data, extra, mode) {
+    const isT = mode === "T";
+    const m = keepsakeModel(productId, data, extra, mode);
+    const accent = isT ? "#0ea5e9" : "#fb7185";
+    const accentSoft = isT ? "#e0f2fe" : "#ffe4e6";
+    const glow = isT ? "rgba(56,189,248,.24)" : "rgba(251,113,133,.24)";
+    return `
+      <div id="unniKeepsakeCard" data-product="${esc(productId)}" style="width:100%;max-width:290px;aspect-ratio:9/16;margin:0 auto;position:relative;overflow:hidden;border-radius:30px;padding:22px;box-sizing:border-box;background:linear-gradient(160deg,#fff 0%,${accentSoft} 52%,#fff7ed 100%);border:1px solid rgba(255,255,255,.9);box-shadow:0 22px 60px ${glow};display:flex;flex-direction:column;color:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+        <div style="position:absolute;width:180px;height:180px;border-radius:999px;background:${glow};filter:blur(2px);top:-80px;right:-65px"></div>
+        <div style="position:absolute;width:150px;height:150px;border-radius:999px;background:rgba(186,230,253,.24);bottom:-55px;left:-55px"></div>
+        <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:950">어떤언니</div><div style="font-size:8px;font-weight:800;letter-spacing:.16em;color:#94a3b8;margin-top:2px">KEEP THIS ONE</div></div>
+          <div style="width:36px;height:36px;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.95);font-size:18px;box-shadow:0 6px 20px rgba(15,23,42,.08)">${isT ? "✦" : "♡"}</div>
+        </div>
+        <div style="position:relative;z-index:1;margin-top:28px">
+          <div style="display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.76);border:1px solid rgba(255,255,255,.9);font-size:9px;font-weight:950;color:${accent}">${esc(m.eyebrow)}</div>
+          <h3 style="font-size:25px;line-height:1.24;font-weight:950;margin:12px 0 7px;letter-spacing:-.04em">${esc(m.title)}</h3>
+          <p style="font-size:11px;line-height:1.65;font-weight:800;color:#64748b;margin:0">${esc(m.subtitle)}</p>
+        </div>
+        <div style="position:relative;z-index:1;margin-top:22px;display:grid;gap:8px">
+          ${m.rows.map((row, idx) => `<div style="padding:11px 12px;border-radius:16px;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.95);box-shadow:0 8px 22px rgba(15,23,42,.05)"><div style="display:flex;gap:9px;align-items:flex-start"><span style="font-size:9px;font-weight:950;color:${accent};min-width:18px;padding-top:1px">${String(idx + 1).padStart(2, "0")}</span><div><div style="font-size:9px;font-weight:900;color:#94a3b8;margin-bottom:3px">${esc(row[0])}</div><div style="font-size:10.5px;line-height:1.55;font-weight:850;color:#334155">${esc(row[1])}</div></div></div></div>`).join("")}
+        </div>
+        <div style="position:relative;z-index:1;margin-top:auto;padding-top:16px">
+          <div style="height:1px;background:linear-gradient(90deg,transparent,${accent},transparent);opacity:.32"></div>
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-top:11px">
+            <div style="font-size:9px;line-height:1.5;font-weight:850;color:#64748b">${esc(m.footer)}</div>
+            <div style="font-size:8px;font-weight:950;color:${accent};white-space:nowrap">어떤언니</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function paidKeepsakeSignature(productId, data, extra, mode) {
+    return JSON.stringify([productId, data?.name, data?.mbtiKey, mode, extra || {}]);
+  }
+
+  function setPaidKeepsakeReady(root, ready, message) {
+    const save = root.querySelector("#unniKeepsakeSave");
+    const share = root.querySelector("#unniKeepsakeShare");
+    const hint = root.querySelector("#unniKeepsakeHint");
+    if (save) save.disabled = !ready;
+    if (share) share.disabled = !ready;
+    if (hint) hint.textContent = message || (ready
+      ? (global.__UNNI_IMAGE_EXPORT_V2__?.isIOSDevice?.()
+        ? "아이폰은 저장을 누른 뒤 ‘이미지 저장’을 고르면 사진 앱에 들어가."
+        : "사진으로 저장하거나 바로 공유하면 돼.")
+      : "언니가 한 장으로 예쁘게 접는 중이야. 잠깐만.");
+  }
+
+  async function preparePaidKeepsake(root, productId, data, extra, mode, force = false) {
+    const card = root.querySelector("#unniKeepsakeCard");
+    const exporter = global.__UNNI_IMAGE_EXPORT_V2__;
+    if (!card || !exporter?.renderElementToPngBlob) {
+      setPaidKeepsakeReady(root, false, "이미지 기능을 불러오지 못했어. 새로고침 후 다시 눌러줘.");
+      return null;
+    }
+    const key = paidKeepsakeSignature(productId, data, extra, mode);
+    if (!force && paidKeepsakeAsset && paidKeepsakeKey === key) {
+      setPaidKeepsakeReady(root, true);
+      return paidKeepsakeAsset;
+    }
+    if (paidKeepsakePromise && !force) return paidKeepsakePromise;
+
+    paidKeepsakeAsset = null;
+    paidKeepsakeKey = "";
+    setPaidKeepsakeReady(root, false);
+    paidKeepsakePromise = (async () => {
+      try {
+        const blob = await exporter.renderElementToPngBlob(card, 1080);
+        paidKeepsakeAsset = blob;
+        paidKeepsakeKey = key;
+        setPaidKeepsakeReady(root, true);
+        return blob;
+      } catch (e) {
+        console.error("유료 리포트 요약 카드 생성 실패:", e);
+        setPaidKeepsakeReady(root, false, "이미지 준비가 잠깐 꼬였어. 리포트를 다시 열어줘.");
+        return null;
+      } finally {
+        paidKeepsakePromise = null;
+      }
+    })();
+    return paidKeepsakePromise;
+  }
+
+  function renderPaidKeepsake(root, productId, data, extra, mode) {
+    const box = root.querySelector("#unniProductKeepsake");
+    if (!box) return;
+    const isT = mode === "T";
+    box.style.display = "block";
+    box.innerHTML = `
+      <div style="padding:20px 14px 16px;border-radius:22px;background:${isT ? "#f8fbff" : "#fff9fa"};border:1px solid ${isT ? "#dbeafe" : "#ffe4e6"}">
+        <div style="text-align:center;margin-bottom:14px">
+          <div style="font-size:16px;font-weight:950;color:#0f172a">${isT ? "핵심만 한 장으로 정리해뒀어." : "여기까지 봤으면, 이건 한 장 챙겨가자."}</div>
+          <div style="font-size:11px;line-height:1.65;font-weight:750;color:#94a3b8;margin-top:5px">${isT ? "긴 리포트에서 계속 반복된 것만 남겼어." : "언니가 생각날 때 다시 꺼내보기 좋게 핵심만 접어뒀어."}</div>
+        </div>
+        ${keepsakeCardHtml(productId, data, extra, mode)}
+        <div style="display:grid;gap:8px;margin-top:14px">
+          <button id="unniKeepsakeSave" type="button" disabled style="width:100%;border:0;border-radius:14px;padding:13px 14px;background:${isT ? "#0f172a" : "linear-gradient(90deg,#fb7185,#f472b6)"};color:white;font-size:13px;font-weight:950;cursor:pointer;opacity:.6">${isT ? "이미지 저장" : "사진으로 간직하기"}</button>
+          <button id="unniKeepsakeShare" type="button" disabled style="width:100%;border:1px solid #e2e8f0;border-radius:14px;padding:13px 14px;background:white;color:#334155;font-size:13px;font-weight:950;cursor:pointer;opacity:.6">${isT ? "바로 공유" : "스토리에 슬쩍 올리기"}</button>
+          <div id="unniKeepsakeHint" style="font-size:10px;line-height:1.55;text-align:center;color:#94a3b8;font-weight:750">언니가 한 장으로 예쁘게 접는 중이야. 잠깐만.</div>
+        </div>
+      </div>`;
+
+    const saveBtn = box.querySelector("#unniKeepsakeSave");
+    const shareBtn = box.querySelector("#unniKeepsakeShare");
+    const filename = `어떤언니_${PRODUCTS[productId]?.name || "리포트"}_한장.png`;
+    const exporter = global.__UNNI_IMAGE_EXPORT_V2__;
+
+    const syncOpacity = () => {
+      if (saveBtn) saveBtn.style.opacity = saveBtn.disabled ? ".6" : "1";
+      if (shareBtn) shareBtn.style.opacity = shareBtn.disabled ? ".6" : "1";
+    };
+    const observer = new MutationObserver(syncOpacity);
+    if (saveBtn) observer.observe(saveBtn, { attributes: true, attributeFilter: ["disabled"] });
+    if (shareBtn) observer.observe(shareBtn, { attributes: true, attributeFilter: ["disabled"] });
+
+    saveBtn?.addEventListener("click", async () => {
+      try {
+        const blob = paidKeepsakeAsset || await preparePaidKeepsake(root, productId, data, extra, mode);
+        if (!blob) throw new Error("KEEP_ASSET_MISSING");
+        if (exporter?.isIOSDevice?.()) {
+          const shared = await exporter.nativeSharePng(blob, filename, PRODUCTS[productId]?.name || "어떤언니 리포트");
+          if (!shared) exporter.downloadPngBlob(blob, filename);
+        } else {
+          exporter.downloadPngBlob(blob, filename);
+          if (typeof showToast === "function") showToast(exporter?.isAndroidDevice?.() ? "사진으로 저장했어. 갤러리에서 확인해봐." : "PNG 이미지로 저장했어.");
+        }
+      } catch (e) {
+        if (e?.name !== "AbortError" && typeof showToast === "function") showToast("저장이 잠깐 꼬였어. 한 번만 다시 눌러줘.");
+      }
+    });
+
+    shareBtn?.addEventListener("click", async () => {
+      try {
+        const blob = paidKeepsakeAsset || await preparePaidKeepsake(root, productId, data, extra, mode);
+        if (!blob) throw new Error("KEEP_ASSET_MISSING");
+        const shared = await exporter.nativeSharePng(blob, filename, PRODUCTS[productId]?.name || "어떤언니 리포트");
+        if (!shared) {
+          exporter.downloadPngBlob(blob, filename);
+          if (typeof showToast === "function") showToast("공유 기능이 없는 브라우저라 이미지를 저장해뒀어.");
+        }
+      } catch (e) {
+        if (e?.name !== "AbortError" && typeof showToast === "function") showToast("공유가 잠깐 꼬였어. 한 번만 다시 눌러줘.");
+      }
+    });
+
+    queueMicrotask(() => preparePaidKeepsake(root, productId, data, extra, mode, true).finally(syncOpacity));
+  }
+
   function productBody(productId, data, extra) {
     const mode = getMode(data);
     if (productId === "concern_bundle3") return bundleHtml(data, mode, extra);
@@ -422,7 +671,7 @@
     root = document.createElement("div");
     root.id = "unniProductModal";
     root.style.cssText = "display:none;position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.48);padding:18px;overflow:auto";
-    root.innerHTML = `<div style="max-width:520px;margin:4vh auto;background:#fff;border-radius:24px;padding:20px;box-shadow:0 24px 70px rgba(15,23,42,.25)"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><div id="unniProductBadge" style="font-size:11px;font-weight:900;color:#f43f5e"></div><h2 id="unniProductTitle" style="font-size:21px;font-weight:950;margin:5px 0 4px"></h2><div id="unniProductPrice" style="font-size:13px;font-weight:800;color:#64748b"></div></div><button id="unniProductClose" style="border:0;background:#f1f5f9;border-radius:999px;width:34px;height:34px;font-size:18px;cursor:pointer">×</button></div><div id="unniProductSetup" style="margin-top:16px"></div><div id="unniProductPayment" style="display:none;margin-top:15px"><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><div id="unniProductBody" style="margin-top:14px"></div><button id="unniProductAction" style="width:100%;margin-top:18px;border:0;border-radius:15px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:900;cursor:pointer"></button><div id="unniProductAccessNote" style="display:none;margin-top:9px;text-align:center;font-size:11px;font-weight:800;line-height:1.6;color:#a16207">🔐 한 번 결제하면 이 브라우저에서는 추가 결제 없이 계속 다시 볼 수 있어요.</div></div>`;
+    root.innerHTML = `<div style="max-width:520px;margin:4vh auto;background:#fff;border-radius:24px;padding:20px;box-shadow:0 24px 70px rgba(15,23,42,.25)"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><div id="unniProductBadge" style="font-size:11px;font-weight:900;color:#f43f5e"></div><h2 id="unniProductTitle" style="font-size:21px;font-weight:950;margin:5px 0 4px"></h2><div id="unniProductPrice" style="font-size:13px;font-weight:800;color:#64748b"></div></div><button id="unniProductClose" style="border:0;background:#f1f5f9;border-radius:999px;width:34px;height:34px;font-size:18px;cursor:pointer">×</button></div><div id="unniProductSetup" style="margin-top:16px"></div><div id="unniProductPayment" style="display:none;margin-top:15px"><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><div id="unniProductBody" style="margin-top:14px"></div><div id="unniProductKeepsake" style="display:none;margin-top:26px"></div><button id="unniProductAction" style="width:100%;margin-top:18px;border:0;border-radius:15px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:900;cursor:pointer"></button><div id="unniProductAccessNote" style="display:none;margin-top:9px;text-align:center;font-size:11px;font-weight:800;line-height:1.6;color:#a16207">🔐 한 번 결제하면 이 브라우저에서는 추가 결제 없이 계속 다시 볼 수 있어요.</div></div>`;
     document.body.appendChild(root);
     root.querySelector("#unniProductClose").onclick = () => { root.style.display = "none"; document.body.style.overflow = ""; };
     root.addEventListener("click", (e) => { if (e.target === root) root.querySelector("#unniProductClose").click(); });
@@ -511,6 +760,7 @@
     const accessNote = root.querySelector("#unniProductAccessNote");
     if (accessNote) accessNote.style.display = "none";
     root.querySelector("#unniProductBody").innerHTML = productBody(productId, data, extra);
+    renderPaidKeepsake(root, productId, data, extra, getMode(data));
     const action = root.querySelector("#unniProductAction");
     action.textContent = "닫기";
     action.onclick = () => root.querySelector("#unniProductClose").click();
@@ -556,6 +806,8 @@
     root.querySelector("#unniProductPrice").textContent = won(product.price);
     root.querySelector("#unniProductSetup").innerHTML = setupHtml(productId, data);
     root.querySelector("#unniProductPayment").style.display = "none";
+    const keepsake = root.querySelector("#unniProductKeepsake");
+    if (keepsake) { keepsake.style.display = "none"; keepsake.innerHTML = ""; }
     root.querySelector("#unniProductBody").innerHTML = `<p style="font-size:13px;line-height:1.75;color:#64748b">${esc(product.desc)}</p>`;
     const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
     const accessNote = root.querySelector("#unniProductAccessNote");
