@@ -2472,14 +2472,7 @@
         子: "su",
       };
 
-      const OHENG_NAMES = {
-        mok: "목(나무)",
-        hwa: "화(불)",
-        to: "토(흙)",
-        geum: "금(쇠)",
-        su: "수(물)",
-      };
-
+      
       const SAZU_CHARACTER_PROFILES = {
         ESTJ: {
           title_T: "남들 싼 똥 혼자 다 치우면서 속으로 욕하는 프로 총대러",
@@ -4097,18 +4090,6 @@ return [
           },
 
           stats: input.stats || {},
-
-          evidence: [
-            "일간: " + (input.dayGan || "미상"),
-            "일간 오행: " + (elementNames[dayOheng] || "미상"),
-            "일간 강약: " + (input.isDayMasterStrong ? "신강" : "신약"),
-            "격국: " + (gyeokguk.name || "평격"),
-            "용신: " +
-              (elementNames[input.yongshin] || input.yongshin || "미상"),
-            "강한 오행: " + strongest.name,
-            "부족한 오행: " + weakest.name,
-            "격국 상태: " + (gyeokStatus.status || "평격"),
-          ],
         };
       }
 
@@ -5263,7 +5244,6 @@ currentResultData = {
           return;
         }
 
-        const lowestStat = getLowestStatInfo(data.stats);
         renderPillarTable(data);
         renderOhengDistribution(
           data.elements,
