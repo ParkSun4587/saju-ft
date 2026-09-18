@@ -395,7 +395,7 @@ function norm(v) {
     const ok = await engine.nativeSharePng(new Blob(['png'], { type:'image/png' }), 'mobile-test.png', 'test');
     return { version:engine?.version, called, fileCount, ok };
   });
-  assert(shareEngine.version === '2.3.0' && shareEngine.ok && shareEngine.called && shareEngine.fileCount === 1, `native mobile share path failed: ${JSON.stringify(shareEngine)}`);
+  assert(shareEngine.version === '2.4.0' && shareEngine.ok && shareEngine.called && shareEngine.fileCount === 1, `native mobile share path failed: ${JSON.stringify(shareEngine)}`);
 
   const mobileCardBox = await page.locator('#storyCard').boundingBox();
   assert(mobileCardBox && mobileCardBox.x >= 0 && mobileCardBox.y >= 0 && mobileCardBox.width <= 332, `mobile story card clipped/oversized: ${JSON.stringify(mobileCardBox)}`);
