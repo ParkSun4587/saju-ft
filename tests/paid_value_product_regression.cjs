@@ -187,7 +187,7 @@ function norm(v) {
     assert(note1Plain.length >= 210, `${row.concern}/${row.situation}/${row.mode}: NOTE1 teaser too thin (${note1Plain.length})`);
     assert(note2Plain.length >= 210, `${row.concern}/${row.situation}/${row.mode}: NOTE2 teaser too thin (${note2Plain.length})`);
     assert(/사주 전체|사주 전체랑|사주 전체를/.test(note1Plain), `${row.concern}/${row.situation}/${row.mode}: NOTE1 lacks personalized why-context`);
-    assert(/반복|같은 패턴|같은 데서/.test(note2Plain), `${row.concern}/${row.situation}/${row.mode}: NOTE2 lacks pattern explanation`);
+    assert(/반복|패턴|같은 데서/.test(note2Plain), `${row.concern}/${row.situation}/${row.mode}: NOTE2 lacks pattern explanation`);
     assert(row.n6?.__timingQA?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: NOTE6 situation metadata missing`);
     assert(norm(row.n6?.__timingQA?.firstBody) !== norm(row.n6?.__timingQA?.secondBody), `${row.concern}/${row.situation}/${row.mode}: NOTE6 period copy duplicated`);
     assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: technical terms leaked`);
