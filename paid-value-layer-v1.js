@@ -610,12 +610,19 @@
 
   function periodCopy(timing, concernKey, which, isT, data) {
     const first = which === "first";
+    const momentum = first ? timing?.momentum1 : timing?.momentum2;
+    const situationAction = situationTimingAction(data, which, isT);
+
+    // 세부 상황이 선택된 경우, 기존 고민 공통 문장에 "새 인연" 같은
+    // 다른 상황 전제가 섞이지 않도록 날짜/기세만 공유하고 행동 문장은 전부 상황별로 쓴다.
+    if (situationAction) {
+      return `${momentumText(momentum, isT)}이야. ${situationAction}`;
+    }
+
     const sentence = first
       ? (isT ? timing?.fullSentenceT : timing?.fullSentenceF)
       : (isT ? timing?.fullSentenceR2T : timing?.fullSentenceR2F);
-    const momentum = first ? timing?.momentum1 : timing?.momentum2;
     const action =
-      situationTimingAction(data, which, isT) ||
       (CONCERN_ACTIONS[concernKey] || CONCERN_ACTIONS.money)[which][isT ? "T" : "F"];
     const clean = stripHtml(sentence);
     if (!clean || clean.length < 12)
