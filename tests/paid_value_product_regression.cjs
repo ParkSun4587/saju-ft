@@ -21,7 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.2.0' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.2.0' &&
+    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.3.0' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
 
@@ -162,7 +162,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.2.0', 'paid value layer missing');
-  assert(qa.productVersion.version === '1.2.0', 'product layer missing');
+  assert(qa.productVersion.version === '1.3.0', 'product layer missing');
   assert(qa.wrappers.paid, 'paid-value wrapper missing');
   assert(qa.wrappers.integrated, 'integrated wrapper metadata lost');
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
@@ -431,6 +431,7 @@ function norm(v) {
   assert(await page.locator('#unniProductSavePdf').isVisible(), 'single-file PDF keep action missing');
   assert(await page.locator('#unniProductStickyHead').evaluate((el) => getComputedStyle(el).position) === 'sticky', 'paid report header must remain sticky');
   await page.waitForFunction(() => document.getElementById('unniProductSaveHint')?.innerText.includes('저장 준비 완료'), null, { timeout:30000 });
+  assert(await page.locator('#unniProductSaveAll').isEnabled(), 'paid save must be tappable as soon as prewarm is ready');
   const fullReportDownload = await Promise.all([
     page.waitForEvent('download', { timeout: 20000 }),
     page.locator('#unniProductSaveAll').click(),
@@ -519,7 +520,7 @@ function norm(v) {
 
   const html = fs.readFileSync('index.html','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.2.0'), 'paid value script include missing');
-  assert(html.includes('./premium-products-v1.js?v=1.2.0'), 'product script include missing');
+  assert(html.includes('./premium-products-v1.js?v=1.3.0'), 'product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
@@ -531,6 +532,9 @@ function norm(v) {
   assert(!premium.includes('unniProductKeepsake') && !premium.includes('keepsakeCardHtml') && !premium.includes('renderPaidKeepsake'), 'paid keepsake-card subsystem should be removed');
   assert(premium.includes('saveFullPaidReport') && premium.includes('unniProductSaveAll'), 'full paid-report image save missing');
   assert(premium.includes('prewarmPaidExport') && premium.includes('preparePaidExportAssets') && premium.includes('저장 준비 완료'), 'background paid-export preparation missing');
+  assert(premium.includes('requiresFreshShareGesture') && premium.includes('setPaidExportButtonReady(root, false)') && premium.includes('setPaidExportButtonReady(root, true)'), 'mobile save must wait for prewarm before fresh-tap multi-share');
+  assert(premium.includes('isCurrentPaidExport') && premium.includes('EXPORT_IDLE_CANCELLED'), 'stale paid-export jobs must stop when the report changes');
+  assert(premium.includes('paidExportCache.clear()') && premium.includes('paidExportCache.set(key, prepared)'), 'paid PNG blob cache must stay bounded to the current report');
   assert(premium.includes('nativeSharePngFiles') && premium.includes('isMobileDevice'), 'one-action mobile multi-image share path missing');
   assert(premium.includes('recommendedProductId') && premium.includes('data-secondary-product'), 'personalized premium recommendation fold missing');
   assert(premium.includes('unniProductSavePdf') && premium.includes('printPaidReport'), 'single-file PDF keep action missing');
