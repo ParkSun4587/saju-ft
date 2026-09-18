@@ -2,12 +2,12 @@
   "use strict";
 
   const CONCERNS = {
-    money: "재물·돈복",
-    career: "직장·커리어",
+    money: "돈·재물",
+    career: "학업·직장",
     love: "연애·썸",
-    path: "진로·내 길",
-    people: "인간관계",
-    mental: "마음·회복",
+    path: "진로·적성",
+    people: "사람·관계",
+    mental: "마음·스트레스",
   };
 
   const PRODUCTS = {
@@ -203,7 +203,7 @@
       ? "이 리포트는 지금 선택한 고민 6개를 다시 요약하는 상품이 아니다. 사주 전체에서 반복되는 기질·강점·과부하·판단법·관계·회복·변화 대응을 한 번에 묶은 기본 지도다."
       : "이건 지금 선택한 고민을 또 풀어쓰는 리포트가 아니야. 언니가 네 사주 전체를 펼쳐놓고, 어떤 고민을 만나도 반복해서 나타나는 기질·강점·지치는 방식·사람 보는 법·회복법을 한 장으로 이어주는 ‘내 사용설명서’에 가까워 💕";
     const sections = fullSajuSections(data, mode);
-    return `<div style="padding:14px 15px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;font-size:12.5px;line-height:1.8;color:#7c2d12;margin-bottom:8px"><b>이 리포트에서 보는 것</b><br>${intro}</div>${sections.map((s) => `<section style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:900;margin:0 0 8px">${s.title}</h4><div style="font-size:13px;line-height:1.85;color:#475569">${s.body}</div></section>`).join("")}`;
+    return `<div data-export-intro="full" style="padding:14px 15px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;font-size:12.5px;line-height:1.8;color:#7c2d12;margin-bottom:8px"><b>이 리포트에서 보는 것</b><br>${intro}</div>${sections.map((s, index) => `<section data-export-kind="full" data-export-index="${index}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:900;margin:0 0 8px">${s.title}</h4><div style="font-size:13px;line-height:1.85;color:#475569">${s.body}</div></section>`).join("")}`;
   }
 
 
@@ -212,7 +212,7 @@
     return keys.map((key) => {
       const d = { ...data, concernKey: key };
       const notes = typeof global.generateConcernNotes === "function" ? global.generateConcernNotes(d, mode) : [];
-      return `<section style="margin-bottom:26px"><h3 style="font-size:19px;font-weight:950;margin:0 0 10px">${esc(CONCERNS[key] || key)}</h3>${noteCards(notes)}</section>`;
+      return `<section data-export-kind="concern" data-concern="${esc(key)}" style="margin-bottom:26px"><h3 style="font-size:19px;font-weight:950;margin:0 0 10px">${esc(CONCERNS[key] || key)}</h3>${noteCards(notes)}</section>`;
     }).join("");
   }
 
@@ -220,7 +220,7 @@
     const all = Object.keys(CONCERNS).map((key) => {
       const d = { ...data, concernKey: key };
       const notes = typeof global.generateConcernNotes === "function" ? global.generateConcernNotes(d, mode) : [];
-      return `<section style="margin:26px 0"><h3 style="font-size:19px;font-weight:950;margin:0 0 10px">${esc(CONCERNS[key])}</h3>${noteCards(notes)}</section>`;
+      return `<section data-export-kind="concern" data-concern="${esc(key)}" style="margin:26px 0"><h3 style="font-size:19px;font-weight:950;margin:0 0 10px">${esc(CONCERNS[key])}</h3>${noteCards(notes)}</section>`;
     }).join("");
     return `<h3 style="font-size:19px;font-weight:950;margin:0 0 10px">내 전체 사주판</h3>${fullSajuHtml(data, mode)}<div style="height:24px"></div>${all}`;
   }
@@ -401,17 +401,157 @@
       },
     ];
 
-    const summary = `<div style="padding:15px;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;margin-bottom:10px"><div style="font-size:11px;font-weight:900;color:#c2410c;margin-bottom:6px">우리 둘 궁합 · 16개 챕터</div><div style="font-size:13px;line-height:1.85;color:#7c2d12">${intro}</div></div>`;
-    const pairCard = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 6px"><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">나</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(myDom)}</div></div><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">${safeName}</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(partnerDom)}</div></div></div>`;
-    return summary + pairCard + cards.map((s) => `<section style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:950;margin:0 0 8px;color:#0f172a">${s.title}</h4><div style="font-size:13px;line-height:1.9;color:#475569">${s.body}</div></section>`).join("");
+    const summary = `<div data-export-intro="compat" style="padding:15px;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;margin-bottom:10px"><div style="font-size:11px;font-weight:900;color:#c2410c;margin-bottom:6px">우리 둘 궁합 · 16개 챕터</div><div style="font-size:13px;line-height:1.85;color:#7c2d12">${intro}</div></div>`;
+    const pairCard = `<div data-export-pair="compat" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 6px"><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">나</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(myDom)}</div></div><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">${safeName}</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(partnerDom)}</div></div></div>`;
+    return summary + pairCard + cards.map((s, index) => `<section data-export-kind="compat" data-export-index="${index}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:950;margin:0 0 8px;color:#0f172a">${s.title}</h4><div style="font-size:13px;line-height:1.9;color:#475569">${s.body}</div></section>`).join("");
   }
 
+
+  function cloneForExport(node) {
+    if (!node) return null;
+    const copy = node.cloneNode(true);
+    copy.removeAttribute?.("id");
+    copy.querySelectorAll?.("[id]").forEach((el) => el.removeAttribute("id"));
+    copy.style.maxWidth = "none";
+    return copy;
+  }
+
+  function exportGroup(title, subtitle, nodes, slug) {
+    return {
+      title,
+      subtitle,
+      slug,
+      nodes: (nodes || []).filter(Boolean),
+    };
+  }
+
+  function buildPaidExportGroups(productId, body) {
+    const groups = [];
+
+    if (productId === "full_saju" || productId === "all_in_one") {
+      const full = [...body.querySelectorAll('[data-export-kind="full"]')];
+      const intro = body.querySelector('[data-export-intro="full"]');
+      const fullTitles = [
+        ["1장 · 나를 이해하는 법", "기본 성향 · 겉과 속 · 강점", "01_나를_이해하는_법"],
+        ["2장 · 지치고 결정하고 일하는 법", "과부하 · 결정 · 일", "02_일하고_결정하는_법"],
+        ["3장 · 돈·연애·사람", "돈 · 사랑 · 관계", "03_돈_연애_사람"],
+        ["4장 · 회복하고 앞으로 가는 법", "회복 · 변화 · 평생 사용법", "04_회복과_사용법"],
+      ];
+      for (let i = 0; i < 4; i++) {
+        const chunk = full.slice(i * 3, i * 3 + 3);
+        if (!chunk.length) continue;
+        const extra = i === 0 && intro ? [intro] : [];
+        groups.push(exportGroup(
+          fullTitles[i][0],
+          fullTitles[i][1],
+          [...extra, ...chunk],
+          fullTitles[i][2],
+        ));
+      }
+    }
+
+    if (productId === "compatibility") {
+      const sections = [...body.querySelectorAll('[data-export-kind="compat"]')];
+      const intro = body.querySelector('[data-export-intro="compat"]');
+      const pair = body.querySelector('[data-export-pair="compat"]');
+      const titles = [
+        ["1장 · 우리는 왜 끌릴까", "첫인상 · 나의 연애 방식 · 상대의 연애 방식", "01_우리는_왜_끌릴까"],
+        ["2장 · 대화하고 싸우고 화해하는 법", "대화 · 서운함 · 갈등 · 화해", "02_대화_갈등_화해"],
+        ["3장 · 애정표현·연락·생활·돈", "현실에서 자주 부딪히는 부분", "03_연락_생활_돈"],
+        ["4장 · 경계와 오래 가는 법", "사생활 · 장기 강점 · 위험신호 · 약속", "04_오래_가는_법"],
+      ];
+      for (let i = 0; i < 4; i++) {
+        const chunk = sections.slice(i * 4, i * 4 + 4);
+        if (!chunk.length) continue;
+        const extra = i === 0 ? [intro, pair].filter(Boolean) : [];
+        groups.push(exportGroup(
+          titles[i][0],
+          titles[i][1],
+          [...extra, ...chunk],
+          titles[i][2],
+        ));
+      }
+    }
+
+    if (productId === "concern_bundle3" || productId === "all_in_one") {
+      const concernSections = [...body.querySelectorAll('[data-export-kind="concern"]')];
+      concernSections.forEach((section, concernIndex) => {
+        const key = section.getAttribute("data-concern") || "";
+        const label = CONCERNS[key] || section.querySelector("h3")?.textContent?.trim() || "고민";
+        const articles = [...section.querySelectorAll("article")];
+        const halves = [
+          {
+            title: `${label} · 나를 이해하기`,
+            subtitle: "핵심 성향 · 반복 패턴 · 내가 잘못 짚는 부분",
+            nodes: articles.slice(0, 3),
+            suffix: "01_나를_이해하기",
+          },
+          {
+            title: `${label} · 어떻게 움직일지`,
+            subtitle: "실제 처방 · 맞는 사람/환경 · 움직일 시기",
+            nodes: articles.slice(3, 6),
+            suffix: "02_어떻게_움직일지",
+          },
+        ];
+        halves.forEach((half) => {
+          if (!half.nodes.length) return;
+          groups.push(exportGroup(
+            half.title,
+            half.subtitle,
+            half.nodes,
+            `${String(concernIndex + 1).padStart(2, "0")}_${key || "concern"}_${half.suffix}`,
+          ));
+        });
+      });
+    }
+
+    if (!groups.length) {
+      groups.push(exportGroup(
+        PRODUCTS[productId]?.name || "전체 결과",
+        "전체 결과",
+        [body],
+        "01_전체결과",
+      ));
+    }
+    return groups;
+  }
+
+  function buildPaidExportPage(product, group, index, total) {
+    const page = document.createElement("div");
+    page.style.cssText = "position:fixed;left:-12000px;top:0;width:480px;max-width:none;background:#fff;color:#0f172a;padding:26px 24px 32px;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;contain:layout style";
+    page.innerHTML = `
+      <div style="padding-bottom:16px;margin-bottom:12px;border-bottom:1px solid #e2e8f0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div style="font-size:12px;font-weight:950;color:#f43f5e">어떤언니 · ${esc(product?.name || "내 리포트")}</div>
+          <div style="font-size:10px;font-weight:900;color:#94a3b8">${index + 1} / ${total}</div>
+        </div>
+        <div style="font-size:23px;line-height:1.28;font-weight:950;letter-spacing:-.04em;color:#0f172a;margin-top:8px">${esc(group.title)}</div>
+        <div style="font-size:11px;line-height:1.6;font-weight:800;color:#94a3b8;margin-top:5px">${esc(group.subtitle || "")}</div>
+      </div>
+      <div data-export-page-body></div>
+    `;
+    const slot = page.querySelector("[data-export-page-body]");
+    group.nodes.forEach((node) => {
+      const copy = cloneForExport(node);
+      if (copy) slot.appendChild(copy);
+    });
+    document.body.appendChild(page);
+    return page;
+  }
+
+  function safeFilePart(value) {
+    return String(value || "")
+      .replace(/[\\/:*?"<>|]+/g, "_")
+      .replace(/\s+/g, "_")
+      .replace(/_+/g, "_")
+      .slice(0, 70);
+  }
 
   async function saveFullPaidReport(root, productId) {
     const exporter = global.__UNNI_IMAGE_EXPORT_V2__;
     const body = root?.querySelector("#unniProductBody");
     const product = PRODUCTS[productId];
-    if (!body || !exporter?.renderElementToPngPages) {
+    if (!body || !exporter?.renderElementToPngBlob) {
       if (typeof showToast === "function") showToast("이미지 저장 기능을 불러오지 못했어.");
       return;
     }
@@ -420,47 +560,33 @@
     const originalText = button?.textContent || "";
     if (button) {
       button.disabled = true;
-      button.textContent = "전체 결과 담는 중…";
+      button.textContent = "보기 편하게 나누는 중…";
       button.style.opacity = ".65";
     }
 
-    let exportWrap = null;
+    const pages = [];
     try {
-      exportWrap = document.createElement("div");
-      exportWrap.setAttribute("data-paid-export-root", productId);
-      exportWrap.style.cssText = "position:fixed;left:-12000px;top:0;width:480px;max-width:none;background:#ffffff;color:#0f172a;padding:26px 24px 30px;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;contain:layout style";
-      exportWrap.innerHTML = `
-        <div style="padding-bottom:18px;margin-bottom:10px;border-bottom:1px solid #e2e8f0">
-          <div style="font-size:13px;font-weight:950;color:#f43f5e">어떤언니</div>
-          <div style="font-size:24px;line-height:1.25;font-weight:950;letter-spacing:-.04em;color:#0f172a;margin-top:5px">${esc(product?.name || "내 리포트")}</div>
-          <div style="font-size:11px;font-weight:750;color:#94a3b8;margin-top:6px">내가 결제해서 본 전체 결과</div>
-        </div>
-      `;
-      const clone = body.cloneNode(true);
-      clone.removeAttribute("id");
-      clone.querySelectorAll?.("[id]").forEach((node) => node.removeAttribute("id"));
-      clone.style.margin = "0";
-      clone.style.width = "100%";
-      clone.style.maxWidth = "none";
-      exportWrap.appendChild(clone);
-      document.body.appendChild(exportWrap);
+      const groups = buildPaidExportGroups(productId, body);
+      const blobs = [];
+      const filenames = [];
 
-      if (document.fonts?.ready) {
-        try { await document.fonts.ready; } catch (_) {}
+      for (let index = 0; index < groups.length; index++) {
+        const group = groups[index];
+        const page = buildPaidExportPage(product, group, index, groups.length);
+        pages.push(page);
+        if (document.fonts?.ready) {
+          try { await document.fonts.ready; } catch (_) {}
+        }
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        );
+        const blob = await exporter.renderElementToPngBlob(page, 900);
+        if (!blob || blob.size < 1000) throw new Error("PAID_EXPORT_EMPTY");
+        blobs.push(blob);
+        filenames.push(
+          `어떤언니_${safeFilePart(product?.name || "리포트")}_${safeFilePart(group.slug || group.title)}.png`,
+        );
       }
-      await new Promise((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(resolve)),
-      );
-
-      const blobs = await exporter.renderElementToPngPages(exportWrap, 900, 3400);
-      if (!blobs.length) throw new Error("PAID_EXPORT_EMPTY");
-
-      const base = `어떤언니_${product?.name || "리포트"}_전체결과`;
-      const filenames = blobs.map((_, index) =>
-        blobs.length === 1
-          ? `${base}.png`
-          : `${base}_${String(index + 1).padStart(2, "0")}.png`,
-      );
 
       if (blobs.length === 1) {
         const blob = blobs[0];
@@ -475,18 +601,12 @@
           if (!shared) await exporter.showImageSaveFallback(blob, "save");
         } else {
           exporter.downloadPngBlob(blob, filenames[0]);
-          if (typeof showToast === "function") {
-            showToast(
-              exporter.isAndroidDevice?.()
-                ? "전체 결과를 PNG로 저장했어. 갤러리나 다운로드에서 확인해봐."
-                : "전체 결과를 PNG로 저장했어.",
-            );
-          }
+          if (typeof showToast === "function") showToast("전체 결과를 사진으로 저장했어.");
         }
       } else if (exporter.isKakaoInApp?.()) {
         await exporter.showImagePagesFallback(
           blobs,
-          `${product?.name || "내 리포트"} · 전체 결과`,
+          `${product?.name || "내 리포트"} · 보기 편하게 나눠뒀어`,
         );
       } else if (exporter.isIOSDevice?.()) {
         const shared = await exporter.nativeSharePngFiles(
@@ -497,18 +617,18 @@
         if (!shared) {
           await exporter.showImagePagesFallback(
             blobs,
-            `${product?.name || "내 리포트"} · 전체 결과`,
+            `${product?.name || "내 리포트"} · 보기 편하게 나눠뒀어`,
           );
         }
       } else {
         blobs.forEach((blob, index) => {
           setTimeout(
             () => exporter.downloadPngBlob(blob, filenames[index]),
-            index * 120,
+            index * 140,
           );
         });
         if (typeof showToast === "function") {
-          showToast(`글씨 안 깨지게 전체 결과를 ${blobs.length}장으로 나눠 저장했어.`);
+          showToast(`주제별로 ${blobs.length}장 나눠서 저장했어.`);
         }
       }
     } catch (error) {
@@ -517,7 +637,7 @@
         showToast("전체 결과 저장이 잠깐 꼬였어. 한 번만 다시 눌러줘.");
       }
     } finally {
-      exportWrap?.remove();
+      pages.forEach((page) => page.remove());
       if (button) {
         button.disabled = false;
         button.textContent = originalText || "전체 결과 사진으로 저장하기";
@@ -525,6 +645,7 @@
       }
     }
   }
+
 
   function productBody(productId, data, extra) {
     const mode = getMode(data);
