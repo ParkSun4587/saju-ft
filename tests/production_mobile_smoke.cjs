@@ -126,10 +126,11 @@ async function inspect(page, mode) {
   const viralFill=await page.evaluate(()=>({
     storyText:document.getElementById('storyCard')?.innerText||'',
     bottomGap:document.getElementById('storyCard').getBoundingClientRect().bottom-document.getElementById('cardStickerBox').getBoundingClientRect().bottom,
-    overflow:document.getElementById('storyCard').scrollHeight-document.getElementById('storyCard').clientHeight,
+    viralHeight:document.getElementById('cardViralPrompt').getBoundingClientRect().height,
+    stickerInside:document.getElementById('cardStickerBox').getBoundingClientRect().bottom<=document.getElementById('storyCard').getBoundingClientRect().bottom+1,
   }));
-  assert(viralFill.storyText.includes('너는 뭐 나왔어?')&&viralFill.storyText.includes('나도 내 결과 보기')&&viralFill.storyText.includes('sajuft.com')&&viralFill.bottomGap<65&&viralFill.overflow<=2,
-    'live viral card is sparse or overflowing '+JSON.stringify(viralFill));
+  assert(viralFill.storyText.includes('너는 뭐 나왔어?')&&viralFill.storyText.includes('나도 내 결과 보기')&&viralFill.storyText.includes('sajuft.com')&&viralFill.bottomGap>=0&&viralFill.bottomGap<42&&viralFill.viralHeight>=66&&viralFill.stickerInside,
+    'live viral card is sparse or clipped '+JSON.stringify(viralFill));
   await page.locator('#storyCaptureReady').click();
   await page.waitForFunction(()=>getComputedStyle(document.getElementById('storyCaptureChrome')).display==='none',null,{timeout:5000});
   assert(await page.locator('#unniKakaoCardQualityGuide').count()===0,'old rendered-card quality warning exists');
