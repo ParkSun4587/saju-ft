@@ -128,8 +128,8 @@ function assert(cond, msg) {
   assert(result.ohengCards.length === 5, `oheng card count ${result.ohengCards.length}`);
   assert(result.ohengCards[1].includes('(0개)') && result.ohengCards[1].includes('0%'), `zero fire must display 0%: ${result.ohengCards[1]}`);
   assert(result.ohengCards[3].includes('(0개)') && result.ohengCards[3].includes('0%'), `zero metal must display 0%: ${result.ohengCards[3]}`);
-  assert(result.ohengSummaryF.includes('로아가 보기엔'), `F oheng sister voice missing: ${result.ohengSummaryF}`);
-  assert(result.ohengSummaryT.includes('서아가 딱 정리하면'), `T oheng sister voice missing: ${result.ohengSummaryT}`);
+  assert(result.ohengSummaryF.includes('언니가 보기엔') && !result.ohengSummaryF.includes('로아가'), `F oheng generic sister voice missing: ${result.ohengSummaryF}`);
+  assert(result.ohengSummaryT.includes('언니가 딱 정리하면') && !result.ohengSummaryT.includes('서아가'), `T oheng generic sister voice missing: ${result.ohengSummaryT}`);
   assert(!/(이 공백|누수)/.test(result.ohengSummaryF + result.ohengSummaryT), 'stiff oheng copy leaked');
   assert(result.exactProfile.fingerprint !== result.otherFingerprint, 'different charts share integrated fingerprint');
   assert(result.exactProfile.audit.missing.length === 0, `semantic layer coverage missing: ${result.exactProfile.audit.missing.join(',')}`);
