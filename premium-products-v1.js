@@ -411,7 +411,7 @@
     const exporter = global.__UNNI_IMAGE_EXPORT_V2__;
     const body = root?.querySelector("#unniProductBody");
     const product = PRODUCTS[productId];
-    if (!body || !exporter?.renderElementToPngBlob) {
+    if (!body || !exporter?.renderElementToPngPages) {
       if (typeof showToast === "function") showToast("이미지 저장 기능을 불러오지 못했어.");
       return;
     }
@@ -427,7 +427,8 @@
     let exportWrap = null;
     try {
       exportWrap = document.createElement("div");
-      exportWrap.style.cssText = "position:fixed;left:-12000px;top:0;width:480px;max-width:none;background:#ffffff;color:#0f172a;padding:26px 24px 30px;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif";
+      exportWrap.setAttribute("data-paid-export-root", productId);
+      exportWrap.style.cssText = "position:fixed;left:-12000px;top:0;width:480px;max-width:none;background:#ffffff;color:#0f172a;padding:26px 24px 30px;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;contain:layout style";
       exportWrap.innerHTML = `
         <div style="padding-bottom:18px;margin-bottom:10px;border-bottom:1px solid #e2e8f0">
           <div style="font-size:13px;font-weight:950;color:#f43f5e">어떤언니</div>
@@ -439,34 +440,82 @@
       clone.removeAttribute("id");
       clone.querySelectorAll?.("[id]").forEach((node) => node.removeAttribute("id"));
       clone.style.margin = "0";
+      clone.style.width = "100%";
+      clone.style.maxWidth = "none";
       exportWrap.appendChild(clone);
       document.body.appendChild(exportWrap);
 
-      const blob = await exporter.renderElementToPngBlob(exportWrap, 720);
-      const filename = `어떤언니_${product?.name || "리포트"}_전체결과.png`;
+      if (document.fonts?.ready) {
+        try { await document.fonts.ready; } catch (_) {}
+      }
+      await new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      );
 
-      if (exporter.isKakaoInApp?.()) {
-        await exporter.showImageSaveFallback(blob, "save");
+      const blobs = await exporter.renderElementToPngPages(exportWrap, 900, 3400);
+      if (!blobs.length) throw new Error("PAID_EXPORT_EMPTY");
+
+      const base = `어떤언니_${product?.name || "리포트"}_전체결과`;
+      const filenames = blobs.map((_, index) =>
+        blobs.length === 1
+          ? `${base}.png`
+          : `${base}_${String(index + 1).padStart(2, "0")}.png`,
+      );
+
+      if (blobs.length === 1) {
+        const blob = blobs[0];
+        if (exporter.isKakaoInApp?.()) {
+          await exporter.showImageSaveFallback(blob, "save");
+        } else if (exporter.isIOSDevice?.()) {
+          const shared = await exporter.nativeSharePng(
+            blob,
+            filenames[0],
+            product?.name || "어떤언니 리포트",
+          );
+          if (!shared) await exporter.showImageSaveFallback(blob, "save");
+        } else {
+          exporter.downloadPngBlob(blob, filenames[0]);
+          if (typeof showToast === "function") {
+            showToast(
+              exporter.isAndroidDevice?.()
+                ? "전체 결과를 PNG로 저장했어. 갤러리나 다운로드에서 확인해봐."
+                : "전체 결과를 PNG로 저장했어.",
+            );
+          }
+        }
+      } else if (exporter.isKakaoInApp?.()) {
+        await exporter.showImagePagesFallback(
+          blobs,
+          `${product?.name || "내 리포트"} · 전체 결과`,
+        );
       } else if (exporter.isIOSDevice?.()) {
-        const shared = await exporter.nativeSharePng(
-          blob,
-          filename,
+        const shared = await exporter.nativeSharePngFiles(
+          blobs,
+          filenames,
           product?.name || "어떤언니 리포트",
         );
-        if (!shared) await exporter.showImageSaveFallback(blob, "save");
-      } else {
-        exporter.downloadPngBlob(blob, filename);
-        if (typeof showToast === "function") {
-          showToast(
-            exporter.isAndroidDevice?.()
-              ? "전체 결과를 PNG로 저장했어. 갤러리나 다운로드에서 확인해봐."
-              : "전체 결과를 PNG로 저장했어.",
+        if (!shared) {
+          await exporter.showImagePagesFallback(
+            blobs,
+            `${product?.name || "내 리포트"} · 전체 결과`,
           );
+        }
+      } else {
+        blobs.forEach((blob, index) => {
+          setTimeout(
+            () => exporter.downloadPngBlob(blob, filenames[index]),
+            index * 120,
+          );
+        });
+        if (typeof showToast === "function") {
+          showToast(`글씨 안 깨지게 전체 결과를 ${blobs.length}장으로 나눠 저장했어.`);
         }
       }
     } catch (error) {
       console.error("유료 리포트 전체 저장 실패:", error);
-      if (typeof showToast === "function") showToast("전체 결과 저장이 잠깐 꼬였어. 한 번만 다시 눌러줘.");
+      if (typeof showToast === "function") {
+        showToast("전체 결과 저장이 잠깐 꼬였어. 한 번만 다시 눌러줘.");
+      }
     } finally {
       exportWrap?.remove();
       if (button) {
