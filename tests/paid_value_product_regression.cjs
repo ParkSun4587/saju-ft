@@ -185,7 +185,22 @@ function norm(v) {
     const url = URL.createObjectURL(blob);
     const img = new Image();
     const dims = await new Promise((resolve, reject) => {
-      img.onload = () => resolve({ width:img.naturalWidth, height:img.naturalHeight });
+      img.onload = () => {
+        const sample = document.createElement('canvas');
+        sample.width = 32;
+        sample.height = 32;
+        const ctx = sample.getContext('2d');
+        ctx.drawImage(img, 0, 0, 32, 32);
+        const px = ctx.getImageData(0, 0, 32, 32).data;
+        let nonWhite = 0;
+        let dark = 0;
+        for (let i = 0; i < px.length; i += 4) {
+          const r = px[i], g = px[i + 1], b = px[i + 2], a = px[i + 3];
+          if (a > 20 && (r < 245 || g < 245 || b < 245)) nonWhite++;
+          if (a > 20 && r + g + b < 570) dark++;
+        }
+        resolve({ width:img.naturalWidth, height:img.naturalHeight, nonWhite, dark });
+      };
       img.onerror = reject;
       img.src = url;
     });
@@ -194,6 +209,7 @@ function norm(v) {
   });
   assert(storyExportDims.width === 1080, `story export width ${storyExportDims.width}`);
   assert(Math.abs(storyExportDims.height / storyExportDims.width - 16/9) < 0.01, `story export aspect ${JSON.stringify(storyExportDims)}`);
+  assert(storyExportDims.nonWhite > 80 && storyExportDims.dark > 10, `story export looks blank/white: ${JSON.stringify(storyExportDims)}`);
   const shareEngine = await page.evaluate(async () => {
     const engine = window.__UNNI_IMAGE_EXPORT_V2__;
     let called = false;
@@ -209,7 +225,7 @@ function norm(v) {
     const ok = await engine.nativeSharePng(new Blob(['png'], { type:'image/png' }), 'mobile-test.png', 'test');
     return { version:engine?.version, called, fileCount, ok };
   });
-  assert(shareEngine.version === '2.2.0' && shareEngine.ok && shareEngine.called && shareEngine.fileCount === 1, `native mobile share path failed: ${JSON.stringify(shareEngine)}`);
+  assert(shareEngine.version === '2.3.0' && shareEngine.ok && shareEngine.called && shareEngine.fileCount === 1, `native mobile share path failed: ${JSON.stringify(shareEngine)}`);
 
   const mobileCardBox = await page.locator('#storyCard').boundingBox();
   assert(mobileCardBox && mobileCardBox.x >= 0 && mobileCardBox.y >= 0 && mobileCardBox.width <= 332, `mobile story card clipped/oversized: ${JSON.stringify(mobileCardBox)}`);
@@ -246,21 +262,10 @@ function norm(v) {
   }, originalUA);
   await page.waitForFunction(() => !isShareModalOpen());
 
+  assert(await page.locator('#landingVaultEntry').evaluate((el) => getComputedStyle(el).display) === 'none', 'landing vault must stay hidden while feature is paused');
+  assert(await page.locator('#unniVaultEntry').evaluate((el) => getComputedStyle(el).display) === 'none', 'result vault must stay hidden while feature is paused');
   await page.evaluate(() => openUnniVault());
-  await page.waitForSelector('#unniVaultModal', { state:'visible' });
-  const authOrder = await page.locator('[data-unni-auth]').evaluateAll((nodes) =>
-    nodes.map((node) => node.getAttribute('data-unni-auth'))
-  );
-  assert(JSON.stringify(authOrder) === JSON.stringify(['kakao','naver','google','apple','email']), `auth provider order drift: ${JSON.stringify(authOrder)}`);
-  const vaultLoginText = await page.locator('#unniVaultModal').innerText();
-  assert(vaultLoginText.includes('이거 잃어버리지 않게') && vaultLoginText.includes('카카오로 계속하기') && vaultLoginText.includes('네이버로 계속하기'), 'vault login concept copy missing');
-  await page.evaluate(() => completeUnniAuth({ id:'qa-user', provider:'naver', name:'테스트유저' }));
-  assert(await page.locator('#unniVaultView').isVisible(), 'vault authenticated view missing');
-  const vaultMeta = await page.locator('#unniVaultUserMeta').innerText();
-  assert(vaultMeta.includes('네이버'), `vault provider metadata wrong: ${vaultMeta}`);
-  await page.evaluate(() => signOutUnniVault());
-  assert(await page.locator('#unniAuthView').isVisible(), 'vault signout did not restore auth view');
-  await page.evaluate(() => closeUnniVault());
+  assert(await page.locator('#unniVaultModal').evaluate((el) => getComputedStyle(el).display) === 'none', 'paused vault must not open');
 
   await page.evaluate(() => openUnniProduct('full_saju'));
   await page.waitForSelector('#unniProductModal', { state:'visible' });
@@ -277,7 +282,7 @@ function norm(v) {
     page.waitForEvent('download', { timeout: 20000 }),
     page.locator('#unniProductSaveAll').click(),
   ]).then(([download]) => download);
-  assert(fullReportDownload.suggestedFilename().includes('전체결과') && fullReportDownload.suggestedFilename().endsWith('.png'), `full report save filename ${fullReportDownload.suggestedFilename()}`);
+  assert(fullReportDownload.suggestedFilename().includes('01_나를_이해하는_법') && fullReportDownload.suggestedFilename().endsWith('.png'), `semantic full report filename ${fullReportDownload.suggestedFilename()}`);
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('concern_bundle3'));
@@ -309,7 +314,7 @@ function norm(v) {
   await page.evaluate(() => openUnniProduct('all_in_one'));
   await page.locator('#unniProductAction').click();
   modal = await page.locator('#unniProductModal').innerText();
-  for (const label of ['재물·돈복','직장·커리어','연애·썸','진로·내 길','인간관계','마음·회복']) assert(modal.includes(label), `all-in-one missing ${label}`);
+  for (const label of ['돈·재물','학업·직장','연애·썸','진로·적성','사람·관계','마음·스트레스']) assert(modal.includes(label), `all-in-one missing ${label}`);
   const allInOneArticles = await page.locator('#unniProductBody article').count();
   assert(allInOneArticles === 36, `all-in-one NOTE card count ${allInOneArticles}`);
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'all-in-one full-report save missing');
@@ -322,13 +327,15 @@ function norm(v) {
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
   assert(html.includes('__UNNI_IMAGE_EXPORT_V2__'), 'shared image export engine missing');
-  assert(html.includes('id="unniVaultEntry"') && html.includes('id="unniVaultModal"'), 'vault entry/modal missing');
+  assert(html.includes('UNNI_VAULT_ENABLED = false') && html.includes('id="unniVaultEntry"') && html.includes('id="unniVaultModal"'), 'paused vault scaffolding missing');
   assert(html.indexOf('data-unni-auth="kakao"') < html.indexOf('data-unni-auth="naver"'), 'Naver must follow Kakao in auth order');
   assert(html.includes('completeUnniAuth') && html.includes('__UNNI_AUTH_BRIDGE__'), 'auth bridge scaffolding missing');
   const premium = fs.readFileSync('premium-products-v1.js','utf8');
   assert(!premium.includes('unniProductKeepsake') && !premium.includes('keepsakeCardHtml') && !premium.includes('renderPaidKeepsake'), 'paid keepsake-card subsystem should be removed');
   assert(premium.includes('saveFullPaidReport') && premium.includes('unniProductSaveAll'), 'full paid-report image save missing');
-  assert(premium.includes('renderElementToPngPages') && html.includes('showImagePagesFallback'), 'paged paid-report export missing');
+  assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="concern"'), 'semantic paid-report grouping missing');
+  assert(premium.includes('나를 이해하는 법') && premium.includes('대화하고 싸우고 화해하는 법') && premium.includes('어떻게 움직일지'), 'human-readable export group titles missing');
+  assert(html.includes('showImagePagesFallback'), 'multi-image mobile fallback missing');
   assert(!html.includes('id="storyShareBtn"') && !html.includes('인스타에 올릴 사진 열기'), 'duplicate Instagram save/share UI remains');
   assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
   assert(html.includes('history.pushState') && html.includes('shareModal: true'), 'share modal history guard missing');
