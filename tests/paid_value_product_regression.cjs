@@ -21,7 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.4.0' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.5.0' &&
+    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.6.0' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
 
@@ -164,7 +164,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.4.0', 'paid value layer missing');
-  assert(qa.productVersion.version === '1.5.0', 'product layer missing');
+  assert(qa.productVersion.version === '1.6.0', 'product layer missing');
   assert(qa.wrappers.paid, 'paid-value wrapper missing');
   assert(qa.wrappers.integrated, 'integrated wrapper metadata lost');
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
@@ -341,45 +341,56 @@ function norm(v) {
   assert(await page.locator('#mainShareBtnText').innerText() === '이거, 한 장으로 예쁘게 뽑아볼까?', 'F share CTA persona copy missing');
   assert(await page.locator('#shareModalClose').isVisible(), 'top share-modal close button missing');
   assert(await page.locator('#storyShareBtn').count() === 0, 'duplicate Instagram/share action must be removed');
-  await page.waitForSelector('#storySaveBtn:not([disabled])', { timeout: 15000 });
-  const storyDownload = await Promise.all([
-    page.waitForEvent('download', { timeout: 15000 }),
-    page.locator('#storySaveBtn').click(),
-  ]).then(([download]) => download);
-  assert(storyDownload.suggestedFilename().endsWith('.png'), `story save filename ${storyDownload.suggestedFilename()}`);
-  const storyExportDims = await page.evaluate(async () => {
-    const blob = await window.__UNNI_IMAGE_EXPORT_V2__.renderVisibleElementToPngBlob(
-      document.getElementById('storyCard'),
-      1080,
-    );
-    const url = URL.createObjectURL(blob);
-    const img = new Image();
-    const dims = await new Promise((resolve, reject) => {
-      img.onload = () => {
-        const sample = document.createElement('canvas');
-        sample.width = 32;
-        sample.height = 32;
-        const ctx = sample.getContext('2d');
-        ctx.drawImage(img, 0, 0, 32, 32);
-        const px = ctx.getImageData(0, 0, 32, 32).data;
-        let nonWhite = 0;
-        let dark = 0;
-        for (let i = 0; i < px.length; i += 4) {
-          const r = px[i], g = px[i + 1], b = px[i + 2], a = px[i + 3];
-          if (a > 20 && (r < 245 || g < 245 || b < 245)) nonWhite++;
-          if (a > 20 && r + g + b < 570) dark++;
-        }
-        resolve({ width:img.naturalWidth, height:img.naturalHeight, nonWhite, dark });
-      };
-      img.onerror = reject;
-      img.src = url;
-    });
-    URL.revokeObjectURL(url);
-    return dims;
+  assert((await page.locator('#storySaveBtn').innerText()).includes('화면 그대로 캡처하기'), 'story CTA must use direct capture mode');
+
+  const modalCardBox = await page.locator('#storyCard').boundingBox();
+  assert(modalCardBox && modalCardBox.width <= 332, `share-modal card should stay compact before capture: ${JSON.stringify(modalCardBox)}`);
+
+  await page.locator('#storySaveBtn').click();
+  await page.waitForSelector('#storyCaptureMode', { state:'visible', timeout:5000 });
+  const captureOpen = await page.evaluate(() => {
+    const layer = document.getElementById('storyCaptureMode');
+    const card = document.getElementById('storyCard');
+    const top = document.elementFromPoint(4,4);
+    return {
+      cardParent:card?.parentElement?.id || '',
+      layerDisplay:getComputedStyle(layer).display,
+      layerZ:Number(getComputedStyle(layer).zIndex || 0),
+      shareZ:Number(getComputedStyle(document.getElementById('shareModal')).zIndex || 0),
+      topInsideCapture:!!top?.closest?.('#storyCaptureMode'),
+      chromeDisplay:getComputedStyle(document.getElementById('storyCaptureChrome')).display,
+    };
   });
-  assert(storyExportDims.width === 1080, `story export width ${storyExportDims.width}`);
-  assert(Math.abs(storyExportDims.height / storyExportDims.width - 16/9) < 0.01, `story export aspect ${JSON.stringify(storyExportDims)}`);
-  assert(storyExportDims.nonWhite > 80 && storyExportDims.dark > 10, `story export looks blank/white: ${JSON.stringify(storyExportDims)}`);
+  assert(captureOpen.cardParent === 'storyCaptureCardSlot' && captureOpen.layerDisplay !== 'none', `real card was not moved into capture layer: ${JSON.stringify(captureOpen)}`);
+  assert(captureOpen.layerZ > captureOpen.shareZ && captureOpen.topInsideCapture, `capture layer does not fully cover the app UI: ${JSON.stringify(captureOpen)}`);
+  assert(captureOpen.chromeDisplay !== 'none', 'capture instructions should be visible before clean mode');
+
+  const captureCardBox = await page.locator('#storyCard').boundingBox();
+  assert(captureCardBox && captureCardBox.x >= 0 && captureCardBox.y >= 0 && captureCardBox.width <= 390 && captureCardBox.width >= 350, `capture card is not maximizing the mobile viewport: ${JSON.stringify(captureCardBox)}`);
+  assert(Math.abs(captureCardBox.height / captureCardBox.width - 16/9) < 0.03, `capture card ratio drift: ${JSON.stringify(captureCardBox)}`);
+
+  await page.locator('#storyCaptureReady').click();
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('storyCaptureChrome')).display === 'none');
+  const cleanCapture = await page.evaluate(() => {
+    const layer = document.getElementById('storyCaptureMode');
+    const top = document.elementFromPoint(4,4);
+    return {
+      clean:layer?.dataset?.clean,
+      topInsideCapture:!!top?.closest?.('#storyCaptureMode'),
+      bodyOverflow:getComputedStyle(document.body).overflow,
+      oldImageFallback:!!document.getElementById('unniImageFallback') && getComputedStyle(document.getElementById('unniImageFallback')).display !== 'none',
+      oldKakaoGuide:!!document.getElementById('unniKakaoCardQualityGuide'),
+    };
+  });
+  assert(cleanCapture.clean === '1' && cleanCapture.topInsideCapture && cleanCapture.bodyOverflow === 'hidden', `clean capture mode is not isolated: ${JSON.stringify(cleanCapture)}`);
+  assert(!cleanCapture.oldImageFallback && !cleanCapture.oldKakaoGuide, 'capture mode must not use rendered-image fallbacks');
+
+  await page.locator('#storyCaptureMode').click({ position:{ x:4, y:4 } });
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('storyCaptureChrome')).display !== 'none');
+  await page.locator('#storyCaptureClose').click();
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('storyCaptureMode')).display === 'none');
+  assert(await page.locator('#storyCard').evaluate((el) => el.parentElement?.id !== 'storyCaptureCardSlot'), 'story card was not restored after capture mode');
+
   const shareEngine = await page.evaluate(async () => {
     const engine = window.__UNNI_IMAGE_EXPORT_V2__;
     let called = false;
@@ -395,10 +406,7 @@ function norm(v) {
     const ok = await engine.nativeSharePng(new Blob(['png'], { type:'image/png' }), 'mobile-test.png', 'test');
     return { version:engine?.version, called, fileCount, ok };
   });
-  assert(shareEngine.version === '2.4.0' && shareEngine.ok && shareEngine.called && shareEngine.fileCount === 1, `native mobile share path failed: ${JSON.stringify(shareEngine)}`);
-
-  const mobileCardBox = await page.locator('#storyCard').boundingBox();
-  assert(mobileCardBox && mobileCardBox.x >= 0 && mobileCardBox.y >= 0 && mobileCardBox.width <= 332, `mobile story card clipped/oversized: ${JSON.stringify(mobileCardBox)}`);
+  assert(shareEngine.version === '2.5.0' && shareEngine.ok && shareEngine.called && shareEngine.fileCount === 1, `shared paid-image engine path failed: ${JSON.stringify(shareEngine)}`);
 
   await page.evaluate(() => history.back());
   await page.waitForFunction(() => !isShareModalOpen());
@@ -417,16 +425,11 @@ function norm(v) {
     });
     openShareModal();
   });
-  await page.waitForSelector('#storySaveBtn:not([disabled])', { timeout:15000 });
-  assert(await page.locator('#storyShareBtn').count() === 0, 'Kakao must not show duplicate Instagram image action');
   await page.locator('#storySaveBtn').click();
-  await page.waitForSelector('#unniKakaoCardQualityGuide', { state:'visible', timeout:15000 });
-  const qualityGuideText = await page.locator('#unniKakaoCardQualityGuide').innerText();
-  assert(qualityGuideText.includes('카카오톡 안에서는 카드가 뭉개질 수 있어') && qualityGuideText.includes('다른 브라우저로 열기'), 'Kakao high-quality save guide missing');
+  await page.waitForSelector('#storyCaptureMode', { state:'visible', timeout:5000 });
+  assert(await page.locator('#unniKakaoCardQualityGuide').count() === 0, 'Kakao should use the same direct screenshot mode, not a degraded-image warning');
   assert(await page.evaluate(() => window.__UNNI_IMAGE_EXPORT_V2__.isKakaoInApp('KAKAOTALK/25.7.1')), 'Kakao UA detection failed');
-  assert(await page.locator('#unniKakaoCardFallback').count() === 0, 'Kakao must not offer degraded card save fallback');
-  assert(await page.locator('#unniImageFallback').count() === 0, 'Kakao quality guide should not open low-quality image fallback');
-  await page.locator('#unniKakaoCardClose').click();
+  await page.locator('#storyCaptureClose').click();
   await page.evaluate((ua) => {
     Object.defineProperty(navigator, 'userAgent', { configurable:true, get:() => ua });
     history.back();
@@ -560,7 +563,7 @@ function norm(v) {
 
   const html = fs.readFileSync('index.html','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.4.0'), 'paid value script include missing');
-  assert(html.includes('./premium-products-v1.js?v=1.5.0'), 'product script include missing');
+  assert(html.includes('./premium-products-v1.js?v=1.6.0'), 'product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
@@ -584,12 +587,15 @@ function norm(v) {
   assert(html.includes('showImagePagesFallback'), 'multi-image mobile fallback missing');
   assert(!html.includes('id="storyShareBtn"') && !html.includes('인스타에 올릴 사진 열기'), 'duplicate Instagram save/share UI remains');
   assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
-  assert(html.includes('showKakaoCardQualityGuide') && html.includes('카카오톡 안에서는 카드가 뭉개질 수 있어') && html.includes('다른 브라우저로 열기'), 'Kakao card quality guard missing');
-  assert(!html.includes('unniKakaoCardFallback') && !html.includes('그래도 여기서 현재 화질로 저장하기'), 'degraded Kakao card fallback should be removed');
-  assert(html.includes('__UNNI_IMAGE_EXPORT_V2__') && html.includes('version: "2.4.0"'), 'image export behavior version missing');
+  assert(html.includes('openStoryCaptureMode') && html.includes('storyCaptureMode') && html.includes('storyCaptureCardSlot') && html.includes('화면 그대로 캡처하기'), 'direct card screenshot mode missing');
+  assert(html.includes('requestFullscreen') && html.includes('storyCaptureReady'), 'capture clean-view/fullscreen enhancement missing');
+  assert(!html.includes('showKakaoCardQualityGuide') && !html.includes('saveInstaCardImage') && !html.includes('prepareStoryCardAsset'), 'obsolete rendered story-card save path remains');
+  assert(html.includes('__UNNI_IMAGE_EXPORT_V2__') && html.includes('version: "2.5.0"'), 'image export behavior version missing');
   assert(html.includes('history.pushState') && html.includes('shareModal: true'), 'share modal history guard missing');
   assert(html.includes('CONCERN_SITUATIONS') && html.includes('selectedConcernSituation'), 'concern situation picker missing');
   assert(html.includes('concernSituationSummary') && html.includes('editConcernSituation'), 'progressive mobile concern summary/edit flow missing');
+  assert(!html.includes('정확한 만세력 조회를 위해 적어줘') && !html.includes('출생기록에 적힌 시각을 입력하면 더 정확해'), 'old birth-time helper copy remains');
+  assert(!html.includes('🥺') && !html.includes('💕') && !html.includes('💌') && !html.includes('ㅠㅠ'), 'excessive F emoticon copy remains in the main journey');
   assert(!html.includes('id="sisterSwitchCard"') && !html.includes('switchSisterMode()'), 'bottom F/T mode-switch CTA code remains');
   assert(!html.includes('로아가 보기엔') && !html.includes('서아가 딱 정리하면') && html.includes('언니가 보기엔') && html.includes('언니가 딱 정리하면'), 'five-element narrator should be generic 언니 in both modes');
   assert(!html.includes('사주 데이터로 까본 내 진짜 MBTI'), 'MBTI is still framed as a true diagnostic result');
