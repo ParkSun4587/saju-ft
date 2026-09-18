@@ -245,6 +245,22 @@ function norm(v) {
   }, originalUA);
   await page.waitForFunction(() => !isShareModalOpen());
 
+  await page.evaluate(() => openUnniVault());
+  await page.waitForSelector('#unniVaultModal', { state:'visible' });
+  const authOrder = await page.locator('[data-unni-auth]').evaluateAll((nodes) =>
+    nodes.map((node) => node.getAttribute('data-unni-auth'))
+  );
+  assert(JSON.stringify(authOrder) === JSON.stringify(['kakao','naver','google','apple','email']), `auth provider order drift: ${JSON.stringify(authOrder)}`);
+  const vaultLoginText = await page.locator('#unniVaultModal').innerText();
+  assert(vaultLoginText.includes('이거 잃어버리지 않게') && vaultLoginText.includes('카카오로 계속하기') && vaultLoginText.includes('네이버로 계속하기'), 'vault login concept copy missing');
+  await page.evaluate(() => completeUnniAuth({ id:'qa-user', provider:'naver', name:'테스트유저' }));
+  assert(await page.locator('#unniVaultView').isVisible(), 'vault authenticated view missing');
+  const vaultMeta = await page.locator('#unniVaultUserMeta').innerText();
+  assert(vaultMeta.includes('네이버'), `vault provider metadata wrong: ${vaultMeta}`);
+  await page.evaluate(() => signOutUnniVault());
+  assert(await page.locator('#unniAuthView').isVisible(), 'vault signout did not restore auth view');
+  await page.evaluate(() => closeUnniVault());
+
   await page.evaluate(() => openUnniProduct('full_saju'));
   await page.waitForSelector('#unniProductModal', { state:'visible' });
   let modal = await page.locator('#unniProductModal').innerText();
@@ -305,6 +321,9 @@ function norm(v) {
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
   assert(html.includes('__UNNI_IMAGE_EXPORT_V2__'), 'shared image export engine missing');
+  assert(html.includes('id="unniVaultEntry"') && html.includes('id="unniVaultModal"'), 'vault entry/modal missing');
+  assert(html.indexOf('data-unni-auth="kakao"') < html.indexOf('data-unni-auth="naver"'), 'Naver must follow Kakao in auth order');
+  assert(html.includes('completeUnniAuth') && html.includes('__UNNI_AUTH_BRIDGE__'), 'auth bridge scaffolding missing');
   const premium = fs.readFileSync('premium-products-v1.js','utf8');
   assert(!premium.includes('unniProductKeepsake') && !premium.includes('keepsakeCardHtml') && !premium.includes('renderPaidKeepsake'), 'paid keepsake-card subsystem should be removed');
   assert(premium.includes('saveFullPaidReport') && premium.includes('unniProductSaveAll'), 'full paid-report image save missing');
