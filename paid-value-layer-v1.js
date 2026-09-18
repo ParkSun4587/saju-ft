@@ -514,19 +514,23 @@
       checklist: `다음에 같은 장면이 오면 ‘지금 또 시작됐나?’ 한 번 알아차리기`,
     };
 
-    out[2] = {
-      ...out[2],
-      badge: `${badgeBase} · 잘못 짚기 쉬운 것`,
-      title: isT
-        ? "원인 잘못 잡으면 행동도 틀어진다"
-        : "혹시 문제를 엉뚱한 데서 찾고 있었던 건 아닐까",
-      desc: isT
-        ? `<b>네가 문제라고 보기 쉬운 것:</b> ${p.assumed}.<br><br><b>실제로 먼저 볼 것:</b> ${p.actual}.<br><br>${personal}`
-        : `너는 <b>${p.assumed}</b>고 생각했을 수 있어. 그런데 언니는 <b>${p.actual}</b> 쪽을 먼저 볼래.<br><br>${personal} 괜히 너 자체를 문제로 만들 필요는 없어.`,
-      checklist: isT
-        ? "오늘 판단 하나에서 ‘가정’과 ‘확인된 사실’을 따로 적기"
-        : "나를 탓하기 전에 ‘이건 사실이야, 내 추측이야?’ 한 번 나눠보기",
-    };
+    {
+      const base = out[2];
+      const situationAdd = isT
+        ? `<br><br><b>지금 네 상황에서 특히 헷갈리기 쉬운 것</b><br><b>가정:</b> ${p.assumed}.<br><b>먼저 확인할 것:</b> ${p.actual}.<br><br>${personal}`
+        : `<br><br><b>그리고 지금 네 상황에선 이것도 같이 보자</b><br>너는 <b>${p.assumed}</b>고 생각했을 수 있어. 그런데 언니는 <b>${p.actual}</b> 쪽을 먼저 볼래.<br><br>${personal} 괜히 너 자체를 문제로 만들 필요는 없어.`;
+      out[2] = {
+        ...base,
+        badge: base?.badge
+          ? `${base.badge} · ${p.label}`
+          : `${badgeBase} · 놓친 포인트`,
+        // NOTE3는 통합 사주 프로필 builder의 핵심 판단을 그대로 보존하고
+        // 선택한 현재 상황만 뒤에 덧붙인다.
+        title: base?.title,
+        desc: `${base?.desc || ""}${situationAdd}`,
+        checklist: base?.checklist,
+      };
+    }
 
     out[3] = {
       ...out[3],
