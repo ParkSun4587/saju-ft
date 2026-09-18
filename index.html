@@ -894,6 +894,8 @@
               id="landingVaultEntry"
               type="button"
               onclick="openUnniVault()"
+              style="display:none"
+              aria-hidden="true"
               class="bg-white/70 border border-white/70 text-rose-600 px-2.5 py-1 rounded-full text-[9.5px] font-black shadow-sm active:scale-95 transition-transform whitespace-nowrap"
             >
               내 보관함 ♡
@@ -1047,12 +1049,12 @@
                       <div
                         class="chip-title text-[11px] font-extrabold text-slate-800"
                       >
-                        돈복 · 텅장
+                        돈 · 재물
                       </div>
                       <div
                         class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
                       >
-                        언제 돈 모일까?
+                        돈이 언제 풀릴까?
                       </div>
                     </div>
                   </button>
@@ -1066,12 +1068,12 @@
     <div
       class="chip-title text-[11px] font-extrabold text-slate-800"
     >
-      학업 · 커리어
+      학업 · 직장
     </div>
     <div
       class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
     >
-      시험·합격·취업·이직
+      시험·취업·이직
     </div>
   </div>
 </button>
@@ -1090,7 +1092,7 @@
                       <div
                         class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
                       >
-                        내 찐인연 시점
+                        연애 흐름·인연
                       </div>
                     </div>
                   </button>
@@ -1104,12 +1106,12 @@
                       <div
                         class="chip-title text-[11px] font-extrabold text-slate-800"
                       >
-                        진로 · 미래
+                        진로 · 적성
                       </div>
                       <div
                         class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
                       >
-                        적성과 평생 갈 길
+                        나한테 맞는 길
                       </div>
                     </div>
                   </button>
@@ -1123,12 +1125,12 @@
                       <div
                         class="chip-title text-[11px] font-extrabold text-slate-800"
                       >
-                        인간관계
+                        사람 · 관계
                       </div>
                       <div
                         class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
                       >
-                        선 넘는 사람 손절
+                        친구·직장·손절 고민
                       </div>
                     </div>
                   </button>
@@ -1142,12 +1144,12 @@
                       <div
                         class="chip-title text-[11px] font-extrabold text-slate-800"
                       >
-                        번아웃·멘탈
+                        마음 · 스트레스
                       </div>
                       <div
                         class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
                       >
-                        멘탈 회복 타이밍
+                        지침·번아웃·회복
                       </div>
                     </div>
                   </button>
@@ -1342,6 +1344,8 @@
               id="unniVaultEntry"
               type="button"
               onclick="openUnniVault()"
+              style="display:none"
+              aria-hidden="true"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-rose-200 text-[11px] font-black text-rose-500 shadow-sm active:scale-95 transition-transform"
             >
               <span>내 보관함</span><span aria-hidden="true">♡</span>
@@ -2250,6 +2254,8 @@
         }
       }
 
+      const UNNI_VAULT_ENABLED = false;
+
       function getUnniAuthProfile() {
         try {
           return JSON.parse(readStore("unni_auth_profile") || "null");
@@ -2322,6 +2328,7 @@
       }
 
       function openUnniVault() {
+        if (!UNNI_VAULT_ENABLED) return;
         const modal = document.getElementById("unniVaultModal");
         if (!modal) return;
         renderUnniVault();
@@ -4028,12 +4035,12 @@ function buildNoteSixTiming(data, concernKey, concernLabel, isT) {
 }
 
 const CONCERN_LABELS = {
-  money: "재물·돈복",
-  career: "학업·커리어",
+  money: "돈·재물",
+  career: "학업·직장",
   love: "연애·썸",
-  path: "진로·미래",
-  people: "인간관계",
-  mental: "번아웃·멘탈",
+  path: "진로·적성",
+  people: "사람·관계",
+  mental: "마음·스트레스",
 };
 
 function generateConcernNotes(data, mode) {
@@ -5255,12 +5262,12 @@ return [
             if (typingEl) typingEl.remove();
 
             const concernLabels = {
-  money: "돈복·텅장",
-  career: "학업·커리어",
+  money: "돈·재물",
+  career: "학업·직장",
   love: "연애·썸",
-  path: "진로·미래",
-  people: "인간관계",
-  mental: "번아웃·멘탈",
+  path: "진로·적성",
+  people: "사람·관계",
+  mental: "마음·스트레스",
 };
             const selectedConcernText = concernLabels[concernKey] || "고민";
 
@@ -6797,16 +6804,8 @@ currentResultData = {
             ),
           };
 
-          if (faithful) {
-            try {
-              return await html2canvas(target, {
-                ...baseOptions,
-                foreignObjectRendering: true,
-              });
-            } catch (error) {
-              console.warn("정밀 카드 렌더링 fallback:", error);
-            }
-          }
+          // Android/Kakao WebView에서 foreignObjectRendering은 흰 캔버스를 만들 수 있다.
+          // 화면에 보이는 실제 DOM 레이아웃을 일반 canvas 렌더러로 그대로 캡처한다.
           return await html2canvas(target, baseOptions);
         } finally {
           cleanup?.();
@@ -6999,7 +6998,7 @@ currentResultData = {
       }
 
       window.__UNNI_IMAGE_EXPORT_V2__ = {
-        version: "2.2.0",
+        version: "2.3.0",
         renderElementToPngBlob,
         renderVisibleElementToPngBlob,
         renderElementToPngPages,
