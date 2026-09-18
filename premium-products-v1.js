@@ -678,6 +678,9 @@
       }
       return cached;
     }
+    // 새 리포트를 만들기 시작하는 순간 이전 PNG Blob을 먼저 놓아준다.
+    // 올인원 16장 뒤에 다른 올인원을 열어도 두 세트가 동시에 메모리에 남지 않게 한다.
+    paidExportCache.clear();
     if (priority) paidExportPriority.set(key, true);
     if (paidExportJobs.has(key)) return paidExportJobs.get(key);
 
