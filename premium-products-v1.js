@@ -775,24 +775,60 @@
     }
   }
 
+  function cleanupPaidPrintView() {
+    document.getElementById("unniPaidPrintHost")?.remove();
+    document.getElementById("unniPaidPrintStyle")?.remove();
+  }
+
   function printPaidReport(root, productId) {
     if (global.__UNNI_IMAGE_EXPORT_V2__?.isKakaoInApp?.()) {
       if (typeof showToast === "function") {
-        showToast("PDF 보관은 카카오톡 ⋮ 메뉴에서 다른 브라우저로 열면 더 안정적으로 돼.");
+        showToast("카카오톡 안에서는 PDF 저장이 막힐 수 있어. ⋮ → 다른 브라우저로 열어서 저장해줘.");
       }
       return;
     }
     const body = root?.querySelector("#unniProductBody");
     const product = PRODUCTS[productId];
     if (!body) return;
-    const popup = window.open("", "_blank");
-    if (!popup) {
-      if (typeof showToast === "function") showToast("팝업을 허용하면 PDF로 한 파일 보관할 수 있어.");
-      return;
+
+    // 새 창은 iOS/모바일 브라우저에서 막히거나 print()가 유실되는 경우가 있어,
+    // 현재 문서 안에 인쇄 전용 복사본을 만들고 사용자 탭 직후 window.print()를 직접 호출한다.
+    cleanupPaidPrintView();
+    const style = document.createElement("style");
+    style.id = "unniPaidPrintStyle";
+    style.textContent = `
+      #unniPaidPrintHost{display:none}
+      @media print{
+        @page{size:auto;margin:12mm}
+        html,body{background:#fff!important;height:auto!important;overflow:visible!important}
+        body>*:not(#unniPaidPrintHost){display:none!important}
+        #unniPaidPrintHost{display:block!important;position:static!important;width:auto!important;max-width:none!important;margin:0!important;padding:0!important;background:#fff!important;color:#0f172a!important}
+        #unniPaidPrintHost .unni-print-shell{max-width:760px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif}
+        #unniPaidPrintHost section,#unniPaidPrintHost article{break-inside:avoid;page-break-inside:avoid}
+        #unniPaidPrintHost button{display:none!important}
+      }
+    `;
+    const host = document.createElement("div");
+    host.id = "unniPaidPrintHost";
+    host.innerHTML = `<div class="unni-print-shell"><div style="font-size:11px;font-weight:900;color:#f43f5e;margin-bottom:6px">어떤언니</div><h1 style="font-size:22px;line-height:1.3;margin:0 0 18px">${esc(product?.name || "어떤언니 리포트")}</h1>${body.innerHTML}</div>`;
+    document.head.appendChild(style);
+    document.body.appendChild(host);
+
+    let cleaned = false;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      cleanupPaidPrintView();
+    };
+    window.addEventListener("afterprint", cleanup, { once:true });
+    try {
+      window.print();
+      setTimeout(cleanup, 30000);
+    } catch (error) {
+      cleanup();
+      console.error("PDF 인쇄 화면 열기 실패:", error);
+      if (typeof showToast === "function") showToast("PDF 저장 화면을 열지 못했어. 브라우저에서 다시 시도해줘.");
     }
-    popup.document.open();
-    popup.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(product?.name || "어떤언니 리포트")}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;max-width:760px;margin:0 auto;padding:28px;color:#0f172a}section,article{break-inside:avoid}button{display:none}@media print{body{padding:0 18px}}</style></head><body><h1 style="font-size:22px">${esc(product?.name || "어떤언니 리포트")}</h1>${body.innerHTML}<script>setTimeout(()=>window.print(),250)<\/script></body></html>`);
-    popup.document.close();
   }
 
   async function saveFullPaidReport(root, productId) {
@@ -1143,10 +1179,19 @@
     return "concern_bundle3";
   }
 
-  function productButtonHtml(p, { recommended = false, hidden = false } = {}) {
+  const PRODUCT_SHORT = {
+    concern_bundle3: "지금 본 고민 말고 다른 고민 3개까지 NOTE 1~6으로 깊게",
+    full_saju: "일·돈·연애·관계·회복까지 내 사주 전체 사용설명서",
+    compatibility: "둘의 끌림·대화·싸움·연락·돈·장기 관계까지",
+    all_in_one: "전체사주 + 6가지 고민 NOTE 36개를 한 번에",
+  };
+
+  function productButtonHtml(p, { recommended = false, secondary = false } = {}) {
     const border = recommended ? "#fda4af" : "#e2e8f0";
     const bg = recommended ? "linear-gradient(135deg,#fff1f2,#fff)" : "#fff";
-    return `<button data-unni-product="${p.id}" ${hidden ? 'data-secondary-product="1"' : ""} style="${hidden ? "display:none;" : ""}text-align:left;width:100%;padding:14px;border:1px solid ${border};border-radius:16px;background:${bg};cursor:pointer"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:10px;font-weight:900;color:#f43f5e;margin-bottom:3px">${recommended ? "지금 너한테 먼저 추천 · " : ""}${p.badge}</div><div style="font-size:14px;font-weight:900;color:#0f172a">${p.name}</div></div><div style="font-size:13px;font-weight:950;color:#0f172a;white-space:nowrap">${won(p.price)}</div></div><div style="font-size:11px;line-height:1.55;color:#64748b;margin-top:7px">${p.desc}</div></button>`;
+    const pad = recommended ? "14px" : "12px 13px";
+    const description = recommended ? p.desc : PRODUCT_SHORT[p.id] || p.desc;
+    return `<button data-unni-product="${p.id}" ${secondary ? 'data-secondary-product="1"' : ""} style="text-align:left;width:100%;padding:${pad};border:1px solid ${border};border-radius:16px;background:${bg};cursor:pointer"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div style="min-width:0"><div style="font-size:10px;font-weight:900;color:${recommended ? "#f43f5e" : "#94a3b8"};margin-bottom:3px">${recommended ? "지금 너한테 먼저 추천 · " : ""}${p.badge}</div><div style="font-size:${recommended ? "14px" : "13px"};font-weight:900;color:#0f172a">${p.name}</div></div><div style="font-size:13px;font-weight:950;color:#0f172a;white-space:nowrap">${won(p.price)}</div></div><div style="font-size:${recommended ? "11px" : "10.5px"};line-height:1.55;color:#64748b;margin-top:${recommended ? "7px" : "5px"}">${description}</div></button>`;
   }
 
   function renderCatalog() {
@@ -1167,15 +1212,9 @@
     const sub = isT
       ? "지금 본 걸로 충분하면 여기서 끝. 아래 추천도 필요한 경우에만 봐."
       : "지금 본 것만으로도 괜찮아. 더 궁금할 때만 언니 추천부터 가볍게 봐.";
-    wrap.innerHTML = `<div style="font-size:11px;font-weight:900;color:#f43f5e">${eyebrow}</div><h3 style="font-size:18px;font-weight:950;margin:5px 0 5px">${headline}</h3><p style="font-size:11.5px;line-height:1.6;color:#64748b;margin:0 0 12px">${sub}</p><div style="display:grid;gap:9px">${productButtonHtml(recommended,{recommended:true})}${others.map((p)=>productButtonHtml(p,{hidden:true})).join("")}</div><button id="unniShowOtherProducts" type="button" style="width:100%;margin-top:9px;border:0;background:transparent;color:#64748b;font-size:11px;font-weight:900;cursor:pointer;padding:8px">다른 리포트 3개 보기 ↓</button>`;
+    wrap.innerHTML = `<div style="font-size:11px;font-weight:900;color:#f43f5e">${eyebrow}</div><h3 style="font-size:18px;font-weight:950;margin:5px 0 5px">${headline}</h3><p style="font-size:11.5px;line-height:1.6;color:#64748b;margin:0 0 12px">${sub}</p><div style="display:grid;gap:9px">${productButtonHtml(recommended,{recommended:true})}<div style="font-size:10px;font-weight:900;color:#94a3b8;margin:5px 2px -1px">다른 리포트도 있어 · 필요한 것만 골라봐</div>${others.map((p)=>productButtonHtml(p,{secondary:true})).join("")}</div>`;
     notes.insertAdjacentElement("afterend", wrap);
     wrap.querySelectorAll("[data-unni-product]").forEach((btn) => btn.addEventListener("click", () => openProduct(btn.dataset.unniProduct)));
-    wrap.querySelector("#unniShowOtherProducts")?.addEventListener("click", (event) => {
-      const hidden = [...wrap.querySelectorAll('[data-secondary-product="1"]')];
-      const opening = hidden.some((el) => el.style.display === "none");
-      hidden.forEach((el) => { el.style.display = opening ? "block" : "none"; });
-      event.currentTarget.textContent = opening ? "다른 리포트 접기 ↑" : "다른 리포트 3개 보기 ↓";
-    });
   }
 
 
@@ -1200,7 +1239,7 @@
 
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
-  global.__UNNI_PRODUCTS_V1__ = { version: "1.3.0", products: PRODUCTS };
+  global.__UNNI_PRODUCTS_V1__ = { version: "1.4.0", products: PRODUCTS };
 
   const observer = new MutationObserver(() => renderCatalog());
   if (document.documentElement) observer.observe(document.documentElement, { childList: true, subtree: true });
