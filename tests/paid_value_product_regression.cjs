@@ -420,11 +420,14 @@ function norm(v) {
   await page.waitForSelector('#storySaveBtn:not([disabled])', { timeout:15000 });
   assert(await page.locator('#storyShareBtn').count() === 0, 'Kakao must not show duplicate Instagram image action');
   await page.locator('#storySaveBtn').click();
+  await page.waitForSelector('#unniKakaoCardQualityGuide', { state:'visible', timeout:15000 });
+  const qualityGuideText = await page.locator('#unniKakaoCardQualityGuide').innerText();
+  assert(qualityGuideText.includes('카카오톡 안에서는 카드가 뭉개질 수 있어') && qualityGuideText.includes('다른 브라우저로 열기'), 'Kakao high-quality save guide missing');
+  assert(await page.evaluate(() => window.__UNNI_IMAGE_EXPORT_V2__.isKakaoInApp('KAKAOTALK/25.7.1')), 'Kakao UA detection failed');
+  await page.locator('#unniKakaoCardFallback').click();
   await page.waitForSelector('#unniImageFallback', { state:'visible', timeout:15000 });
   const fallbackText = await page.locator('#unniImageFallback').innerText();
-  assert(fallbackText.includes('사진 길게 눌러 저장하면 돼'), 'compact Kakao image-save fallback missing');
-  assert(!fallbackText.includes('카카오톡 안에서는 파일 다운로드가 막히는 경우'), 'old long Kakao helper copy leaked');
-  assert(await page.evaluate(() => window.__UNNI_IMAGE_EXPORT_V2__.isKakaoInApp('KAKAOTALK/25.7.1')), 'Kakao UA detection failed');
+  assert(fallbackText.includes('사진 길게 눌러 저장하면 돼'), 'Kakao current-quality fallback missing');
   await page.locator('#unniImageFallbackClose').click();
   await page.evaluate((ua) => {
     Object.defineProperty(navigator, 'userAgent', { configurable:true, get:() => ua });
