@@ -561,9 +561,7 @@
         badge: compactBadge(data, "놓친 점"),
         title: base?.title,
         desc: `${base?.desc || ""}${situationAdd}`,
-        checklist: isT
-          ? `${base?.checklist || "가정 말고 확인부터 해."} 딱 이것부터 보자.`
-          : `${base?.checklist || "나부터 탓하지 말기"} 언니랑 이것부터 해보자.`,
+        checklist: base?.checklist,
       };
     }
 
