@@ -29,12 +29,12 @@
   };
 
   const MOMENTUM_LABEL = {
-    attack: { F: "움직임을 조금 크게 가져가도 되는 흐름", T: "실행 비중을 높일 구간" },
-    push: { F: "한 걸음 더 밀어도 되는 흐름", T: "실행 우선 구간" },
-    selective: { F: "좋은 것만 골라 움직이는 흐름", T: "선별 실행 구간" },
-    prepare: { F: "크게 벌이기보다 준비를 다듬는 흐름", T: "준비·검증 구간" },
-    defend: { F: "무리하지 않고 내 걸 지키는 흐름", T: "방어 우선 구간" },
-    rest: { F: "속도를 늦추고 회복을 챙기는 흐름", T: "회복 우선 구간" },
+    attack: { F: "조금 크게 움직여봐도 괜찮은 흐름", T: "실행을 올릴 흐름" },
+    push: { F: "한 걸음 더 가봐도 되는 흐름", T: "바로 움직일 흐름" },
+    selective: { F: "좋은 것만 골라봐도 되는 흐름", T: "골라서 움직일 흐름" },
+    prepare: { F: "서두르지 말고 준비해두는 흐름", T: "먼저 확인할 흐름" },
+    defend: { F: "무리하지 말고 내 걸 지키는 흐름", T: "지킬 걸 정할 흐름" },
+    rest: { F: "잠깐 속도를 늦춰도 되는 흐름", T: "회복부터 잡을 흐름" },
   };
 
   function stripHtml(value) {
@@ -454,18 +454,54 @@
     },
   };
 
+  const SITUATION_SHORT_LABELS = {
+    money: { saving:"저축", income:"수입", side:"부업", flow:"돈 흐름" },
+    career: { exam:"시험", jobsearch:"취업", move:"이직·퇴사", current:"현 직장" },
+    love: { crush:"썸·짝사랑", relationship:"연애 중", breakup:"이별·재회", new:"새 인연" },
+    path: { lost:"진로 고민", current:"현재 진로", switch:"전향", strength:"적성·강점" },
+    people: { friend:"친구·지인", work:"직장 관계", family:"가족", distance:"거리두기" },
+    mental: { burnout:"번아웃", overthink:"생각 과다", low:"무기력", recover:"회복" },
+  };
+
   function getSituationProfile(data) {
     const concernKey = data?.concernKey || "money";
     const situationKey = data?.concernSituation || "";
     return SITUATION_PROFILES[concernKey]?.[situationKey] || null;
   }
 
+  function shortSituationLabel(data) {
+    const concernKey = data?.concernKey || "money";
+    const situationKey = data?.concernSituation || "";
+    return (
+      SITUATION_SHORT_LABELS[concernKey]?.[situationKey] ||
+      getSituationProfile(data)?.label ||
+      CONCERN_LABELS[concernKey] ||
+      "지금 고민"
+    );
+  }
+
+  function userCallName(data) {
+    const raw = String(data?.name || data?.userName || "").trim();
+    if (!raw) return "너";
+    const name = raw.length >= 2 ? raw.slice(1) : raw;
+    const last = name.charCodeAt(name.length - 1);
+    const batchim =
+      last >= 0xac00 && last <= 0xd7a3
+        ? (last - 0xac00) % 28 > 0
+        : false;
+    return `${name}${batchim ? "아" : "야"}`;
+  }
+
+  function compactBadge(data, stage) {
+    return `${shortSituationLabel(data)} · ${stage}`;
+  }
+
   function situationPersonalLine(data, isT) {
     const profile = data?.integratedSajuProfile || null;
     if (!profile) {
       return isT
-        ? "상황을 넓게 해석하지 말고 지금 네가 실제로 바꿀 수 있는 행동부터 확인해."
-        : "언니는 네 상황을 괜히 크게 단정하지 않을게. 지금 네가 바꿀 수 있는 것부터 같이 보자.";
+        ? "지금 네 상황만 놓고 볼게. 바꿀 수 있는 것부터 바로 잡자."
+        : "언니는 네 얘기만 놓고 볼게. 괜히 크게 단정하지 말고, 지금 바꿀 수 있는 것부터 같이 보자.";
     }
     const human =
       profile.balance?.climateHuman ||
@@ -475,8 +511,8 @@
       profile.elements?.primaryBehavior?.verb ||
       "한 번에 하나씩 움직이는 것";
     return isT
-      ? `${human}. 그래서 여기서는 ${verb}부터 쓰는 게 효율적이야.`
-      : `그리고 너는 <b>${human}</b>일 때 덜 지쳐. 언니는 여기서도 <b>${verb}</b>부터 챙겨주고 싶어.`;
+      ? `너는 <b>${human}</b> 쪽이 맞아. 여기선 <b>${verb}</b>부터 쓰자. 내가 그 순서로 잡아줄게.`
+      : `그리고 너는 <b>${human}</b>일 때 덜 지쳐. 언니는 여기서도 <b>${verb}</b>부터 같이 챙겨주고 싶어.`;
   }
 
   function applySituationNotes(notes, data, mode) {
@@ -484,78 +520,79 @@
     if (!p || !Array.isArray(notes) || notes.length < 5) return notes;
     const isT = mode === "T";
     const out = notes.map((note) => ({ ...note }));
-    const concernLabel = CONCERN_LABELS[data?.concernKey] || "지금 고민";
-    const badgeBase = `${concernLabel} · ${p.label}`;
+    const call = userCallName(data);
     const personal = situationPersonalLine(data, isT);
 
     out[0] = {
       ...out[0],
-      badge: `${badgeBase} · 지금 먼저 볼 것`,
+      badge: compactBadge(data, "핵심"),
       title: isT
-        ? `${p.label}: 지금 핵심부터 정리할게`
-        : `${p.label}라면, 언니는 여기부터 같이 볼게`,
+        ? `${call}, 핵심은 이거야`
+        : `${call}, 언니가 여기부터 볼게`,
       desc: isT
-        ? `${p.focus}.<br><br>${personal}`
-        : `${p.focus}.<br><br>${personal} 지금 네 상황을 다른 경우랑 섞어서 말하지 않을게.`,
+        ? `${p.focus}.<br><br>${personal}<br><br>다른 경우 섞지 않고 지금 네 상황만 볼게.`
+        : `${p.focus}.<br><br>${personal}<br><br>지금은 다른 사람 얘기 말고 딱 네 상황만 보자.`,
       checklist: isT
-        ? "지금 가장 바꾸고 싶은 한 가지를 한 문장으로 적기"
-        : "언니랑 먼저 정해보자: 지금 제일 바뀌었으면 하는 것 하나만 적기",
+        ? "지금 제일 바꾸고 싶은 것 하나만 적어. 그거부터 보자."
+        : "우리 하나만 먼저 정하자. 지금 제일 바뀌었으면 하는 걸 한 줄로 적어봐.",
     };
 
     out[1] = {
       ...out[1],
-      badge: `${badgeBase} · 반복 패턴`,
+      badge: compactBadge(data, "패턴"),
       title: isT
-        ? "이 상황에서 반복되는 순서부터 끊어"
-        : "이 상황에서 네 마음이 지치는 순서가 있어",
+        ? "막히는 순서, 딱 여기야"
+        : "네 마음이 지치는 순서, 여기 있어",
       desc: isT
-        ? `<b>시작</b> — ${p.trigger}.<br><br><b>반응</b> — ${p.reaction}.<br><br><b>결과</b> — ${p.cost}.<br><br>문제는 성격이 아니라 이 순서야.`
-        : `보통 시작은 <b>${p.trigger}</b>일 때야. 그러면 ${p.reaction}. 그러고 나면 결국 ${p.cost}.<br><br>그러니까 또 이랬다고 너부터 뭐라 하지 말자. 언니가 끊을 지점만 같이 잡아줄게.`,
-      checklist: `다음에 같은 장면이 오면 ‘지금 또 시작됐나?’ 한 번 알아차리기`,
+        ? `<b>시작</b> — ${p.trigger}.<br><br><b>반응</b> — ${p.reaction}.<br><br><b>결과</b> — ${p.cost}.<br><br>네 성격 문제가 아니야. 이 순서만 끊으면 돼. 내가 끊을 지점까지 딱 잡아줄게.`
+        : `보통 <b>${p.trigger}</b> 때 시작돼. 그러면 ${p.reaction}. 결국 ${p.cost}.<br><br>또 이랬다고 네 탓부터 하지 마. 언니랑 여기만 끊어보자.`,
+      checklist: isT
+        ? "다음에 같은 장면 오면 ‘지금 시작됐네’ 하고 바로 멈춰."
+        : "다음에 같은 장면 오면 ‘아, 또 여기구나’ 하고 한 번만 알아차려보자.",
     };
 
     {
       const base = out[2];
       const situationAdd = isT
-        ? `<br><br><b>지금 네 상황에서 특히 헷갈리기 쉬운 것</b><br><b>가정:</b> ${p.assumed}.<br><b>먼저 확인할 것:</b> ${p.actual}.<br><br>${personal}`
-        : `<br><br><b>그리고 지금 네 상황에선 이것도 같이 보자</b><br>너는 <b>${p.assumed}</b>고 생각했을 수 있어. 그런데 언니는 <b>${p.actual}</b> 쪽을 먼저 볼래.<br><br>${personal} 괜히 너 자체를 문제로 만들 필요는 없어.`;
+        ? `<br><br><b>지금 네 상황에선 이것도 봐</b><br>네가 ${p.assumed}고 보기 쉬운데, 내가 먼저 볼 건 <b>${p.actual}</b> 쪽이야.<br><br>${personal}`
+        : `<br><br><b>그리고 지금 네 상황에선 이것도 같이 보자</b><br>너는 ${p.assumed}고 생각했을 수 있어. 근데 언니는 <b>${p.actual}</b> 쪽을 먼저 볼래.<br><br>${personal} 그러니까 너 자체부터 문제 삼지는 말자.`;
       out[2] = {
         ...base,
-        badge: base?.badge
-          ? `${base.badge} · ${p.label}`
-          : `${badgeBase} · 놓친 포인트`,
-        // NOTE3는 통합 사주 프로필 builder의 핵심 판단을 그대로 보존하고
-        // 선택한 현재 상황만 뒤에 덧붙인다.
+        badge: compactBadge(data, "놓친 점"),
         title: base?.title,
         desc: `${base?.desc || ""}${situationAdd}`,
-        checklist: base?.checklist,
+        checklist: isT
+          ? `${base?.checklist || "가정 말고 확인부터 해."} 딱 이것부터 보자.`
+          : `${base?.checklist || "나부터 탓하지 말기"} 언니랑 이것부터 해보자.`,
       };
     }
 
     out[3] = {
       ...out[3],
-      badge: `${badgeBase} · 7일 처방`,
+      badge: compactBadge(data, "7일"),
       title: isT
-        ? "7일 동안 이 세 가지만 실행해"
-        : "복잡하게 말고, 언니랑 7일만 이렇게 해보자",
+        ? "7일은 이 세 개만 해"
+        : "우리 7일만 이렇게 해보자",
       desc: isT
-        ? `<b>1.</b> ${p.steps[0]}.<br><br><b>2.</b> ${p.steps[1]}.<br><br><b>3.</b> ${p.steps[2]}.<br><br>세 개 다 완벽히 하지 말고 실제 반응이 오는 것부터 남겨.`
-        : `첫째, <b>${p.steps[0]}</b>.<br><br>둘째, <b>${p.steps[1]}</b>.<br><br>셋째, <b>${p.steps[2]}</b>.<br><br>다 잘하려고 하지 마. 하나라도 예전이랑 다르게 해봤으면 그걸로 시작은 충분해.`,
+        ? `내가 세 개만 줄게.<br><br><b>1.</b> ${p.steps[0]}.<br><br><b>2.</b> ${p.steps[1]}.<br><br><b>3.</b> ${p.steps[2]}.<br><br>다 하려고 하지 마. 먹히는 것만 남기면 돼.`
+        : `언니가 딱 세 개만 줄게.<br><br><b>하나.</b> ${p.steps[0]}.<br><br><b>둘.</b> ${p.steps[1]}.<br><br><b>셋.</b> ${p.steps[2]}.<br><br>다 잘하려고 하지 마. 하나만 달라져도 충분해.`,
       checklist: isT
-        ? "7일 뒤 실제로 한 횟수만 숫자로 체크하기"
-        : "7일 뒤 ‘이건 조금 덜 힘들었다’ 싶은 행동 하나만 남기기",
+        ? "7일 뒤 몇 번 했는지만 봐. 잘했나 못했나는 빼."
+        : "7일 뒤 ‘이건 좀 덜 힘들었다’ 싶은 것 하나만 우리 남겨보자.",
     };
 
     out[4] = {
       ...out[4],
-      badge: `${badgeBase} · 사람 필터 · 환경`,
+      badge: compactBadge(data, "사람"),
       title: isT
-        ? "이 상황에선 사람과 환경도 골라야 해"
-        : "네가 덜 지치려면, 이런 사람과 환경이 더 잘 맞아",
+        ? "가까이 둘 사람, 기준은 이거야"
+        : "네 편이 될 사람, 이렇게 보면 돼",
       desc: isT
-        ? `<b>도움 되는 쪽</b><br>${p.keep}.<br><br><b>거리 둘 쪽</b><br>${p.cut}.<br><br><b>잘 맞는 환경</b><br>${p.place}.`
-        : `<b>곁에 두면 좋은 쪽</b><br>${p.keep}.<br><br><b>조금 거리를 둬도 되는 쪽</b><br>${p.cut}.<br><br><b>네가 숨 쉬기 편한 환경</b><br>${p.place}.<br><br>네가 더 잘해야만 유지되는 관계나 환경을 정답처럼 붙잡지는 말자.`,
-      checklist: "이번 주 한 사람·환경을 떠올리고 ‘편해짐 / 소모됨’ 둘 중 하나로만 체크하기",
+        ? `내가 기준만 딱 줄게.<br><br><b>가까이 둘 쪽</b><br>${p.keep}.<br><br><b>거리 둘 쪽</b><br>${p.cut}.<br><br><b>맞는 환경</b><br>${p.place}.`
+        : `언니가 사람 기준도 같이 봐줄게.<br><br><b>곁에 두면 좋은 쪽</b><br>${p.keep}.<br><br><b>조금 멀리해도 되는 쪽</b><br>${p.cut}.<br><br><b>네가 편한 환경</b><br>${p.place}.<br><br>네가 더 애써야만 유지되는 관계를 정답처럼 붙잡지는 말자.`,
+      checklist: isT
+        ? "한 사람만 떠올려. 만나고 나서 편해졌는지 소모됐는지만 봐."
+        : "한 사람만 떠올려보자. 만나고 난 뒤 네가 편했는지 지쳤는지만 보면 돼.",
     };
     return out;
   }
@@ -567,12 +604,12 @@
     if (!action) return "";
     if (isT) {
       return which === "first"
-        ? `${action}. 실행하고 반응을 기록해.`
-        : `${action}. 첫 결과 기준으로 확정해.`;
+        ? `${action}. 여기선 반응만 봐. 결론은 아직 내리지 마.`
+        : `${action}. 처음 괜찮았던 것만 남겨. 그걸로 충분해.`;
     }
     return which === "first"
-      ? `${action}. 결과를 미리 정해놓지 말고 실제 반응부터 같이 보자.`
-      : `${action}. 첫 흐름에서 확인된 것만 남겨도 충분해.`;
+      ? `${action}. 너무 결론부터 내리지 말고, 언니랑 반응부터 같이 보자.`
+      : `${action}. 처음 해봤을 때 괜찮았던 것만 이어가면 돼.`;
   }
 
   function sharedTimingOverlap(data, concernKey, timing, isT) {
@@ -593,8 +630,8 @@
 
     const pairedLabel = CONCERN_LABELS[pairedConcern] || pairedConcern;
     const text = isT
-      ? `참고: ${pairedLabel}과 같은 시기가 잡힌 건 오류가 아니다. 네 사주에서는 두 고민이 같은 흐름에 반응하는 구간이 있어서 날짜가 겹칠 수 있어. 날짜는 같아도 실행 행동은 고민별로 다르게 써.`
-      : `참고로 ${pairedLabel}을 봤을 때도 같은 시기가 나올 수 있어. 복붙한 게 아니라 네 사주에서는 두 고민이 같이 반응하는 구간이 겹치는 거야. 날짜가 같아도 여기서는 ${CONCERN_LABELS[concernKey] || "지금 고민"}에 맞는 행동으로 따로 써주면 돼.`;
+      ? `${pairedLabel}이랑 날짜가 겹쳐도 오류 아니야. 네 사주에선 둘이 같은 때 반응해. 날짜는 같아도 여기서 할 행동은 따로 보면 돼.`
+      : `혹시 ${pairedLabel}에서도 같은 날짜 봤지? 복붙 아니야. 네 흐름에서 둘이 같이 움직이는 때가 겹친 거야. 언니가 지금 고민에 맞는 행동만 따로 잡아줄게.`;
     return { pairedConcern, same, text };
   }
 
@@ -638,11 +675,11 @@
     const m1 = momentumText(timing?.momentum1, isT);
     const m2 = momentumText(timing?.momentum2, isT);
     if (isT) {
-      if (m1 === m2) return `둘 다 같은 속도로 쓰면 안 돼. 첫 구간은 반응 확인, 두 번째 구간은 확인된 것만 확정하는 순서로 써.`;
-      return `첫 구간은 <b>${m1}</b>, 두 번째 구간은 <b>${m2}</b>이야. 같은 행동을 복붙하지 말고 단계가 바뀌면 행동도 바꿔.`;
+      if (m1 === m2) return "분위기는 비슷해도 순서는 달라. 처음엔 확인, 다음엔 괜찮았던 것만 남겨.";
+      return `처음은 <b>${m1}</b>, 다음은 <b>${m2}</b>. 같은 행동 반복하지 말고 반응 보고 바꿔.`;
     }
-    if (m1 === m2) return `두 시기 모두 흐름은 비슷해 보여도 역할은 달라. 첫 번째는 마음과 현실의 반응을 확인하고, 두 번째는 그중 진짜 남길 걸 고르는 시간이야.`;
-    return `첫 번째는 <b>${m1}</b>, 두 번째는 <b>${m2}</b>이야. 그래서 첫 시기에 해본 걸 두 번째 시기엔 그대로 반복하기보다, 결과를 보고 다음 단계로 넘어가면 돼.`;
+    if (m1 === m2) return "둘 다 비슷해 보여도 역할은 달라. 처음엔 가볍게 확인하고, 다음엔 괜찮았던 걸 조금 더 잡으면 돼.";
+    return `처음은 <b>${m1}</b>, 다음은 <b>${m2}</b>이야. 처음 해본 걸 그대로 반복하지 말고, 네 마음이랑 현실 반응 보고 다음 걸 고르자.`;
   }
 
   function rebuildNoteSix(note, data, mode) {
@@ -659,32 +696,38 @@
 
     const firstDate = timing.r1 || "첫 번째 흐름";
     const secondDate = timing.r2 || "두 번째 흐름";
+    const call = userCallName(data);
     const situation = getSituationProfile(data);
-    const situationLabel = situation?.label || "";
-    const intro = isT
-      ? "날짜만 두 개 던지는 건 의미 없어. 두 구간의 역할을 나눠서 쓸게."
-      : "우리 날짜만 보고 ‘이때 뭐가 생기나?’ 기다리진 말자. 같은 좋은 흐름도 어떻게 쓰느냐가 더 중요하니까, 언니가 첫 번째랑 두 번째 역할을 따로 나눠줄게.";
-
     const overlap = sharedTimingOverlap(data, concernKey, timing, isT);
     const profile = data?.integratedSajuProfile || null;
+
+    const intro = isT
+      ? "날짜만 던지면 쓸모없어. 내가 처음엔 뭘 보고, 다음엔 뭘 잡을지 딱 나눠줄게."
+      : "날짜만 툭 던지고 끝내진 않을게. 언니가 처음엔 뭘 보고, 다음엔 뭘 잡을지 같이 나눠줄게.";
+
     const personalMove = profile
       ? (isT
-        ? `${profile.balance?.climateHuman || "현실 반응을 보면서 속도를 조절하는 쪽"}. 특히 ${profile.elements?.primaryBehavior?.verb || "한 번에 하나씩 움직이는 것"}부터 써.`
-        : `그리고 너는 <b>${profile.balance?.climateHuman || "현실 반응을 보면서 속도를 조절하는 쪽"}</b>으로 움직일 때 덜 지쳐. 언니는 특히 <b>${profile.elements?.primaryBehavior?.verb || "한 번에 하나씩 움직이는 것"}</b>부터 챙겨주고 싶어.`)
+        ? `너는 <b>${profile.balance?.climateHuman || "현실 반응을 보면서 속도를 조절하는 쪽"}</b>이 맞아. 그래서 <b>${profile.elements?.primaryBehavior?.verb || "한 번에 하나씩 움직이는 것"}</b>부터 가자. 내가 순서까지 잡아줄게.`
+        : `너는 <b>${profile.balance?.climateHuman || "현실 반응을 보면서 속도를 조절하는 쪽"}</b>으로 갈 때 덜 지쳐. 언니는 <b>${profile.elements?.primaryBehavior?.verb || "한 번에 하나씩 움직이는 것"}</b>부터 같이 해봤으면 좋겠어.`)
       : (isT
-        ? "좋은 시기에도 한 번에 크게 뒤집지 말고 현실 반응을 확인하면서 다음 행동을 정해."
-        : "좋은 때라고 갑자기 다 바꾸지 않아도 돼. 한 번 움직여보고 마음이랑 현실 반응을 확인한 다음, 그다음 걸 정하면 충분해.");
-    const overlapHtml = overlap ? `<br><br><div style="padding:10px 12px;border-radius:12px;background:#fff7ed;color:#9a3412;font-size:12px;line-height:1.7"><b>같은 시기가 또 나왔다면?</b><br>${overlap.text}</div>` : "";
-    const desc = `${intro}${overlapHtml}<br><br><b>첫 번째 흐름 · ${firstDate}</b><br>${firstBody}<br><br><b>두 번째 흐름 · ${secondDate}</b><br>${secondBody}<br><br><b>두 시기의 차이</b><br>${comparisonLine(timing, concernKey, isT)}<br><br><b>너한테 맞는 움직임</b><br>${personalMove}`;
+        ? "한 번에 뒤집지 마. 하나 움직이고 반응 본 다음 다음 걸 정하자."
+        : "좋은 때라고 한 번에 다 바꿀 필요 없어. 하나 해보고 네 마음이랑 현실 반응 본 다음, 그다음 걸 같이 고르면 돼.");
+
+    const overlapHtml = overlap
+      ? `<br><br><div style="padding:10px 12px;border-radius:12px;background:#fff7ed;color:#9a3412;font-size:12px;line-height:1.7"><b>날짜가 또 같다면?</b><br>${overlap.text}</div>`
+      : "";
+
+    const desc = `${intro}${overlapHtml}<br><br><b>먼저 · ${firstDate}</b><br>${firstBody}<br><br><b>그다음 · ${secondDate}</b><br>${secondBody}<br><br><b>둘은 이렇게 달라</b><br>${comparisonLine(timing, concernKey, isT)}<br><br><b>너는 이렇게 가</b><br>${personalMove}`;
     const checklist = isT
-      ? `${firstDate}에 할 ‘테스트 행동’ 1개와 ${secondDate}에 할 ‘확정 행동’ 1개를 각각 캘린더에 넣기`
-      : `언니랑 약속 하나만 하자. ${firstDate}엔 가볍게 확인할 행동 하나, ${secondDate}엔 이어서 굳힐 행동 하나를 따로 적어두기`;
+      ? `캘린더에 딱 두 개만 넣어. ${firstDate}에 확인할 것 하나, ${secondDate}에 이어갈 것 하나.`
+      : `언니랑 약속 하나만 하자. ${firstDate}엔 가볍게 해볼 것 하나, ${secondDate}엔 이어갈 것 하나만 적어두자.`;
 
     return {
       ...note,
-      badge: situationLabel
-        ? `${CONCERN_LABELS[concernKey] || "지금 고민"} · ${situationLabel} · 움직일 시기`
-        : note.badge,
+      badge: compactBadge(data, "시기"),
+      title: isT
+        ? `${call}, 움직일 때는 여기야`
+        : `${call}, 움직일 때도 언니랑 같이 보자`,
       desc,
       checklist,
       __timingQA: {
@@ -725,9 +768,12 @@
     const n6 = notes?.[5]?.__timingQA;
     const timingDuplicate = !!n6 && normalizeSentence(n6.firstBody) === normalizeSentence(n6.secondBody);
     const tone = (notes || []).map((n) => stripHtml(`${n?.title || ""} ${n?.desc || ""}`)).join(" ");
-    const fSignals = ["언니", "같이", "괜찮", "마음", "챙겨", "해보자", "돼"].filter((x) => tone.includes(x)).length;
-    const tSignals = ["확인", "기준", "실행", "정리", "숫자", "끊", "확정"].filter((x) => tone.includes(x)).length;
-    return { duplicates, hardTerms, timingDuplicate, toneScore: mode === "T" ? tSignals : fSignals };
+    const fSignals = ["언니", "같이", "우리", "괜찮", "마음", "해보자", "돼"].filter((x) => tone.includes(x)).length;
+    const tSignals = ["내가", "딱", "바로", "확인", "기준", "끊", "보자"].filter((x) => tone.includes(x)).length;
+    const badgeTooLong = (notes || [])
+      .map((n, i) => ({ i:i + 1, badge:String(n?.badge || "") }))
+      .filter((x) => x.badge.length > 16);
+    return { duplicates, hardTerms, timingDuplicate, toneScore: mode === "T" ? tSignals : fSignals, badgeTooLong };
   }
 
   function polishPaidValueNotes(notes, data, mode) {
@@ -743,7 +789,7 @@
   global.polishPaidValueNotes = polishPaidValueNotes;
   global.auditPaidValueNotes = auditNotes;
   global.__PAID_VALUE_LAYER_V1__ = {
-    version: "1.1.0",
+    version: "1.2.0",
     situationProfiles: SITUATION_PROFILES,
   };
 
