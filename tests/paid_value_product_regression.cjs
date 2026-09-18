@@ -181,13 +181,13 @@ function norm(v) {
       .filter((row) => row.concern === 'love' && row.mode === 'F')
       .map((row) => [row.situation, row])
   );
-  assert(loveSituation.relationship?.allText.includes('지금 연애 중이야'), 'relationship situation label missing');
+  assert(loveSituation.relationship?.notes?.[0]?.badge?.startsWith('연애 중 ·'), 'relationship compact situation label missing');
   assert(!/(새 인연|새로운 사람을 만날|새 사람을 만날 접점|소개·모임)/.test(loveSituation.relationship?.allText || ''), 'relationship mode leaked new-person advice');
-  assert(loveSituation.new?.allText.includes('새로운 인연을 만나고 싶어'), 'new-person situation label missing');
+  assert(loveSituation.new?.notes?.[0]?.badge?.startsWith('새 인연 ·'), 'new-person compact situation label missing');
   assert(/소개|모임|취미|앱/.test(loveSituation.new?.allText || ''), 'new-person mode needs actual meeting opportunities');
   assert(!/(우리 관계|지금 둘 사이|미뤄둔 대화나 약속)/.test(loveSituation.new?.allText || ''), 'new-person mode assumed an existing relationship');
-  assert(loveSituation.breakup?.allText.includes('헤어진 사람이 있어') && /재회|헤어진/.test(loveSituation.breakup?.allText || ''), 'breakup mode lacks breakup/reunion context');
-  assert(loveSituation.crush?.allText.includes('썸·짝사랑 중이야'), 'crush situation label missing');
+  assert(loveSituation.breakup?.notes?.[0]?.badge?.startsWith('이별·재회 ·') && /재회|헤어진/.test(loveSituation.breakup?.allText || ''), 'breakup mode lacks breakup/reunion context');
+  assert(loveSituation.crush?.notes?.[0]?.badge?.startsWith('썸·짝사랑 ·'), 'crush compact situation label missing');
   assert(norm(loveSituation.relationship?.n6?.__timingQA?.firstBody) !== norm(loveSituation.new?.n6?.__timingQA?.firstBody), 'same love timing must produce situation-specific action');
 
   for (const r of qa.rows) {
