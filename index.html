@@ -14,7 +14,7 @@
     <!-- 구글/네이버 검색엔진 최적화(SEO) 표준 메타 태그 -->
     <meta
       name="description"
-      content="사주과 MBTI로 까보는 내 진짜 성향! 무조건 내 편 들어주는 로아 언니(F)와 뼈 때리는 서아 언니(T) 중 당신의 선택은?"
+      content="내 사주를 1:1로 풀어보고, 성향은 MBTI 감성으로 가볍게 번역해보는 어떤언니. 로아 언니(F)와 서아 언니(T) 중 원하는 말투로 확인해봐."
     />
     <meta
       name="keywords"
@@ -1052,7 +1052,7 @@
                         돈 · 재물
                       </div>
                       <div
-                        class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
+                        class="hidden sm:block text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
                       >
                         저축·수입·부업·돈 흐름
                       </div>
@@ -1071,7 +1071,7 @@
       학업 · 직장
     </div>
     <div
-      class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
+      class="hidden sm:block text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
     >
       시험·취업·이직·직장
     </div>
@@ -1090,7 +1090,7 @@
                         연애 · 썸
                       </div>
                       <div
-                        class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
+                        class="hidden sm:block text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
                       >
                         썸·연애·이별·새 인연
                       </div>
@@ -1109,7 +1109,7 @@
                         진로 · 적성
                       </div>
                       <div
-                        class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
+                        class="hidden sm:block text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
                       >
                         적성·전향·지금 가는 길
                       </div>
@@ -1128,7 +1128,7 @@
                         사람 · 관계
                       </div>
                       <div
-                        class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
+                        class="hidden sm:block text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
                       >
                         친구·직장·가족·거리두기
                       </div>
@@ -1147,7 +1147,7 @@
                         마음 · 스트레스
                       </div>
                       <div
-                        class="text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
+                        class="hidden sm:block text-[8.5px] text-slate-500 font-semibold mt-0.5 truncate"
                       >
                         번아웃·생각·의욕·회복
                       </div>
@@ -1156,14 +1156,37 @@
                 </div>
 
                 <input type="hidden" id="selectedConcernSituation" value="" />
+
+                <div
+                  id="concernSituationSummary"
+                  style="display:none"
+                  class="mt-2 rounded-xl border border-slate-200 bg-white px-3 py-2 flex items-center justify-between gap-2 shadow-sm"
+                >
+                  <div class="min-w-0 text-left">
+                    <div class="text-[9px] font-bold text-slate-400">지금 내 상황</div>
+                    <div id="concernSituationSummaryText" class="text-[10.5px] font-black text-slate-800 truncate"></div>
+                  </div>
+                  <button
+                    type="button"
+                    onclick="editConcernSituation()"
+                    class="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[9.5px] font-black text-slate-500 active:scale-95"
+                  >
+                    수정
+                  </button>
+                </div>
+
                 <div
                   id="concernSituationBox"
+                  style="display:none"
                   class="mt-2 rounded-2xl border border-rose-100 bg-rose-50/45 px-2.5 py-2.5"
                 >
-                  <div
-                    id="concernSituationPrompt"
-                    class="text-[10px] sm:text-[10.5px] font-black text-slate-700 leading-snug break-keep"
-                  ></div>
+                  <div class="flex items-start justify-between gap-2">
+                    <div
+                      id="concernSituationPrompt"
+                      class="text-[10px] sm:text-[10.5px] font-black text-slate-700 leading-snug break-keep"
+                    ></div>
+                    <span class="shrink-0 text-[8.5px] font-bold text-slate-400">하나만 골라줘</span>
+                  </div>
                   <div
                     id="concernSituationGrid"
                     class="grid grid-cols-2 gap-1.5 mt-2"
@@ -1403,44 +1426,9 @@
         <div
           class="card-box p-4 sm:p-6 rounded-3xl space-y-2.5 relative overflow-hidden text-center"
         >
-          <!-- 프로필 명함 영역 -->
+          <!-- 먼저 '맞다'는 느낌을 주는 핵심 성향 -->
           <div
-            id="gradeSection"
-            class="pt-1 pb-1 flex flex-col items-center justify-center space-y-1"
-          >
-            <!-- MBTI 위로 올라간 안내 문구 -->
-            <div
-              class="text-[11px] text-slate-500 font-semibold mt-2 mb-1 break-keep px-4"
-            >
-              ※ 질문지 검사 말고,
-              <span class="text-slate-700"
-                >사주 데이터로 까본 내 진짜 MBTI</span
-              >
-            </div>
-
-            <div
-              id="resultBigMbti"
-              class="text-[52px] sm:text-[64px] font-black tracking-widest font-mono drop-shadow-lg leading-none py-1 mb-3"
-            >
-              -
-            </div>
-
-            <div
-              id="characterHashTags"
-              class="flex flex-wrap justify-center gap-1 text-[10px] font-bold"
-            ></div>
-
-            <h1
-              class="mobile-title font-black text-center w-full px-2 mt-0.5 mb-0.5 leading-snug"
-              id="sazuCharacterTitle"
-            >
-              -
-            </h1>
-          </div>
-
-          <!-- 정돈된 3줄 요약 성향 카드 -->
-          <div
-            class="bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200 text-left mt-2 shadow-inner"
+            class="bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200 text-left mt-1 shadow-inner"
           >
             <div
               class="flex justify-between items-center pb-2 mb-2 border-b border-slate-200/60"
@@ -1448,10 +1436,10 @@
               <span
                 class="text-xs font-black text-slate-800 tracking-tight flex items-center gap-1"
               >
-                <span>📌</span> <span>핵심 성향 3줄 요약</span>
+                <span>📌</span> <span>먼저, 너를 설명하는 3줄</span>
               </span>
-              <span class="text-[10px] text-rose-500 font-bold"
-                >*사주 팩트 기반</span
+              <span class="text-[9.5px] text-slate-400 font-bold"
+                >사주 기준</span
               >
             </div>
             <div
@@ -1459,6 +1447,41 @@
               class="space-y-2 text-xs text-slate-700 leading-relaxed font-medium break-keep"
             >
               <!-- JS에서 3줄 자동 주입 -->
+            </div>
+          </div>
+
+          <!-- MBTI는 정답 판정이 아니라 재미로 보는 '사주 번역' -->
+          <div
+            id="gradeSection"
+            class="pt-2 pb-1 flex flex-col items-center justify-center space-y-1"
+          >
+            <h1
+              class="mobile-title font-black text-center w-full px-2 mt-0.5 mb-1 leading-snug"
+              id="sazuCharacterTitle"
+            >
+              -
+            </h1>
+
+            <div
+              id="characterHashTags"
+              class="flex flex-wrap justify-center gap-1 text-[10px] font-bold mb-1"
+            ></div>
+
+            <div class="w-full border-t border-slate-100 mt-1 pt-3">
+              <div
+                class="inline-flex items-center gap-1 rounded-full bg-white border border-slate-200 px-2.5 py-1 text-[9.5px] text-slate-500 font-black"
+              >
+                재미로 보는 사주 MBTI 번역
+              </div>
+              <div
+                id="resultBigMbti"
+                class="text-[34px] sm:text-[40px] font-black tracking-widest font-mono drop-shadow-sm leading-none pt-2 pb-1"
+              >
+                -
+              </div>
+              <div class="text-[9.5px] text-slate-400 font-semibold break-keep px-4">
+                실제 검사 MBTI와 다를 수 있어 · 사주 성향을 MBTI 느낌으로 번역한 거야
+              </div>
             </div>
           </div>
 
@@ -2004,7 +2027,7 @@
 
           <!-- identity -->
           <div style="position:relative;z-index:2;text-align:center;margin-top:10px">
-            <div style="font-size:7.2px;line-height:1;font-weight:900;color:#94a3b8;letter-spacing:.02em">✦ 사주로 까본 내 본캐 ✦</div>
+            <div style="font-size:7.2px;line-height:1;font-weight:900;color:#94a3b8;letter-spacing:.02em">✦ 사주 성향을 MBTI로 번역하면 ✦</div>
             <div
               id="cardBigMbti"
               style="font-family:Georgia,'Times New Roman',serif;font-size:43px;line-height:.98;font-weight:900;letter-spacing:.07em;color:var(--accent);margin-top:5px;text-shadow:0 4px 14px rgba(244,63,99,.08)"
@@ -5908,39 +5931,39 @@ currentResultData = {
         if (worstTagEl) worstTagEl.innerText = prof.worstTag;
 
         if (isT) {
-          // 서아(T): 시크하고 명확한 팩폭 대비 (에메랄드 시안 깐부 vs 다크 차콜 상극)
+          // 서아(T): 같은 스카이/아이스블루 세계관 안에서 시너지와 충돌을 대비한다.
           if (bestCard)
             bestCard.className =
-              "p-3.5 rounded-2xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 text-emerald-950 flex flex-col justify-between shadow-[0_4px_14px_rgba(16,185,129,0.12)]";
+              "p-3.5 rounded-2xl border-2 border-sky-300 bg-gradient-to-br from-sky-50 via-white to-cyan-50/60 text-sky-950 flex flex-col justify-between shadow-[0_4px_14px_rgba(14,165,233,0.13)]";
           if (bestHeader)
             bestHeader.className =
-              "text-[10.5px] font-black text-emerald-600 flex items-center gap-1 mb-1";
-          if (bestTitle) bestTitle.textContent = "치트키 깐부";
+              "text-[10.5px] font-black text-sky-600 flex items-center gap-1 mb-1";
+          if (bestTitle) bestTitle.textContent = "최강 시너지";
           if (bestMbtiEl)
             bestMbtiEl.className =
-              "text-xl font-black font-mono tracking-wide text-emerald-700";
+              "text-xl font-black font-mono tracking-wide text-sky-700";
           if (bestTagEl)
             bestTagEl.className =
-              "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-emerald-100/80 text-emerald-800 w-max max-w-full";
+              "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-sky-100/90 text-sky-800 w-max max-w-full";
 
           if (worstCard)
             worstCard.className =
-              "p-3.5 rounded-2xl border-2 border-slate-300 bg-gradient-to-br from-slate-100 via-white to-slate-100/60 text-slate-900 flex flex-col justify-between shadow-[0_4px_14px_rgba(15,23,42,0.06)]";
+              "p-3.5 rounded-2xl border-2 border-slate-400 bg-gradient-to-br from-slate-100 via-slate-50 to-sky-950/10 text-slate-950 flex flex-col justify-between shadow-[0_4px_14px_rgba(15,23,42,0.09)]";
           if (worstHeader)
             worstHeader.className =
-              "text-[10.5px] font-black text-slate-600 flex items-center gap-1 mb-1";
-          if (worstTitle) worstTitle.textContent = "상종 불가 상극";
+              "text-[10.5px] font-black text-slate-700 flex items-center gap-1 mb-1";
+          if (worstTitle) worstTitle.textContent = "충돌 많은 상극";
           if (worstMbtiEl)
             worstMbtiEl.className =
-              "text-xl font-black font-mono tracking-wide text-slate-800";
+              "text-xl font-black font-mono tracking-wide text-slate-900";
           if (worstTagEl)
             worstTagEl.className =
-              "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 w-max max-w-full";
+              "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-slate-200/90 text-slate-800 w-max max-w-full";
         } else {
-          // 로아(F): 온기 있는 힐링 대비 (러블리 로즈 깐부 vs 쿨 슬레이트 상극)
+          // 로아(F): 따뜻한 로즈/피치 vs 차분한 라벤더-그레이.
           if (bestCard)
             bestCard.className =
-              "p-3.5 rounded-2xl border-2 border-rose-300 bg-gradient-to-br from-rose-50 via-white to-rose-50/50 text-rose-950 flex flex-col justify-between shadow-[0_4px_14px_rgba(244,63,94,0.12)]";
+              "p-3.5 rounded-2xl border-2 border-rose-300 bg-gradient-to-br from-rose-50 via-orange-50/40 to-white text-rose-950 flex flex-col justify-between shadow-[0_4px_14px_rgba(244,63,94,0.12)]";
           if (bestHeader)
             bestHeader.className =
               "text-[10.5px] font-black text-rose-600 flex items-center gap-1 mb-1";
@@ -5950,21 +5973,21 @@ currentResultData = {
               "text-xl font-black font-mono tracking-wide text-rose-600";
           if (bestTagEl)
             bestTagEl.className =
-              "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-rose-100/80 text-rose-700 w-max max-w-full";
+              "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-rose-100/90 text-rose-700 w-max max-w-full";
 
           if (worstCard)
             worstCard.className =
-              "p-3.5 rounded-2xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white text-slate-800 flex flex-col justify-between shadow-sm";
+              "p-3.5 rounded-2xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 via-slate-50 to-white text-slate-800 flex flex-col justify-between shadow-[0_4px_14px_rgba(100,116,139,0.07)]";
           if (worstHeader)
             worstHeader.className =
-              "text-[10.5px] font-black text-slate-500 flex items-center gap-1 mb-1";
+              "text-[10.5px] font-black text-violet-500 flex items-center gap-1 mb-1";
           if (worstTitle) worstTitle.textContent = "기 빨리는 상극";
           if (worstMbtiEl)
             worstMbtiEl.className =
               "text-xl font-black font-mono tracking-wide text-slate-700";
           if (worstTagEl)
             worstTagEl.className =
-              "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 w-max max-w-full";
+              "text-[10px] font-extrabold truncate mt-1.5 px-2 py-0.5 rounded-md bg-violet-100/80 text-violet-700 w-max max-w-full";
         }
 
         // 공유 버튼 시인성
@@ -5979,8 +6002,8 @@ currentResultData = {
         if (bigMbti) {
           bigMbti.innerText = data.mbtiKey;
           bigMbti.className = isT
-            ? "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-sky-600 drop-shadow-sm leading-none pt-1"
-            : "text-[52px] sm:text-[64px] font-black tracking-widest font-mono text-rose-500 drop-shadow-sm leading-none pt-1";
+            ? "text-[34px] sm:text-[40px] font-black tracking-widest font-mono text-sky-600 drop-shadow-sm leading-none pt-2 pb-1"
+            : "text-[34px] sm:text-[40px] font-black tracking-widest font-mono text-rose-500 drop-shadow-sm leading-none pt-2 pb-1";
         }
 
         // [아이폰 비밀 메모장 렌더링] 무료 미리보기 / 구매 확인 후 전체 공개
@@ -7148,7 +7171,8 @@ currentResultData = {
             <div style="position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:max(8px,env(safe-area-inset-top)) 0 10px;background:linear-gradient(180deg,rgba(15,23,42,.99),rgba(15,23,42,.91),rgba(15,23,42,0));color:white">
               <div>
                 <div style="font-size:14px;font-weight:950">${title}</div>
-                <div style="font-size:10px;color:#cbd5e1;font-weight:750;margin-top:2px">글씨 안 깨지게 ${dataUrls.length}장으로 나눴어. 각 장을 길게 눌러 저장하면 돼.</div>
+                <div style="font-size:10px;color:#cbd5e1;font-weight:750;margin-top:2px">카카오톡 안에서는 여러 장 자동저장이 막혀 있어. 여기선 각 장을 길게 눌러 저장할 수 있어.</div>
+                <div style="font-size:9.5px;color:#7dd3fc;font-weight:850;margin-top:3px">한 번에 저장하려면 카카오톡 ⋮ 메뉴 → 다른 브라우저로 열기</div>
               </div>
               <button id="unniImagePagesClose" type="button" style="flex:none;width:38px;height:38px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.10);color:white;font-size:24px;line-height:1;cursor:pointer">×</button>
             </div>
