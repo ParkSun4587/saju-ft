@@ -2,12 +2,12 @@ const { chromium } = require('playwright');
 
 const BASE = 'http://127.0.0.1:4173/index.html';
 const LABELS = {
-  money: '재물·돈복',
-  career: '학업·커리어',
+  money: '돈·재물',
+  career: '학업·직장',
   love: '연애·썸',
-  path: '진로·미래',
-  people: '인간관계',
-  mental: '번아웃·멘탈',
+  path: '진로·적성',
+  people: '사람·관계',
+  mental: '마음·스트레스',
 };
 function assert(cond, msg) { if (!cond) throw new Error(msg); }
 function isExpectedBoundaryDiagnostic(text) {
@@ -127,7 +127,7 @@ async function load(page) {
     console.log('CORE_PASS', JSON.stringify(r));
 
     const copyAudit = await page.evaluate(() => {
-      const labels = { money:'재물·돈복', career:'학업·커리어', love:'연애·썸', path:'진로·미래', people:'인간관계', mental:'번아웃·멘탈' };
+      const labels = { money:'돈·재물', career:'학업·직장', love:'연애·썸', path:'진로·적성', people:'사람·관계', mental:'마음·스트레스' };
       const base = calculateAccurateManse(1998,2,21,'03:10','male');
       const other = calculateAccurateManse(2001,5,6,'14:30','female');
       const out = [];
@@ -229,8 +229,8 @@ async function load(page) {
                   userCalendar: 'solar',
                   concernKey: 'money',
                 };
-                const n1 = buildNoteOneInsight(data, 'money', '재물·돈복', false);
-                const n2 = buildNoteTwoPattern(data, 'money', '재물·돈복', false);
+                const n1 = buildNoteOneInsight(data, 'money', '돈·재물', false);
+                const n2 = buildNoteTwoPattern(data, 'money', '돈·재물', false);
                 found = {
                   date: data.userBirthStr,
                   ratio: r.analysisProfile.dayMaster.supportRatio,
@@ -267,7 +267,7 @@ async function load(page) {
     await load(page);
 
     const report = await page.evaluate((c) => {
-      const labels = { money:'재물·돈복', career:'학업·커리어', love:'연애·썸', path:'진로·미래', people:'인간관계', mental:'번아웃·멘탈' };
+      const labels = { money:'돈·재물', career:'학업·직장', love:'연애·썸', path:'진로·적성', people:'사람·관계', mental:'마음·스트레스' };
       window.gtag = () => {};
       window.setTimeout = (fn) => { fn(); return 1; };
       window.clearTimeout = () => {};
