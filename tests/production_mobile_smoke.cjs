@@ -6,7 +6,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r,ms));
 async function deployed(page) {
   for (let i=0;i<36;i++) {
     try {
-      await page.goto(BASE + '?smoke=v16-' + i, {waitUntil:'domcontentloaded',timeout:30000});
+      await page.goto(BASE + '?smoke=v17-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.4.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '1.6.0' &&
@@ -90,6 +90,8 @@ async function inspect(page, mode) {
   assert(!r.badges.some(x=>x.includes('·')||x.includes('핵심')||x.includes('사람 필터')||x.includes('7일 처방')),
     'old NOTE badge wording remains '+JSON.stringify(r.badges));
   assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
+  if (mode==='F') assert(r.resultGreeting.includes('얘기부터 같이 볼게')&&r.resultGreeting.length<=58,'F result intro is too long '+r.resultGreeting);
+  if (mode==='T') assert(r.resultGreeting.includes('핵심만 바로 짚자')&&r.resultGreeting.length<=58,'T result intro is too long '+r.resultGreeting);
   return r;
 }
 
@@ -104,11 +106,10 @@ async function inspect(page, mode) {
   await enter(page,'F','love','relationship');
   const f=await inspect(page,'F');
 
+  assert((await page.locator('#mainShareBtnText').innerText()).includes('인스타 스토리 카드 만들기'),'main CTA should name the story action');
   await page.locator('#mainShareBtn').click();
-  await page.waitForSelector('#shareModal',{state:'visible',timeout:5000});
-  assert((await page.locator('#storySaveBtn').innerText()).includes('화면 그대로 캡처하기'),'live share CTA did not switch to capture mode');
-  await page.locator('#storySaveBtn').click();
   await page.waitForSelector('#storyCaptureMode',{state:'visible',timeout:5000});
+  assert(await page.locator('#shareModal').isHidden(),'live one-tap share should bypass intermediate modal');
   const captureOpen=await page.evaluate(()=>({
     parent:document.getElementById('storyCard')?.parentElement?.id||'',
     topInside:!!document.elementFromPoint(4,4)?.closest?.('#storyCaptureMode'),
@@ -117,17 +118,25 @@ async function inspect(page, mode) {
   }));
   assert(captureOpen.parent==='storyCaptureCardSlot'&&captureOpen.topInside&&captureOpen.layerZ>captureOpen.shareZ,
     'live capture mode does not isolate the original card '+JSON.stringify(captureOpen));
+  const guideText=await page.locator('#storyCaptureChrome').innerText();
+  assert(guideText.includes('스티커 → 링크 → sajuft.com')&&guideText.includes('친구 태그'),'live capture prep should explain Instagram link/tag steps');
   const liveCardBox=await page.locator('#storyCard').boundingBox();
   assert(liveCardBox&&liveCardBox.width>=350&&liveCardBox.width<=390&&Math.abs(liveCardBox.height/liveCardBox.width-16/9)<0.03,
     'live capture card is not viewport-sized '+JSON.stringify(liveCardBox));
+  const viralFill=await page.evaluate(()=>({
+    storyText:document.getElementById('storyCard')?.innerText||'',
+    bottomGap:document.getElementById('storyCard').getBoundingClientRect().bottom-document.getElementById('cardStickerBox').getBoundingClientRect().bottom,
+    overflow:document.getElementById('storyCard').scrollHeight-document.getElementById('storyCard').clientHeight,
+  }));
+  assert(viralFill.storyText.includes('너는 뭐 나왔어?')&&viralFill.storyText.includes('나도 내 결과 보기')&&viralFill.storyText.includes('sajuft.com')&&viralFill.bottomGap<65&&viralFill.overflow<=2,
+    'live viral card is sparse or overflowing '+JSON.stringify(viralFill));
   await page.locator('#storyCaptureReady').click();
   await page.waitForFunction(()=>getComputedStyle(document.getElementById('storyCaptureChrome')).display==='none',null,{timeout:5000});
   assert(await page.locator('#unniKakaoCardQualityGuide').count()===0,'old rendered-card quality warning exists');
   await page.locator('#storyCaptureMode').click({position:{x:4,y:4}});
   await page.waitForFunction(()=>getComputedStyle(document.getElementById('storyCaptureChrome')).display!=='none',null,{timeout:5000});
   await page.locator('#storyCaptureClose').click();
-  await page.locator('#shareModalClose').click();
-  await page.waitForFunction(()=>!isShareModalOpen(),null,{timeout:5000});
+  assert(await page.locator('#shareModal').isHidden(),'capture close should return directly to result');
 
   await page.locator('#unniProductLadder [data-unni-product="full_saju"]').click();
   await page.waitForSelector('#unniProductModal',{state:'visible'});
