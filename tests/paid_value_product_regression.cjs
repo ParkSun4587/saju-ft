@@ -424,11 +424,9 @@ function norm(v) {
   const qualityGuideText = await page.locator('#unniKakaoCardQualityGuide').innerText();
   assert(qualityGuideText.includes('카카오톡 안에서는 카드가 뭉개질 수 있어') && qualityGuideText.includes('다른 브라우저로 열기'), 'Kakao high-quality save guide missing');
   assert(await page.evaluate(() => window.__UNNI_IMAGE_EXPORT_V2__.isKakaoInApp('KAKAOTALK/25.7.1')), 'Kakao UA detection failed');
-  await page.locator('#unniKakaoCardFallback').click();
-  await page.waitForSelector('#unniImageFallback', { state:'visible', timeout:15000 });
-  const fallbackText = await page.locator('#unniImageFallback').innerText();
-  assert(fallbackText.includes('사진 길게 눌러 저장하면 돼'), 'Kakao current-quality fallback missing');
-  await page.locator('#unniImageFallbackClose').click();
+  assert(await page.locator('#unniKakaoCardFallback').count() === 0, 'Kakao must not offer degraded card save fallback');
+  assert(await page.locator('#unniImageFallback').count() === 0, 'Kakao quality guide should not open low-quality image fallback');
+  await page.locator('#unniKakaoCardClose').click();
   await page.evaluate((ua) => {
     Object.defineProperty(navigator, 'userAgent', { configurable:true, get:() => ua });
     history.back();
@@ -587,6 +585,7 @@ function norm(v) {
   assert(!html.includes('id="storyShareBtn"') && !html.includes('인스타에 올릴 사진 열기'), 'duplicate Instagram save/share UI remains');
   assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
   assert(html.includes('showKakaoCardQualityGuide') && html.includes('카카오톡 안에서는 카드가 뭉개질 수 있어') && html.includes('다른 브라우저로 열기'), 'Kakao card quality guard missing');
+  assert(!html.includes('unniKakaoCardFallback') && !html.includes('그래도 여기서 현재 화질로 저장하기'), 'degraded Kakao card fallback should be removed');
   assert(html.includes('__UNNI_IMAGE_EXPORT_V2__') && html.includes('version: "2.4.0"'), 'image export behavior version missing');
   assert(html.includes('history.pushState') && html.includes('shareModal: true'), 'share modal history guard missing');
   assert(html.includes('CONCERN_SITUATIONS') && html.includes('selectedConcernSituation'), 'concern situation picker missing');
