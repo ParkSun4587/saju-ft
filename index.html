@@ -976,12 +976,6 @@
             class="bg-white p-2.5 rounded-2xl shadow-sm border border-white/40 w-full mb-1"
             style="display: none"
           >
-            <p
-              class="text-[10.5px] font-extrabold text-slate-800 border-b border-slate-100 pb-1 mb-1.5 flex items-center gap-1"
-            >
-              <span>📋</span> 정확한 만세력 조회를 위해 적어줘
-            </p>
-
             <form
               id="sazuForm"
               class="space-y-1.5"
@@ -1279,12 +1273,6 @@
                   </label>
                 </div>
               </div>
-              <p
-                id="birthTimeHint"
-                class="mt-1 text-[8.5px] font-semibold text-slate-400"
-              >
-                출생기록에 적힌 시각을 입력하면 더 정확해.
-              </p>
               <!-- 전송 버튼 영역 (스크립트 자동 주입) -->
               <div id="originalFTButtons" style="display: none"></div>
               <div id="splitNextButton" class="pt-1"></div>
@@ -1950,7 +1938,7 @@
           id="shareModalTitle"
           style="font-size:13px;line-height:1.4;font-weight:900;color:white;text-align:center;letter-spacing:-.02em;margin:0 0 7px"
         >
-          카드 예쁘게 뽑아뒀어 ♡
+          카드 한 장으로 정리했어.
         </div>
 
         <!-- 승인된 파스텔 인스타 스토리 카드 -->
@@ -2074,11 +2062,10 @@
           <button
             id="storySaveBtn"
             type="button"
-            onclick="saveInstaCardImage(event)"
-            disabled
-            style="width:100%;padding:13px 16px;border:0;border-radius:17px;background:linear-gradient(90deg,#fb7185 0%,#f472b6 55%,#d946ef 100%);color:white;font-size:15px;font-weight:950;letter-spacing:-.02em;box-shadow:0 12px 28px rgba(236,72,153,.23);cursor:pointer;opacity:.6"
+            onclick="openStoryCaptureMode(event)"
+            style="width:100%;padding:13px 16px;border:0;border-radius:17px;background:linear-gradient(90deg,#fb7185 0%,#f472b6 55%,#d946ef 100%);color:white;font-size:15px;font-weight:950;letter-spacing:-.02em;box-shadow:0 12px 28px rgba(236,72,153,.23);cursor:pointer;opacity:1"
           >
-            <span id="storySaveBtnText">↓ 사진으로 저장하기</span>
+            <span id="storySaveBtnText">화면 그대로 캡처하기</span>
           </button>
         </div>
       </div>
@@ -3207,7 +3194,7 @@
             if (senderTitle) senderTitle.textContent = "로아 언니 (F)";
             if (sisterText) {
               sisterText.innerHTML =
-                "아이고 왔어? ㅠㅠ 무슨 일 있었어?<br>속마음 다 털어놔 봐. 언니가 무조건 네 편 들어줄 테니까!<br>일단 정확하게 이름이랑 생일 먼저 적어줘 🥺💕";
+                "아이고 왔어? 무슨 일 있었어?<br>속마음 편하게 털어놔. 언니가 네 편에서 같이 볼게.<br>이름이랑 생일 먼저 적어줘.";
             }
           } else {
             if (sisterImg) sisterImg.src = "./서아.png";
@@ -3229,7 +3216,6 @@
             nextButtonContainer.innerHTML = `
                         <button id="analysisSubmitButton" type="button" disabled aria-disabled="true" onclick="startAnalysis('${mode}')" style="opacity:.48;cursor:default" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
                             <span>${mode === "F" ? "로아 언니한테 사주 정보 보내기" : "서아 언니한테 사주 정보 보내기"}</span>
-                            <span>💌</span>
                         </button>
                     `;
           }
@@ -5197,8 +5183,6 @@ return [
 
       function toggleBirthTimeUnknown(checkbox, focus = true) {
         const timeInput = document.getElementById("birthTimeInput");
-        const hint = document.getElementById("birthTimeHint");
-
         if (!timeInput) return;
 
         timeInput.disabled = checkbox.checked;
@@ -5206,16 +5190,8 @@ return [
 
         if (checkbox.checked) {
           timeInput.value = "";
-
-          if (hint) {
-            hint.textContent = "괜찮아. 시간주는 빼고 확인 가능한 정보만 볼게.";
-          }
-        } else {
-          if (hint) {
-            hint.textContent = "출생기록에 적힌 시각을 입력하면 더 정확해.";
-          }
-
-          if (focus) timeInput.focus();
+        } else if (focus) {
+          timeInput.focus();
         }
       }
 
@@ -5474,7 +5450,7 @@ return [
                     <div class="flex justify-end items-end gap-1.5 fade-in-up">
                         <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">${getCurrTime()}</span>
                         <div class="bg-[#fee500] text-slate-900 text-xs font-bold px-3.5 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[240px] leading-snug break-keep">
-                            ${escapeHTML(name)} / ${calendarLabel} ${formattedBirth} / ${formattedBirthTime} / 언니 내 사주 얼른 봐줘! 💌
+                            ${escapeHTML(name)} / ${calendarLabel} ${formattedBirth} / ${formattedBirthTime} / 언니 내 사주 얼른 봐줘!
                         </div>
                     </div>
                 `;
@@ -5536,7 +5512,7 @@ return [
             const ackText =
               mode === "T"
                 ? `${callName}구나. [${selectedConcernText} · ${selectedSituationText}] 확인했어. 다른 경우 안 섞고 네 얘기만 바로 볼게.`
-                : `어머, 우리 ${callName}구나! [${selectedConcernText} · ${selectedSituationText}] 얘기였네. 언니가 다른 경우 안 섞고 딱 네 얘기만 봐줄게 💕`;
+                : `어머, 우리 ${callName}구나! [${selectedConcernText} · ${selectedSituationText}] 얘기였네. 언니가 다른 경우 안 섞고 딱 네 얘기만 봐줄게.`;
 
             const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up mt-1">
@@ -5655,7 +5631,7 @@ currentResultData = {
                 appendSisterMsg(
                   isT
                     ? `잠깐만 기다려봐. 태어난 날짜랑 시간 기준으로 사주부터 제대로 펼쳐볼게.`
-                    : `잠깐만 기다려봐, ${callVoc}! 언니가 만세력 책부터 꼼꼼히 펼쳐볼게.`,
+                    : `잠깐만 기다려봐, ${callVoc}! 언니가 사주부터 꼼꼼히 펼쳐볼게.`,
                   false,
                 );
 
@@ -5676,23 +5652,23 @@ currentResultData = {
                   const sazuSneakPeek = {
                     hwa: {
                       T: `헐... 너 사주에 불기운이 너무 세서 감정 조절 안 되는 타입이네?`,
-                      F: `세상에... 사주에 뜨거운 불기운이 가득해서 혼자 속앓이 많이 했겠다 ㅠㅠ`,
+                      F: `사주에 뜨거운 불기운이 강해서, 겉으로 버텨도 속에서는 감정이 꽤 오래 남는 편이네.`,
                     },
                     su: {
                       T: `헐... 너 물기운 많아서 밤마다 잡생각 엑셀 돌리느라 실행 다 날려먹지?`,
-                      F: `물기운이 넘쳐서 온갖 고민 혼자 다 떠안고 눈물 삼켰구나...`,
+                      F: `물기운이 강해서 생각을 깊게 하는 만큼, 혼자 고민을 오래 끌고 갈 때가 있겠어.`,
                     },
                     mok: {
                       T: `헐... 나무 기운 뻗쳐서 지기 싫어하는 똥고집 장난 아니네?`,
-                      F: `곧은 나무 기운이라 남한테 폐 끼치기 싫어 혼자 꼿꼿하게 버텼구나...`,
+                      F: `나무 기운이 곧게 뻗어서, 남한테 폐 끼치기 싫어 혼자 버티는 쪽이네.`,
                     },
                     geum: {
                       T: `헐... 쇠기운 서슬 퍼래서 완벽주의로 네 자신을 들볶는 타입이네?`,
-                      F: `차가운 쇠기운이 강해 남에게 빈틈 안 보이려 늘 긴장해왔구나 ㅠㅠ`,
+                      F: `쇠기운이 강해서 빈틈을 보이기 싫어 스스로 기준을 높게 잡는 편이네.`,
                     },
                     to: {
                       T: `헐... 흙이 많아서 속마음 안 까고 미련 곰탱이처럼 버티는 타입이네?`,
-                      F: `묵직한 흙기운이라 남들 실수 뒤치다꺼리 혼자 다 떠안고 살았지 ㅠㅠ`,
+                      F: `흙기운이 묵직해서, 힘든 일도 쉽게 내려놓지 않고 오래 들고 가는 편이네.`,
                     },
                   };
                   const targetMsgObj =
@@ -5848,7 +5824,7 @@ currentResultData = {
           if (resSisterProfile) resSisterProfile.src = "./서아.png";
           if (resSisterName) resSisterName.textContent = "서아 언니 (T)";
           if (badge) {
-            badge.innerHTML = `🧊 팩폭 모드`;
+            badge.innerHTML = `팩폭 모드`;
             badge.className =
               "px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full text-[10px] font-black";
           }
@@ -5861,7 +5837,7 @@ currentResultData = {
           if (resSisterProfile) resSisterProfile.src = "./로아.png";
           if (resSisterName) resSisterName.textContent = "로아 언니 (F)";
           if (badge) {
-            badge.innerHTML = `🌸 무조건 내 편 모드`;
+            badge.innerHTML = `내 편 모드`;
             badge.className =
               "px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full text-[10px] font-black";
           }
@@ -5871,7 +5847,7 @@ currentResultData = {
           if (resGreeting) {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
-            resGreeting.innerHTML = `우리 <b>${escapeHTML(displayName)}</b>${fSuffix} 왔네 💕 언니가 사주랑 [${escapeHTML(situationText)}]인 지금 상황까지 같이 봤어. 왜 마음이 자꾸 쓰였는지도 조금 보이더라. 아래는 딱 우리 ${nameSubject} 얘기만 적어뒀어. 하나씩 언니랑 같이 보자.`;
+            resGreeting.innerHTML = `우리 <b>${escapeHTML(displayName)}</b>${fSuffix} 왔네. 언니가 사주랑 [${escapeHTML(situationText)}]인 지금 상황까지 같이 봤어. 왜 마음이 자꾸 쓰였는지도 조금 보이더라. 아래는 딱 우리 ${nameSubject} 얘기만 적어뒀어. 하나씩 언니랑 같이 보자.`;
           }
         }
         // [추가] '다른 고민도 풀어보기' CTA 버튼 테마 컬러 실시간 동기화
@@ -6531,11 +6507,9 @@ currentResultData = {
         const saveText = document.getElementById("storySaveBtnText");
 
         if (title) {
-          title.textContent = isT
-            ? "카드 한 장으로 정리했어."
-            : "카드 예쁘게 뽑아뒀어 ♡";
+          title.textContent = "카드 한 장으로 정리했어.";
         }
-        if (saveText) saveText.textContent = isT ? "↓ 이미지 저장" : "↓ 사진으로 저장하기";
+        if (saveText) saveText.textContent = "화면 그대로 캡처하기";
 
         if (!history.state?.shareModal) {
           history.pushState(
@@ -6544,7 +6518,7 @@ currentResultData = {
             location.href,
           );
         }
-        queueMicrotask(() => prepareStoryCardAsset(true));
+        setStoryExportReady(true);
       }
 
       function isShareModalOpen() {
@@ -7231,7 +7205,7 @@ currentResultData = {
       }
 
       window.__UNNI_IMAGE_EXPORT_V2__ = {
-        version: "2.4.0",
+        version: "2.5.0",
         renderElementToPngBlob,
         renderVisibleElementToPngBlob,
         renderElementToPngPages,
@@ -7657,7 +7631,7 @@ currentResultData = {
         if (welcomeSisterText) {
           welcomeSisterText.innerHTML = isT
             ? "좋아. 사주정보는 그대로 뒀어.<br>이번엔 다른 고민만 골라."
-            : "사주정보는 언니가 그대로 챙겨뒀어 💕<br>이번엔 어떤 고민을 더 봐줄까?";
+            : "사주정보는 언니가 그대로 챙겨뒀어.<br>이번엔 어떤 고민을 더 봐줄까?";
         }
 
         const nextBtn = document.getElementById("splitNextButton");
@@ -7677,7 +7651,6 @@ currentResultData = {
                         : "로아 언니한테 다른 고민 보내기"
                     }
                 </span>
-                <span>💌</span>
             </button>
         `;
         }
