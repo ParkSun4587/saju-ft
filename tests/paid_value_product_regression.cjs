@@ -1,5 +1,6 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
+// Vault/auth UI regression: Kakao -> Naver -> Google -> Apple -> email.
 // Story-card v2 and persona-copy regressions live in this suite.
 
 function assert(cond, msg) { if (!cond) throw new Error(msg); }
