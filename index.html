@@ -6559,7 +6559,20 @@ currentResultData = {
           cloneOffscreen: false,
           faithful: true,
         });
-        return canvasToPngBlob(canvas);
+        const targetHeight = Math.round(targetWidth * 16 / 9);
+        if (canvas.width === targetWidth && canvas.height === targetHeight) {
+          return canvasToPngBlob(canvas);
+        }
+        const exact = document.createElement("canvas");
+        exact.width = targetWidth;
+        exact.height = targetHeight;
+        const ctx = exact.getContext("2d");
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, exact.width, exact.height);
+        ctx.drawImage(canvas, 0, 0, exact.width, exact.height);
+        return canvasToPngBlob(exact);
       }
 
       async function renderElementToPngPages(
