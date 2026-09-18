@@ -20,8 +20,8 @@ function norm(v) {
   page.on('console', m => { if (m.type() === 'error') errors.push(`[console] ${m.text()}`); });
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
-    globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.3.0' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.4.0' &&
+    globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.4.0' &&
+    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.5.0' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
 
@@ -29,6 +29,8 @@ function norm(v) {
     const initial = {
       box:getComputedStyle(document.getElementById('concernSituationBox')).display,
       summary:getComputedStyle(document.getElementById('concernSituationSummary')).display,
+      concern:document.getElementById('selectedConcernKey').value,
+      selectedCount:document.querySelectorAll('#concernGrid .concern-chip.selected').length,
     };
     renderConcernSituationPicker('love');
     const opened = {
@@ -50,7 +52,7 @@ function norm(v) {
     document.getElementById('selectedConcernSituation').value = '';
     return { initial, opened, collapsed, edited };
   });
-  assert(concernUx.initial.box === 'none' && concernUx.initial.summary === 'none', `mobile concern details should start collapsed: ${JSON.stringify(concernUx)}`);
+  assert(concernUx.initial.box === 'none' && concernUx.initial.summary === 'none' && concernUx.initial.concern === '' && concernUx.initial.selectedCount === 0, `mobile concern must start with no default choice: ${JSON.stringify(concernUx)}`);
   assert(concernUx.opened.box !== 'none' && concernUx.opened.count === 4, 'selected concern must reveal four situation choices');
   assert(concernUx.collapsed.box === 'none' && concernUx.collapsed.summary !== 'none' && concernUx.collapsed.text.includes('지금 연애 중'), `selected situation should collapse into summary: ${JSON.stringify(concernUx.collapsed)}`);
   assert(concernUx.edited !== 'none', 'situation edit must reopen choices');
@@ -161,8 +163,8 @@ function norm(v) {
     };
   });
 
-  assert(qa.paidVersion.version === '1.3.0', 'paid value layer missing');
-  assert(qa.productVersion.version === '1.4.0', 'product layer missing');
+  assert(qa.paidVersion.version === '1.4.0', 'paid value layer missing');
+  assert(qa.productVersion.version === '1.5.0', 'product layer missing');
   assert(qa.wrappers.paid, 'paid-value wrapper missing');
   assert(qa.wrappers.integrated, 'integrated wrapper metadata lost');
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
@@ -171,6 +173,7 @@ function norm(v) {
   assert(qa.products.full_saju.desc.includes('12개 챕터'), 'full-saju delivered-volume copy missing');
   assert(qa.products.compatibility.desc.includes('16개 챕터'), 'compatibility delivered-volume copy missing');
   assert(qa.products.all_in_one.desc.includes('NOTE 36개') && qa.products.all_in_one.desc.includes('지금 상황'), 'all-in-one delivered-volume/situation copy missing');
+  assert(qa.products.all_in_one.name === '내 사주 완전판' && qa.products.all_in_one.badge.includes('고민 6개'), `all-in-one naming drift: ${JSON.stringify(qa.products.all_in_one)}`);
   assert(qa.rows.length === 12, `expected 12 rows, got ${qa.rows.length}`);
   assert(qa.maleShared.money.firstDate === qa.maleShared.love.firstDate, 'male money/love first timing should legitimately share the same sensitive axis');
   assert(qa.maleShared.money.secondDate === qa.maleShared.love.secondDate, 'male money/love second timing should legitimately share the same sensitive axis');
@@ -279,7 +282,10 @@ function norm(v) {
     const mbtiInfo = {
       gradeText:document.getElementById('gradeSection')?.innerText || '',
       fontSize:parseFloat(getComputedStyle(document.getElementById('resultBigMbti')).fontSize || '0'),
-      summaryBefore:(document.getElementById('manualBulletList').compareDocumentPosition(document.getElementById('gradeSection')) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+      oneLineBeforeThreeLine:(document.getElementById('sazuCharacterTitle').compareDocumentPosition(document.getElementById('manualBulletList')) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+      threeLineBeforeMbti:(document.getElementById('manualBulletList').compareDocumentPosition(document.getElementById('gradeSection')) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+      mbtiBeforeChem:(document.getElementById('gradeSection').compareDocumentPosition(document.getElementById('chemBestCard')) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+      criterionOpacity:getComputedStyle(document.querySelector('#coreThreeLineSummary .text-slate-300')).color,
     };
     openShareModal();
     const story = document.getElementById('storyCard');
@@ -319,13 +325,15 @@ function norm(v) {
   assert(ui.resultGreeting.includes('딱 우리') && ui.resultGreeting.includes('언니랑 같이 보자'), `F result greeting lost 1:1 voice: ${ui.resultGreeting}`);
   assert(ui.catalogText.includes('언니가 지금 하나만 먼저 골라줄게') && ui.catalogText.includes('다른 리포트도 있어') && !ui.catalogText.includes('다른 리포트 3개 보기'), 'F premium recommendation/discoverability handoff missing');
   assert(ui.mbtiInfo.gradeText.includes('재미로 보는 사주 MBTI 번역') && ui.mbtiInfo.gradeText.includes('실제 검사 MBTI와 다를 수 있어'), `MBTI risk framing missing: ${JSON.stringify(ui.mbtiInfo)}`);
-  assert(ui.mbtiInfo.fontSize <= 40 && ui.mbtiInfo.summaryBefore, `MBTI should be visually secondary after core summary: ${JSON.stringify(ui.mbtiInfo)}`);
+  assert(ui.mbtiInfo.fontSize <= 38 && ui.mbtiInfo.oneLineBeforeThreeLine && ui.mbtiInfo.threeLineBeforeMbti && ui.mbtiInfo.mbtiBeforeChem, `result hierarchy must be one-line → 3-line → MBTI → chemistry: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.fChem.best.includes('rose') && ui.fChem.worst.includes('violet') && ui.fChem.bestTitle === '환상의 찰떡 깐부' && ui.fChem.worstTitle === '기 빨리는 상극', `F chemistry theme drift: ${JSON.stringify(ui.fChem)}`);
   assert(ui.tChem.best.includes('sky') && ui.tChem.worst.includes('slate') && ui.tChem.bestTitle === '최강 시너지' && ui.tChem.worstTitle === '충돌 많은 상극', `T chemistry theme drift: ${JSON.stringify(ui.tChem)}`);
   assert(ui.fOheng.includes('언니가') && !ui.fOheng.includes('로아가'), `F five-element voice should use generic 언니: ${ui.fOheng}`);
   assert(ui.tOheng.includes('언니가') && !ui.tOheng.includes('서아가'), `T five-element voice should use generic 언니: ${ui.tOheng}`);
   assert(await page.locator('#sisterSwitchCard').count() === 0, 'bottom F/T mode-switch CTA must be removed');
   assert(ui.noteBadges.every((x) => x.length <= 16), `visible NOTE badges too long: ${JSON.stringify(ui.noteBadges)}`);
+  assert(ui.noteBadges.join('|').includes('유독 지치는 이유') && ui.noteBadges.join('|').includes('번아웃 패턴') && ui.noteBadges.join('|').includes('지금 진짜 문제') && ui.noteBadges.join('|').includes('회복 처방') && ui.noteBadges.join('|').includes('나를 편하게 하는 사람') && ui.noteBadges.join('|').includes('회복 흐름이 들어올 때'), `mental NOTE badges are not direct enough: ${JSON.stringify(ui.noteBadges)}`);
+  assert(!ui.noteBadges.some((x) => /·|핵심|사람 필터|7일 처방/.test(x)), `old technical NOTE badges remain: ${JSON.stringify(ui.noteBadges)}`);
   assert(ui.share.version === '4', `story card version ${ui.share.version}`);
   assert(ui.share.text.includes('사주 성향을 MBTI로 번역하면') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('링크 스티커 붙이는 자리'), 'story card identity/share copy missing');
   assert(ui.share.core && ui.share.strong && ui.share.need, `story card element strip missing: ${JSON.stringify(ui.share)}`);
@@ -550,8 +558,8 @@ function norm(v) {
   await page.locator('#unniProductClose').click();
 
   const html = fs.readFileSync('index.html','utf8');
-  assert(html.includes('./paid-value-layer-v1.js?v=1.3.0'), 'paid value script include missing');
-  assert(html.includes('./premium-products-v1.js?v=1.4.0'), 'product script include missing');
+  assert(html.includes('./paid-value-layer-v1.js?v=1.4.0'), 'paid value script include missing');
+  assert(html.includes('./premium-products-v1.js?v=1.5.0'), 'product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
@@ -575,6 +583,8 @@ function norm(v) {
   assert(html.includes('showImagePagesFallback'), 'multi-image mobile fallback missing');
   assert(!html.includes('id="storyShareBtn"') && !html.includes('인스타에 올릴 사진 열기'), 'duplicate Instagram save/share UI remains');
   assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
+  assert(html.includes('showKakaoCardQualityGuide') && html.includes('카카오톡 안에서는 카드가 뭉개질 수 있어') && html.includes('다른 브라우저로 열기'), 'Kakao card quality guard missing');
+  assert(html.includes('__UNNI_IMAGE_EXPORT_V2__') && html.includes('version: "2.4.0"'), 'image export behavior version missing');
   assert(html.includes('history.pushState') && html.includes('shareModal: true'), 'share modal history guard missing');
   assert(html.includes('CONCERN_SITUATIONS') && html.includes('selectedConcernSituation'), 'concern situation picker missing');
   assert(html.includes('concernSituationSummary') && html.includes('editConcernSituation'), 'progressive mobile concern summary/edit flow missing');
