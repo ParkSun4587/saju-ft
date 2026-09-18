@@ -1320,13 +1320,21 @@
         <!-- 결과 화면 카톡 상단 네비게이션 & 언니의 실시간 총평 말풍선 -->
         <div class="space-y-3 pb-1">
           <!-- 상단 스마트 스위칭 네비게이션 -->
-          <div class="flex items-center justify-between px-1">
+          <div class="flex items-center justify-between px-1 gap-2">
             <button
               type="button"
               onclick="startFreshAnalysis()"
               class="flex items-center gap-1 text-slate-500 hover:text-slate-800 text-xs font-bold bg-transparent border-0 p-0 cursor-pointer transition-colors"
             >
               <span>‹ 처음으로</span>
+            </button>
+            <button
+              id="unniVaultEntry"
+              type="button"
+              onclick="openUnniVault()"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-rose-200 text-[11px] font-black text-rose-500 shadow-sm active:scale-95 transition-transform"
+            >
+              <span>내 보관함</span><span aria-hidden="true">♡</span>
             </button>
           </div>
 
@@ -2058,6 +2066,109 @@
       </div>
     </div>
 
+    <!-- 어떤언니 계정 / 내 보관함 -->
+    <div
+      id="unniVaultModal"
+      style="display:none;position:fixed;inset:0;z-index:100200;background:rgba(15,23,42,.72);backdrop-filter:blur(10px);padding:14px;overflow-y:auto;-webkit-overflow-scrolling:touch"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="unniVaultTitle"
+    >
+      <div style="width:100%;max-width:410px;margin:max(18px,env(safe-area-inset-top)) auto max(18px,env(safe-area-inset-bottom));position:relative">
+        <button
+          id="unniVaultClose"
+          type="button"
+          onclick="closeUnniVault()"
+          aria-label="내 보관함 닫기"
+          style="position:absolute;right:10px;top:10px;z-index:3;width:38px;height:38px;border-radius:999px;border:1px solid #e2e8f0;background:rgba(255,255,255,.92);color:#64748b;font-size:24px;line-height:1;cursor:pointer"
+        >×</button>
+
+        <div style="overflow:hidden;border-radius:30px;background:linear-gradient(160deg,#fffafb 0%,#fff 48%,#fff9f1 100%);border:1px solid rgba(251,113,133,.22);box-shadow:0 28px 80px rgba(15,23,42,.28)">
+          <div style="position:relative;padding:28px 22px 20px;text-align:center;overflow:hidden">
+            <div style="position:absolute;width:160px;height:160px;border-radius:999px;right:-68px;top:-72px;background:rgba(251,113,133,.13)"></div>
+            <div style="position:absolute;width:120px;height:120px;border-radius:999px;left:-66px;bottom:-54px;background:rgba(253,224,71,.15)"></div>
+            <div style="position:relative;z-index:1">
+              <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:white;border:1px solid #ffe4e6;box-shadow:0 5px 16px rgba(244,63,94,.06);font-size:10px;font-weight:950;color:#f43f5e">
+                어떤언니 · 내 보관함 ♡
+              </div>
+              <h2 id="unniVaultTitle" style="margin:14px 0 6px;font-size:22px;line-height:1.35;font-weight:950;letter-spacing:-.045em;color:#111827">
+                이거 잃어버리지 않게<br>언니가 챙겨둘까?
+              </h2>
+              <p style="margin:0 auto;max-width:310px;font-size:12px;line-height:1.7;font-weight:750;color:#64748b;word-break:keep-all">
+                한 번 연결해두면 내 사주, 구매한 고민, 궁합 결과를<br>나중에 다시 꺼내보기 편하게 한곳에 모아둘 수 있어.
+              </p>
+            </div>
+          </div>
+
+          <div id="unniAuthView" style="padding:2px 18px 20px">
+            <div style="display:grid;gap:9px">
+              <button type="button" data-unni-auth="kakao" onclick="beginUnniAuth('kakao')" style="width:100%;height:54px;border:0;border-radius:16px;background:#FEE500;color:#191919;font-size:14px;font-weight:950;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer">
+                <span style="width:25px;height:25px;border-radius:999px;background:#191919;color:#FEE500;display:grid;place-items:center;font-size:11px;font-weight:950">K</span>
+                카카오로 계속하기
+              </button>
+              <button type="button" data-unni-auth="naver" onclick="beginUnniAuth('naver')" style="width:100%;height:54px;border:0;border-radius:16px;background:#03C75A;color:white;font-size:14px;font-weight:950;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer">
+                <span style="font-size:23px;font-weight:950;line-height:1">N</span>
+                네이버로 계속하기
+              </button>
+              <button type="button" data-unni-auth="google" onclick="beginUnniAuth('google')" style="width:100%;height:54px;border:1px solid #e2e8f0;border-radius:16px;background:white;color:#1f2937;font-size:14px;font-weight:950;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer">
+                <span style="font-size:20px;font-weight:950;color:#4285F4">G</span>
+                Google로 계속하기
+              </button>
+              <button type="button" data-unni-auth="apple" onclick="beginUnniAuth('apple')" style="width:100%;height:54px;border:0;border-radius:16px;background:#111827;color:white;font-size:14px;font-weight:950;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer">
+                <span style="font-size:18px;font-weight:950">A</span>
+                Apple로 계속하기
+              </button>
+              <button type="button" data-unni-auth="email" onclick="openUnniEmailAuth()" style="width:100%;height:52px;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc;color:#334155;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer">
+                <span style="font-size:17px">✉</span>
+                이메일로 계속하기
+              </button>
+            </div>
+
+            <div id="unniEmailAuthBox" style="display:none;margin-top:10px;padding:13px;border-radius:16px;background:#fff;border:1px solid #e2e8f0">
+              <label for="unniEmailInput" style="display:block;font-size:10px;font-weight:900;color:#64748b;margin-bottom:6px">이메일</label>
+              <div style="display:flex;gap:7px">
+                <input id="unniEmailInput" type="email" autocomplete="email" placeholder="example@email.com" style="flex:1;min-width:0;padding:11px 12px;border:1px solid #cbd5e1;border-radius:12px;font-size:12px;outline:none">
+                <button type="button" onclick="beginUnniEmailAuth()" style="flex:none;border:0;border-radius:12px;background:#0f172a;color:white;padding:0 14px;font-size:11px;font-weight:900;cursor:pointer">계속</button>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;padding:11px 12px;border-radius:15px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:10.5px;line-height:1.65;font-weight:750;text-align:center;word-break:keep-all">
+              로그인 안 해도 지금 결과는 그대로 볼 수 있어.<br>
+              보관하고 싶을 때만 연결하면 돼.
+            </div>
+          </div>
+
+          <div id="unniVaultView" style="display:none;padding:4px 18px 22px">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:18px;background:white;border:1px solid #f1f5f9">
+              <div id="unniVaultAvatar" style="width:42px;height:42px;border-radius:999px;background:linear-gradient(135deg,#ffe4e6,#fce7f3);display:grid;place-items:center;font-size:19px">♡</div>
+              <div style="min-width:0;flex:1">
+                <div id="unniVaultUserName" style="font-size:13px;font-weight:950;color:#0f172a">내 보관함</div>
+                <div id="unniVaultUserMeta" style="font-size:10px;font-weight:750;color:#94a3b8;margin-top:2px">연결된 계정</div>
+              </div>
+              <button type="button" onclick="signOutUnniVault()" style="border:0;background:transparent;color:#94a3b8;font-size:10px;font-weight:850;cursor:pointer">로그아웃</button>
+            </div>
+
+            <div style="margin-top:12px;display:grid;gap:8px">
+              <div style="padding:14px;border-radius:18px;background:#fff;border:1px solid #ffe4e6">
+                <div style="font-size:10px;font-weight:950;color:#f43f5e">내 사주 ♡</div>
+                <div id="unniVaultSajuText" style="font-size:12px;line-height:1.65;font-weight:850;color:#334155;margin-top:5px">아직 보관된 사주가 없어.</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div style="padding:13px;border-radius:17px;background:#f8fafc;border:1px solid #e2e8f0">
+                  <div style="font-size:9px;font-weight:900;color:#94a3b8">구매한 리포트</div>
+                  <div id="unniVaultPurchaseCount" style="font-size:22px;font-weight:950;color:#0f172a;margin-top:2px">0</div>
+                </div>
+                <div style="padding:13px;border-radius:17px;background:#fff7ed;border:1px solid #fed7aa">
+                  <div style="font-size:9px;font-weight:900;color:#c2410c">궁합 / 추가 콘텐츠</div>
+                  <div id="unniVaultExtraCount" style="font-size:22px;font-weight:950;color:#9a3412;margin-top:2px">0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 푸터는 결과 화면 내부에 배치했습니다. -->
 
     <script>
@@ -2127,6 +2238,152 @@
             window[area].removeItem(key);
           } catch {}
         }
+      }
+
+      function getUnniAuthProfile() {
+        try {
+          return JSON.parse(readStore("unni_auth_profile") || "null");
+        } catch {
+          return null;
+        }
+      }
+
+      function setUnniAuthProfile(profile) {
+        if (!profile) {
+          removeStore("unni_auth_profile");
+          return;
+        }
+        writeStore("unni_auth_profile", JSON.stringify(profile));
+      }
+
+      function unniProviderLabel(provider) {
+        return ({
+          kakao: "카카오",
+          naver: "네이버",
+          google: "Google",
+          apple: "Apple",
+          email: "이메일",
+        })[provider] || provider;
+      }
+
+      function collectLocalVaultCounts() {
+        let purchases = 0;
+        let extras = 0;
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i) || "";
+            if (key.startsWith("tok_") || key.startsWith("unni_product_purchase_")) purchases++;
+            if (key.includes("compat") || key.includes("bundle") || key.includes("all_in_one")) extras++;
+          }
+        } catch {}
+        return { purchases, extras };
+      }
+
+      function renderUnniVault() {
+        const profile = getUnniAuthProfile();
+        const authView = document.getElementById("unniAuthView");
+        const vaultView = document.getElementById("unniVaultView");
+        if (!authView || !vaultView) return;
+
+        if (!profile) {
+          authView.style.display = "block";
+          vaultView.style.display = "none";
+          return;
+        }
+
+        authView.style.display = "none";
+        vaultView.style.display = "block";
+        const name = profile.name || "내 보관함";
+        const provider = unniProviderLabel(profile.provider || "");
+        document.getElementById("unniVaultUserName").textContent = name;
+        document.getElementById("unniVaultUserMeta").textContent =
+          provider ? `${provider} 계정으로 연결됨` : "연결된 계정";
+
+        const result = currentResultData;
+        document.getElementById("unniVaultSajuText").textContent = result
+          ? `${result.name || "내"} 사주 · ${result.mbtiKey || ""} · ${CONCERN_LABELS[result.concernKey] || "현재 고민"}`
+          : "아직 이 기기에서 불러온 사주가 없어.";
+
+        const counts = collectLocalVaultCounts();
+        document.getElementById("unniVaultPurchaseCount").textContent =
+          String(counts.purchases);
+        document.getElementById("unniVaultExtraCount").textContent =
+          String(counts.extras);
+      }
+
+      function openUnniVault() {
+        const modal = document.getElementById("unniVaultModal");
+        if (!modal) return;
+        renderUnniVault();
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeUnniVault() {
+        const modal = document.getElementById("unniVaultModal");
+        if (modal) modal.style.display = "none";
+        document.body.style.overflow = "";
+      }
+
+      async function beginUnniAuth(provider) {
+        const bridge = window.__UNNI_AUTH_BRIDGE__;
+        const url = window.__UNNI_AUTH_URLS__?.[provider];
+
+        try {
+          if (bridge?.begin) {
+            await bridge.begin(provider);
+            return;
+          }
+          if (url) {
+            location.href = url;
+            return;
+          }
+        } catch (error) {
+          console.error("어떤언니 로그인 연결 실패:", error);
+          showToast("로그인 연결이 잠깐 꼬였어. 다시 눌러줘.");
+          return;
+        }
+
+        showToast(
+          `${unniProviderLabel(provider)} 로그인 연결만 붙이면 바로 쓸 수 있어. 지금 결과는 그대로 볼 수 있어.`,
+        );
+      }
+
+      function openUnniEmailAuth() {
+        const box = document.getElementById("unniEmailAuthBox");
+        if (!box) return;
+        box.style.display = box.style.display === "none" ? "block" : "none";
+        if (box.style.display === "block") {
+          setTimeout(() => document.getElementById("unniEmailInput")?.focus(), 50);
+        }
+      }
+
+      function beginUnniEmailAuth() {
+        const email = document.getElementById("unniEmailInput")?.value.trim() || "";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showToast("이메일 주소를 한 번 확인해줘.");
+          return;
+        }
+        beginUnniAuth("email");
+      }
+
+      function completeUnniAuth(profile) {
+        if (!profile || !profile.id) return false;
+        setUnniAuthProfile({
+          id: String(profile.id),
+          provider: profile.provider || "",
+          name: profile.name || "",
+          email: profile.email || "",
+        });
+        renderUnniVault();
+        showToast("이제 언니가 네 결과 챙겨둘게 ♡");
+        return true;
+      }
+
+      function signOutUnniVault() {
+        setUnniAuthProfile(null);
+        renderUnniVault();
+        showToast("보관함 연결을 해제했어.");
       }
 
       function resultSnapshot(data) {
