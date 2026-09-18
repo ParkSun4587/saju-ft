@@ -5926,64 +5926,58 @@ currentResultData = {
 
         const data = currentResultData;
         const isT = data.currentMode === "T";
-        const mKey = data && data.mbtiKey;
+        const mKey = data?.mbtiKey;
+        const prof = SAZU_CHARACTER_PROFILES[mKey];
 
-        if (!mKey || !SAZU_CHARACTER_PROFILES[mKey]) {
-          console.error("유효하지 않은 MBTI 결과:", data && data.mbtiKey);
-          showToast(
-            "분석 결과를 안전하게 표시하지 못했어요. 다시 분석해주세요.",
-          );
+        if (!mKey || !prof) {
+          console.error("유효하지 않은 MBTI 결과:", mKey);
+          showToast("분석 결과를 안전하게 표시하지 못했어요. 다시 분석해주세요.");
           return;
         }
-        const prof = SAZU_CHARACTER_PROFILES[mKey];
+
         const storyCard = document.getElementById("storyCard");
         const sisterAvatar = document.getElementById("cardSisterAvatar");
         if (storyCard) {
-          storyCard.className = isT
-            ? "bg-gradient-to-b from-[#f6fbff] via-white to-[#f4f8ff] border border-sky-200/80 rounded-[28px] p-4 sm:p-5 shadow-2xl text-left relative overflow-hidden flex flex-col"
-            : "bg-gradient-to-b from-[#fffafc] via-white to-[#fff8f2] border border-rose-200/80 rounded-[28px] p-4 sm:p-5 shadow-2xl text-left relative overflow-hidden flex flex-col";
+          storyCard.style.setProperty("--accent", isT ? "#0ea5e9" : "#f43f63");
+          storyCard.style.setProperty("--accent2", isT ? "#38bdf8" : "#fb7185");
+          storyCard.style.setProperty("--accent-soft", isT ? "#eff8ff" : "#fff1f4");
+          storyCard.style.setProperty("--cool", isT ? "#475569" : "#7c6bd8");
+          storyCard.style.background = isT
+            ? "linear-gradient(155deg,#f8fcff 0%,#ffffff 52%,#f5f9ff 100%)"
+            : "linear-gradient(155deg,#fffafb 0%,#fffdf8 52%,#fff9f4 100%)";
+          storyCard.style.borderColor = isT
+            ? "rgba(56,189,248,.32)"
+            : "rgba(251,113,133,.34)";
         }
         if (sisterAvatar) sisterAvatar.src = isT ? "./서아.png" : "./로아.png";
 
-        // 1) 상단 알약 뱃지
+        const rawN = (data.name || "").trim();
+        const displayName = rawN.length >= 2 ? rawN.slice(1) : rawN || "너";
+        const lastChar = displayName.charCodeAt(displayName.length - 1);
+        const hasBatchim =
+          lastChar >= 0xac00 && lastChar <= 0xd7a3
+            ? (lastChar - 0xac00) % 28 > 0
+            : false;
+        const nameSubject = hasBatchim ? `${displayName}이가` : `${displayName}가`;
+
         const modeBadge = document.getElementById("cardModeBadge");
         if (modeBadge) {
-          const rawN = (data.name || "").trim();
-          const displayName = rawN.length >= 2 ? rawN.slice(1) : rawN;
-
-          // 받침 유무 판별
-          const lastChar = displayName.charCodeAt(displayName.length - 1);
-          const hasBatchim =
-            lastChar >= 0xac00 && lastChar <= 0xd7a3
-              ? (lastChar - 0xac00) % 28 > 0
-              : false;
-
-          // 받침 유무에 따른 주격 조사 결합: 태양이가 / 환이가 / 지우가
-          const nameSubject = hasBatchim
-            ? `${displayName}이가`
-            : `${displayName}가`;
-
           modeBadge.innerHTML = isT
-            ? `"T발 너 C야?" 소리 나오는 서아 모드`
-            : `"우리 <span class="text-rose-700 font-black">${escapeHTML(nameSubject)}</span> 다 맞아" 로아 모드`;
-          modeBadge.className = isT
-            ? "px-3 py-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-full text-[9.5px] font-black tracking-tight inline-block shadow-sm"
-            : "px-3 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded-full text-[9.5px] font-black tracking-tight inline-block shadow-sm";
+            ? `"팩트만 딱 보자" 서아 모드`
+            : `"우리 <b>${escapeHTML(nameSubject)}</b> 다 맞아" 로아 모드 ♡`;
+          modeBadge.style.color = isT ? "#0284c7" : "#e11d48";
+          modeBadge.style.borderColor = isT
+            ? "rgba(56,189,248,.32)"
+            : "rgba(251,113,133,.30)";
         }
 
-        // 2) 거대 MBTI & 메인 타이틀
         const bigMbti = document.getElementById("cardBigMbti");
         const mainTitle = document.getElementById("cardMainTitle");
-
         if (bigMbti) {
-          bigMbti.innerText = mKey;
-          bigMbti.className = isT
-            ? "text-[54px] font-black tracking-[0.16em] font-mono text-sky-600 leading-none mt-1"
-            : "text-[54px] font-black tracking-[0.16em] font-mono text-rose-500 leading-none mt-1";
+          bigMbti.textContent = mKey;
+          bigMbti.style.color = isT ? "#0284c7" : "#f43f63";
         }
-        if (mainTitle) {
-          mainTitle.innerText = `"${isT ? prof.title_T : prof.title_F}"`;
-        }
+        if (mainTitle) mainTitle.textContent = `"${isT ? prof.title_T : prof.title_F}"`;
 
         const elementNames = {
           mok: "목 · 나무",
@@ -5992,92 +5986,91 @@ currentResultData = {
           geum: "금 · 쇠",
           su: "수 · 물",
         };
-        const rawElements = data.elementProfiles?.raw || data.analysisProfile?.elementProfiles?.raw || data.elements || {};
+        const rawElements =
+          data.elementProfiles?.raw ||
+          data.analysisProfile?.elementProfiles?.raw ||
+          data.elements ||
+          {};
         const elementKeys = ["mok", "hwa", "to", "geum", "su"];
-        const strongestKey = elementKeys.reduce((best, key) =>
-          Number(rawElements[key] || 0) > Number(rawElements[best] || 0) ? key : best,
-        "mok");
-        const minRaw = Math.min(...elementKeys.map((key) => Number(rawElements[key] || 0)));
-        const weakestKeys = elementKeys.filter((key) => Number(rawElements[key] || 0) === minRaw);
+        const strongestKey = elementKeys.reduce(
+          (best, key) =>
+            Number(rawElements[key] || 0) > Number(rawElements[best] || 0)
+              ? key
+              : best,
+          "mok",
+        );
+        const minRaw = Math.min(
+          ...elementKeys.map((key) => Number(rawElements[key] || 0)),
+        );
+        const weakestKeys = elementKeys.filter(
+          (key) => Number(rawElements[key] || 0) === minRaw,
+        );
+
         const coreEl = document.getElementById("cardCoreElement");
         const strongEl = document.getElementById("cardStrongElement");
         const needEl = document.getElementById("cardNeedElement");
         if (coreEl) coreEl.textContent = elementNames[data.dayOheng] || "내 본체";
         if (strongEl) strongEl.textContent = elementNames[strongestKey] || "-";
-        if (needEl) needEl.textContent = weakestKeys.map((key) => (elementNames[key] || key).split(" · ")[0]).join(" · ");
+        if (needEl) {
+          needEl.textContent = weakestKeys
+            .map((key) => (elementNames[key] || key).split(" · ")[0])
+            .join(" · ");
+        }
 
-        // 3) 공유 카드 3줄 불렛 주입
         const bulletContainer = document.getElementById("cardManualBulletList");
         if (bulletContainer) {
           const bList = isT ? prof.bullets_T : prof.bullets_F;
-          const bulletColor = isT ? "text-sky-500" : "text-rose-400";
-          bulletContainer.innerHTML = `
-                    <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0">01</span>
-                        <span class="flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[0]}</span>
-                    </div>
-                    <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0">02</span>
-                        <span class="flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[1]}</span>
-                    </div>
-                    <div class="flex items-start gap-1.5">
-                        <span class="${bulletColor} font-black shrink-0">03</span>
-                        <span class="flex-1 min-w-0 break-keep" style="text-wrap: balance;">${bList[2]}</span>
-                    </div>
-                `;
+          const accent = isT ? "#0ea5e9" : "#fb7185";
+          bulletContainer.innerHTML = bList
+            .slice(0, 3)
+            .map(
+              (line, idx) => `
+                <div style="display:flex;align-items:flex-start;gap:6px;min-width:0">
+                  <span style="width:20px;height:20px;border-radius:999px;background:${isT ? "rgba(14,165,233,.11)" : "rgba(251,113,133,.12)"};color:${accent};font-size:7px;line-height:20px;text-align:center;font-weight:950;flex:none">${String(idx + 1).padStart(2, "0")}</span>
+                  <span style="flex:1;min-width:0;word-break:keep-all;text-wrap:balance">${escapeHTML(line)}</span>
+                </div>`,
+            )
+            .join("");
         }
 
-        // 4) 💖 찰떡 깐부 vs 💣 상극
         const bestMbtiEl = document.getElementById("cardChemBestMbti");
         const bestTagEl = document.getElementById("cardChemBestTag");
         const worstMbtiEl = document.getElementById("cardChemWorstMbti");
         const worstTagEl = document.getElementById("cardChemWorstTag");
-
-        if (bestMbtiEl) bestMbtiEl.innerText = prof.best;
-        if (bestTagEl) bestTagEl.innerText = prof.bestTag;
-        if (worstMbtiEl) worstMbtiEl.innerText = prof.worst;
-        if (worstTagEl) worstTagEl.innerText = prof.worstTag;
-
-        const bestBox = document.getElementById("cardChemBestBox");
-        const worstBox = document.getElementById("cardChemWorstBox");
-        if (bestBox) bestBox.className = isT
-          ? "p-2.5 rounded-xl bg-sky-50/90 border border-sky-200 shadow-sm"
-          : "p-2.5 rounded-xl bg-rose-50/90 border border-rose-200 shadow-sm";
-        if (worstBox) worstBox.className = "p-2.5 rounded-xl bg-slate-100/90 border border-slate-200 shadow-sm";
-
-        // 5) 하단 링크 스티커 영역 스타일
-        const stickerBox = document.getElementById("cardStickerBox");
-        const stickerTxt = document.getElementById("cardStickerText");
-        if (stickerBox && stickerTxt) {
-          stickerBox.className = isT
-            ? "border border-dashed border-sky-300 bg-sky-50/55 rounded-2xl px-3 py-2.5 text-center"
-            : "border border-dashed border-rose-300 bg-rose-50/55 rounded-2xl px-3 py-2.5 text-center";
-          stickerTxt.className = isT
-            ? "text-[9px] font-black text-sky-600"
-            : "text-[9px] font-black text-rose-500";
-        }
+        if (bestMbtiEl) bestMbtiEl.textContent = prof.best;
+        if (bestTagEl) bestTagEl.textContent = prof.bestTag;
+        if (worstMbtiEl) worstMbtiEl.textContent = prof.worst;
+        if (worstTagEl) worstTagEl.textContent = prof.worstTag;
 
         document.body.style.overflow = "hidden";
         const shareModal = document.getElementById("shareModal");
         if (shareModal) {
           shareModal.classList.remove("hidden");
-          shareModal.style.display = "flex";
+          shareModal.style.display = "block";
+          shareModal.scrollTop = 0;
         }
 
+        const title = document.getElementById("shareModalTitle");
         const saveText = document.getElementById("storySaveBtnText");
         const shareText = document.getElementById("storyShareBtnText");
+        const shareBtn = document.getElementById("storyShareBtn");
         const isMobile = isMobileDevice();
-        const kakaoInApp = isKakaoInApp();
-        if (saveText) saveText.textContent = isT ? "이미지 저장" : "사진으로 간직하기";
-        if (shareText) {
-          shareText.textContent = kakaoInApp
-            ? (isT ? "인스타용 이미지 열기" : "인스타에 올릴 사진 열기")
-            : isMobile
-              ? (isT ? "바로 공유" : "스토리에 슬쩍 올리기")
-              : (isT ? "이미지 공유" : "친구한테 보내기");
+
+        if (title) {
+          title.textContent = isT
+            ? "카드 한 장으로 정리했어."
+            : "카드 예쁘게 뽑아뒀어 ♡";
         }
+        if (saveText) saveText.textContent = isT ? "↓ 이미지 저장" : "↓ 사진으로 저장하기";
+        if (shareText) shareText.textContent = "◎ 인스타에 올릴 사진 열기";
+        if (shareBtn) shareBtn.style.display = isMobile ? "block" : "none";
+
         if (!history.state?.shareModal) {
-          history.pushState({ ...(history.state || {}), view: "result", shareModal: true }, "", location.href);
+          history.pushState(
+            { ...(history.state || {}), view: "result", shareModal: true },
+            "",
+            location.href,
+          );
         }
         queueMicrotask(() => prepareStoryCardAsset(true));
       }
