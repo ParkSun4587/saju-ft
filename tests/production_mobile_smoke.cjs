@@ -6,15 +6,15 @@ const sleep = (ms) => new Promise(r => setTimeout(r,ms));
 async function deployed(page) {
   for (let i=0;i<36;i++) {
     try {
-      await page.goto(BASE + '?smoke=v14-' + i, {waitUntil:'domcontentloaded',timeout:30000});
+      await page.goto(BASE + '?smoke=v15-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
-        globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.3.0' &&
-        globalThis.__UNNI_PRODUCTS_V1__?.version === '1.4.0' &&
+        globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.4.0' &&
+        globalThis.__UNNI_PRODUCTS_V1__?.version === '1.5.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach paid 1.3.0 / products 1.4.0');
+  throw new Error('production did not reach paid 1.4.0 / products 1.5.0');
 }
 
 async function enter(page, mode, concern, situation) {
