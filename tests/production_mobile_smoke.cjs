@@ -36,6 +36,7 @@ async function enter(page, mode, concern, situation) {
   assert(await page.locator('#concernSituationGrid [data-concern-situation]').count() === 4,'situation count');
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.waitForSelector('#concernSituationSummary',{state:'visible'});
+  assert(!(await page.locator('#analysisSubmitButton').isDisabled()),'send button should unlock after concern and situation');
   assert(await page.locator('#concernSituationBox').isHidden(),'situation did not collapse');
   await page.locator('#concernSituationSummary button').click();
   await page.waitForSelector('#concernSituationBox',{state:'visible'});
