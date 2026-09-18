@@ -278,7 +278,9 @@ function norm(v) {
       worstTitle:document.getElementById('chemWorstTitle')?.innerText || '',
     };
     const tOheng = document.getElementById('ohengSummaryTxt')?.innerText || '';
+    const tGreeting = document.getElementById('resultSisterGreeting')?.innerText || '';
     updateResultContentByMode('F');
+    const fGreeting = document.getElementById('resultSisterGreeting')?.innerText || '';
     const mbtiInfo = {
       gradeText:document.getElementById('gradeSection')?.innerText || '',
       fontSize:parseFloat(getComputedStyle(document.getElementById('resultBigMbti')).fontSize || '0'),
@@ -308,6 +310,8 @@ function norm(v) {
       tChem,
       fOheng,
       tOheng,
+      tGreeting,
+      fGreeting,
       note6First:note6?.__timingQA?.firstBody || '',
       note6Second:note6?.__timingQA?.secondBody || '',
       note6Text:note6?.desc || '',
@@ -322,7 +326,8 @@ function norm(v) {
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3, `premium catalog should keep one recommendation prominent while all alternatives stay discoverable: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts})}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
-  assert(ui.resultGreeting.includes('딱 우리') && ui.resultGreeting.includes('언니랑 같이 보자'), `F result greeting lost 1:1 voice: ${ui.resultGreeting}`);
+  assert(ui.fGreeting.includes('얘기부터 같이 볼게') && ui.fGreeting.includes('마음이 쓰였는지') && ui.fGreeting.length <= 58, `F result intro should stay intimate but short: ${ui.fGreeting}`);
+  assert(ui.tGreeting.includes('상황부터 볼게') && ui.tGreeting.includes('핵심만 바로 짚자') && ui.tGreeting.length <= 58, `T result intro should be direct and short: ${ui.tGreeting}`);
   assert(ui.catalogText.includes('언니가 지금 하나만 먼저 골라줄게') && ui.catalogText.includes('다른 리포트도 있어') && !ui.catalogText.includes('다른 리포트 3개 보기'), 'F premium recommendation/discoverability handoff missing');
   assert(ui.mbtiInfo.gradeText.includes('재미로 보는 사주 MBTI 번역') && ui.mbtiInfo.gradeText.includes('실제 검사 MBTI와 다를 수 있어'), `MBTI risk framing missing: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.mbtiInfo.fontSize <= 38 && ui.mbtiInfo.oneLineBeforeThreeLine && ui.mbtiInfo.threeLineBeforeMbti && ui.mbtiInfo.mbtiBeforeChem, `result hierarchy must be one-line → 3-line → MBTI → chemistry: ${JSON.stringify(ui.mbtiInfo)}`);
@@ -334,20 +339,17 @@ function norm(v) {
   assert(ui.noteBadges.every((x) => x.length <= 16), `visible NOTE badges too long: ${JSON.stringify(ui.noteBadges)}`);
   assert(ui.noteBadges.join('|').includes('유독 지치는 이유') && ui.noteBadges.join('|').includes('번아웃 패턴') && ui.noteBadges.join('|').includes('지금 진짜 문제') && ui.noteBadges.join('|').includes('회복 처방') && ui.noteBadges.join('|').includes('나를 편하게 하는 사람') && ui.noteBadges.join('|').includes('회복 흐름이 들어올 때'), `mental NOTE badges are not direct enough: ${JSON.stringify(ui.noteBadges)}`);
   assert(!ui.noteBadges.some((x) => /·|핵심|사람 필터|7일 처방/.test(x)), `old technical NOTE badges remain: ${JSON.stringify(ui.noteBadges)}`);
-  assert(ui.share.version === '4', `story card version ${ui.share.version}`);
-  assert(ui.share.text.includes('사주 성향을 MBTI로 번역하면') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('링크 스티커 붙이는 자리'), 'story card identity/share copy missing');
+  assert(ui.share.version === '5', `story card version ${ui.share.version}`);
+  assert(ui.share.text.includes('사주 성향을 MBTI로 번역하면') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('너는 뭐 나왔어?') && ui.share.text.includes('나도 내 결과 보기') && ui.share.text.includes('sajuft.com'), 'story card viral/share copy missing');
   assert(ui.share.core && ui.share.strong && ui.share.need, `story card element strip missing: ${JSON.stringify(ui.share)}`);
   assert(ui.share.avatar === './로아.png', `F story avatar mismatch: ${ui.share.avatar}`);
-  assert(await page.locator('#mainShareBtnText').innerText() === '이거, 한 장으로 예쁘게 뽑아볼까?', 'F share CTA persona copy missing');
-  assert(await page.locator('#shareModalClose').isVisible(), 'top share-modal close button missing');
+  await page.evaluate(() => closeShareModal(true));
+  assert(await page.locator('#mainShareBtnText').innerText() === '인스타 스토리 카드 만들기', 'main share CTA should state the actual action');
   assert(await page.locator('#storyShareBtn').count() === 0, 'duplicate Instagram/share action must be removed');
-  assert((await page.locator('#storySaveBtn').innerText()).includes('화면 그대로 캡처하기'), 'story CTA must use direct capture mode');
 
-  const modalCardBox = await page.locator('#storyCard').boundingBox();
-  assert(modalCardBox && modalCardBox.width <= 332, `share-modal card should stay compact before capture: ${JSON.stringify(modalCardBox)}`);
-
-  await page.locator('#storySaveBtn').click();
+  await page.locator('#mainShareBtn').click();
   await page.waitForSelector('#storyCaptureMode', { state:'visible', timeout:5000 });
+  assert(await page.locator('#shareModal').isHidden(), 'one-tap story CTA should bypass the intermediate share modal');
   const captureOpen = await page.evaluate(() => {
     const layer = document.getElementById('storyCaptureMode');
     const card = document.getElementById('storyCard');
@@ -364,10 +366,24 @@ function norm(v) {
   assert(captureOpen.cardParent === 'storyCaptureCardSlot' && captureOpen.layerDisplay !== 'none', `real card was not moved into capture layer: ${JSON.stringify(captureOpen)}`);
   assert(captureOpen.layerZ > captureOpen.shareZ && captureOpen.topInsideCapture, `capture layer does not fully cover the app UI: ${JSON.stringify(captureOpen)}`);
   assert(captureOpen.chromeDisplay !== 'none', 'capture instructions should be visible before clean mode');
+  const captureGuideText = await page.locator('#storyCaptureChrome').innerText();
+  assert(captureGuideText.includes('스티커 → 링크 → sajuft.com') && captureGuideText.includes('친구 태그'), 'capture prep must teach the real Instagram viral steps');
 
   const captureCardBox = await page.locator('#storyCard').boundingBox();
   assert(captureCardBox && captureCardBox.x >= 0 && captureCardBox.y >= 0 && captureCardBox.width <= 390 && captureCardBox.width >= 350, `capture card is not maximizing the mobile viewport: ${JSON.stringify(captureCardBox)}`);
   assert(Math.abs(captureCardBox.height / captureCardBox.width - 16/9) < 0.03, `capture card ratio drift: ${JSON.stringify(captureCardBox)}`);
+  const cardFill = await page.evaluate(() => {
+    const card = document.getElementById('storyCard').getBoundingClientRect();
+    const sticker = document.getElementById('cardStickerBox').getBoundingClientRect();
+    const viral = document.getElementById('cardViralPrompt').getBoundingClientRect();
+    return {
+      bottomGap:card.bottom - sticker.bottom,
+      viralVisible:viral.top > card.top && viral.bottom < card.bottom,
+      scrollHeight:document.getElementById('storyCard').scrollHeight,
+      clientHeight:document.getElementById('storyCard').clientHeight,
+    };
+  });
+  assert(cardFill.bottomGap < 65 && cardFill.viralVisible && cardFill.scrollHeight <= cardFill.clientHeight + 2, `story card should feel full without overflow: ${JSON.stringify(cardFill)}`);
 
   await page.locator('#storyCaptureReady').click();
   await page.waitForFunction(() => getComputedStyle(document.getElementById('storyCaptureChrome')).display === 'none');
@@ -390,6 +406,7 @@ function norm(v) {
   await page.locator('#storyCaptureClose').click();
   await page.waitForFunction(() => getComputedStyle(document.getElementById('storyCaptureMode')).display === 'none');
   assert(await page.locator('#storyCard').evaluate((el) => el.parentElement?.id !== 'storyCaptureCardSlot'), 'story card was not restored after capture mode');
+  assert(await page.locator('#shareModal').isHidden(), 'direct capture close should return straight to the result');
 
   const shareEngine = await page.evaluate(async () => {
     const engine = window.__UNNI_IMAGE_EXPORT_V2__;
@@ -408,33 +425,22 @@ function norm(v) {
   });
   assert(shareEngine.version === '2.5.0' && shareEngine.ok && shareEngine.called && shareEngine.fileCount === 1, `shared paid-image engine path failed: ${JSON.stringify(shareEngine)}`);
 
-  await page.evaluate(() => history.back());
-  await page.waitForFunction(() => !isShareModalOpen());
-  const backState = await page.evaluate(() => ({
-    modalOpen:isShareModalOpen(),
-    resultDisplay:getComputedStyle(document.getElementById('resultSection')).display,
-    hasResult:!!currentResultData,
-  }));
-  assert(!backState.modalOpen && backState.hasResult && backState.resultDisplay !== 'none', `browser back did not return to result: ${JSON.stringify(backState)}`);
-
   const originalUA = await page.evaluate(() => navigator.userAgent);
   await page.evaluate(() => {
     Object.defineProperty(navigator, 'userAgent', {
       configurable:true,
       get:() => 'Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 KAKAOTALK/25.7.1',
     });
-    openShareModal();
   });
-  await page.locator('#storySaveBtn').click();
+  await page.locator('#mainShareBtn').click();
   await page.waitForSelector('#storyCaptureMode', { state:'visible', timeout:5000 });
   assert(await page.locator('#unniKakaoCardQualityGuide').count() === 0, 'Kakao should use the same direct screenshot mode, not a degraded-image warning');
   assert(await page.evaluate(() => window.__UNNI_IMAGE_EXPORT_V2__.isKakaoInApp('KAKAOTALK/25.7.1')), 'Kakao UA detection failed');
   await page.locator('#storyCaptureClose').click();
   await page.evaluate((ua) => {
     Object.defineProperty(navigator, 'userAgent', { configurable:true, get:() => ua });
-    history.back();
   }, originalUA);
-  await page.waitForFunction(() => !isShareModalOpen());
+  assert(await page.locator('#shareModal').isHidden(), 'Kakao direct capture should return straight to result');
 
   assert(await page.locator('#landingVaultEntry').evaluate((el) => getComputedStyle(el).display) === 'none', 'landing vault must stay hidden while feature is paused');
   assert(await page.locator('#unniVaultEntry').evaluate((el) => getComputedStyle(el).display) === 'none', 'result vault must stay hidden while feature is paused');
