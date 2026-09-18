@@ -581,89 +581,208 @@
       .slice(0, 70);
   }
 
-  async function saveFullPaidReport(root, productId) {
+  const paidExportCache = new Map();
+  const paidExportJobs = new Map();
+  const paidExportPriority = new Map();
+
+  function paidExportSignature(productId, body) {
+    const text = String(body?.innerText || "");
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i += Math.max(1, Math.floor(text.length / 600))) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return `${productId}:${text.length}:${hash >>> 0}`;
+  }
+
+  function setPaidExportProgress(root, current, total, ready = false) {
+    const button = root?.querySelector("#unniProductSaveAll");
+    const hint = root?.querySelector("#unniProductSaveHint");
+    if (!button || !hint) return;
+    hint.style.display = "block";
+    if (ready) {
+      button.textContent = "사진으로 한 번에 저장하기";
+      hint.textContent = `저장 준비 완료 · ${total}장`;
+      return;
+    }
+    button.textContent = current > 0
+      ? `사진으로 한 번에 저장하기 · ${current}/${total}`
+      : "사진으로 한 번에 저장하기";
+    hint.textContent = total > 0
+      ? `결과 읽는 동안 미리 준비 중 · ${current}/${total}장`
+      : "결과 읽는 동안 저장용 사진을 미리 준비해둘게.";
+  }
+
+  function waitForExportIdle(key, root) {
+    if (paidExportPriority.get(key)) return Promise.resolve();
+    if (root?.style?.display === "none") return Promise.reject(new Error("EXPORT_IDLE_CANCELLED"));
+    return new Promise((resolve) => {
+      if (typeof requestIdleCallback === "function") {
+        requestIdleCallback(() => resolve(), { timeout: 500 });
+      } else {
+        setTimeout(resolve, 90);
+      }
+    });
+  }
+
+  async function preparePaidExportAssets(root, productId, { priority = false } = {}) {
     const exporter = global.__UNNI_IMAGE_EXPORT_V2__;
     const body = root?.querySelector("#unniProductBody");
     const product = PRODUCTS[productId];
-    if (!body || !exporter?.renderElementToPngBlob) {
+    if (!body || !exporter?.renderElementToPngBlob) throw new Error("EXPORT_ENGINE_MISSING");
+    const key = paidExportSignature(productId, body);
+
+    if (paidExportCache.has(key)) return paidExportCache.get(key);
+    if (priority) paidExportPriority.set(key, true);
+    if (paidExportJobs.has(key)) return paidExportJobs.get(key);
+
+    const job = (async () => {
+      const groups = buildPaidExportGroups(productId, body);
+      const blobs = [];
+      const filenames = [];
+      const pages = [];
+      setPaidExportProgress(root, 0, groups.length, false);
+
+      try {
+        for (let index = 0; index < groups.length; index++) {
+          await waitForExportIdle(key, root);
+          const group = groups[index];
+          const page = buildPaidExportPage(product, group, index, groups.length);
+          pages.push(page);
+          if (document.fonts?.ready) {
+            try { await document.fonts.ready; } catch (_) {}
+          }
+          await new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          );
+          // 모바일은 화면에서 읽을 때 충분히 선명한 820px로 렌더링해 대기시간을 줄인다.
+          const targetWidth = exporter.isMobileDevice?.() ? 820 : 900;
+          const blob = await exporter.renderElementToPngBlob(page, targetWidth);
+          if (!blob || blob.size < 1000) throw new Error("PAID_EXPORT_EMPTY");
+          blobs.push(blob);
+          filenames.push(
+            `어떤언니_${safeFilePart(product?.name || "리포트")}_${safeFilePart(group.slug || group.title)}.png`,
+          );
+          page.remove();
+          pages.pop();
+          setPaidExportProgress(root, blobs.length, groups.length, false);
+        }
+        const prepared = { key, blobs, filenames };
+        paidExportCache.set(key, prepared);
+        setPaidExportProgress(root, blobs.length, blobs.length, true);
+        return prepared;
+      } finally {
+        pages.forEach((page) => page.remove());
+        paidExportJobs.delete(key);
+        paidExportPriority.delete(key);
+      }
+    })();
+
+    paidExportJobs.set(key, job);
+    return job;
+  }
+
+  function prewarmPaidExport(root, productId) {
+    const start = () => {
+      if (root?.style?.display === "none") return;
+      preparePaidExportAssets(root, productId, { priority:false }).catch((error) => {
+        if (error?.message !== "EXPORT_IDLE_CANCELLED") {
+          console.warn("유료 리포트 저장 미리 준비 실패:", error);
+        }
+      });
+    };
+    if (typeof requestIdleCallback === "function") {
+      requestIdleCallback(start, { timeout: 1400 });
+    } else {
+      setTimeout(start, 700);
+    }
+  }
+
+  function printPaidReport(root, productId) {
+    if (global.__UNNI_IMAGE_EXPORT_V2__?.isKakaoInApp?.()) {
+      if (typeof showToast === "function") {
+        showToast("PDF 보관은 카카오톡 ⋮ 메뉴에서 다른 브라우저로 열면 더 안정적으로 돼.");
+      }
+      return;
+    }
+    const body = root?.querySelector("#unniProductBody");
+    const product = PRODUCTS[productId];
+    if (!body) return;
+    const popup = window.open("", "_blank");
+    if (!popup) {
+      if (typeof showToast === "function") showToast("팝업을 허용하면 PDF로 한 파일 보관할 수 있어.");
+      return;
+    }
+    popup.document.open();
+    popup.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(product?.name || "어떤언니 리포트")}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;max-width:760px;margin:0 auto;padding:28px;color:#0f172a}section,article{break-inside:avoid}button{display:none}@media print{body{padding:0 18px}}</style></head><body><h1 style="font-size:22px">${esc(product?.name || "어떤언니 리포트")}</h1>${body.innerHTML}<script>setTimeout(()=>window.print(),250)<\/script></body></html>`);
+    popup.document.close();
+  }
+
+  async function saveFullPaidReport(root, productId) {
+    const exporter = global.__UNNI_IMAGE_EXPORT_V2__;
+    const product = PRODUCTS[productId];
+    const button = root?.querySelector("#unniProductSaveAll");
+    if (!exporter || !button) {
       if (typeof showToast === "function") showToast("이미지 저장 기능을 불러오지 못했어.");
       return;
     }
 
-    const button = root.querySelector("#unniProductSaveAll");
-    const originalText = button?.textContent || "";
-    if (button) {
-      button.disabled = true;
-      button.textContent = "보기 편하게 나누는 중…";
-      button.style.opacity = ".65";
-    }
-
-    const pages = [];
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.style.opacity = ".72";
     try {
-      const groups = buildPaidExportGroups(productId, body);
-      const blobs = [];
-      const filenames = [];
-
-      for (let index = 0; index < groups.length; index++) {
-        const group = groups[index];
-        const page = buildPaidExportPage(product, group, index, groups.length);
-        pages.push(page);
-        if (document.fonts?.ready) {
-          try { await document.fonts.ready; } catch (_) {}
-        }
-        await new Promise((resolve) =>
-          requestAnimationFrame(() => requestAnimationFrame(resolve)),
-        );
-        const blob = await exporter.renderElementToPngBlob(page, 900);
-        if (!blob || blob.size < 1000) throw new Error("PAID_EXPORT_EMPTY");
-        blobs.push(blob);
-        filenames.push(
-          `어떤언니_${safeFilePart(product?.name || "리포트")}_${safeFilePart(group.slug || group.title)}.png`,
-        );
-      }
+      const { blobs, filenames } = await preparePaidExportAssets(root, productId, { priority:true });
+      if (!blobs.length) throw new Error("PAID_EXPORT_EMPTY");
 
       if (blobs.length === 1) {
         const blob = blobs[0];
         if (exporter.isKakaoInApp?.()) {
           await exporter.showImageSaveFallback(blob, "save");
-        } else if (exporter.isIOSDevice?.()) {
-          const shared = await exporter.nativeSharePng(
-            blob,
-            filenames[0],
-            product?.name || "어떤언니 리포트",
-          );
-          if (!shared) await exporter.showImageSaveFallback(blob, "save");
+        } else if (exporter.isMobileDevice?.()) {
+          const shared = await exporter.nativeSharePng(blob, filenames[0], product?.name || "어떤언니 리포트");
+          if (!shared) exporter.downloadPngBlob(blob, filenames[0]);
         } else {
           exporter.downloadPngBlob(blob, filenames[0]);
-          if (typeof showToast === "function") showToast("전체 결과를 사진으로 저장했어.");
         }
-      } else if (exporter.isKakaoInApp?.()) {
+        return;
+      }
+
+      // 모바일은 iOS/Android 모두 가능한 경우 여러 장을 네이티브 공유창에 한 번에 넘긴다.
+      if (!exporter.isKakaoInApp?.() && exporter.isMobileDevice?.()) {
+        let shared = false;
+        try {
+          shared = await exporter.nativeSharePngFiles(
+            blobs,
+            filenames,
+            product?.name || "어떤언니 리포트",
+          );
+        } catch (error) {
+          if (error?.name !== "AbortError") console.warn("다중 이미지 공유 실패:", error);
+        }
+        if (shared) return;
+
+        if (exporter.isAndroidDevice?.()) {
+          blobs.forEach((blob, index) =>
+            setTimeout(() => exporter.downloadPngBlob(blob, filenames[index]), index * 120),
+          );
+          if (typeof showToast === "function") showToast(`${blobs.length}장 저장을 시작했어.`);
+          return;
+        }
+      }
+
+      if (exporter.isKakaoInApp?.() || exporter.isIOSDevice?.()) {
         await exporter.showImagePagesFallback(
           blobs,
-          `${product?.name || "내 리포트"} · 보기 편하게 나눠뒀어`,
+          `${product?.name || "내 리포트"} · ${blobs.length}장`,
         );
-      } else if (exporter.isIOSDevice?.()) {
-        const shared = await exporter.nativeSharePngFiles(
-          blobs,
-          filenames,
-          product?.name || "어떤언니 리포트",
-        );
-        if (!shared) {
-          await exporter.showImagePagesFallback(
-            blobs,
-            `${product?.name || "내 리포트"} · 보기 편하게 나눠뒀어`,
-          );
-        }
-      } else {
-        blobs.forEach((blob, index) => {
-          setTimeout(
-            () => exporter.downloadPngBlob(blob, filenames[index]),
-            index * 140,
-          );
-        });
-        if (typeof showToast === "function") {
-          showToast(`주제별로 ${blobs.length}장 나눠서 저장했어.`);
-        }
+        return;
+      }
+
+      blobs.forEach((blob, index) => {
+        setTimeout(() => exporter.downloadPngBlob(blob, filenames[index]), index * 120);
+      });
+      if (typeof showToast === "function") {
+        showToast(`주제별로 ${blobs.length}장 저장을 시작했어.`);
       }
     } catch (error) {
       console.error("유료 리포트 전체 저장 실패:", error);
@@ -671,11 +790,10 @@
         showToast("전체 결과 저장이 잠깐 꼬였어. 한 번만 다시 눌러줘.");
       }
     } finally {
-      pages.forEach((page) => page.remove());
-      if (button) {
-        button.disabled = false;
-        button.textContent = originalText || "전체 결과 사진으로 저장하기";
-        button.style.opacity = "1";
+      button.disabled = false;
+      button.style.opacity = "1";
+      if (!button.textContent || button.textContent.includes("준비")) {
+        button.textContent = originalText || "사진으로 한 번에 저장하기";
       }
     }
   }
@@ -695,8 +813,8 @@
     if (root) return root;
     root = document.createElement("div");
     root.id = "unniProductModal";
-    root.style.cssText = "display:none;position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.48);padding:18px;overflow:auto";
-    root.innerHTML = `<div style="max-width:520px;margin:4vh auto;background:#fff;border-radius:24px;padding:20px;box-shadow:0 24px 70px rgba(15,23,42,.25)"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><div id="unniProductBadge" style="font-size:11px;font-weight:900;color:#f43f5e"></div><h2 id="unniProductTitle" style="font-size:21px;font-weight:950;margin:5px 0 4px"></h2><div id="unniProductPrice" style="font-size:13px;font-weight:800;color:#64748b"></div></div><button id="unniProductClose" style="border:0;background:#f1f5f9;border-radius:999px;width:34px;height:34px;font-size:18px;cursor:pointer">×</button></div><div id="unniProductSetup" style="margin-top:16px"></div><div id="unniProductPayment" style="display:none;margin-top:15px"><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><div id="unniProductBody" style="margin-top:14px"></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#fb7185,#f472b6);color:white;padding:14px 16px;font-size:13px;font-weight:950;cursor:pointer">전체 결과 사진으로 저장하기</button><button id="unniProductAction" style="width:100%;margin-top:18px;border:0;border-radius:15px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:900;cursor:pointer"></button><div id="unniProductAccessNote" style="display:none;margin-top:9px;text-align:center;font-size:11px;font-weight:800;line-height:1.6;color:#a16207">🔐 한 번 결제하면 이 브라우저에서는 추가 결제 없이 계속 다시 볼 수 있어요.</div></div>`;
+    root.style.cssText = "display:none;position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.48);padding:10px;overflow:auto;-webkit-overflow-scrolling:touch";
+    root.innerHTML = `<div style="max-width:520px;margin:max(8px,env(safe-area-inset-top)) auto max(14px,env(safe-area-inset-bottom));background:#fff;border-radius:24px;padding:0 16px 18px;box-shadow:0 24px 70px rgba(15,23,42,.25);overflow:visible"><div id="unniProductStickyHead" style="position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin:0 -16px;padding:14px 16px 11px;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-radius:24px 24px 14px 14px;border-bottom:1px solid #f1f5f9"><div><div id="unniProductBadge" style="font-size:10px;font-weight:900;color:#f43f5e"></div><h2 id="unniProductTitle" style="font-size:19px;font-weight:950;margin:4px 0 2px"></h2><div id="unniProductPrice" style="font-size:12px;font-weight:800;color:#64748b"></div></div><button id="unniProductClose" style="flex:none;border:0;background:#f1f5f9;border-radius:999px;width:36px;height:36px;font-size:19px;cursor:pointer">×</button></div><div id="unniProductSetup" style="margin-top:14px"></div><div id="unniProductPayment" style="display:none;margin-top:15px"><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><div id="unniProductBody" style="margin-top:14px"></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#fb7185,#f472b6);color:white;padding:14px 16px;font-size:13px;font-weight:950;cursor:pointer">사진으로 한 번에 저장하기</button><div id="unniProductSaveHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:800;line-height:1.55;color:#94a3b8">결과 읽는 동안 저장용 사진을 미리 준비해둘게.</div><button id="unniProductSavePdf" type="button" style="display:none;width:100%;margin-top:9px;border:1px solid #e2e8f0;border-radius:13px;background:#fff;color:#475569;padding:11px 14px;font-size:11px;font-weight:900;cursor:pointer">PDF로 한 파일 보관하기</button><button id="unniProductAction" style="width:100%;margin-top:14px;border:0;border-radius:15px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:900;cursor:pointer"></button><div id="unniProductAccessNote" style="display:none;margin-top:9px;text-align:center;font-size:11px;font-weight:800;line-height:1.6;color:#a16207">🔐 한 번 결제하면 이 브라우저에서는 추가 결제 없이 계속 다시 볼 수 있어요.</div></div>`;
     document.body.appendChild(root);
     root.querySelector("#unniProductClose").onclick = () => { root.style.display = "none"; document.body.style.overflow = ""; };
     root.addEventListener("click", (e) => { if (e.target === root) root.querySelector("#unniProductClose").click(); });
@@ -829,17 +947,33 @@
     const accessNote = root.querySelector("#unniProductAccessNote");
     if (accessNote) accessNote.style.display = "none";
     root.querySelector("#unniProductBody").innerHTML = productBody(productId, data, extra);
+
     const saveAll = root.querySelector("#unniProductSaveAll");
+    const saveHint = root.querySelector("#unniProductSaveHint");
+    const savePdf = root.querySelector("#unniProductSavePdf");
     if (saveAll) {
       saveAll.style.display = "block";
-      saveAll.textContent = "전체 결과 사진으로 저장하기";
+      saveAll.textContent = "사진으로 한 번에 저장하기";
       saveAll.onclick = () => saveFullPaidReport(root, productId);
     }
+    if (saveHint) {
+      saveHint.style.display = "block";
+      saveHint.textContent = "결과 읽는 동안 저장용 사진을 미리 준비해둘게.";
+    }
+    if (savePdf) {
+      savePdf.style.display = "block";
+      savePdf.onclick = () => printPaidReport(root, productId);
+    }
+
     const action = root.querySelector("#unniProductAction");
     action.textContent = "닫기";
     action.onclick = () => root.querySelector("#unniProductClose").click();
     root.style.display = "block";
+    root.scrollTop = 0;
     document.body.style.overflow = "hidden";
+
+    // 사용자가 리포트를 읽는 동안 뒤에서 천천히 준비해 저장 버튼 대기를 줄인다.
+    prewarmPaidExport(root, productId);
   }
 
   async function beginPaidCheckout(productId, data, extra, root) {
@@ -881,7 +1015,11 @@
     root.querySelector("#unniProductSetup").innerHTML = setupHtml(productId, data);
     root.querySelector("#unniProductPayment").style.display = "none";
     const saveAll = root.querySelector("#unniProductSaveAll");
+    const saveHint = root.querySelector("#unniProductSaveHint");
+    const savePdf = root.querySelector("#unniProductSavePdf");
     if (saveAll) { saveAll.style.display = "none"; saveAll.onclick = null; }
+    if (saveHint) saveHint.style.display = "none";
+    if (savePdf) { savePdf.style.display = "none"; savePdf.onclick = null; }
     root.querySelector("#unniProductBody").innerHTML = `<p style="font-size:13px;line-height:1.75;color:#64748b">${esc(product.desc)}</p>`;
     const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
     const accessNote = root.querySelector("#unniProductAccessNote");
@@ -916,25 +1054,53 @@
     document.body.style.overflow = "hidden";
   }
 
+  function recommendedProductId(data) {
+    const concern = data?.concernKey || "money";
+    const situation = data?.concernSituation || "";
+    if (concern === "love" && ["crush","relationship","breakup"].includes(situation)) {
+      return "compatibility";
+    }
+    if (["money","career","path","mental","people"].includes(concern)) {
+      return "full_saju";
+    }
+    return "concern_bundle3";
+  }
+
+  function productButtonHtml(p, { recommended = false, hidden = false } = {}) {
+    const border = recommended ? "#fda4af" : "#e2e8f0";
+    const bg = recommended ? "linear-gradient(135deg,#fff1f2,#fff)" : "#fff";
+    return `<button data-unni-product="${p.id}" ${hidden ? 'data-secondary-product="1"' : ""} style="${hidden ? "display:none;" : ""}text-align:left;width:100%;padding:14px;border:1px solid ${border};border-radius:16px;background:${bg};cursor:pointer"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:10px;font-weight:900;color:#f43f5e;margin-bottom:3px">${recommended ? "지금 너한테 먼저 추천 · " : ""}${p.badge}</div><div style="font-size:14px;font-weight:900;color:#0f172a">${p.name}</div></div><div style="font-size:13px;font-weight:950;color:#0f172a;white-space:nowrap">${won(p.price)}</div></div><div style="font-size:11px;line-height:1.55;color:#64748b;margin-top:7px">${p.desc}</div></button>`;
+  }
+
   function renderCatalog() {
     const data = getData();
     const notes = document.getElementById("notesListContainer");
     if (!data || !notes || document.getElementById("unniProductLadder")) return;
     const isT = data?.currentMode === "T";
+    const recommendedId = recommendedProductId(data);
+    const recommended = PRODUCTS[recommendedId] || PRODUCTS.full_saju;
+    const others = Object.values(PRODUCTS).filter((p) => p.id !== recommended.id);
     const wrap = document.createElement("section");
     wrap.id = "unniProductLadder";
-    wrap.style.cssText = "margin-top:24px;padding:20px 16px;border-radius:22px;background:#fff;border:1px solid #fde2e8;box-shadow:0 10px 30px rgba(225,175,185,.10)";
-    const eyebrow = isT ? "더 볼 거면 필요한 것만" : "더 마음에 걸리는 게 있다면";
+    wrap.style.cssText = "margin-top:24px;padding:18px 14px;border-radius:22px;background:#fff;border:1px solid #fde2e8;box-shadow:0 10px 30px rgba(225,175,185,.10)";
+    const eyebrow = isT ? "더 볼 거면, 지금 필요한 것부터" : "더 마음에 걸리는 게 있다면";
     const headline = isT
-      ? "내가 필요한 것만 더 깊게 봐줄게"
-      : "언니가 이어서 더 봐줄게";
+      ? "내가 하나만 먼저 골라줄게"
+      : "언니가 지금 하나만 먼저 골라줄게";
     const sub = isT
-      ? "지금 본 걸로 충분하면 여기서 끝. 더 궁금한 것만 골라."
-      : "지금 본 것만으로도 괜찮아. 더 궁금한 게 남았을 때만 골라서 이어보자.";
-    wrap.innerHTML = `<div style="font-size:11px;font-weight:900;color:#f43f5e">${eyebrow}</div><h3 style="font-size:19px;font-weight:950;margin:5px 0 5px">${headline}</h3><p style="font-size:12px;line-height:1.65;color:#64748b;margin:0 0 14px">${sub}</p><div style="display:grid;gap:10px">${Object.values(PRODUCTS).map((p) => `<button data-unni-product="${p.id}" style="text-align:left;width:100%;padding:14px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;cursor:pointer"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:10px;font-weight:900;color:#f43f5e;margin-bottom:3px">${p.badge}</div><div style="font-size:14px;font-weight:900;color:#0f172a">${p.name}</div></div><div style="font-size:13px;font-weight:950;color:#0f172a;white-space:nowrap">${won(p.price)}</div></div><div style="font-size:11px;line-height:1.55;color:#64748b;margin-top:7px">${p.desc}</div></button>`).join("")}</div>`;
+      ? "지금 본 걸로 충분하면 여기서 끝. 아래 추천도 필요한 경우에만 봐."
+      : "지금 본 것만으로도 괜찮아. 더 궁금할 때만 언니 추천부터 가볍게 봐.";
+    wrap.innerHTML = `<div style="font-size:11px;font-weight:900;color:#f43f5e">${eyebrow}</div><h3 style="font-size:18px;font-weight:950;margin:5px 0 5px">${headline}</h3><p style="font-size:11.5px;line-height:1.6;color:#64748b;margin:0 0 12px">${sub}</p><div style="display:grid;gap:9px">${productButtonHtml(recommended,{recommended:true})}${others.map((p)=>productButtonHtml(p,{hidden:true})).join("")}</div><button id="unniShowOtherProducts" type="button" style="width:100%;margin-top:9px;border:0;background:transparent;color:#64748b;font-size:11px;font-weight:900;cursor:pointer;padding:8px">다른 리포트 3개 보기 ↓</button>`;
     notes.insertAdjacentElement("afterend", wrap);
     wrap.querySelectorAll("[data-unni-product]").forEach((btn) => btn.addEventListener("click", () => openProduct(btn.dataset.unniProduct)));
+    wrap.querySelector("#unniShowOtherProducts")?.addEventListener("click", (event) => {
+      const hidden = [...wrap.querySelectorAll('[data-secondary-product="1"]')];
+      const opening = hidden.some((el) => el.style.display === "none");
+      hidden.forEach((el) => { el.style.display = opening ? "block" : "none"; });
+      event.currentTarget.textContent = opening ? "다른 리포트 접기 ↑" : "다른 리포트 3개 보기 ↓";
+    });
   }
+
 
   global.handleUnniProductPaymentReturn = async function (params, resume, restored, ticket) {
     const productId = resume?.productId;
@@ -957,7 +1123,7 @@
 
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
-  global.__UNNI_PRODUCTS_V1__ = { version: "1.1.0", products: PRODUCTS };
+  global.__UNNI_PRODUCTS_V1__ = { version: "1.2.0", products: PRODUCTS };
 
   const observer = new MutationObserver(() => renderCatalog());
   if (document.documentElement) observer.observe(document.documentElement, { childList: true, subtree: true });
