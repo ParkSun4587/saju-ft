@@ -10,13 +10,41 @@
     mental: "마음·스트레스",
   };
 
+  const FALLBACK_SITUATIONS = {
+    money: [["saving","돈이 잘 안 모여"],["income","수입을 더 늘리고 싶어"],["side","부업·새 수입을 만들고 싶어"],["flow","앞으로 돈 흐름이 궁금해"]],
+    career: [["exam","시험·합격이 궁금해"],["jobsearch","취업 준비 중이야"],["move","이직·퇴사를 고민 중이야"],["current","지금 자리에서 잘 풀리고 싶어"]],
+    love: [["crush","썸·짝사랑 중이야"],["relationship","지금 연애 중이야"],["breakup","헤어진 사람이 있어"],["new","새로운 인연을 만나고 싶어"]],
+    path: [["lost","뭘 해야 할지 모르겠어"],["current","지금 가는 길이 맞는지 궁금해"],["switch","다른 분야로 바꾸고 싶어"],["strength","내 적성·강점을 알고 싶어"]],
+    people: [["friend","친구·지인 때문에 힘들어"],["work","직장 사람 때문에 힘들어"],["family","가족과 자꾸 부딪혀"],["distance","계속 볼지 거리를 둘지 고민이야"]],
+    mental: [["burnout","번아웃이 온 것 같아"],["overthink","생각이 너무 많아"],["low","아무것도 하기 싫어"],["recover","다시 컨디션을 찾고 싶어"]],
+  };
+
+  function situationRows(key) {
+    const live = global.__CONCERN_SITUATIONS__?.[key]?.options;
+    if (Array.isArray(live) && live.length) {
+      return live.map((row) => [row[0], row[1]]);
+    }
+    return FALLBACK_SITUATIONS[key] || [];
+  }
+
+  function situationLabel(key, situation) {
+    return situationRows(key).find((row) => row[0] === situation)?.[1] || "";
+  }
+
+  function situationSelectOptions(key, selected) {
+    return `<option value="">지금 상황 선택</option>${situationRows(key)
+      .map(([value,label]) => `<option value="${esc(value)}" ${selected === value ? "selected" : ""}>${esc(label)}</option>`)
+      .join("")}`;
+  }
+
+
   const PRODUCTS = {
     concern_bundle3: {
       id: "concern_bundle3",
       name: "고민 3개 더 깊게",
       price: 2900,
       badge: "다른 고민도 궁금하다면",
-      desc: "지금 본 고민 말고 궁금한 고민 3개를 골라, 고민마다 NOTE 1~6을 전부 받아. 총 18개 메모로 이어서 보는 구성.",
+      desc: "지금 본 고민 말고 궁금한 고민 3개를 고르고, 각 고민의 지금 상황까지 맞춰서 NOTE 1~6을 전부 받아. 총 18개 메모 구성.",
     },
     full_saju: {
       id: "full_saju",
@@ -37,7 +65,7 @@
       name: "어떤언니 올인원",
       price: 9900,
       badge: "가장 깊은 전체판",
-      desc: "내 전체 사주판 12개 챕터 + 내 고민 6가지 NOTE 36개를 한 번에 보는 가장 큰 리포트야. 상대 정보가 필요한 궁합은 별도 상품이야.",
+      desc: "내 전체 사주판 12개 챕터 + 6가지 고민별 지금 상황을 맞춘 NOTE 36개를 한 번에 보는 가장 큰 리포트야. 궁합은 별도 상품이야.",
     },
   };
 
@@ -210,17 +238,23 @@
   function bundleHtml(data, mode, extra) {
     const keys = Array.isArray(extra?.concerns) ? extra.concerns : [];
     return keys.map((key) => {
-      const d = { ...data, concernKey: key };
+      const concernSituation = extra?.situations?.[key] || "";
+      const d = { ...data, concernKey: key, concernSituation };
       const notes = typeof global.generateConcernNotes === "function" ? global.generateConcernNotes(d, mode) : [];
-      return `<section data-export-kind="concern" data-concern="${esc(key)}" style="margin-bottom:26px"><h3 style="font-size:19px;font-weight:950;margin:0 0 10px">${esc(CONCERNS[key] || key)}</h3>${noteCards(notes)}</section>`;
+      const situLabel = situationLabel(key, concernSituation);
+      return `<section data-export-kind="concern" data-concern="${esc(key)}" data-concern-situation="${esc(concernSituation)}" style="margin-bottom:26px"><h3 style="font-size:19px;font-weight:950;margin:0 0 5px">${esc(CONCERNS[key] || key)}</h3>${situLabel ? `<div style="font-size:11px;font-weight:850;color:#f43f5e;margin-bottom:10px">지금 상황 · ${esc(situLabel)}</div>` : ""}${noteCards(notes)}</section>`;
     }).join("");
   }
 
-  function allInOneHtml(data, mode) {
+  function allInOneHtml(data, mode, extra) {
     const all = Object.keys(CONCERNS).map((key) => {
-      const d = { ...data, concernKey: key };
+      const concernSituation =
+        extra?.situations?.[key] ||
+        (key === data?.concernKey ? data?.concernSituation || "" : "");
+      const d = { ...data, concernKey: key, concernSituation };
       const notes = typeof global.generateConcernNotes === "function" ? global.generateConcernNotes(d, mode) : [];
-      return `<section data-export-kind="concern" data-concern="${esc(key)}" style="margin:26px 0"><h3 style="font-size:19px;font-weight:950;margin:0 0 10px">${esc(CONCERNS[key])}</h3>${noteCards(notes)}</section>`;
+      const situLabel = situationLabel(key, concernSituation);
+      return `<section data-export-kind="concern" data-concern="${esc(key)}" data-concern-situation="${esc(concernSituation)}" style="margin:26px 0"><h3 style="font-size:19px;font-weight:950;margin:0 0 5px">${esc(CONCERNS[key])}</h3>${situLabel ? `<div style="font-size:11px;font-weight:850;color:#f43f5e;margin-bottom:10px">지금 상황 · ${esc(situLabel)}</div>` : ""}${noteCards(notes)}</section>`;
     }).join("");
     return `<h3 style="font-size:19px;font-weight:950;margin:0 0 10px">내 전체 사주판</h3>${fullSajuHtml(data, mode)}<div style="height:24px"></div>${all}`;
   }
@@ -651,7 +685,7 @@
     const mode = getMode(data);
     if (productId === "concern_bundle3") return bundleHtml(data, mode, extra);
     if (productId === "full_saju") return fullSajuHtml(data, mode);
-    if (productId === "all_in_one") return allInOneHtml(data, mode);
+    if (productId === "all_in_one") return allInOneHtml(data, mode, extra);
     if (productId === "compatibility") return compatibilityHtml(data, mode, extra);
     return "";
   }
@@ -677,7 +711,32 @@
   function setupHtml(productId, data) {
     if (productId === "concern_bundle3") {
       const defaults = new Set(defaultBundle(data));
-      return `<div style="font-size:12px;font-weight:800;margin-bottom:8px">더 보고 싶은 고민 3개를 골라</div><div id="unniBundleChecks" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${Object.keys(CONCERNS).filter((k) => k !== data?.concernKey).map((k) => `<label style="padding:10px;border:1px solid #e2e8f0;border-radius:12px;font-size:12px;font-weight:700"><input type="checkbox" value="${k}" ${defaults.has(k)?"checked":""}> ${CONCERNS[k]}</label>`).join("")}</div>`;
+      const keys = Object.keys(CONCERNS).filter((k) => k !== data?.concernKey);
+      return `
+        <div style="font-size:12px;font-weight:900;margin-bottom:5px">더 보고 싶은 고민 3개를 골라</div>
+        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">고른 고민마다 지금 상황도 하나씩 맞춰줘. 그래야 결과가 엉뚱한 전제를 안 해.</div>
+        <div id="unniBundleChecks" style="display:grid;gap:8px">
+          ${keys.map((k) => `
+            <div data-bundle-row="${k}" style="padding:11px;border:1px solid #e2e8f0;border-radius:14px;background:#fff">
+              <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:850;color:#334155">
+                <input type="checkbox" value="${k}" ${defaults.has(k) ? "checked" : ""}> ${CONCERNS[k]}
+              </label>
+              <select data-bundle-situation="${k}" style="width:100%;margin-top:8px;padding:9px 10px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc;font-size:11px;font-weight:750;color:#475569">
+                ${situationSelectOptions(k, "")}
+              </select>
+            </div>`).join("")}
+        </div>`;
+    }
+    if (productId === "all_in_one") {
+      return `
+        <div style="font-size:12px;font-weight:900;margin-bottom:5px">6가지 고민의 지금 상황만 맞춰줘</div>
+        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">각 NOTE가 네 실제 상황을 전제로 말하게 만드는 마지막 설정이야.</div>
+        <div id="unniAllInOneSituations" style="display:grid;gap:8px">
+          ${Object.keys(CONCERNS).map((k) => {
+            const selected = k === data?.concernKey ? data?.concernSituation || "" : "";
+            return `<label style="display:grid;grid-template-columns:92px 1fr;align-items:center;gap:8px;padding:9px 10px;border:1px solid #e2e8f0;border-radius:13px;background:#fff"><span style="font-size:11px;font-weight:900;color:#334155">${CONCERNS[k]}</span><select data-all-situation="${k}" style="width:100%;min-width:0;padding:9px 10px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc;font-size:10.5px;font-weight:750;color:#475569">${situationSelectOptions(k, selected)}</select></label>`;
+          }).join("")}
+        </div>`;
     }
     if (productId === "compatibility") {
       const hourOpts = Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1}시</option>`).join("");
@@ -705,7 +764,26 @@
     if (productId === "concern_bundle3") {
       const picked = [...root.querySelectorAll('#unniBundleChecks input:checked')].map((x) => x.value);
       if (picked.length !== 3) throw new Error("고민을 정확히 3개 골라줘.");
-      return { concerns: picked };
+      const situations = {};
+      for (const key of picked) {
+        const value = root.querySelector(`[data-bundle-situation="${key}"]`)?.value || "";
+        if (!situationRows(key).some(([s]) => s === value)) {
+          throw new Error(`${CONCERNS[key]}의 지금 상황도 하나 골라줘.`);
+        }
+        situations[key] = value;
+      }
+      return { concerns: picked, situations };
+    }
+    if (productId === "all_in_one") {
+      const situations = {};
+      for (const key of Object.keys(CONCERNS)) {
+        const value = root.querySelector(`[data-all-situation="${key}"]`)?.value || "";
+        if (!situationRows(key).some(([s]) => s === value)) {
+          throw new Error(`${CONCERNS[key]}의 지금 상황을 골라줘.`);
+        }
+        situations[key] = value;
+      }
+      return { situations };
     }
     if (productId === "compatibility") {
       const b = root.querySelector("#partnerBirth")?.value.replace(/\D/g, "") || "";
