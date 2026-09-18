@@ -6882,17 +6882,12 @@ currentResultData = {
             <div style="font-size:18px;font-weight:950;color:#0f172a;letter-spacing:-.04em">카카오톡 안에서는 카드가 뭉개질 수 있어</div>
             <div style="font-size:12px;line-height:1.7;color:#64748b;font-weight:750;margin-top:9px">화면에서 본 디자인에 가깝게 저장하려면<br><b style="color:#0f172a">카카오톡 ⋮ → 다른 브라우저로 열기 → 사진으로 저장</b>을 추천해.</div>
             <button id="unniKakaoCardClose" type="button" style="width:100%;margin-top:16px;border:0;border-radius:14px;background:#0f172a;color:#fff;padding:13px 14px;font-size:12px;font-weight:900;cursor:pointer">확인</button>
-            <button id="unniKakaoCardFallback" type="button" style="width:100%;margin-top:8px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;color:#64748b;padding:11px 14px;font-size:11px;font-weight:850;cursor:pointer">그래도 여기서 현재 화질로 저장하기</button>
           </div>`;
         layer.style.display = "flex";
         document.body.style.overflow = "hidden";
         layer.querySelector("#unniKakaoCardClose")?.addEventListener("click", () => {
           layer.style.display = "none";
           document.body.style.overflow = isShareModalOpen() ? "hidden" : "auto";
-        }, { once:true });
-        layer.querySelector("#unniKakaoCardFallback")?.addEventListener("click", async () => {
-          layer.style.display = "none";
-          await showImageSaveFallback(blob, "save");
         }, { once:true });
         return true;
       }
