@@ -60,6 +60,13 @@ async function inspect(page, mode) {
       visible:products.filter(x=>getComputedStyle(x).display!=='none').length,
       catalog:document.getElementById('unniProductLadder')?.innerText||'',
       switchCount:document.querySelectorAll('#sisterSwitchCard').length,
+      badges:notes.map(n=>n.badge||''),
+      hierarchy:{
+        oneLineBeforeThreeLine:(document.getElementById('sazuCharacterTitle').compareDocumentPosition(document.getElementById('manualBulletList')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+        threeLineBeforeMbti:(document.getElementById('manualBulletList').compareDocumentPosition(document.getElementById('gradeSection')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+        mbtiBeforeChem:(document.getElementById('gradeSection').compareDocumentPosition(document.getElementById('chemBestCard')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+        mbtiSize:parseFloat(getComputedStyle(document.getElementById('resultBigMbti')).fontSize||'0'),
+      },
     };
   },mode);
   assert(r.n1.length>=210,mode+' NOTE1 too short '+r.n1.length);
