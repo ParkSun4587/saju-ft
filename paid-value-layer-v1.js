@@ -71,12 +71,12 @@
   }
 
   const CONCERN_LABELS = {
-    money: "재물·돈복",
-    career: "직장·커리어",
+    money: "돈·재물",
+    career: "학업·직장",
     love: "연애·썸",
-    path: "진로·내 길",
-    people: "인간관계",
-    mental: "마음·회복",
+    path: "진로·적성",
+    people: "사람·관계",
+    mental: "마음·스트레스",
   };
 
   function sharedTimingOverlap(data, concernKey, timing, isT) {
