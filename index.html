@@ -6269,8 +6269,8 @@ currentResultData = {
 
         if (summaryTxt) {
           summaryTxt.innerHTML = isT
-            ? `언니가 딱 정리하면, <b>${maxOheng.label}(${maxOheng.pct}%)</b> 쪽이 제일 강해. ${strongestT[maxOheng.name] || "이 힘이 먼저 나온다"}. 반대로 ${weakLeadT} 자동으로 나오길 기대하면 안 돼. 결함이 아니라 <b>의식해서 챙길 포인트</b>라고 보면 돼.`
-            : `언니가 보기엔 <b>${maxOheng.label}(${maxOheng.pct}%)</b> 기운이 제일 눈에 띄어. ${strongestF[maxOheng.name] || "이 힘이 자연스럽게 먼저 나오는 편이야"}. ${weakLeadF} 바쁠수록 네가 놓치기 쉬울 수 있어. 부족하다고 겁먹지 말고, <b>“아, 여긴 내가 조금 더 챙겨주면 되는구나”</b> 정도로 같이 봐주면 돼.`;
+            ? `여기서 재밌는 건 <b>${maxOheng.label}(${maxOheng.pct}%)</b>이 제일 강하다는 것보다, <b>${minStr}</b>이랑 같이 봤을 때야. ${strongestT[maxOheng.name] || "강한 쪽은 자동으로 먼저 나온다"}. 반대로 ${weakLeadT} 일부러 챙겨야 해. <b>강한 힘은 네가 무심코 쓰는 방식, 약한 힘은 막힐 때 티 나는 빈칸</b>이라고 보면 돼. 이 둘이 어디서 엇갈리는지가 네 반복 패턴의 힌트야.`
+            : `언니가 보니까 <b>${maxOheng.label}(${maxOheng.pct}%)</b> 기운이 제일 먼저 눈에 들어와. ${strongestF[maxOheng.name] || "이 힘이 자연스럽게 먼저 나오는 편이야"}. 그런데 더 궁금하게 봐야 할 건 <b>${minStr}</b> 쪽이야. ${weakLeadF} 네가 바쁘거나 마음이 급할 때 여기서 빈틈이 먼저 보여. <b>잘하는 힘과 놓치기 쉬운 힘이 같이 있을 때 네 성향이 훨씬 선명해져.</b> 뒤에서 이 조합이 지금 고민에 어떻게 튀어나오는지도 같이 볼게.`;
         }
       }
 
