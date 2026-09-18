@@ -6054,43 +6054,47 @@ currentResultData = {
         const notesContainer = document.getElementById("notesListContainer");
 
         if (notesContainer) {
-          const visibleNotes = isUnlocked ? notesData : notesData.slice(0, 1);
+          if (isUnlocked) {
+            notesContainer.innerHTML = buildNotesHTML(notesData);
+          } else {
+            notesContainer.innerHTML = buildNotesHTML(notesData.slice(0, 1));
 
-          notesContainer.innerHTML = buildNotesHTML(visibleNotes);
+            if (notesData[1]) {
+              const nextNote = notesData[1];
+              const previewParts = String(nextNote.desc || "").split(/<br\s*\/?>\s*<br\s*\/?>/i);
+              const previewDesc = previewParts.slice(0, 2).join("<br><br>");
 
-          if (!isUnlocked && notesData[1]) {
-            const nextNote = notesData[1];
-
-            notesContainer.insertAdjacentHTML(
-              "beforeend",
-              `
-                <div class="relative overflow-hidden bg-white rounded-2xl p-4 sm:p-5 border border-amber-200/60 shadow-sm text-left">
-                    <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-100">
-                        <span class="text-[10px] font-mono font-black px-2 py-0.5 rounded-md border ${
-                          isT
-                            ? "text-sky-600 bg-sky-50 border-sky-200"
-                            : "text-rose-600 bg-rose-50 border-rose-200"
-                        }">
-                            NOTE ${nextNote.themeNum}
-                        </span>
-
-                        <span class="text-[10px] text-slate-500 font-bold text-right whitespace-nowrap shrink-0">
-                            ${nextNote.badge}
-                        </span>
-                    </div>
-
-                    <h4 class="mt-3 text-[14px] sm:text-[15px] font-black text-slate-900 leading-snug break-keep">
-                        ${nextNote.title}
-                    </h4>
-
-                    <div class="mt-3 rounded-xl border border-dashed border-amber-300 bg-amber-50/70 px-3 py-4 text-center">
-                        <p class="text-[11px] font-bold text-amber-800 leading-relaxed break-keep">
-                            여기부터는 언니가 결제 후에만 솔직하게 말해줄게.
-                        </p>
-                    </div>
-                </div>
-            `,
-            );
+              notesContainer.insertAdjacentHTML(
+                "beforeend",
+                `
+                  <div id="note2PreviewCard" class="relative overflow-hidden bg-white rounded-2xl p-4 sm:p-5 border border-amber-200/60 shadow-sm text-left">
+                      <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                          <span class="text-[10px] font-mono font-black px-2 py-0.5 rounded-md border ${
+                            isT
+                              ? "text-sky-600 bg-sky-50 border-sky-200"
+                              : "text-rose-600 bg-rose-50 border-rose-200"
+                          }">
+                              NOTE ${nextNote.themeNum}
+                          </span>
+                          <span class="text-[10px] text-slate-500 font-bold text-right whitespace-nowrap shrink-0">
+                              ${nextNote.badge}
+                          </span>
+                      </div>
+                      <h4 class="mt-3 text-[14px] sm:text-[15px] font-black text-slate-900 leading-snug break-keep">
+                          ${nextNote.title}
+                      </h4>
+                      <div class="mt-3 text-[12px] sm:text-[13px] text-slate-700 leading-relaxed break-keep">
+                        ${previewDesc}
+                      </div>
+                      <div class="mt-3 rounded-xl border border-dashed border-amber-300 bg-amber-50/80 px-3 py-3 text-center">
+                          <p class="text-[11px] font-bold text-amber-800 leading-relaxed break-keep">
+                              여기서부터는 왜 이 패턴이 반복되는지, 지금 진짜 문제와 7일 처방까지 이어서 볼게.
+                          </p>
+                      </div>
+                  </div>
+              `,
+              );
+            }
           }
         }
       } // <--- 바로 이 중괄호 밑에 엔터 치고 붙여넣기!
