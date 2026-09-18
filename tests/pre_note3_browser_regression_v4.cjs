@@ -158,6 +158,26 @@ async function load(page) {
     });
 
     assert(copyAudit.out.length === 12, `copy audit set count ${copyAudit.out.length}`);
+
+    const situationUi = await page.evaluate(() => {
+      const out = {};
+      for (const key of ['money','career','love','path','people','mental']) {
+        renderConcernSituationPicker(key);
+        out[key] = {
+          prompt:document.getElementById('concernSituationPrompt').innerText,
+          count:document.querySelectorAll('#concernSituationGrid [data-concern-situation]').length,
+          labels:[...document.querySelectorAll('#concernSituationGrid [data-concern-situation]')].map((el) => el.innerText),
+        };
+      }
+      return out;
+    });
+    for (const [key, row] of Object.entries(situationUi)) {
+      assert(row.count === 4, `${key} must expose 4 situations, got ${row.count}`);
+      assert(row.prompt.length > 5, `${key} situation prompt missing`);
+    }
+    assert(situationUi.love.labels.some((x) => x.includes('지금 연애 중이야')), 'love relationship situation missing');
+    assert(situationUi.love.labels.some((x) => x.includes('헤어진 사람이 있어')), 'love breakup situation missing');
+    assert(situationUi.love.labels.some((x) => x.includes('새로운 인연을 만나고 싶어')), 'love new-person situation missing');
     const banned = [
       '언니가 잡은 사주 근거',
       '언니가 잡은 계산 근거',
@@ -274,6 +294,12 @@ async function load(page) {
 
       document.getElementById('nameInput').value = '박태양';
       document.getElementById('selectedConcernKey').value = c.concern;
+      const situationDefaults = {
+        money:'saving', career:'jobsearch', love:'new',
+        path:'lost', people:'friend', mental:'burnout',
+      };
+      renderConcernSituationPicker(c.concern);
+      selectConcernSituation(situationDefaults[c.concern]);
       document.getElementById('birthDateInput').value = c.birth;
       document.getElementById('calendarSelect').value = c.calendar;
       document.getElementById('genderValue').value = c.gender;
@@ -389,6 +415,8 @@ async function load(page) {
       window.gtag = () => {};
       document.getElementById('nameInput').value = '테스트';
       document.getElementById('selectedConcernKey').value = 'money';
+      renderConcernSituationPicker('money');
+      selectConcernSituation('saving');
       document.getElementById('calendarSelect').value = 'lunar';
       document.getElementById('genderValue').value = 'female';
       document.getElementById('birthDateInput').value = '20170301';
