@@ -593,7 +593,8 @@ function norm(v) {
   assert(html.includes('showImagePagesFallback'), 'multi-image mobile fallback missing');
   assert(!html.includes('id="storyShareBtn"') && !html.includes('인스타에 올릴 사진 열기'), 'duplicate Instagram save/share UI remains');
   assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
-  assert(html.includes('openStoryCaptureMode') && html.includes('storyCaptureMode') && html.includes('storyCaptureCardSlot') && html.includes('화면 그대로 캡처하기'), 'direct card screenshot mode missing');
+  assert(html.includes('openStoryCaptureFromResult') && html.includes('onclick="openStoryCaptureFromResult()"') && html.includes('openStoryCaptureMode') && html.includes('storyCaptureMode') && html.includes('storyCaptureCardSlot'), 'one-tap direct card screenshot mode missing');
+  assert(html.includes('스티커 → 링크 → sajuft.com') && html.includes('친구 태그') && html.includes('너는 뭐 나왔어?') && html.includes('나도 내 결과 보기'), 'Instagram viral/link guidance missing');
   assert(html.includes('requestFullscreen') && html.includes('storyCaptureReady'), 'capture clean-view/fullscreen enhancement missing');
   assert(!html.includes('showKakaoCardQualityGuide') && !html.includes('saveInstaCardImage') && !html.includes('prepareStoryCardAsset'), 'obsolete rendered story-card save path remains');
   assert(html.includes('__UNNI_IMAGE_EXPORT_V2__') && html.includes('version: "2.5.0"'), 'image export behavior version missing');
