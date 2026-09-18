@@ -5524,8 +5524,8 @@ return [
 
             const ackText =
               mode === "T"
-                ? `${callName}구나. [${selectedConcernText} · ${selectedSituationText}] 확인했어. 다른 경우 안 섞고 네 얘기만 바로 볼게.`
-                : `어머, 우리 ${callName}구나! [${selectedConcernText} · ${selectedSituationText}] 얘기였네. 언니가 다른 경우 안 섞고 딱 네 얘기만 봐줄게.`;
+                ? `${callVoc}, [${selectedConcernText} · ${selectedSituationText}] 얘기 확인했어. 겁주거나 단정하지 않고, 네 상황에서 실제로 봐야 할 것부터 정리해줄게.`
+                : `${callVoc}, [${selectedConcernText} · ${selectedSituationText}] 얘기구나. 다른 경우 섞지 않고 네 상황만 놓고 차근차근 볼게.`;
 
             const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up mt-1">
@@ -5643,8 +5643,8 @@ currentResultData = {
                 removeLiveTyping("liveT1");
                 appendSisterMsg(
                   isT
-                    ? `잠깐만 기다려봐. 태어난 날짜랑 시간 기준으로 사주부터 제대로 펼쳐볼게.`
-                    : `잠깐만 기다려봐, ${callVoc}! 언니가 사주부터 꼼꼼히 펼쳐볼게.`,
+                    ? `${callVoc}, 잠깐만. 사주랑 지금 고민이 어디서 맞물리는지 먼저 볼게.`
+                    : `${callVoc}, 잠깐만. 언니가 사주랑 지금 고민을 같이 놓고 천천히 볼게.`,
                   false,
                 );
 
@@ -5842,7 +5842,8 @@ currentResultData = {
           if (resGreeting) {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
-            resGreeting.innerHTML = `<b>${escapeHTML(displayName)}</b>의 [${escapeHTML(situationText)}] 상황부터 볼게. 어디가 막히는지 핵심만 바로 짚자.`;
+            const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, [${escapeHTML(situationText)}] 기준으로 다 봤어. 애매하게 겁주진 않을게. 네가 놓치기 쉬운 지점부터 하나씩 정리해줄게.`;
           }
         } else {
           if (resSisterProfile) resSisterProfile.src = "./로아.png";
@@ -5859,7 +5860,7 @@ currentResultData = {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
             const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
-            resGreeting.innerHTML = `<b>${callVoc}</b>, [${escapeHTML(situationText)}] 얘기부터 같이 볼게. 왜 마음이 쓰였는지부터 보자.`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, 네가 고른 [${escapeHTML(situationText)}] 얘기 기준으로 사주를 같이 봤어. 좋은 말만 얹지 않고, 왜 이런 마음이 반복되는지부터 천천히 풀어줄게.`;
           }
         }
         // [추가] '다른 고민도 풀어보기' CTA 버튼 테마 컬러 실시간 동기화
