@@ -169,13 +169,30 @@ function norm(v) {
   assert(ui.share.avatar === './로아.png', `F story avatar mismatch: ${ui.share.avatar}`);
   assert(await page.locator('#mainShareBtnText').innerText() === '이거, 한 장으로 예쁘게 뽑아볼까?', 'F share CTA persona copy missing');
   assert(await page.locator('#shareModalClose').isVisible(), 'top share-modal close button missing');
-  assert(await page.locator('#storyShareBtn').evaluate((el) => getComputedStyle(el).display) === 'none', 'desktop must not expose native share button');
+  assert(await page.locator('#storyShareBtn').count() === 0, 'duplicate Instagram/share action must be removed');
   await page.waitForSelector('#storySaveBtn:not([disabled])', { timeout: 15000 });
   const storyDownload = await Promise.all([
     page.waitForEvent('download', { timeout: 15000 }),
     page.locator('#storySaveBtn').click(),
   ]).then(([download]) => download);
   assert(storyDownload.suggestedFilename().endsWith('.png'), `story save filename ${storyDownload.suggestedFilename()}`);
+  const storyExportDims = await page.evaluate(async () => {
+    const blob = await window.__UNNI_IMAGE_EXPORT_V2__.renderVisibleElementToPngBlob(
+      document.getElementById('storyCard'),
+      1080,
+    );
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    const dims = await new Promise((resolve, reject) => {
+      img.onload = () => resolve({ width:img.naturalWidth, height:img.naturalHeight });
+      img.onerror = reject;
+      img.src = url;
+    });
+    URL.revokeObjectURL(url);
+    return dims;
+  });
+  assert(storyExportDims.width === 1080, `story export width ${storyExportDims.width}`);
+  assert(Math.abs(storyExportDims.height / storyExportDims.width - 16/9) < 0.01, `story export aspect ${JSON.stringify(storyExportDims)}`);
   const shareEngine = await page.evaluate(async () => {
     const engine = window.__UNNI_IMAGE_EXPORT_V2__;
     let called = false;
@@ -191,7 +208,7 @@ function norm(v) {
     const ok = await engine.nativeSharePng(new Blob(['png'], { type:'image/png' }), 'mobile-test.png', 'test');
     return { version:engine?.version, called, fileCount, ok };
   });
-  assert(shareEngine.version === '2.1.0' && shareEngine.ok && shareEngine.called && shareEngine.fileCount === 1, `native mobile share path failed: ${JSON.stringify(shareEngine)}`);
+  assert(shareEngine.version === '2.2.0' && shareEngine.ok && shareEngine.called && shareEngine.fileCount === 1, `native mobile share path failed: ${JSON.stringify(shareEngine)}`);
 
   const mobileCardBox = await page.locator('#storyCard').boundingBox();
   assert(mobileCardBox && mobileCardBox.x >= 0 && mobileCardBox.y >= 0 && mobileCardBox.width <= 332, `mobile story card clipped/oversized: ${JSON.stringify(mobileCardBox)}`);
@@ -214,8 +231,7 @@ function norm(v) {
     openShareModal();
   });
   await page.waitForSelector('#storySaveBtn:not([disabled])', { timeout:15000 });
-  assert((await page.locator('#storyShareBtn').innerText()).includes('인스타에 올릴 사진 열기'), 'Kakao in-app share label missing');
-  assert(await page.locator('#storyShareBtn').evaluate((el) => getComputedStyle(el).display) !== 'none', 'mobile Instagram image button must be visible');
+  assert(await page.locator('#storyShareBtn').count() === 0, 'Kakao must not show duplicate Instagram image action');
   await page.locator('#storySaveBtn').click();
   await page.waitForSelector('#unniImageFallback', { state:'visible', timeout:15000 });
   const fallbackText = await page.locator('#unniImageFallback').innerText();
@@ -292,6 +308,8 @@ function norm(v) {
   const premium = fs.readFileSync('premium-products-v1.js','utf8');
   assert(!premium.includes('unniProductKeepsake') && !premium.includes('keepsakeCardHtml') && !premium.includes('renderPaidKeepsake'), 'paid keepsake-card subsystem should be removed');
   assert(premium.includes('saveFullPaidReport') && premium.includes('unniProductSaveAll'), 'full paid-report image save missing');
+  assert(premium.includes('renderElementToPngPages') && html.includes('showImagePagesFallback'), 'paged paid-report export missing');
+  assert(!html.includes('id="storyShareBtn"') && !html.includes('인스타에 올릴 사진 열기'), 'duplicate Instagram save/share UI remains');
   assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
   assert(html.includes('history.pushState') && html.includes('shareModal: true'), 'share modal history guard missing');
   for (const staleCopy of ['내 본캐 스탯','내 사주 본캐 카드 저장하기','본캐 카드 저장']) assert(!html.includes(staleCopy), `stale share copy remains: ${staleCopy}`);
