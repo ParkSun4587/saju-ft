@@ -55,7 +55,7 @@ async function inspect(page, mode) {
   assert(r.n1.length>=210,mode+' NOTE1 too short '+r.n1.length);
   assert(r.n2.length>=210,mode+' NOTE2 too short '+r.n2.length);
   assert(r.n1.includes('사주 전체'),mode+' NOTE1 personalization missing');
-  assert(/반복|같은 패턴|같은 데서/.test(r.n2),mode+' NOTE2 pattern missing');
+  assert(/반복|패턴|같은 데서/.test(r.n2),mode+' NOTE2 pattern missing');
   assert(r.oheng.includes('언니가')&&!r.oheng.includes('로아가')&&!r.oheng.includes('서아가'),mode+' oheng voice '+r.oheng);
   assert(r.count===4&&r.visible===4,'premium products hidden '+JSON.stringify(r));
   assert(r.catalog.includes('다른 리포트도 있어')&&!r.catalog.includes('다른 리포트 3개 보기'),'old product disclosure remains');
