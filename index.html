@@ -6528,6 +6528,7 @@ currentResultData = {
 
       function closeShareModal(fromHistory = false) {
         const wasOpen = isShareModalOpen();
+        if (storyCaptureState) closeStoryCaptureMode(true);
         document.body.style.overflow = "auto";
         const shareModal = document.getElementById("shareModal");
         if (shareModal) {
@@ -7222,85 +7223,127 @@ currentResultData = {
         showImageSaveFallback,
       };
 
-      function storyAssetSignature(card) {
-        return [
-          currentResultData?.mbtiKey || "",
-          currentResultData?.currentMode || "",
-          card?.innerText || "",
-          document.getElementById("cardSisterAvatar")?.getAttribute("src") || "",
-        ].join("|");
+      let storyCaptureState = null;
+
+      function ensureStoryCaptureLayer() {
+        let layer = document.getElementById("storyCaptureMode");
+        if (layer) return layer;
+
+        layer = document.createElement("div");
+        layer.id = "storyCaptureMode";
+        layer.style.cssText =
+          "display:none;position:fixed;inset:0;z-index:1000004;overflow:hidden;align-items:center;justify-content:center;padding:9px;box-sizing:border-box;touch-action:manipulation";
+        layer.innerHTML = `
+          <div id="storyCaptureCardSlot" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%"></div>
+          <div id="storyCaptureChrome" style="position:absolute;inset:0;z-index:5;pointer-events:none">
+            <div style="position:absolute;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none">
+              <div style="max-width:285px;padding:10px 12px;border-radius:15px;background:rgba(15,23,42,.90);color:white;box-shadow:0 10px 30px rgba(0,0,0,.22);font-size:11px;line-height:1.55;font-weight:800;word-break:keep-all">
+                캡처 준비를 누르면 버튼이 전부 사라져.<br>그 상태에서 휴대폰 스크린샷만 찍어줘.
+              </div>
+              <button id="storyCaptureClose" type="button" aria-label="캡처 모드 닫기" style="pointer-events:auto;flex:none;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(15,23,42,.86);color:white;font-size:25px;line-height:1;cursor:pointer">×</button>
+            </div>
+            <div style="position:absolute;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));pointer-events:none">
+              <button id="storyCaptureReady" type="button" style="pointer-events:auto;width:100%;max-width:360px;margin:0 auto;display:block;border:0;border-radius:16px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:950;box-shadow:0 12px 32px rgba(15,23,42,.30);cursor:pointer">캡처 준비</button>
+              <div style="margin-top:7px;text-align:center;color:#475569;font-size:10px;font-weight:800;text-shadow:0 1px 2px rgba(255,255,255,.8)">캡처한 뒤 화면을 한 번 누르면 버튼이 다시 보여</div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(layer);
+
+        layer.querySelector("#storyCaptureClose")?.addEventListener("click", (event) => {
+          event.stopPropagation();
+          closeStoryCaptureMode();
+        });
+        layer.querySelector("#storyCaptureReady")?.addEventListener("click", async (event) => {
+          event.stopPropagation();
+          await enterStoryCaptureCleanView();
+        });
+        layer.addEventListener("click", () => {
+          if (layer.dataset.clean === "1") showStoryCaptureChrome(true);
+        });
+        return layer;
       }
 
-      function setStoryExportReady(ready) {
+      function showStoryCaptureChrome(show) {
+        const layer = document.getElementById("storyCaptureMode");
+        const chrome = document.getElementById("storyCaptureChrome");
+        if (!layer || !chrome) return;
+        chrome.style.display = show ? "block" : "none";
+        layer.dataset.clean = show ? "0" : "1";
+      }
+
+      async function enterStoryCaptureCleanView() {
+        showStoryCaptureChrome(false);
+        const root = document.documentElement;
+        if (!document.fullscreenElement && typeof root.requestFullscreen === "function") {
+          try { await root.requestFullscreen(); } catch (_) {}
+        }
+      }
+
+      function openStoryCaptureMode(event) {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+        const card = document.getElementById("storyCard");
+        if (!card || storyCaptureState) return false;
+
+        const layer = ensureStoryCaptureLayer();
+        const slot = layer.querySelector("#storyCaptureCardSlot");
+        if (!slot) return false;
+
+        storyCaptureState = {
+          card,
+          parent: card.parentNode,
+          nextSibling: card.nextSibling,
+          style: card.getAttribute("style") || "",
+        };
+
+        const isT = currentResultData?.currentMode === "T";
+        layer.style.background = isT
+          ? "linear-gradient(160deg,#eef8ff 0%,#f8fcff 52%,#eef6ff 100%)"
+          : "linear-gradient(160deg,#fff1f4 0%,#fffaf7 52%,#fff3f5 100%)";
+        layer.style.display = "flex";
+        slot.appendChild(card);
+
+        card.style.width = "auto";
+        card.style.height = "min(calc(100dvh - 18px),calc((100vw - 18px) * 16 / 9))";
+        card.style.maxWidth = "calc(100vw - 18px)";
+        card.style.maxHeight = "calc(100dvh - 18px)";
+        card.style.margin = "0";
+        card.style.flex = "none";
+        card.style.boxShadow = "0 18px 54px rgba(15,23,42,.16)";
+        showStoryCaptureChrome(true);
+        document.body.style.overflow = "hidden";
+        return true;
+      }
+
+      function closeStoryCaptureMode(fromParentClose = false) {
+        const layer = document.getElementById("storyCaptureMode");
+        const state = storyCaptureState;
+        if (state?.card && state?.parent) {
+          if (state.nextSibling && state.nextSibling.parentNode === state.parent) {
+            state.parent.insertBefore(state.card, state.nextSibling);
+          } else {
+            state.parent.appendChild(state.card);
+          }
+          state.card.setAttribute("style", state.style);
+        }
+        storyCaptureState = null;
+        if (layer) {
+          layer.style.display = "none";
+          layer.dataset.clean = "0";
+        }
+        if (document.fullscreenElement && typeof document.exitFullscreen === "function") {
+          document.exitFullscreen().catch?.(() => {});
+        }
+        document.body.style.overflow =
+          !fromParentClose && isShareModalOpen() ? "hidden" : "auto";
+      }
+
+      function setStoryExportReady() {
         const saveBtn = document.getElementById("storySaveBtn");
         if (saveBtn) {
-          saveBtn.disabled = !ready;
-          saveBtn.style.opacity = ready ? "1" : ".6";
-        }
-      }
-
-      async function prepareStoryCardAsset(force = false) {
-        const card = document.getElementById("storyCard");
-        if (!card) return null;
-        const key = storyAssetSignature(card);
-        if (!force && storyCardAsset && storyCardAssetKey === key) {
-          setStoryExportReady(true);
-          return storyCardAsset;
-        }
-        if (storyCardRenderPromise && !force) return storyCardRenderPromise;
-
-        storyCardAsset = null;
-        storyCardAssetKey = "";
-        setStoryExportReady(false);
-        storyCardRenderPromise = (async () => {
-          try {
-            const blob = await renderVisibleElementToPngBlob(card, 1080);
-            storyCardAsset = blob;
-            storyCardAssetKey = storyAssetSignature(card);
-            setStoryExportReady(true);
-            return blob;
-          } catch (error) {
-            console.warn("스토리 카드 이미지 생성 실패:", error);
-            setStoryExportReady(false);
-            return null;
-          } finally {
-            storyCardRenderPromise = null;
-          }
-        })();
-        return storyCardRenderPromise;
-      }
-
-      async function saveInstaCardImage(event) {
-        if (isSavingCard || !currentResultData) return;
-        const button = event?.currentTarget;
-        const original = button?.innerHTML;
-        const filename = "어떤언니_내결과.png";
-        isSavingCard = true;
-        if (button) button.disabled = true;
-        try {
-          const blob = storyCardAsset || await prepareStoryCardAsset(false);
-          if (!blob) throw new Error("STORY_ASSET_NOT_READY");
-
-          if (isKakaoInApp()) {
-            await showKakaoCardQualityGuide(blob);
-          } else if (isIOSDevice()) {
-            const shared = await nativeSharePng(blob, filename, "어떤언니에서 본 내 결과");
-            if (!shared) await showImageSaveFallback(blob, "save");
-          } else {
-            downloadPngBlob(blob, filename);
-            showToast(isAndroidDevice() ? "PNG로 저장했어. 갤러리나 다운로드에서 확인해봐." : "PNG 이미지로 저장했어.");
-          }
-        } catch (error) {
-          if (error?.name !== "AbortError") {
-            console.error("스토리 카드 저장 실패:", error);
-            showToast("저장이 잠깐 꼬였어. 한 번만 다시 눌러줘.");
-          }
-        } finally {
-          isSavingCard = false;
-          if (button) {
-            button.disabled = false;
-            if (original) button.innerHTML = original;
-          }
+          saveBtn.disabled = false;
+          saveBtn.style.opacity = "1";
         }
       }
 
