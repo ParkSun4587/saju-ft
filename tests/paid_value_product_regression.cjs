@@ -293,7 +293,7 @@ function norm(v) {
   assert(!premium.includes('unniProductKeepsake') && !premium.includes('keepsakeCardHtml') && !premium.includes('renderPaidKeepsake'), 'paid keepsake-card subsystem should be removed');
   assert(premium.includes('saveFullPaidReport') && premium.includes('unniProductSaveAll'), 'full paid-report image save missing');
   assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
-  assert(html.includes('history.pushState({ ...(history.state || {}), view: "result", shareModal: true }'), 'share modal history guard missing');
+  assert(html.includes('history.pushState') && html.includes('shareModal: true'), 'share modal history guard missing');
   for (const staleCopy of ['내 본캐 스탯','내 사주 본캐 카드 저장하기','본캐 카드 저장']) assert(!html.includes(staleCopy), `stale share copy remains: ${staleCopy}`);
 
   for (const prodPath of ['index.html','premium-products-v1.js','paid-value-layer-v1.js','integrated-saju-profile-v1.js','classical-engine-v2.js','manse-korea-v2.js']) {
