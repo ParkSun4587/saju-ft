@@ -1683,19 +1683,19 @@
                         class="flex items-start gap-2 text-xs text-slate-700"
                       >
                         <span class="text-sky-600 font-bold shrink-0">1</span>
-                        <span>왜 같은 고민이 반복되는지</span>
+                        <span>반복되는 패턴의 진짜 원인까지</span>
                       </div>
                       <div
                         class="flex items-start gap-2 text-xs text-slate-700"
                       >
                         <span class="text-sky-600 font-bold shrink-0">2</span>
-                        <span>언제 움직여야 하는지</span>
+                        <span>지금 진짜 문제 + 7일 행동 처방</span>
                       </div>
                       <div
                         class="flex items-start gap-2 text-xs text-slate-700"
                       >
                         <span class="text-sky-600 font-bold shrink-0">3</span>
-                        <span>지금 잡을 것과 놓을 것을 어떻게 구분하는지</span>
+                        <span>남길 사람·피할 환경 + 움직일 시기</span>
                       </div>
                     </div>
                   </div>
@@ -7225,6 +7225,7 @@ currentResultData = {
       };
 
       let storyCaptureState = null;
+      let storyCaptureReturnTimer = null;
 
       function ensureStoryCaptureLayer() {
         let layer = document.getElementById("storyCaptureMode");
@@ -7239,13 +7240,13 @@ currentResultData = {
           <div id="storyCaptureChrome" style="position:absolute;inset:0;z-index:5;pointer-events:none">
             <div style="position:absolute;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none">
               <div style="max-width:285px;padding:10px 12px;border-radius:15px;background:rgba(15,23,42,.90);color:white;box-shadow:0 10px 30px rgba(0,0,0,.22);font-size:11px;line-height:1.55;font-weight:800;word-break:keep-all">
-                <b>캡처 준비</b>를 누르면 버튼이 전부 사라져.<br>스크린샷 찍고 인스타에서 <b>스티커 → 링크 → sajuft.com</b>을 아래 ‘나도 해보기’ 자리에 올리면 돼.
+                카드만 딱 남겨둘게. 캡처해서 인스타 스토리에 올려봐 ♡
               </div>
               <button id="storyCaptureClose" type="button" aria-label="캡처 모드 닫기" style="pointer-events:auto;flex:none;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(15,23,42,.86);color:white;font-size:25px;line-height:1;cursor:pointer">×</button>
             </div>
             <div style="position:absolute;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));pointer-events:none">
               <button id="storyCaptureReady" type="button" style="pointer-events:auto;width:100%;max-width:360px;margin:0 auto;display:block;border:0;border-radius:16px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:950;box-shadow:0 12px 32px rgba(15,23,42,.30);cursor:pointer">캡처 준비</button>
-              <div style="margin-top:7px;text-align:center;color:#475569;font-size:10px;font-weight:800;text-shadow:0 1px 2px rgba(255,255,255,.8)">친구 태그까지 붙이면 서로 결과 비교하기 좋아 · 캡처 뒤 화면을 누르면 버튼이 다시 보여</div>
+              <div style="margin-top:7px;text-align:center;color:#475569;font-size:10px;font-weight:800;text-shadow:0 1px 2px rgba(255,255,255,.8)">캡처 준비를 누르면 7초 뒤 결과로 자동으로 돌아갈게</div>
             </div>
           </div>
         `;
@@ -7260,7 +7261,7 @@ currentResultData = {
           await enterStoryCaptureCleanView();
         });
         layer.addEventListener("click", () => {
-          if (layer.dataset.clean === "1") showStoryCaptureChrome(true);
+          if (layer.dataset.clean === "1") closeStoryCaptureMode();
         });
         return layer;
       }
@@ -7275,10 +7276,14 @@ currentResultData = {
 
       async function enterStoryCaptureCleanView() {
         showStoryCaptureChrome(false);
+        if (storyCaptureReturnTimer) clearTimeout(storyCaptureReturnTimer);
         const root = document.documentElement;
         if (!document.fullscreenElement && typeof root.requestFullscreen === "function") {
           try { await root.requestFullscreen(); } catch (_) {}
         }
+        storyCaptureReturnTimer = setTimeout(() => {
+          if (storyCaptureState) closeStoryCaptureMode();
+        }, 7000);
       }
 
       function openStoryCaptureMode(event) {
@@ -7299,6 +7304,12 @@ currentResultData = {
         };
 
         const isT = currentResultData?.currentMode === "T";
+        const guideMain = layer.querySelector("#storyCaptureGuideMain");
+        const guideSub = layer.querySelector("#storyCaptureGuideSub");
+        if (guideMain) guideMain.innerHTML = isT
+          ? "카드만 남겨둘게. 캡처해서 스토리에 올리고 친구들이랑 비교해봐."
+          : "카드만 딱 남겨둘게. 캡처해서 인스타 스토리에 올려봐 ♡";
+        if (guideSub) guideSub.textContent = "캡처 준비를 누르면 7초 뒤 결과로 자동으로 돌아갈게";
         layer.style.background = isT
           ? "linear-gradient(160deg,#eef8ff 0%,#f8fcff 52%,#eef6ff 100%)"
           : "linear-gradient(160deg,#fff1f4 0%,#fffaf7 52%,#fff3f5 100%)";
@@ -7318,6 +7329,10 @@ currentResultData = {
       }
 
       function closeStoryCaptureMode(fromParentClose = false) {
+        if (storyCaptureReturnTimer) {
+          clearTimeout(storyCaptureReturnTimer);
+          storyCaptureReturnTimer = null;
+        }
         const layer = document.getElementById("storyCaptureMode");
         const state = storyCaptureState;
         if (state?.card && state?.parent) {
