@@ -492,8 +492,60 @@
     return `${name}${batchim ? "아" : "야"}`;
   }
 
+  const NOTE_BADGE_LABELS = {
+    money: {
+      "핵심": "돈이 유독 힘든 이유",
+      "패턴": "돈이 새는 패턴",
+      "놓친 점": "지금 진짜 문제",
+      "7일 처방": "돈복 살리는 처방",
+      "사람 필터": "돈운 지켜주는 사람",
+      "시기": "돈 흐름이 풀릴 때",
+    },
+    career: {
+      "핵심": "일이 유독 막히는 이유",
+      "패턴": "커리어 패턴",
+      "놓친 점": "지금 진짜 문제",
+      "7일 처방": "바로 써먹는 처방",
+      "사람 필터": "나를 살리는 환경",
+      "시기": "기회가 들어올 때",
+    },
+    love: {
+      "핵심": "연애가 꼬이는 이유",
+      "패턴": "연애 패턴",
+      "놓친 점": "지금 진짜 문제",
+      "7일 처방": "연애 처방",
+      "사람 필터": "나한테 맞는 사람",
+      "시기": "연애운이 움직일 때",
+    },
+    path: {
+      "핵심": "길이 안 보이는 이유",
+      "패턴": "진로 패턴",
+      "놓친 점": "지금 진짜 문제",
+      "7일 처방": "방향 잡는 처방",
+      "사람 필터": "나를 키워주는 사람",
+      "시기": "길이 열릴 때",
+    },
+    people: {
+      "핵심": "사람이 힘든 이유",
+      "패턴": "관계 패턴",
+      "놓친 점": "지금 진짜 문제",
+      "7일 처방": "선 지키는 처방",
+      "사람 필터": "남겨야 할 사람",
+      "시기": "관계운이 풀릴 때",
+    },
+    mental: {
+      "핵심": "유독 지치는 이유",
+      "패턴": "번아웃 패턴",
+      "놓친 점": "지금 진짜 문제",
+      "7일 처방": "회복 처방",
+      "사람 필터": "나를 편하게 하는 사람",
+      "시기": "회복 흐름이 들어올 때",
+    },
+  };
+
   function compactBadge(data, stage) {
-    return `${shortSituationLabel(data)} · ${stage}`;
+    const concernKey = data?.concernKey || "money";
+    return NOTE_BADGE_LABELS[concernKey]?.[stage] || stage;
   }
 
   function situationPersonalLine(data, isT) {
@@ -822,7 +874,7 @@
   global.polishPaidValueNotes = polishPaidValueNotes;
   global.auditPaidValueNotes = auditNotes;
   global.__PAID_VALUE_LAYER_V1__ = {
-    version: "1.3.0",
+    version: "1.4.0",
     situationProfiles: SITUATION_PROFILES,
   };
 
