@@ -1584,7 +1584,7 @@
           <button
             type="button"
             id="mainShareBtn"
-            onclick="openShareModal()"
+            onclick="openStoryCaptureFromResult()"
             class="w-full py-3.5 px-3 bg-white border border-slate-200 text-slate-800 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-98 cursor-pointer"
           >
             <span id="mainShareBtnText">이거, 한 장으로 예쁘게 뽑아볼까?</span>
@@ -5769,9 +5769,7 @@ currentResultData = {
             : "로아 언니, 나 왜 이러는지 더 봐줘";
         }
         if (mainShareBtnText) {
-          mainShareBtnText.textContent = isT
-            ? "결과 한 장으로 정리하기"
-            : "이거, 한 장으로 예쁘게 뽑아볼까?";
+          mainShareBtnText.textContent = "인스타 스토리 카드 만들기";
         }
         const data = currentResultData;
         const mKey = data && data.mbtiKey;
@@ -5831,7 +5829,7 @@ currentResultData = {
           if (resGreeting) {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
-            resGreeting.innerHTML = `사주랑 지금 상황까지 다 봤어. <b>${escapeHTML(displayName)}</b>${topicJosa} [${escapeHTML(situationText)}]에서 어디가 막히는지 보여. 돌려 말 안 하고 네 얘기만 메모에 딱 적어뒀어. 하나씩 보자.`;
+            resGreeting.innerHTML = `<b>${escapeHTML(displayName)}</b>의 [${escapeHTML(situationText)}] 상황부터 볼게. 어디가 막히는지 핵심만 바로 짚자.`;
           }
         } else {
           if (resSisterProfile) resSisterProfile.src = "./로아.png";
@@ -5847,7 +5845,8 @@ currentResultData = {
           if (resGreeting) {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
-            resGreeting.innerHTML = `우리 <b>${escapeHTML(displayName)}</b>${fSuffix} 왔네. 언니가 사주랑 [${escapeHTML(situationText)}]인 지금 상황까지 같이 봤어. 왜 마음이 자꾸 쓰였는지도 조금 보이더라. 아래는 딱 우리 ${nameSubject} 얘기만 적어뒀어. 하나씩 언니랑 같이 보자.`;
+            const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, [${escapeHTML(situationText)}] 얘기부터 같이 볼게. 왜 마음이 쓰였는지부터 보자.`;
           }
         }
         // [추가] '다른 고민도 풀어보기' CTA 버튼 테마 컬러 실시간 동기화
@@ -6372,7 +6371,14 @@ currentResultData = {
         barEl.style.transition = "width 0.6s ease";
       }
 
-      function openShareModal() {
+      function openStoryCaptureFromResult() {
+        openShareModal(true);
+        const opened = openStoryCaptureMode();
+        if (opened && storyCaptureState) storyCaptureState.directFromResult = true;
+        return opened;
+      }
+
+      function openShareModal(captureOnly = false) {
         if (!currentResultData) return;
 
         if (typeof gtag === "function") gtag("event", "view_share_modal");
@@ -6499,7 +6505,7 @@ currentResultData = {
         const shareModal = document.getElementById("shareModal");
         if (shareModal) {
           shareModal.classList.remove("hidden");
-          shareModal.style.display = "block";
+          shareModal.style.display = captureOnly ? "none" : "block";
           shareModal.scrollTop = 0;
         }
 
@@ -6511,7 +6517,7 @@ currentResultData = {
         }
         if (saveText) saveText.textContent = "화면 그대로 캡처하기";
 
-        if (!history.state?.shareModal) {
+        if (!captureOnly && !history.state?.shareModal) {
           history.pushState(
             { ...(history.state || {}), view: "result", shareModal: true },
             "",
@@ -7215,13 +7221,13 @@ currentResultData = {
           <div id="storyCaptureChrome" style="position:absolute;inset:0;z-index:5;pointer-events:none">
             <div style="position:absolute;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none">
               <div style="max-width:285px;padding:10px 12px;border-radius:15px;background:rgba(15,23,42,.90);color:white;box-shadow:0 10px 30px rgba(0,0,0,.22);font-size:11px;line-height:1.55;font-weight:800;word-break:keep-all">
-                캡처 준비를 누르면 버튼이 전부 사라져.<br>그 상태에서 휴대폰 스크린샷만 찍어줘.
+                <b>캡처 준비</b>를 누르면 버튼이 전부 사라져.<br>스크린샷 찍고 인스타에서 <b>스티커 → 링크 → sajuft.com</b>을 아래 ‘나도 해보기’ 자리에 올리면 돼.
               </div>
               <button id="storyCaptureClose" type="button" aria-label="캡처 모드 닫기" style="pointer-events:auto;flex:none;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(15,23,42,.86);color:white;font-size:25px;line-height:1;cursor:pointer">×</button>
             </div>
             <div style="position:absolute;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));pointer-events:none">
               <button id="storyCaptureReady" type="button" style="pointer-events:auto;width:100%;max-width:360px;margin:0 auto;display:block;border:0;border-radius:16px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:950;box-shadow:0 12px 32px rgba(15,23,42,.30);cursor:pointer">캡처 준비</button>
-              <div style="margin-top:7px;text-align:center;color:#475569;font-size:10px;font-weight:800;text-shadow:0 1px 2px rgba(255,255,255,.8)">캡처한 뒤 화면을 한 번 누르면 버튼이 다시 보여</div>
+              <div style="margin-top:7px;text-align:center;color:#475569;font-size:10px;font-weight:800;text-shadow:0 1px 2px rgba(255,255,255,.8)">친구 태그까지 붙이면 서로 결과 비교하기 좋아 · 캡처 뒤 화면을 누르면 버튼이 다시 보여</div>
             </div>
           </div>
         `;
@@ -7304,16 +7310,24 @@ currentResultData = {
           }
           state.card.setAttribute("style", state.style);
         }
+        const directFromResult = !!storyCaptureState?.directFromResult;
         storyCaptureState = null;
         if (layer) {
           layer.style.display = "none";
           layer.dataset.clean = "0";
         }
+        if (directFromResult) {
+          const shareModal = document.getElementById("shareModal");
+          if (shareModal) {
+            shareModal.classList.add("hidden");
+            shareModal.style.display = "none";
+          }
+        }
         if (document.fullscreenElement && typeof document.exitFullscreen === "function") {
           document.exitFullscreen().catch?.(() => {});
         }
         document.body.style.overflow =
-          !fromParentClose && isShareModalOpen() ? "hidden" : "auto";
+          !directFromResult && !fromParentClose && isShareModalOpen() ? "hidden" : "auto";
       }
 
       function setStoryExportReady() {
