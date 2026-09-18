@@ -20,8 +20,8 @@ function norm(v) {
   page.on('console', m => { if (m.type() === 'error') errors.push(`[console] ${m.text()}`); });
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
-    globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.2.0' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.3.0' &&
+    globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.3.0' &&
+    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.4.0' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
 
@@ -161,8 +161,8 @@ function norm(v) {
     };
   });
 
-  assert(qa.paidVersion.version === '1.2.0', 'paid value layer missing');
-  assert(qa.productVersion.version === '1.3.0', 'product layer missing');
+  assert(qa.paidVersion.version === '1.3.0', 'paid value layer missing');
+  assert(qa.productVersion.version === '1.4.0', 'product layer missing');
   assert(qa.wrappers.paid, 'paid-value wrapper missing');
   assert(qa.wrappers.integrated, 'integrated wrapper metadata lost');
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
@@ -182,6 +182,12 @@ function norm(v) {
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
     assert(row.count === 6, `${row.concern}/${row.situation}/${row.mode}: note count ${row.count}`);
+    const note1Plain = String(row.notes?.[0]?.desc || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const note2Plain = String(row.notes?.[1]?.desc || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    assert(note1Plain.length >= 210, `${row.concern}/${row.situation}/${row.mode}: NOTE1 teaser too thin (${note1Plain.length})`);
+    assert(note2Plain.length >= 210, `${row.concern}/${row.situation}/${row.mode}: NOTE2 teaser too thin (${note2Plain.length})`);
+    assert(/사주 전체|사주 전체랑|사주 전체를/.test(note1Plain), `${row.concern}/${row.situation}/${row.mode}: NOTE1 lacks personalized why-context`);
+    assert(/반복|같은 패턴|같은 데서/.test(note2Plain), `${row.concern}/${row.situation}/${row.mode}: NOTE2 lacks pattern explanation`);
     assert(row.n6?.__timingQA?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: NOTE6 situation metadata missing`);
     assert(norm(row.n6?.__timingQA?.firstBody) !== norm(row.n6?.__timingQA?.secondBody), `${row.concern}/${row.situation}/${row.mode}: NOTE6 period copy duplicated`);
     assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: technical terms leaked`);
@@ -260,6 +266,7 @@ function norm(v) {
       bestTitle:document.getElementById('chemBestTitle')?.innerText || '',
       worstTitle:document.getElementById('chemWorstTitle')?.innerText || '',
     };
+    const fOheng = document.getElementById('ohengSummaryTxt')?.innerText || '';
     updateResultContentByMode('T');
     const tChem = {
       best:document.getElementById('chemBestCard')?.className || '',
@@ -267,6 +274,7 @@ function norm(v) {
       bestTitle:document.getElementById('chemBestTitle')?.innerText || '',
       worstTitle:document.getElementById('chemWorstTitle')?.innerText || '',
     };
+    const tOheng = document.getElementById('ohengSummaryTxt')?.innerText || '';
     updateResultContentByMode('F');
     const mbtiInfo = {
       gradeText:document.getElementById('gradeSection')?.innerText || '',
@@ -292,6 +300,8 @@ function norm(v) {
       mbtiInfo,
       fChem,
       tChem,
+      fOheng,
+      tOheng,
       note6First:note6?.__timingQA?.firstBody || '',
       note6Second:note6?.__timingQA?.secondBody || '',
       note6Text:note6?.desc || '',
@@ -304,14 +314,17 @@ function norm(v) {
   assert(ui.result, 'production-like result missing');
   assert(ui.catalog, 'product catalog not rendered');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
-  assert(ui.visibleProducts === 1 && ui.secondaryProducts === 3, `premium catalog must show one recommendation first: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts})}`);
+  assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3, `premium catalog should keep one recommendation prominent while all alternatives stay discoverable: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts})}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
   assert(ui.resultGreeting.includes('딱 우리') && ui.resultGreeting.includes('언니랑 같이 보자'), `F result greeting lost 1:1 voice: ${ui.resultGreeting}`);
-  assert(ui.catalogText.includes('언니가 지금 하나만 먼저 골라줄게') && ui.catalogText.includes('다른 리포트 3개 보기'), 'F premium recommendation handoff missing');
+  assert(ui.catalogText.includes('언니가 지금 하나만 먼저 골라줄게') && ui.catalogText.includes('다른 리포트도 있어') && !ui.catalogText.includes('다른 리포트 3개 보기'), 'F premium recommendation/discoverability handoff missing');
   assert(ui.mbtiInfo.gradeText.includes('재미로 보는 사주 MBTI 번역') && ui.mbtiInfo.gradeText.includes('실제 검사 MBTI와 다를 수 있어'), `MBTI risk framing missing: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.mbtiInfo.fontSize <= 40 && ui.mbtiInfo.summaryBefore, `MBTI should be visually secondary after core summary: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.fChem.best.includes('rose') && ui.fChem.worst.includes('violet') && ui.fChem.bestTitle === '환상의 찰떡 깐부' && ui.fChem.worstTitle === '기 빨리는 상극', `F chemistry theme drift: ${JSON.stringify(ui.fChem)}`);
   assert(ui.tChem.best.includes('sky') && ui.tChem.worst.includes('slate') && ui.tChem.bestTitle === '최강 시너지' && ui.tChem.worstTitle === '충돌 많은 상극', `T chemistry theme drift: ${JSON.stringify(ui.tChem)}`);
+  assert(ui.fOheng.includes('언니가') && !ui.fOheng.includes('로아가'), `F five-element voice should use generic 언니: ${ui.fOheng}`);
+  assert(ui.tOheng.includes('언니가') && !ui.tOheng.includes('서아가'), `T five-element voice should use generic 언니: ${ui.tOheng}`);
+  assert(await page.locator('#sisterSwitchCard').count() === 0, 'bottom F/T mode-switch CTA must be removed');
   assert(ui.noteBadges.every((x) => x.length <= 16), `visible NOTE badges too long: ${JSON.stringify(ui.noteBadges)}`);
   assert(ui.share.version === '4', `story card version ${ui.share.version}`);
   assert(ui.share.text.includes('사주 성향을 MBTI로 번역하면') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('링크 스티커 붙이는 자리'), 'story card identity/share copy missing');
@@ -429,6 +442,24 @@ function norm(v) {
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'full_saju full-report save button missing');
   assert((await page.locator('#unniProductSaveAll').innerText()).includes('사진으로 한 번에 저장하기'), 'one-action paid save CTA missing');
   assert(await page.locator('#unniProductSavePdf').isVisible(), 'single-file PDF keep action missing');
+  await page.evaluate(() => {
+    window.__originalPrintForTest = window.print;
+    window.__paidPrintCallCount = 0;
+    window.print = () => { window.__paidPrintCallCount += 1; };
+  });
+  await page.locator('#unniProductSavePdf').click();
+  const pdfPrint = await page.evaluate(() => ({
+    calls:window.__paidPrintCallCount || 0,
+    host:document.getElementById('unniPaidPrintHost')?.innerText || '',
+    sections:document.querySelectorAll('#unniPaidPrintHost section').length,
+  }));
+  assert(pdfPrint.calls === 1 && pdfPrint.host.includes('내 전체 사주판') && pdfPrint.sections >= 12, `PDF button must call current-window print with a complete print view: ${JSON.stringify(pdfPrint)}`);
+  await page.evaluate(() => {
+    window.print = window.__originalPrintForTest;
+    delete window.__originalPrintForTest;
+    document.getElementById('unniPaidPrintHost')?.remove();
+    document.getElementById('unniPaidPrintStyle')?.remove();
+  });
   assert(await page.locator('#unniProductStickyHead').evaluate((el) => getComputedStyle(el).position) === 'sticky', 'paid report header must remain sticky');
   await page.waitForFunction(() => document.getElementById('unniProductSaveHint')?.innerText.includes('저장 준비 완료'), null, { timeout:30000 });
   assert(await page.locator('#unniProductSaveAll').isEnabled(), 'paid save must be tappable as soon as prewarm is ready');
@@ -519,8 +550,8 @@ function norm(v) {
   await page.locator('#unniProductClose').click();
 
   const html = fs.readFileSync('index.html','utf8');
-  assert(html.includes('./paid-value-layer-v1.js?v=1.2.0'), 'paid value script include missing');
-  assert(html.includes('./premium-products-v1.js?v=1.3.0'), 'product script include missing');
+  assert(html.includes('./paid-value-layer-v1.js?v=1.3.0'), 'paid value script include missing');
+  assert(html.includes('./premium-products-v1.js?v=1.4.0'), 'product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
@@ -536,8 +567,9 @@ function norm(v) {
   assert(premium.includes('isCurrentPaidExport') && premium.includes('EXPORT_IDLE_CANCELLED'), 'stale paid-export jobs must stop when the report changes');
   assert(premium.includes('paidExportCache.clear()') && premium.includes('paidExportCache.set(key, prepared)'), 'paid PNG blob cache must stay bounded to the current report');
   assert(premium.includes('nativeSharePngFiles') && premium.includes('isMobileDevice'), 'one-action mobile multi-image share path missing');
-  assert(premium.includes('recommendedProductId') && premium.includes('data-secondary-product'), 'personalized premium recommendation fold missing');
-  assert(premium.includes('unniProductSavePdf') && premium.includes('printPaidReport'), 'single-file PDF keep action missing');
+  assert(premium.includes('recommendedProductId') && premium.includes('data-secondary-product') && premium.includes('다른 리포트도 있어'), 'personalized premium recommendation + discoverable alternatives missing');
+  assert(!premium.includes('unniShowOtherProducts') && !premium.includes('다른 리포트 3개 보기'), 'premium alternatives should not be hidden behind a disclosure toggle');
+  assert(premium.includes('unniProductSavePdf') && premium.includes('printPaidReport') && premium.includes('window.print()') && premium.includes('unniPaidPrintHost'), 'single-file PDF current-window print path missing');
   assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="concern"'), 'semantic paid-report grouping missing');
   assert(premium.includes('나를 이해하는 법') && premium.includes('대화하고 싸우고 화해하는 법') && premium.includes('어떻게 움직일지'), 'human-readable export group titles missing');
   assert(html.includes('showImagePagesFallback'), 'multi-image mobile fallback missing');
@@ -546,6 +578,8 @@ function norm(v) {
   assert(html.includes('history.pushState') && html.includes('shareModal: true'), 'share modal history guard missing');
   assert(html.includes('CONCERN_SITUATIONS') && html.includes('selectedConcernSituation'), 'concern situation picker missing');
   assert(html.includes('concernSituationSummary') && html.includes('editConcernSituation'), 'progressive mobile concern summary/edit flow missing');
+  assert(!html.includes('id="sisterSwitchCard"') && !html.includes('switchSisterMode()'), 'bottom F/T mode-switch CTA code remains');
+  assert(!html.includes('로아가 보기엔') && !html.includes('서아가 딱 정리하면') && html.includes('언니가 보기엔') && html.includes('언니가 딱 정리하면'), 'five-element narrator should be generic 언니 in both modes');
   assert(!html.includes('사주 데이터로 까본 내 진짜 MBTI'), 'MBTI is still framed as a true diagnostic result');
   assert(html.includes('재미로 보는 사주 MBTI 번역') && html.includes('실제 검사 MBTI와 다를 수 있어'), 'MBTI playful-translation framing missing');
   assert(!html.includes('font-bold truncate text-right flex-1 min-w-0'), 'NOTE badge still forces ellipsis');
