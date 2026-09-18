@@ -3358,14 +3358,21 @@
         return options.some(([key]) => key === situationKey);
       }
 
-      function renderConcernSituationPicker(concernKey) {
+      function setConcernSituationExpanded(expanded) {
+        const box = document.getElementById("concernSituationBox");
+        const summary = document.getElementById("concernSituationSummary");
+        if (box) box.style.display = expanded ? "block" : "none";
+        if (summary) summary.style.display = expanded ? "none" : "flex";
+      }
+
+      function renderConcernSituationPicker(concernKey, { preserve = false } = {}) {
         const config = CONCERN_SITUATIONS[concernKey] || CONCERN_SITUATIONS.money;
         const prompt = document.getElementById("concernSituationPrompt");
         const grid = document.getElementById("concernSituationGrid");
         const hidden = document.getElementById("selectedConcernSituation");
         if (!prompt || !grid || !hidden) return;
         prompt.textContent = config.prompt;
-        hidden.value = "";
+        if (!preserve) hidden.value = "";
         grid.innerHTML = config.options
           .map(
             ([key, label, sub]) => `
@@ -3380,6 +3387,28 @@
               </button>`,
           )
           .join("");
+        setConcernSituationExpanded(true);
+      }
+
+      function editConcernSituation() {
+        const concernKey =
+          document.getElementById("selectedConcernKey")?.value || "money";
+        const selected =
+          document.getElementById("selectedConcernSituation")?.value || "";
+        renderConcernSituationPicker(concernKey, { preserve: true });
+        if (selected) {
+          const target = document.querySelector(
+            `#concernSituationGrid [data-concern-situation="${selected}"]`,
+          );
+          if (target) {
+            const isT = selectedSplitMode === "T";
+            target.style.borderColor = isT ? "#38bdf8" : "#fb7185";
+            target.style.background = isT ? "#f0f9ff" : "#fff1f2";
+          }
+        }
+        document
+          .getElementById("concernSituationBox")
+          ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
 
       function selectConcernSituation(situationKey, buttonEl) {
@@ -3388,6 +3417,10 @@
         if (!concernSituationValid(concernKey, situationKey)) return false;
         const hidden = document.getElementById("selectedConcernSituation");
         if (hidden) hidden.value = situationKey;
+        const config = CONCERN_SITUATIONS[concernKey] || CONCERN_SITUATIONS.money;
+        const selectedRow = config.options.find(([key]) => key === situationKey);
+        const summaryText = document.getElementById("concernSituationSummaryText");
+        if (summaryText) summaryText.textContent = selectedRow?.[1] || "";
         document
           .querySelectorAll("#concernSituationGrid .concern-situation-chip")
           .forEach((btn) => {
@@ -3412,6 +3445,8 @@
           const title = target.querySelector("div");
           if (title) title.style.color = isT ? "#0284c7" : "#e11d48";
         }
+        // 모바일에서는 선택 직후 접어서 입력 화면을 다시 가볍게 만든다.
+        setConcernSituationExpanded(false);
         saveInputDraft();
         return true;
       }
@@ -3424,7 +3459,7 @@
         buttons.forEach((btn) => {
           btn.classList.remove("selected");
           btn.style.borderColor = "#e2e8f0";
-          btn.style.borderWidth = "2px"; // 2px 두께 강제 유지
+          btn.style.borderWidth = "2px";
           btn.style.backgroundColor = "#ffffff";
           btn.style.boxShadow = "none";
           const title = btn.querySelector(".chip-title");
@@ -3439,10 +3474,12 @@
         renderConcernSituationPicker(key);
       }
 
-      // 첫 화면 기본 고민(돈·재물)의 세부 상황 선택지를 먼저 보여준다.
+      // 첫 화면은 6개 고민만 보여준다. 세부 상황은 고민을 누른 뒤에만 펼친다.
       queueMicrotask(() => {
-        const current = document.getElementById("selectedConcernKey")?.value || "money";
-        renderConcernSituationPicker(current);
+        const box = document.getElementById("concernSituationBox");
+        const summary = document.getElementById("concernSituationSummary");
+        if (box) box.style.display = "none";
+        if (summary) summary.style.display = "none";
       });
 
       // 선택된 칩에 모드별 스타일 적용 (서아=스카이블루, 로아=로즈)
@@ -5233,7 +5270,8 @@ return [
           const concernSituation =
             document.getElementById("selectedConcernSituation")?.value || "";
           if (!concernSituationValid(concernKey, concernSituation)) {
-            showToast("지금 상황도 하나 골라줘. 그래야 언니가 엉뚱한 말 안 해.");
+            showToast("지금 상황도 하나만 골라줘. 그래야 언니가 네 얘기만 정확히 볼 수 있어.");
+            renderConcernSituationPicker(concernKey);
             document
               .getElementById("concernSituationBox")
               ?.scrollIntoView({ behavior: "smooth", block: "center" });
