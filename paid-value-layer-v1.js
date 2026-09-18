@@ -515,6 +515,41 @@
       : `그리고 너는 <b>${human}</b>일 때 덜 지쳐. 언니는 여기서도 <b>${verb}</b>부터 같이 챙겨주고 싶어.`;
   }
 
+  function situationIdentityLine(data, isT) {
+    const profile = data?.integratedSajuProfile || null;
+    if (!profile) {
+      return isT
+        ? "한 장면만 보고 성격 탓으로 결론내리지 마. 네가 반복해서 힘 쓰는 방식과 지금 상황이 겹친 결과인지부터 보자."
+        : "이 장면 하나만 보고 네 성격이 문제라고 결론내릴 필요는 없어. 네가 원래 힘을 쓰는 방식과 지금 상황이 겹친 건지 같이 보면 훨씬 선명해져.";
+    }
+    const dominant =
+      profile.sipsin?.dominantHuman ||
+      profile.balance?.climateHuman ||
+      "내 기준을 확인하면서 움직이는 성향";
+    const strength = isT ? profile.strength?.T : profile.strength?.F;
+    return isT
+      ? `사주 전체에서 보면 너는 <b>${dominant}</b> 쪽이 먼저 나와. ${strength || "그래서 잘하는 방식이 분명한 대신, 그 방식이 안 먹히는 상황에서는 막힌 느낌도 빨리 커질 수 있어."}`
+      : `사주 전체를 같이 보면 너는 <b>${dominant}</b> 쪽이 먼저 보여. ${strength || "그래서 네가 잘하는 방식이 분명한 만큼, 그 방식이 안 통하는 장면에서는 평소보다 더 답답하게 느낄 수 있어."}`;
+  }
+
+  function situationPatternReasonLine(data, isT) {
+    const profile = data?.integratedSajuProfile || null;
+    if (!profile) {
+      return isT
+        ? "이 패턴이 반복되는 건 의지 부족보다 같은 시작점에서 같은 반응을 자동으로 꺼내기 때문이야."
+        : "이게 자꾸 반복되는 건 네가 약해서가 아니라, 비슷한 장면에서 익숙한 반응이 먼저 튀어나오기 때문일 수 있어.";
+    }
+    const weak =
+      profile.behavior?.weakStatHuman ||
+      "내가 실제로 소모되는 지점을 확인하는 것";
+    const avoid =
+      profile.elements?.avoidBehavior?.verb ||
+      "한 가지 방식만 계속 밀어붙이는 것";
+    return isT
+      ? `특히 <b>${weak}</b>을 놓친 채 <b>${avoid}</b>이 이어지면 같은 패턴이 다시 붙기 쉬워. 그래서 결과만 고치려 하지 말고 시작 신호를 먼저 잡아야 해.`
+      : `특히 <b>${weak}</b>이 뒤로 밀리고 <b>${avoid}</b>만 계속되면 같은 장면이 다시 생기기 쉬워. 그러니까 결과가 나온 뒤 자책하기보다 시작되는 순간을 알아차리는 게 더 중요해.`;
+  }
+
   function applySituationNotes(notes, data, mode) {
     const p = getSituationProfile(data);
     if (!p || !Array.isArray(notes) || notes.length < 5) return notes;
@@ -530,8 +565,8 @@
         ? `${call}, 핵심은 이거야`
         : `${call}, 언니가 여기부터 볼게`,
       desc: isT
-        ? `${p.focus}.<br><br>${personal}<br><br>다른 경우 섞지 않고 지금 네 상황만 볼게.`
-        : `${p.focus}.<br><br>${personal}<br><br>지금은 다른 사람 얘기 말고 딱 네 상황만 보자.`,
+        ? `${p.focus}.<br><br>${personal}<br><br><b>왜 이 고민이 유독 크게 느껴지는지</b><br>${situationIdentityLine(data, true)}<br><br>다른 경우 섞지 않고 지금 네 상황만 볼게. 여기서 먼저 “내 얘기 맞다” 싶은 지점을 잡고, 뒤에서 행동 기준을 좁히자.`
+        : `${p.focus}.<br><br>${personal}<br><br><b>언니가 네 사주 전체랑 같이 보면</b><br>${situationIdentityLine(data, false)}<br><br>지금은 다른 사람 얘기 말고 딱 네 상황만 보자. 먼저 네가 왜 여기서 유독 마음이 쓰이는지부터 이해하고, 그다음에 뭘 바꿀지 같이 갈게.`,
       checklist: isT
         ? "지금 제일 바꾸고 싶은 것 하나만 적어. 그거부터 보자."
         : "우리 하나만 먼저 정하자. 지금 제일 바뀌었으면 하는 걸 한 줄로 적어봐.",
@@ -544,8 +579,8 @@
         ? "막히는 순서, 딱 여기야"
         : "네 마음이 지치는 순서, 여기 있어",
       desc: isT
-        ? `<b>시작</b> — ${p.trigger}.<br><br><b>반응</b> — ${p.reaction}.<br><br><b>결과</b> — ${p.cost}.<br><br>네 성격 문제가 아니야. 이 순서만 끊으면 돼. 내가 끊을 지점까지 딱 잡아줄게.`
-        : `보통 <b>${p.trigger}</b> 때 시작돼. 그러면 ${p.reaction}. 결국 ${p.cost}.<br><br>또 이랬다고 네 탓부터 하지 마. 언니랑 여기만 끊어보자.`,
+        ? `<b>시작</b> — ${p.trigger}.<br><br><b>반응</b> — ${p.reaction}.<br><br><b>결과</b> — ${p.cost}.<br><br><b>왜 자꾸 같은 데서 막히냐면</b><br>${situationPatternReasonLine(data, true)}<br><br>네 성격 문제가 아니야. 이 순서만 끊으면 돼. 뒤 NOTE에서는 어디서 끊을지 행동 기준까지 딱 잡아줄게.`
+        : `보통 <b>${p.trigger}</b> 때 시작돼. 그러면 ${p.reaction}. 결국 ${p.cost}.<br><br><b>이 패턴이 자꾸 돌아오는 이유</b><br>${situationPatternReasonLine(data, false)}<br><br>또 이랬다고 네 탓부터 하지 마. 언니랑 먼저 “언제 시작되는지”를 알아두자. 뒤에서는 실제로 어디를 바꾸면 덜 힘든지 이어서 볼게.`,
       checklist: isT
         ? "다음에 같은 장면 오면 ‘지금 시작됐네’ 하고 바로 멈춰."
         : "다음에 같은 장면 오면 ‘아, 또 여기구나’ 하고 한 번만 알아차려보자.",
@@ -787,7 +822,7 @@
   global.polishPaidValueNotes = polishPaidValueNotes;
   global.auditPaidValueNotes = auditNotes;
   global.__PAID_VALUE_LAYER_V1__ = {
-    version: "1.2.0",
+    version: "1.3.0",
     situationProfiles: SITUATION_PROFILES,
   };
 
