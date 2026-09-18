@@ -20,6 +20,15 @@ async function deployed(page) {
 async function enter(page, mode, concern, situation) {
   await page.locator(mode === 'F' ? '#panelRoa' : '#panelSeoa').click();
   await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
+  const firstState = await page.evaluate(() => ({
+    concern:document.getElementById('selectedConcernKey')?.value || '',
+    selected:document.querySelectorAll('#concernGrid .concern-chip.selected').length,
+    details:getComputedStyle(document.getElementById('concernSituationBox')).display,
+    summary:getComputedStyle(document.getElementById('concernSituationSummary')).display,
+    submitDisabled:!!document.getElementById('analysisSubmitButton')?.disabled,
+  }));
+  assert(firstState.concern==='' && firstState.selected===0 && firstState.details==='none' && firstState.summary==='none' && firstState.submitDisabled,
+    'fresh input must require an explicit concern '+JSON.stringify(firstState));
   await page.fill('#nameInput','테스트');
   const label = concern === 'love' ? '연애 · 썸' : '마음 · 스트레스';
   await page.locator('#concernGrid .concern-chip').filter({hasText:label}).click();
