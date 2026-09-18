@@ -920,10 +920,18 @@
     const data = getData();
     const notes = document.getElementById("notesListContainer");
     if (!data || !notes || document.getElementById("unniProductLadder")) return;
+    const isT = data?.currentMode === "T";
     const wrap = document.createElement("section");
     wrap.id = "unniProductLadder";
     wrap.style.cssText = "margin-top:24px;padding:20px 16px;border-radius:22px;background:#fff;border:1px solid #fde2e8;box-shadow:0 10px 30px rgba(225,175,185,.10)";
-    wrap.innerHTML = `<div style="font-size:11px;font-weight:900;color:#f43f5e">이어서 더 보고 싶다면</div><h3 style="font-size:19px;font-weight:950;margin:5px 0 5px">언니가 더 깊게 봐줄 수도 있어</h3><p style="font-size:12px;line-height:1.65;color:#64748b;margin:0 0 14px">지금 고민 하나로 끝내도 돼. 더 궁금한 사람만 골라서 이어봐.</p><div style="display:grid;gap:10px">${Object.values(PRODUCTS).map((p) => `<button data-unni-product="${p.id}" style="text-align:left;width:100%;padding:14px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;cursor:pointer"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:10px;font-weight:900;color:#f43f5e;margin-bottom:3px">${p.badge}</div><div style="font-size:14px;font-weight:900;color:#0f172a">${p.name}</div></div><div style="font-size:13px;font-weight:950;color:#0f172a;white-space:nowrap">${won(p.price)}</div></div><div style="font-size:11px;line-height:1.55;color:#64748b;margin-top:7px">${p.desc}</div></button>`).join("")}</div>`;
+    const eyebrow = isT ? "더 볼 거면 필요한 것만" : "더 마음에 걸리는 게 있다면";
+    const headline = isT
+      ? "내가 필요한 것만 더 깊게 봐줄게"
+      : "언니가 이어서 더 봐줄게";
+    const sub = isT
+      ? "지금 본 걸로 충분하면 여기서 끝. 더 궁금한 것만 골라."
+      : "지금 본 것만으로도 괜찮아. 더 궁금한 게 남았을 때만 골라서 이어보자.";
+    wrap.innerHTML = `<div style="font-size:11px;font-weight:900;color:#f43f5e">${eyebrow}</div><h3 style="font-size:19px;font-weight:950;margin:5px 0 5px">${headline}</h3><p style="font-size:12px;line-height:1.65;color:#64748b;margin:0 0 14px">${sub}</p><div style="display:grid;gap:10px">${Object.values(PRODUCTS).map((p) => `<button data-unni-product="${p.id}" style="text-align:left;width:100%;padding:14px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;cursor:pointer"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div style="font-size:10px;font-weight:900;color:#f43f5e;margin-bottom:3px">${p.badge}</div><div style="font-size:14px;font-weight:900;color:#0f172a">${p.name}</div></div><div style="font-size:13px;font-weight:950;color:#0f172a;white-space:nowrap">${won(p.price)}</div></div><div style="font-size:11px;line-height:1.55;color:#64748b;margin-top:7px">${p.desc}</div></button>`).join("")}</div>`;
     notes.insertAdjacentElement("afterend", wrap);
     wrap.querySelectorAll("[data-unni-product]").forEach((btn) => btn.addEventListener("click", () => openProduct(btn.dataset.unniProduct)));
   }
