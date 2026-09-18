@@ -62,10 +62,10 @@
     },
     all_in_one: {
       id: "all_in_one",
-      name: "어떤언니 올인원",
+      name: "내 사주 완전판",
       price: 9900,
-      badge: "가장 깊은 전체판",
-      desc: "내 전체 사주판 12개 챕터 + 6가지 고민별 지금 상황을 맞춘 NOTE 36개를 한 번에 보는 가장 큰 리포트야. 궁합은 별도 상품이야.",
+      badge: "전체사주 + 고민 6개",
+      desc: "내 전체 사주판 12개 챕터 + 6가지 고민별 지금 상황을 맞춘 NOTE 36개를 한 번에 보는 완전판이야. 궁합은 별도 상품이야.",
     },
   };
 
@@ -1182,7 +1182,7 @@
     concern_bundle3: "지금 본 고민 말고 다른 고민 3개까지 NOTE 1~6으로 깊게",
     full_saju: "일·돈·연애·관계·회복까지 내 사주 전체 사용설명서",
     compatibility: "둘의 끌림·대화·싸움·연락·돈·장기 관계까지",
-    all_in_one: "전체사주 + 6가지 고민 NOTE 36개를 한 번에",
+    all_in_one: "전체사주 + 6가지 고민을 한 번에 보는 리포트",
   };
 
   function productButtonHtml(p, { recommended = false, secondary = false } = {}) {
@@ -1238,7 +1238,7 @@
 
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
-  global.__UNNI_PRODUCTS_V1__ = { version: "1.4.0", products: PRODUCTS };
+  global.__UNNI_PRODUCTS_V1__ = { version: "1.5.0", products: PRODUCTS };
 
   const observer = new MutationObserver(() => renderCatalog());
   if (document.documentElement) observer.observe(document.documentElement, { childList: true, subtree: true });
