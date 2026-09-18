@@ -20,7 +20,7 @@ function norm(v) {
   page.on('console', m => { if (m.type() === 'error') errors.push(`[console] ${m.text()}`); });
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
-    globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.1.0' &&
+    globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.2.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '1.1.0' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
@@ -102,6 +102,12 @@ function norm(v) {
             count:notes.length,
             n1:notes[0],
             n6:notes[5],
+            notes:notes.map((n) => ({
+              badge:n.badge || '',
+              title:n.title || '',
+              desc:n.desc || '',
+              checklist:n.checklist || '',
+            })),
             audit,
             allText:notes.map((n) => `${n.badge} ${n.title} ${n.desc} ${n.checklist || ''}`).join(' '),
           });
@@ -125,7 +131,7 @@ function norm(v) {
     };
   });
 
-  assert(qa.paidVersion.version === '1.1.0', 'paid value layer missing');
+  assert(qa.paidVersion.version === '1.2.0', 'paid value layer missing');
   assert(qa.productVersion.version === '1.1.0', 'product layer missing');
   assert(qa.wrappers.paid, 'paid-value wrapper missing');
   assert(qa.wrappers.integrated, 'integrated wrapper metadata lost');
@@ -139,17 +145,26 @@ function norm(v) {
   assert(qa.maleShared.money.firstDate === qa.maleShared.love.firstDate, 'male money/love first timing should legitimately share the same sensitive axis');
   assert(qa.maleShared.money.secondDate === qa.maleShared.love.secondDate, 'male money/love second timing should legitimately share the same sensitive axis');
   assert(qa.maleShared.money.sharedTimingWith === 'love' && qa.maleShared.love.sharedTimingWith === 'money', 'shared timing pairing metadata missing');
-  assert(qa.maleShared.moneyDesc.includes('복붙한 게 아니라') && qa.maleShared.loveDesc.includes('복붙한 게 아니라'), 'shared timing explanation missing from F copy');
+  assert(qa.maleShared.moneyDesc.includes('복붙 아니야') && qa.maleShared.loveDesc.includes('복붙 아니야'), 'shared timing explanation missing from F copy');
   assert(norm(qa.maleShared.money.firstBody) !== norm(qa.maleShared.love.firstBody), 'same date must still produce concern-specific first action');
   assert(norm(qa.maleShared.money.secondBody) !== norm(qa.maleShared.love.secondBody), 'same date must still produce concern-specific second action');
 
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
     assert(row.count === 6, `${row.concern}/${row.situation}/${row.mode}: note count ${row.count}`);
-    assert(row.label && row.allText.includes(row.label), `${row.concern}/${row.situation}/${row.mode}: situation label missing`);
     assert(row.n6?.__timingQA?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: NOTE6 situation metadata missing`);
     assert(norm(row.n6?.__timingQA?.firstBody) !== norm(row.n6?.__timingQA?.secondBody), `${row.concern}/${row.situation}/${row.mode}: NOTE6 period copy duplicated`);
     assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: technical terms leaked`);
+    assert((row.audit?.badgeTooLong || []).length === 0, `${row.concern}/${row.situation}/${row.mode}: compact NOTE badge too long ${JSON.stringify(row.audit?.badgeTooLong)}`);
+    for (const [idx, note] of row.notes.entries()) {
+      assert(note.badge.length <= 16, `${row.concern}/${row.situation}/${row.mode}: NOTE${idx + 1} badge too long: ${note.badge}`);
+      const voice = `${note.title} ${note.desc} ${note.checklist}`;
+      if (row.mode === 'F') {
+        assert(/언니|우리|같이|마음|괜찮|해보자|보자|돼/.test(voice), `${row.concern}/${row.situation}/F: NOTE${idx + 1} lost Roa 1:1 voice`);
+      } else {
+        assert(/내가|딱|바로|먼저|확인|보자|끊|기준|해\b/.test(voice), `${row.concern}/${row.situation}/T: NOTE${idx + 1} lost Seoa direct 1:1 voice`);
+      }
+    }
     assert(!/(undefined|NaN|null)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: bad token leaked`);
   }
   for (const concern of ['money','career','love','path','people','mental']) {
@@ -183,7 +198,7 @@ function norm(v) {
     assert(!r.timingDuplicate, `${r.concern}/${r.mode}: timing duplicate audit failed`);
     assert(r.hardTerms.length === 0, `${r.concern}/${r.mode}: hard terms leaked ${JSON.stringify(r.hardTerms)}`);
     assert(r.toneScore >= 3, `${r.concern}/${r.mode}: persona tone too weak ${r.toneScore}`);
-    assert(r.desc.includes('첫 번째 흐름') && r.desc.includes('두 번째 흐름') && r.desc.includes('두 시기의 차이'), `${r.concern}/${r.mode}: NOTE6 distinction headings missing`);
+    assert(r.desc.includes('먼저 ·') && r.desc.includes('그다음 ·') && r.desc.includes('둘은 이렇게 달라'), `${r.concern}/${r.mode}: NOTE6 conversational distinction headings missing`);
     assert(!/[💕❤♥💖💗💓💞💘💝]/u.test(r.desc), `${r.concern}/${r.mode}: decorative heart leaked into NOTE6`);
     assert(!/(undefined|NaN|null)/.test(r.allText), `${r.concern}/${r.mode}: bad token leaked`);
   }
@@ -226,6 +241,9 @@ function norm(v) {
       note6First:note6?.__timingQA?.firstBody || '',
       note6Second:note6?.__timingQA?.secondBody || '',
       note6Text:note6?.desc || '',
+      resultGreeting:document.getElementById('resultSisterGreeting')?.innerText || '',
+      catalogText:catalog?.innerText || '',
+      noteBadges:notes.map((n) => n.badge || ''),
       share,
     };
   });
@@ -233,6 +251,9 @@ function norm(v) {
   assert(ui.catalog, 'product catalog not rendered');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
+  assert(ui.resultGreeting.includes('딱 우리') && ui.resultGreeting.includes('언니랑 같이 보자'), `F result greeting lost 1:1 voice: ${ui.resultGreeting}`);
+  assert(ui.catalogText.includes('언니가 이어서 더 봐줄게'), 'F premium handoff lost sister voice');
+  assert(ui.noteBadges.every((x) => x.length <= 16), `visible NOTE badges too long: ${JSON.stringify(ui.noteBadges)}`);
   assert(ui.share.version === '4', `story card version ${ui.share.version}`);
   assert(ui.share.text.includes('사주로 까본 내 본캐') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('링크 스티커 붙이는 자리'), 'story card identity/share copy missing');
   assert(ui.share.core && ui.share.strong && ui.share.need, `story card element strip missing: ${JSON.stringify(ui.share)}`);
@@ -403,7 +424,7 @@ function norm(v) {
   await page.locator('#unniProductClose').click();
 
   const html = fs.readFileSync('index.html','utf8');
-  assert(html.includes('./paid-value-layer-v1.js?v=1.1.0'), 'paid value script include missing');
+  assert(html.includes('./paid-value-layer-v1.js?v=1.2.0'), 'paid value script include missing');
   assert(html.includes('./premium-products-v1.js?v=1.1.0'), 'product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
@@ -422,6 +443,8 @@ function norm(v) {
   assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
   assert(html.includes('history.pushState') && html.includes('shareModal: true'), 'share modal history guard missing');
   assert(html.includes('CONCERN_SITUATIONS') && html.includes('selectedConcernSituation'), 'concern situation picker missing');
+  assert(!html.includes('font-bold truncate text-right flex-1 min-w-0'), 'NOTE badge still forces ellipsis');
+  assert(!html.includes('팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐'), 'old generic harsh T greeting remains');
   assert(premium.includes('data-bundle-situation') && premium.includes('data-all-situation'), 'premium situation selectors missing');
   assert(fs.readFileSync('paid-value-layer-v1.js','utf8').includes('SITUATION_PROFILES'), 'situation-aware paid copy layer missing');
   for (const staleCopy of ['내 본캐 스탯','내 사주 본캐 카드 저장하기','본캐 카드 저장']) assert(!html.includes(staleCopy), `stale share copy remains: ${staleCopy}`);
