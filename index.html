@@ -6569,7 +6569,7 @@ currentResultData = {
       ) {
         const rectBefore = element.getBoundingClientRect();
         const canvas = await renderElementToCanvas(element, targetWidth, {
-          cloneOffscreen: false,
+          cloneOffscreen: true,
           faithful: false,
         });
         if (canvas.height <= maxPageHeight) {
