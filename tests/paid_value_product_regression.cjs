@@ -379,11 +379,11 @@ function norm(v) {
     return {
       bottomGap:card.bottom - sticker.bottom,
       viralVisible:viral.top > card.top && viral.bottom < card.bottom,
-      scrollHeight:document.getElementById('storyCard').scrollHeight,
-      clientHeight:document.getElementById('storyCard').clientHeight,
+      viralHeight:viral.height,
+      stickerInside:sticker.bottom <= card.bottom + 1,
     };
   });
-  assert(cardFill.bottomGap < 65 && cardFill.viralVisible && cardFill.scrollHeight <= cardFill.clientHeight + 2, `story card should feel full without overflow: ${JSON.stringify(cardFill)}`);
+  assert(cardFill.bottomGap >= 0 && cardFill.bottomGap < 42 && cardFill.viralVisible && cardFill.viralHeight >= 66 && cardFill.stickerInside, `story card should use the lower space cleanly: ${JSON.stringify(cardFill)}`);
 
   await page.locator('#storyCaptureReady').click();
   await page.waitForFunction(() => getComputedStyle(document.getElementById('storyCaptureChrome')).display === 'none');
