@@ -76,7 +76,12 @@ async function inspect(page, mode) {
   assert(r.oheng.includes('언니가')&&!r.oheng.includes('로아가')&&!r.oheng.includes('서아가'),mode+' oheng voice '+r.oheng);
   assert(r.count===4&&r.visible===4,'premium products hidden '+JSON.stringify(r));
   assert(r.catalog.includes('다른 리포트도 있어')&&!r.catalog.includes('다른 리포트 3개 보기'),'old product disclosure remains');
+  assert(r.catalog.includes('내 사주 완전판')&&!r.catalog.includes('어떤언니 올인원'),'all-in-one product name did not update');
   assert(r.switchCount===0,'bottom F/T CTA remains');
+  assert(r.hierarchy.oneLineBeforeThreeLine&&r.hierarchy.threeLineBeforeMbti&&r.hierarchy.mbtiBeforeChem&&r.hierarchy.mbtiSize<=38,
+    'result hierarchy is wrong '+JSON.stringify(r.hierarchy));
+  assert(!r.badges.some(x=>x.includes('·')||x.includes('핵심')||x.includes('사람 필터')||x.includes('7일 처방')),
+    'old NOTE badge wording remains '+JSON.stringify(r.badges));
   return r;
 }
 
