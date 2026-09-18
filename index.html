@@ -6449,38 +6449,69 @@ currentResultData = {
         return window.__html2canvasLoading;
       }
 
-      async function renderElementToPngBlob(element, targetWidth = 1080) {
+      async function canvasToPngBlob(canvas) {
+        const blob = await new Promise((resolve) => {
+          try { canvas.toBlob((value) => resolve(value || null), "image/png", 1); }
+          catch (_) { resolve(null); }
+        });
+        if (blob) return blob;
+
+        const dataUrl = canvas.toDataURL("image/png", 1);
+        const base64 = dataUrl.split(",")[1] || "";
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return new Blob([bytes], { type: "image/png" });
+      }
+
+      async function renderElementToCanvas(
+        element,
+        targetWidth = 1080,
+        { cloneOffscreen = true, faithful = false } = {},
+      ) {
         if (!element) throw new Error("EXPORT_ELEMENT_MISSING");
         await ensureHtml2Canvas();
         if (document.fonts?.ready) {
           try { await document.fonts.ready; } catch (_) {}
         }
 
-        const sourceRect = element.getBoundingClientRect();
-        const sourceWidth = Math.max(1, sourceRect.width || element.offsetWidth || 360);
-        const clone = element.cloneNode(true);
-        clone.removeAttribute("id");
-        clone.querySelectorAll?.("[id]").forEach((node) => node.removeAttribute("id"));
-        clone.style.position = "fixed";
-        clone.style.left = "-12000px";
-        clone.style.top = "0";
-        clone.style.width = sourceWidth + "px";
-        clone.style.maxWidth = "none";
-        clone.style.margin = "0";
-        clone.style.visibility = "visible";
-        clone.style.pointerEvents = "none";
-        clone.style.zIndex = "-1";
-        if (getComputedStyle(element).display === "none") clone.style.display = "flex";
-        document.body.appendChild(clone);
+        let target = element;
+        let cleanup = null;
+
+        if (cloneOffscreen) {
+          const sourceRect = element.getBoundingClientRect();
+          const sourceWidth = Math.max(1, sourceRect.width || element.offsetWidth || 360);
+          const clone = element.cloneNode(true);
+          clone.removeAttribute("id");
+          clone.querySelectorAll?.("[id]").forEach((node) => node.removeAttribute("id"));
+          clone.style.position = "fixed";
+          clone.style.left = "-12000px";
+          clone.style.top = "0";
+          clone.style.width = sourceWidth + "px";
+          clone.style.maxWidth = "none";
+          clone.style.height = "auto";
+          clone.style.maxHeight = "none";
+          clone.style.margin = "0";
+          clone.style.visibility = "visible";
+          clone.style.pointerEvents = "none";
+          clone.style.zIndex = "-1";
+          clone.style.transform = "none";
+          if (getComputedStyle(element).display === "none") clone.style.display = "block";
+          document.body.appendChild(clone);
+          target = clone;
+          cleanup = () => clone.remove();
+        }
 
         try {
-          await waitForCardImages(clone);
-          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-          const rect = clone.getBoundingClientRect();
+          await waitForCardImages(target);
+          await new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          );
+          const rect = target.getBoundingClientRect();
           if (!rect.width || !rect.height) throw new Error("EXPORT_ZERO_SIZE");
 
-          const scale = Math.max(2, Math.min(4, targetWidth / rect.width));
-          const canvas = await html2canvas(clone, {
+          const scale = Math.max(1, Math.min(5, targetWidth / rect.width));
+          const baseOptions = {
             scale,
             useCORS: true,
             allowTaint: false,
@@ -6488,26 +6519,114 @@ currentResultData = {
             logging: false,
             imageTimeout: 5000,
             scrollX: 0,
-            scrollY: 0,
-            windowWidth: Math.max(document.documentElement.clientWidth, Math.ceil(rect.width)),
-            windowHeight: Math.max(document.documentElement.clientHeight, Math.ceil(rect.height)),
-          });
+            scrollY: cloneOffscreen ? 0 : -window.scrollY,
+            windowWidth: Math.max(
+              document.documentElement.clientWidth,
+              Math.ceil(rect.width),
+            ),
+            windowHeight: Math.max(
+              document.documentElement.clientHeight,
+              Math.ceil(rect.height),
+            ),
+          };
 
-          const blob = await new Promise((resolve) => {
-            try { canvas.toBlob((value) => resolve(value || null), "image/png", 1); }
-            catch (_) { resolve(null); }
-          });
-          if (blob) return blob;
-
-          const dataUrl = canvas.toDataURL("image/png", 1);
-          const base64 = dataUrl.split(",")[1] || "";
-          const binary = atob(base64);
-          const bytes = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-          return new Blob([bytes], { type: "image/png" });
+          if (faithful) {
+            try {
+              return await html2canvas(target, {
+                ...baseOptions,
+                foreignObjectRendering: true,
+              });
+            } catch (error) {
+              console.warn("정밀 카드 렌더링 fallback:", error);
+            }
+          }
+          return await html2canvas(target, baseOptions);
         } finally {
-          clone.remove();
+          cleanup?.();
         }
+      }
+
+      async function renderElementToPngBlob(element, targetWidth = 1080) {
+        const canvas = await renderElementToCanvas(element, targetWidth, {
+          cloneOffscreen: true,
+          faithful: false,
+        });
+        return canvasToPngBlob(canvas);
+      }
+
+      async function renderVisibleElementToPngBlob(element, targetWidth = 1080) {
+        const canvas = await renderElementToCanvas(element, targetWidth, {
+          cloneOffscreen: false,
+          faithful: true,
+        });
+        return canvasToPngBlob(canvas);
+      }
+
+      async function renderElementToPngPages(
+        element,
+        targetWidth = 900,
+        maxPageHeight = 3600,
+      ) {
+        const rectBefore = element.getBoundingClientRect();
+        const canvas = await renderElementToCanvas(element, targetWidth, {
+          cloneOffscreen: false,
+          faithful: false,
+        });
+        if (canvas.height <= maxPageHeight) {
+          return [await canvasToPngBlob(canvas)];
+        }
+
+        const scale = canvas.width / Math.max(1, rectBefore.width);
+        const rootTop = rectBefore.top;
+        const boundaryNodes = [
+          ...element.querySelectorAll("section, article"),
+        ];
+        const boundaries = boundaryNodes
+          .map((node) => {
+            const r = node.getBoundingClientRect();
+            return Math.round((r.bottom - rootTop) * scale);
+          })
+          .filter((y) => y > 0 && y < canvas.height)
+          .sort((a, b) => a - b);
+
+        const pages = [];
+        let startY = 0;
+        while (startY < canvas.height) {
+          const hardEnd = Math.min(startY + maxPageHeight, canvas.height);
+          let endY = hardEnd;
+
+          if (hardEnd < canvas.height) {
+            const minUseful = startY + Math.min(1200, Math.floor(maxPageHeight * 0.45));
+            const candidates = boundaries.filter(
+              (y) => y >= minUseful && y <= hardEnd - 40,
+            );
+            if (candidates.length) endY = candidates[candidates.length - 1];
+          }
+
+          if (endY <= startY + 200) endY = hardEnd;
+
+          const pageHeight = endY - startY;
+          const pageCanvas = document.createElement("canvas");
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = pageHeight;
+          const ctx = pageCanvas.getContext("2d");
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          ctx.drawImage(
+            canvas,
+            0,
+            startY,
+            canvas.width,
+            pageHeight,
+            0,
+            0,
+            canvas.width,
+            pageHeight,
+          );
+          pages.push(await canvasToPngBlob(pageCanvas));
+          startY = endY;
+        }
+        return pages;
       }
 
       function makePngFile(blob, filename) {
@@ -6546,11 +6665,68 @@ currentResultData = {
         return true;
       }
 
+      async function nativeSharePngFiles(blobs, filenames, title) {
+        if (typeof navigator.share !== "function") return false;
+        const files = blobs.map((blob, index) =>
+          makePngFile(blob, filenames[index] || `page-${index + 1}.png`),
+        );
+        if (typeof navigator.canShare === "function") {
+          try {
+            if (!navigator.canShare({ files })) return false;
+          } catch (_) {
+            return false;
+          }
+        }
+        await navigator.share({ files, title });
+        return true;
+      }
+
+      async function showImagePagesFallback(blobs, title = "전체 결과") {
+        const dataUrls = await Promise.all(blobs.map((blob) => blobToDataUrl(blob)));
+        let layer = document.getElementById("unniImagePagesFallback");
+        if (!layer) {
+          layer = document.createElement("div");
+          layer.id = "unniImagePagesFallback";
+          layer.style.cssText = "position:fixed;inset:0;z-index:1000001;background:rgba(15,23,42,.97);overflow:auto;padding:10px 12px max(18px,env(safe-area-inset-bottom));box-sizing:border-box;-webkit-overflow-scrolling:touch";
+          document.body.appendChild(layer);
+        }
+        layer.innerHTML = `
+          <div style="max-width:390px;margin:0 auto">
+            <div style="position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:max(8px,env(safe-area-inset-top)) 0 10px;background:linear-gradient(180deg,rgba(15,23,42,.99),rgba(15,23,42,.91),rgba(15,23,42,0));color:white">
+              <div>
+                <div style="font-size:14px;font-weight:950">${title}</div>
+                <div style="font-size:10px;color:#cbd5e1;font-weight:750;margin-top:2px">글씨 안 깨지게 ${dataUrls.length}장으로 나눴어. 각 장을 길게 눌러 저장하면 돼.</div>
+              </div>
+              <button id="unniImagePagesClose" type="button" style="flex:none;width:38px;height:38px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.10);color:white;font-size:24px;line-height:1;cursor:pointer">×</button>
+            </div>
+            <div style="display:grid;gap:12px;padding-bottom:10px">
+              ${dataUrls.map((src, index) => `
+                <div>
+                  <div style="font-size:10px;font-weight:900;color:#cbd5e1;margin:0 0 5px 4px">${index + 1} / ${dataUrls.length}</div>
+                  <div style="padding:5px;border-radius:18px;background:white;box-shadow:0 16px 45px rgba(0,0,0,.30)">
+                    <img src="${src}" alt="${title} ${index + 1}페이지" style="display:block;width:100%;height:auto;border-radius:14px;-webkit-touch-callout:default;user-select:auto" />
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          </div>`;
+        layer.style.display = "block";
+        document.body.style.overflow = "hidden";
+        layer.querySelector("#unniImagePagesClose")?.addEventListener("click", () => {
+          layer.style.display = "none";
+          document.body.style.overflow = "";
+        }, { once: true });
+      }
+
       window.__UNNI_IMAGE_EXPORT_V2__ = {
-        version: "2.1.0",
+        version: "2.2.0",
         renderElementToPngBlob,
+        renderVisibleElementToPngBlob,
+        renderElementToPngPages,
         downloadPngBlob,
         nativeSharePng,
+        nativeSharePngFiles,
+        showImagePagesFallback,
         canNativeShareFile,
         makePngFile,
         isIOSDevice,
@@ -6592,7 +6768,7 @@ currentResultData = {
         setStoryExportReady(false);
         storyCardRenderPromise = (async () => {
           try {
-            const blob = await renderElementToPngBlob(card, 1080);
+            const blob = await renderVisibleElementToPngBlob(card, 1080);
             storyCardAsset = blob;
             storyCardAssetKey = storyAssetSignature(card);
             setStoryExportReady(true);
