@@ -567,7 +567,7 @@
 
     out[3] = {
       ...out[3],
-      badge: compactBadge(data, "7일"),
+      badge: compactBadge(data, "7일 처방"),
       title: isT
         ? "7일은 이 세 개만 해"
         : "우리 7일만 이렇게 해보자",
@@ -581,7 +581,7 @@
 
     out[4] = {
       ...out[4],
-      badge: compactBadge(data, "사람"),
+      badge: compactBadge(data, "사람 필터"),
       title: isT
         ? "가까이 둘 사람, 기준은 이거야"
         : "네 편이 될 사람, 이렇게 보면 돼",
