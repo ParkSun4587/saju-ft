@@ -43,29 +43,29 @@
       id: "concern_bundle3",
       name: "고민 3개 더 깊게",
       price: 2900,
-      badge: "다른 고민도 궁금하다면",
-      desc: "지금 본 고민 말고 궁금한 고민 3개를 고르고, 각 고민의 지금 상황까지 맞춰서 NOTE 1~6을 전부 받아. 총 18개 메모 구성.",
+      badge: "고민 3개 추가상담",
+      desc: "지금 본 고민 말고 3가지를 골라. 각 고민마다 이유 → 반복패턴 → 진짜 문제 → 7일 처방 → 사람 기준 → 시기까지 NOTE 1~6, 총 18개로 이어서 봐.",
     },
     full_saju: {
       id: "full_saju",
       name: "내 전체 사주판",
       price: 4900,
-      badge: "정석 종합판",
-      desc: "지금 고민을 다시 푸는 상품이 아니라, 타고난 기질·강점·과부하·결정법·일·돈·사랑·관계·회복·변화 대응까지 사주 전체를 12개 챕터로 연결해 봐.",
+      badge: "내 사용설명서 12챕터",
+      desc: "지금 고민 하나를 반복하는 리포트가 아니야. 타고난 기질·강점·지치는 방식·결정법·일·돈·사랑·관계·회복·변화 대응까지 내 사주 전체를 12개 챕터로 이어서 봐.",
     },
     compatibility: {
       id: "compatibility",
       name: "우리 둘 궁합",
       price: 5900,
-      badge: "상대 생일 하나 더",
-      desc: "두 사람의 사주를 각각 계산해서 끌림·연애 방식·대화·갈등·화해·애정표현·거리감·생활·돈·장기 관계까지 16개 챕터로 깊게 봐.",
+      badge: "둘 사이 16챕터",
+      desc: "두 사람의 사주를 각각 계산해서 왜 끌리는지부터 대화·갈등·화해·애정표현·연락·생활·돈·경계·오래 가는 방식까지 16개 챕터로 봐.",
     },
     all_in_one: {
       id: "all_in_one",
       name: "내 사주 완전판",
       price: 9900,
-      badge: "전체사주 + 고민 6개",
-      desc: "내 전체 사주판 12개 챕터 + 6가지 고민별 지금 상황을 맞춘 NOTE 36개를 한 번에 보는 완전판이야. 궁합은 별도 상품이야.",
+      badge: "전체사주 12 + 고민 NOTE 36",
+      desc: "내 전체 사주판 12개 챕터에 돈·일·연애·진로·관계·마음 6가지 고민 NOTE 36개까지 한 번에 이어서 보는 완전판이야. 궁합만 별도 상품이야.",
     },
   };
 
@@ -775,61 +775,6 @@
     }
   }
 
-  function cleanupPaidPrintView() {
-    document.getElementById("unniPaidPrintHost")?.remove();
-    document.getElementById("unniPaidPrintStyle")?.remove();
-  }
-
-  function printPaidReport(root, productId) {
-    if (global.__UNNI_IMAGE_EXPORT_V2__?.isKakaoInApp?.()) {
-      if (typeof showToast === "function") {
-        showToast("카카오톡 안에서는 PDF 저장이 막힐 수 있어. ⋮ → 다른 브라우저로 열어서 저장해줘.");
-      }
-      return;
-    }
-    const body = root?.querySelector("#unniProductBody");
-    const product = PRODUCTS[productId];
-    if (!body) return;
-
-    // 새 창은 iOS/모바일 브라우저에서 막히거나 print()가 유실되는 경우가 있어,
-    // 현재 문서 안에 인쇄 전용 복사본을 만들고 사용자 탭 직후 window.print()를 직접 호출한다.
-    cleanupPaidPrintView();
-    const style = document.createElement("style");
-    style.id = "unniPaidPrintStyle";
-    style.textContent = `
-      #unniPaidPrintHost{display:none}
-      @media print{
-        @page{size:auto;margin:12mm}
-        html,body{background:#fff!important;height:auto!important;overflow:visible!important}
-        body>*:not(#unniPaidPrintHost){display:none!important}
-        #unniPaidPrintHost{display:block!important;position:static!important;width:auto!important;max-width:none!important;margin:0!important;padding:0!important;background:#fff!important;color:#0f172a!important}
-        #unniPaidPrintHost .unni-print-shell{max-width:760px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif}
-        #unniPaidPrintHost section,#unniPaidPrintHost article{break-inside:avoid;page-break-inside:avoid}
-        #unniPaidPrintHost button{display:none!important}
-      }
-    `;
-    const host = document.createElement("div");
-    host.id = "unniPaidPrintHost";
-    host.innerHTML = `<div class="unni-print-shell"><div style="font-size:11px;font-weight:900;color:#f43f5e;margin-bottom:6px">어떤언니</div><h1 style="font-size:22px;line-height:1.3;margin:0 0 18px">${esc(product?.name || "어떤언니 리포트")}</h1>${body.innerHTML}</div>`;
-    document.head.appendChild(style);
-    document.body.appendChild(host);
-
-    let cleaned = false;
-    const cleanup = () => {
-      if (cleaned) return;
-      cleaned = true;
-      cleanupPaidPrintView();
-    };
-    window.addEventListener("afterprint", cleanup, { once:true });
-    try {
-      window.print();
-    } catch (error) {
-      cleanup();
-      console.error("PDF 인쇄 화면 열기 실패:", error);
-      if (typeof showToast === "function") showToast("PDF 저장 화면을 열지 못했어. 브라우저에서 다시 시도해줘.");
-    }
-  }
-
   async function saveFullPaidReport(root, productId) {
     const exporter = global.__UNNI_IMAGE_EXPORT_V2__;
     const product = PRODUCTS[productId];
@@ -926,7 +871,7 @@
     root = document.createElement("div");
     root.id = "unniProductModal";
     root.style.cssText = "display:none;position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.48);padding:10px;overflow:auto;-webkit-overflow-scrolling:touch";
-    root.innerHTML = `<div style="max-width:520px;margin:max(8px,env(safe-area-inset-top)) auto max(14px,env(safe-area-inset-bottom));background:#fff;border-radius:24px;padding:0 16px 18px;box-shadow:0 24px 70px rgba(15,23,42,.25);overflow:visible"><div id="unniProductStickyHead" style="position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin:0 -16px;padding:14px 16px 11px;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-radius:24px 24px 14px 14px;border-bottom:1px solid #f1f5f9"><div><div id="unniProductBadge" style="font-size:10px;font-weight:900;color:#f43f5e"></div><h2 id="unniProductTitle" style="font-size:19px;font-weight:950;margin:4px 0 2px"></h2><div id="unniProductPrice" style="font-size:12px;font-weight:800;color:#64748b"></div></div><button id="unniProductClose" style="flex:none;border:0;background:#f1f5f9;border-radius:999px;width:36px;height:36px;font-size:19px;cursor:pointer">×</button></div><div id="unniProductSetup" style="margin-top:14px"></div><div id="unniProductPayment" style="display:none;margin-top:15px"><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><div id="unniProductBody" style="margin-top:14px"></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#fb7185,#f472b6);color:white;padding:14px 16px;font-size:13px;font-weight:950;cursor:pointer">사진으로 한 번에 저장하기</button><div id="unniProductSaveHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:800;line-height:1.55;color:#94a3b8">결과 읽는 동안 저장용 사진을 미리 준비해둘게.</div><button id="unniProductSavePdf" type="button" style="display:none;width:100%;margin-top:9px;border:1px solid #e2e8f0;border-radius:13px;background:#fff;color:#475569;padding:11px 14px;font-size:11px;font-weight:900;cursor:pointer">PDF로 한 파일 보관하기</button><button id="unniProductAction" style="width:100%;margin-top:14px;border:0;border-radius:15px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:900;cursor:pointer"></button><div id="unniProductAccessNote" style="display:none;margin-top:9px;text-align:center;font-size:11px;font-weight:800;line-height:1.6;color:#a16207">🔐 한 번 결제하면 이 브라우저에서는 추가 결제 없이 계속 다시 볼 수 있어요.</div></div>`;
+    root.innerHTML = `<div style="max-width:520px;margin:max(8px,env(safe-area-inset-top)) auto max(14px,env(safe-area-inset-bottom));background:#fff;border-radius:24px;padding:0 16px 18px;box-shadow:0 24px 70px rgba(15,23,42,.25);overflow:visible"><div id="unniProductStickyHead" style="position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin:0 -16px;padding:14px 16px 11px;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-radius:24px 24px 14px 14px;border-bottom:1px solid #f1f5f9"><div><div id="unniProductBadge" style="font-size:10px;font-weight:900;color:#f43f5e"></div><h2 id="unniProductTitle" style="font-size:19px;font-weight:950;margin:4px 0 2px"></h2><div id="unniProductPrice" style="font-size:12px;font-weight:800;color:#64748b"></div></div><button id="unniProductClose" style="flex:none;border:0;background:#f1f5f9;border-radius:999px;width:36px;height:36px;font-size:19px;cursor:pointer">×</button></div><div id="unniProductSetup" style="margin-top:14px"></div><div id="unniProductPayment" style="display:none;margin-top:15px"><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><div id="unniProductBody" style="margin-top:14px"></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#fb7185,#f472b6);color:white;padding:14px 16px;font-size:13px;font-weight:950;cursor:pointer">사진으로 한 번에 저장하기</button><div id="unniProductSaveHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:800;line-height:1.55;color:#94a3b8">결과 읽는 동안 저장용 사진을 미리 준비해둘게.</div><button id="unniProductAction" style="width:100%;margin-top:14px;border:0;border-radius:15px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:900;cursor:pointer"></button><div id="unniProductAccessNote" style="display:none;margin-top:9px;text-align:center;font-size:11px;font-weight:800;line-height:1.6;color:#a16207">🔐 한 번 결제하면 이 브라우저에서는 추가 결제 없이 계속 다시 볼 수 있어요.</div></div>`;
     document.body.appendChild(root);
     root.querySelector("#unniProductClose").onclick = () => { root.style.display = "none"; document.body.style.overflow = ""; };
     root.addEventListener("click", (e) => { if (e.target === root) root.querySelector("#unniProductClose").click(); });
@@ -1062,7 +1007,6 @@
 
     const saveAll = root.querySelector("#unniProductSaveAll");
     const saveHint = root.querySelector("#unniProductSaveHint");
-    const savePdf = root.querySelector("#unniProductSavePdf");
     if (saveAll) {
       saveAll.style.display = "block";
       saveAll.textContent = "사진으로 한 번에 저장하기";
@@ -1071,10 +1015,6 @@
     if (saveHint) {
       saveHint.style.display = "block";
       saveHint.textContent = "결과 읽는 동안 저장용 사진을 미리 준비해둘게.";
-    }
-    if (savePdf) {
-      savePdf.style.display = "block";
-      savePdf.onclick = () => printPaidReport(root, productId);
     }
 
     const action = root.querySelector("#unniProductAction");
@@ -1128,10 +1068,8 @@
     root.querySelector("#unniProductPayment").style.display = "none";
     const saveAll = root.querySelector("#unniProductSaveAll");
     const saveHint = root.querySelector("#unniProductSaveHint");
-    const savePdf = root.querySelector("#unniProductSavePdf");
     if (saveAll) { saveAll.style.display = "none"; saveAll.onclick = null; }
     if (saveHint) saveHint.style.display = "none";
-    if (savePdf) { savePdf.style.display = "none"; savePdf.onclick = null; }
     root.querySelector("#unniProductBody").innerHTML = `<p style="font-size:13px;line-height:1.75;color:#64748b">${esc(product.desc)}</p>`;
     const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
     const accessNote = root.querySelector("#unniProductAccessNote");
@@ -1179,10 +1117,10 @@
   }
 
   const PRODUCT_SHORT = {
-    concern_bundle3: "지금 본 고민 말고 다른 고민 3개까지 NOTE 1~6으로 깊게",
-    full_saju: "일·돈·연애·관계·회복까지 내 사주 전체 사용설명서",
-    compatibility: "둘의 끌림·대화·싸움·연락·돈·장기 관계까지",
-    all_in_one: "전체사주 + 6가지 고민을 한 번에 보는 리포트",
+    concern_bundle3: "다른 고민 3개 · 이유부터 처방·시기까지 NOTE 18개",
+    full_saju: "일·돈·연애·관계·회복까지 내 사주 사용설명서 12챕터",
+    compatibility: "끌림·대화·갈등·연락·돈·경계·장기 관계까지 16챕터",
+    all_in_one: "전체사주 12챕터 + 6가지 고민 NOTE 36개",
   };
 
   function productButtonHtml(p, { recommended = false, secondary = false } = {}) {
@@ -1238,7 +1176,7 @@
 
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
-  global.__UNNI_PRODUCTS_V1__ = { version: "1.6.0", products: PRODUCTS };
+  global.__UNNI_PRODUCTS_V1__ = { version: "1.7.0", products: PRODUCTS };
 
   const observer = new MutationObserver(() => renderCatalog());
   if (document.documentElement) observer.observe(document.documentElement, { childList: true, subtree: true });
