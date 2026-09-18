@@ -21,9 +21,39 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.2.0' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.1.0' &&
+    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.2.0' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
+
+  const concernUx = await page.evaluate(() => {
+    const initial = {
+      box:getComputedStyle(document.getElementById('concernSituationBox')).display,
+      summary:getComputedStyle(document.getElementById('concernSituationSummary')).display,
+    };
+    renderConcernSituationPicker('love');
+    const opened = {
+      box:getComputedStyle(document.getElementById('concernSituationBox')).display,
+      count:document.querySelectorAll('#concernSituationGrid [data-concern-situation]').length,
+    };
+    document.getElementById('selectedConcernKey').value = 'love';
+    selectConcernSituation('relationship');
+    const collapsed = {
+      box:getComputedStyle(document.getElementById('concernSituationBox')).display,
+      summary:getComputedStyle(document.getElementById('concernSituationSummary')).display,
+      text:document.getElementById('concernSituationSummaryText').innerText,
+    };
+    editConcernSituation();
+    const edited = getComputedStyle(document.getElementById('concernSituationBox')).display;
+    document.getElementById('concernSituationBox').style.display = 'none';
+    document.getElementById('concernSituationSummary').style.display = 'none';
+    document.getElementById('selectedConcernKey').value = 'money';
+    document.getElementById('selectedConcernSituation').value = '';
+    return { initial, opened, collapsed, edited };
+  });
+  assert(concernUx.initial.box === 'none' && concernUx.initial.summary === 'none', `mobile concern details should start collapsed: ${JSON.stringify(concernUx)}`);
+  assert(concernUx.opened.box !== 'none' && concernUx.opened.count === 4, 'selected concern must reveal four situation choices');
+  assert(concernUx.collapsed.box === 'none' && concernUx.collapsed.summary !== 'none' && concernUx.collapsed.text.includes('지금 연애 중'), `selected situation should collapse into summary: ${JSON.stringify(concernUx.collapsed)}`);
+  assert(concernUx.edited !== 'none', 'situation edit must reopen choices');
 
   const qa = await page.evaluate(() => {
     window.gtag = () => {};
@@ -132,7 +162,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.2.0', 'paid value layer missing');
-  assert(qa.productVersion.version === '1.1.0', 'product layer missing');
+  assert(qa.productVersion.version === '1.2.0', 'product layer missing');
   assert(qa.wrappers.paid, 'paid-value wrapper missing');
   assert(qa.wrappers.integrated, 'integrated wrapper metadata lost');
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
@@ -224,6 +254,25 @@ function norm(v) {
     const notes = generateConcernNotes(currentResultData, 'F');
     const note6 = notes[5];
     const catalog = document.getElementById('unniProductLadder');
+    const fChem = {
+      best:document.getElementById('chemBestCard')?.className || '',
+      worst:document.getElementById('chemWorstCard')?.className || '',
+      bestTitle:document.getElementById('chemBestTitle')?.innerText || '',
+      worstTitle:document.getElementById('chemWorstTitle')?.innerText || '',
+    };
+    updateResultContentByMode('T');
+    const tChem = {
+      best:document.getElementById('chemBestCard')?.className || '',
+      worst:document.getElementById('chemWorstCard')?.className || '',
+      bestTitle:document.getElementById('chemBestTitle')?.innerText || '',
+      worstTitle:document.getElementById('chemWorstTitle')?.innerText || '',
+    };
+    updateResultContentByMode('F');
+    const mbtiInfo = {
+      gradeText:document.getElementById('gradeSection')?.innerText || '',
+      fontSize:parseFloat(getComputedStyle(document.getElementById('resultBigMbti')).fontSize || '0'),
+      summaryBefore:(document.getElementById('manualBulletList').compareDocumentPosition(document.getElementById('gradeSection')) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+    };
     openShareModal();
     const story = document.getElementById('storyCard');
     const share = {
@@ -238,6 +287,11 @@ function norm(v) {
       result:!!currentResultData,
       catalog:!!catalog,
       buttons:catalog ? catalog.querySelectorAll('[data-unni-product]').length : 0,
+      visibleProducts:catalog ? [...catalog.querySelectorAll('[data-unni-product]')].filter((el) => getComputedStyle(el).display !== 'none').length : 0,
+      secondaryProducts:catalog ? catalog.querySelectorAll('[data-secondary-product="1"]').length : 0,
+      mbtiInfo,
+      fChem,
+      tChem,
       note6First:note6?.__timingQA?.firstBody || '',
       note6Second:note6?.__timingQA?.secondBody || '',
       note6Text:note6?.desc || '',
@@ -250,12 +304,17 @@ function norm(v) {
   assert(ui.result, 'production-like result missing');
   assert(ui.catalog, 'product catalog not rendered');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
+  assert(ui.visibleProducts === 1 && ui.secondaryProducts === 3, `premium catalog must show one recommendation first: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts})}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
   assert(ui.resultGreeting.includes('딱 우리') && ui.resultGreeting.includes('언니랑 같이 보자'), `F result greeting lost 1:1 voice: ${ui.resultGreeting}`);
-  assert(ui.catalogText.includes('언니가 이어서 더 봐줄게'), 'F premium handoff lost sister voice');
+  assert(ui.catalogText.includes('언니가 지금 하나만 먼저 골라줄게') && ui.catalogText.includes('다른 리포트 3개 보기'), 'F premium recommendation handoff missing');
+  assert(ui.mbtiInfo.gradeText.includes('재미로 보는 사주 MBTI 번역') && ui.mbtiInfo.gradeText.includes('실제 검사 MBTI와 다를 수 있어'), `MBTI risk framing missing: ${JSON.stringify(ui.mbtiInfo)}`);
+  assert(ui.mbtiInfo.fontSize <= 40 && ui.mbtiInfo.summaryBefore, `MBTI should be visually secondary after core summary: ${JSON.stringify(ui.mbtiInfo)}`);
+  assert(ui.fChem.best.includes('rose') && ui.fChem.worst.includes('violet') && ui.fChem.bestTitle === '환상의 찰떡 깐부' && ui.fChem.worstTitle === '기 빨리는 상극', `F chemistry theme drift: ${JSON.stringify(ui.fChem)}`);
+  assert(ui.tChem.best.includes('sky') && ui.tChem.worst.includes('slate') && ui.tChem.bestTitle === '최강 시너지' && ui.tChem.worstTitle === '충돌 많은 상극', `T chemistry theme drift: ${JSON.stringify(ui.tChem)}`);
   assert(ui.noteBadges.every((x) => x.length <= 16), `visible NOTE badges too long: ${JSON.stringify(ui.noteBadges)}`);
   assert(ui.share.version === '4', `story card version ${ui.share.version}`);
-  assert(ui.share.text.includes('사주로 까본 내 본캐') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('링크 스티커 붙이는 자리'), 'story card identity/share copy missing');
+  assert(ui.share.text.includes('사주 성향을 MBTI로 번역하면') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('링크 스티커 붙이는 자리'), 'story card identity/share copy missing');
   assert(ui.share.core && ui.share.strong && ui.share.need, `story card element strip missing: ${JSON.stringify(ui.share)}`);
   assert(ui.share.avatar === './로아.png', `F story avatar mismatch: ${ui.share.avatar}`);
   assert(await page.locator('#mainShareBtnText').innerText() === '이거, 한 장으로 예쁘게 뽑아볼까?', 'F share CTA persona copy missing');
@@ -368,11 +427,46 @@ function norm(v) {
   assert(modal.includes('내 사주 전체 한 줄 요약') && modal.includes('평생 가져갈 내 사용법 3가지'), 'full_saju preview content missing');
   assert(modal.includes('지금 선택한 고민을 또 풀어쓰는 리포트가 아니야'), 'full_saju differentiation copy missing');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'full_saju full-report save button missing');
+  assert((await page.locator('#unniProductSaveAll').innerText()).includes('사진으로 한 번에 저장하기'), 'one-action paid save CTA missing');
+  assert(await page.locator('#unniProductSavePdf').isVisible(), 'single-file PDF keep action missing');
+  assert(await page.locator('#unniProductStickyHead').evaluate((el) => getComputedStyle(el).position) === 'sticky', 'paid report header must remain sticky');
+  await page.waitForFunction(() => document.getElementById('unniProductSaveHint')?.innerText.includes('저장 준비 완료'), null, { timeout:30000 });
   const fullReportDownload = await Promise.all([
     page.waitForEvent('download', { timeout: 20000 }),
     page.locator('#unniProductSaveAll').click(),
   ]).then(([download]) => download);
   assert(fullReportDownload.suggestedFilename().includes('01_나를_이해하는_법') && fullReportDownload.suggestedFilename().endsWith('.png'), `semantic full report filename ${fullReportDownload.suggestedFilename()}`);
+
+  await page.evaluate(() => {
+    const e = window.__UNNI_IMAGE_EXPORT_V2__;
+    window.__paidShareTest = { count:0, originals:{
+      isMobileDevice:e.isMobileDevice,
+      isKakaoInApp:e.isKakaoInApp,
+      isAndroidDevice:e.isAndroidDevice,
+      isIOSDevice:e.isIOSDevice,
+    }};
+    e.isMobileDevice = () => true;
+    e.isKakaoInApp = () => false;
+    e.isAndroidDevice = () => true;
+    e.isIOSDevice = () => false;
+    Object.defineProperty(navigator, 'share', {
+      configurable:true,
+      value:async (payload) => { window.__paidShareTest.count = payload?.files?.length || 0; },
+    });
+    Object.defineProperty(navigator, 'canShare', {
+      configurable:true,
+      value:(payload) => Array.isArray(payload?.files) && payload.files.length > 1,
+    });
+  });
+  await page.locator('#unniProductSaveAll').click();
+  await page.waitForFunction(() => window.__paidShareTest?.count > 1, null, { timeout:10000 });
+  const mobilePaidShareCount = await page.evaluate(() => {
+    const count = window.__paidShareTest.count;
+    const e = window.__UNNI_IMAGE_EXPORT_V2__;
+    Object.assign(e, window.__paidShareTest.originals);
+    return count;
+  });
+  assert(mobilePaidShareCount === 4, `mobile full-saju should share four prepared images in one action, got ${mobilePaidShareCount}`);
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('concern_bundle3'));
@@ -425,7 +519,7 @@ function norm(v) {
 
   const html = fs.readFileSync('index.html','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.2.0'), 'paid value script include missing');
-  assert(html.includes('./premium-products-v1.js?v=1.1.0'), 'product script include missing');
+  assert(html.includes('./premium-products-v1.js?v=1.2.0'), 'product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
@@ -436,6 +530,10 @@ function norm(v) {
   const premium = fs.readFileSync('premium-products-v1.js','utf8');
   assert(!premium.includes('unniProductKeepsake') && !premium.includes('keepsakeCardHtml') && !premium.includes('renderPaidKeepsake'), 'paid keepsake-card subsystem should be removed');
   assert(premium.includes('saveFullPaidReport') && premium.includes('unniProductSaveAll'), 'full paid-report image save missing');
+  assert(premium.includes('prewarmPaidExport') && premium.includes('preparePaidExportAssets') && premium.includes('저장 준비 완료'), 'background paid-export preparation missing');
+  assert(premium.includes('nativeSharePngFiles') && premium.includes('isMobileDevice'), 'one-action mobile multi-image share path missing');
+  assert(premium.includes('recommendedProductId') && premium.includes('data-secondary-product'), 'personalized premium recommendation fold missing');
+  assert(premium.includes('unniProductSavePdf') && premium.includes('printPaidReport'), 'single-file PDF keep action missing');
   assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="concern"'), 'semantic paid-report grouping missing');
   assert(premium.includes('나를 이해하는 법') && premium.includes('대화하고 싸우고 화해하는 법') && premium.includes('어떻게 움직일지'), 'human-readable export group titles missing');
   assert(html.includes('showImagePagesFallback'), 'multi-image mobile fallback missing');
@@ -443,6 +541,9 @@ function norm(v) {
   assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
   assert(html.includes('history.pushState') && html.includes('shareModal: true'), 'share modal history guard missing');
   assert(html.includes('CONCERN_SITUATIONS') && html.includes('selectedConcernSituation'), 'concern situation picker missing');
+  assert(html.includes('concernSituationSummary') && html.includes('editConcernSituation'), 'progressive mobile concern summary/edit flow missing');
+  assert(!html.includes('사주 데이터로 까본 내 진짜 MBTI'), 'MBTI is still framed as a true diagnostic result');
+  assert(html.includes('재미로 보는 사주 MBTI 번역') && html.includes('실제 검사 MBTI와 다를 수 있어'), 'MBTI playful-translation framing missing');
   assert(!html.includes('font-bold truncate text-right flex-1 min-w-0'), 'NOTE badge still forces ellipsis');
   assert(!html.includes('팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐'), 'old generic harsh T greeting remains');
   assert(premium.includes('data-bundle-situation') && premium.includes('data-all-situation'), 'premium situation selectors missing');
