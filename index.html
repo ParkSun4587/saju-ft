@@ -4033,24 +4033,24 @@ function buildNoteThreeBlindSpot(data, concernKey, concernLabel, isT) {
   const p = copy[concernKey] || copy.money;
   const personal = ctx.weakHuman;
   const titles = {
-    money: { F: "돈이 안 모인다고 네 능력부터 의심했다면, 원인은 다른 데 있을 수 있어", T: "수입 탓하기 전에 실제 돈 새는 구멍부터 봐" },
-    career: { F: "실력 부족이라고 자책했다면, 언니는 다른 데를 먼저 볼래", T: "실력 문제가 아니라 노출과 요구가 늦은 거야" },
-    love: { F: "상대 마음만 문제였을까? 네 마음이 뒤로 밀린 순간도 같이 보자", T: "상대 분석보다 네 확인이 늦은 게 더 큰 누수야" },
-    path: { F: "적성을 못 찾은 게 아니라, 해볼 기회를 너무 늦춘 건 아닐까", T: "적성 찾기보다 실험 부족이 문제야" },
-    people: { F: "사람 보는 눈 탓하기 전에, 네가 참아준 시간을 먼저 보자", T: "사람 보는 눈보다 경계선 속도가 문제야" },
-    mental: { F: "멘탈이 약해서가 아니라, 비울 틈 없이 버틴 건 아닐까", T: "멘탈 문제가 아니라 회복 순서가 틀어진 거야" },
+    money: { F: "언니가 보기엔, 돈 문제는 여기야", T: "돈 문제, 수입 탓부터 하지 마" },
+    career: { F: "언니가 보기엔, 실력 문제는 아니야", T: "실력보다 보여주는 타이밍부터 봐" },
+    love: { F: "언니가 보기엔, 상대 마음만의 문제는 아니야", T: "상대 분석보다 네 확인이 먼저야" },
+    path: { F: "언니가 보기엔, 적성보다 경험이 먼저야", T: "적성 찾기 전에 직접 해봐" },
+    people: { F: "언니가 보기엔, 사람 보는 눈 문제는 아니야", T: "사람보다 네 경계선부터 봐" },
+    mental: { F: "언니가 보기엔, 네 멘탈이 약한 게 아니야", T: "멘탈 탓 말고 회복 순서부터 봐" },
   };
   const title = (titles[concernKey] || titles.money)[isT ? "T" : "F"];
   return isT ? {
     badge: `${concernLabel} · 놓친 포인트`,
     title,
     desc: `<b>네가 문제라고 본 것:</b> ${p.assumed}.<br><br><b>실제로 새는 곳:</b> ${p.actual}.<br><br>특히 네가 놓치기 쉬운 건 <b>${personal}</b> 쪽이야. 원인 잘못 잡고 더 열심히 하지 마.`,
-    checklist: p.move,
+    checklist: `${p.move}. 이것부터 해.`,
   } : {
     badge: `${concernLabel} · 놓친 포인트`,
     title,
     desc: `너는 자꾸 <b>${p.assumed}</b>고 생각했을 수 있어. 근데 언니가 보기엔 진짜 새는 곳은 <b>${p.actual}</b> 쪽에 더 가까워.<br><br>그리고 네가 유독 놓치기 쉬운 건 <b>${personal}</b>이야. 그러니까 괜히 네 능력이나 매력부터 의심하지 않았으면 좋겠어.`,
-    checklist: `이번엔 나를 탓하기 전에 이것부터 해보자: ${p.move}`,
+    checklist: `이번엔 언니랑 이것부터 해보자: ${p.move}`,
   };
 }
 
@@ -5437,6 +5437,8 @@ return [
   mental: "마음·스트레스",
 };
             const selectedConcernText = concernLabels[concernKey] || "고민";
+            const selectedSituationText =
+              getConcernSituationLabel(concernKey, concernSituation) || "지금 상황";
 
             const rawN = name.trim();
             const plainName = rawN.length >= 2 ? rawN.slice(1) : rawN;
@@ -5453,8 +5455,8 @@ return [
 
             const ackText =
               mode === "T"
-                ? `${callName}구나? [${selectedConcernText}] 고민 접수 완료. 데이터 바로 분석한다.`
-                : `어머, 우리 ${callName}구나! [${selectedConcernText}] 때문에 혼자 속앓이 진짜 많았지? 꼼꼼히 다 봐줄게 🥺💕`;
+                ? `${callName}구나. [${selectedConcernText} · ${selectedSituationText}] 확인했어. 다른 경우 안 섞고 네 얘기만 바로 볼게.`
+                : `어머, 우리 ${callName}구나! [${selectedConcernText} · ${selectedSituationText}] 얘기였네. 언니가 다른 경우 안 섞고 딱 네 얘기만 봐줄게 💕`;
 
             const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up mt-1">
@@ -5771,7 +5773,9 @@ currentResultData = {
               "px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full text-[10px] font-black";
           }
           if (resGreeting) {
-            resGreeting.innerHTML = `사주 다 깠어. 결론부터 말하면 <b>${escapeHTML(displayName)}</b>${topicJosa} 머릿속 계산기만 두드리다 중요한 타이밍 다 날려먹는 타입이야. 아래 메모장에 팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐.`;
+            const situationText =
+              getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
+            resGreeting.innerHTML = `사주랑 지금 상황까지 다 봤어. <b>${escapeHTML(displayName)}</b>${topicJosa} [${escapeHTML(situationText)}]에서 어디가 막히는지 보여. 돌려 말 안 하고 네 얘기만 메모에 딱 적어뒀어. 하나씩 보자.`;
           }
         } else {
           if (resSisterProfile) resSisterProfile.src = "./로아.png";
@@ -5785,7 +5789,9 @@ currentResultData = {
           // 이름만 볼드 처리하고 뒤의 호칭 조사('이')는 얇은 기본 폰트로 분리
           const fSuffix = hasBatchim ? "이" : "";
           if (resGreeting) {
-            resGreeting.innerHTML = `우리 <b>${escapeHTML(displayName)}</b>${fSuffix} 왔네 💕 언니가 사주 쭉 보고 왔는데, 이 고민 때문에 왜 마음이 자꾸 쓰였는지 이제 좀 보이더라. 아래 메모는 혼내는 말 아니고 우리 ${nameSubject} 조금 덜 지치라고 적어둔 거야. 천천히 같이 보자.`;
+            const situationText =
+              getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
+            resGreeting.innerHTML = `우리 <b>${escapeHTML(displayName)}</b>${fSuffix} 왔네 💕 언니가 사주랑 [${escapeHTML(situationText)}]인 지금 상황까지 같이 봤어. 왜 마음이 자꾸 쓰였는지도 조금 보이더라. 아래는 딱 우리 ${nameSubject} 얘기만 적어뒀어. 하나씩 언니랑 같이 보자.`;
           }
         }
         // [추가] '다른 고민도 풀어보기' CTA 버튼 테마 컬러 실시간 동기화
@@ -5994,7 +6000,7 @@ currentResultData = {
                             <span class="text-[10px] font-mono font-black px-2 py-0.5 rounded-md border ${numColor} shrink-0">
                                 NOTE ${item.themeNum}
                             </span>
-                            <span class="text-[10px] text-slate-500 font-bold truncate text-right flex-1 min-w-0">
+                            <span class="text-[10px] text-slate-500 font-bold text-right whitespace-nowrap shrink-0">
                                 ${item.badge}
                             </span>
                         </div>
@@ -6044,7 +6050,7 @@ currentResultData = {
                             NOTE ${nextNote.themeNum}
                         </span>
 
-                        <span class="text-[10px] text-slate-500 font-bold truncate">
+                        <span class="text-[10px] text-slate-500 font-bold text-right whitespace-nowrap shrink-0">
                             ${nextNote.badge}
                         </span>
                     </div>
@@ -7892,7 +7898,7 @@ currentResultData = {
     <script src="./manse-korea-v2.js?v=2.2.0"></script>
   <script src="./classical-engine-v2.js?v=2"></script>
     <script src="./integrated-saju-profile-v1.js?v=1.0.0"></script>
-    <script src="./paid-value-layer-v1.js?v=1.1.0"></script>
+    <script src="./paid-value-layer-v1.js?v=1.2.0"></script>
     <script src="./premium-products-v1.js?v=1.1.0"></script>
   </body>
 </html>
