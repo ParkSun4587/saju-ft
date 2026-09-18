@@ -1944,7 +1944,7 @@
         <!-- 승인된 파스텔 인스타 스토리 카드 -->
         <div
           id="storyCard"
-          data-share-version="4"
+          data-share-version="5"
           style="--accent:#f43f63;--accent2:#fb7185;--accent-soft:#fff1f4;--cool:#7c6bd8;width:auto;height:min(calc(100dvh - 172px),470px);max-width:78vw;aspect-ratio:9 / 16;flex:none;position:relative;overflow:hidden;border-radius:25px;padding:15px;box-sizing:border-box;background:linear-gradient(155deg,#fffafb 0%,#fffdf8 52%,#fff9f4 100%);border:1px solid rgba(251,113,133,.34);box-shadow:0 24px 60px rgba(0,0,0,.26);color:#172033;font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;display:flex;flex-direction:column"
         >
           <!-- soft decorative blobs -->
@@ -2023,34 +2023,45 @@
           </div>
 
           <!-- compatibility -->
-          <div style="position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
-            <div id="cardChemBestBox" style="border-radius:14px;padding:7px 8px;background:linear-gradient(145deg,#fffaf0,#fff7db);border:1px solid rgba(251,191,36,.26);box-shadow:0 6px 16px rgba(15,23,42,.035)">
-              <div style="font-size:6.4px;font-weight:950;color:var(--accent)">☀ 같이 있으면 편한 타입</div>
-              <div style="display:flex;align-items:end;gap:6px;margin-top:2px">
-                <div id="cardChemBestMbti" style="font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1;font-weight:900;color:var(--accent)"></div>
-                <div id="cardChemBestTag" style="font-size:5.8px;line-height:1.28;font-weight:800;color:#64748b;flex:1;text-align:right"></div>
+          <div style="position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px">
+            <div id="cardChemBestBox" style="border-radius:14px;padding:8px 8px;background:linear-gradient(145deg,#fffaf0,#fff5d8);border:1px solid rgba(251,191,36,.30);box-shadow:0 7px 18px rgba(15,23,42,.04)">
+              <div style="font-size:6.7px;font-weight:950;color:var(--accent)">☀ 같이 있으면 편한 타입</div>
+              <div style="display:flex;align-items:end;gap:6px;margin-top:3px">
+                <div id="cardChemBestMbti" style="font-family:Georgia,'Times New Roman',serif;font-size:17px;line-height:1;font-weight:900;color:var(--accent)"></div>
+                <div id="cardChemBestTag" style="font-size:6px;line-height:1.3;font-weight:850;color:#64748b;flex:1;text-align:right"></div>
               </div>
             </div>
-            <div id="cardChemWorstBox" style="border-radius:14px;padding:7px 8px;background:linear-gradient(145deg,#f8f8ff,#eff6ff);border:1px solid rgba(129,140,248,.22);box-shadow:0 6px 16px rgba(15,23,42,.035)">
-              <div style="font-size:6.4px;font-weight:950;color:var(--cool)">☁ 자주 삐걱대는 타입</div>
-              <div style="display:flex;align-items:end;gap:6px;margin-top:2px">
-                <div id="cardChemWorstMbti" style="font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1;font-weight:900;color:var(--cool)"></div>
-                <div id="cardChemWorstTag" style="font-size:5.8px;line-height:1.28;font-weight:800;color:#64748b;flex:1;text-align:right"></div>
+            <div id="cardChemWorstBox" style="border-radius:14px;padding:8px 8px;background:linear-gradient(145deg,#f8f8ff,#edf4ff);border:1px solid rgba(129,140,248,.26);box-shadow:0 7px 18px rgba(15,23,42,.04)">
+              <div style="font-size:6.7px;font-weight:950;color:var(--cool)">☁ 자주 삐걱대는 타입</div>
+              <div style="display:flex;align-items:end;gap:6px;margin-top:3px">
+                <div id="cardChemWorstMbti" style="font-family:Georgia,'Times New Roman',serif;font-size:17px;line-height:1;font-weight:900;color:var(--cool)"></div>
+                <div id="cardChemWorstTag" style="font-size:6px;line-height:1.3;font-weight:850;color:#64748b;flex:1;text-align:right"></div>
               </div>
             </div>
           </div>
 
-          <!-- sticker / footer -->
-          <div style="position:relative;z-index:2;margin-top:auto;padding-top:7px">
+          <!-- viral prompt: the screenshot itself should invite a reply/tag -->
+          <div
+            id="cardViralPrompt"
+            style="position:relative;z-index:2;margin-top:8px;border-radius:16px;padding:9px 10px;background:linear-gradient(135deg,rgba(255,241,242,.92),rgba(250,245,255,.92));border:1px solid rgba(244,114,182,.20);box-shadow:0 8px 20px rgba(15,23,42,.035);text-align:center"
+          >
+            <div style="font-size:6.2px;font-weight:950;letter-spacing:.13em;color:#f9a8b8">COMPARE WITH YOUR FRIENDS</div>
+            <div style="font-size:11.2px;line-height:1.2;font-weight:950;color:#172033;margin-top:3px;letter-spacing:-.03em">너는 뭐 나왔어?</div>
+            <div style="font-size:6.7px;line-height:1.4;font-weight:850;color:#64748b;margin-top:3px">친구 태그하고 서로 MBTI · 찰떡 · 상극 비교해봐</div>
+          </div>
+
+          <!-- Instagram's real Link sticker can be placed over this reserved target -->
+          <div style="position:relative;z-index:2;margin-top:8px">
             <div
               id="cardStickerBox"
-              style="border:1px dashed rgba(244,63,99,.42);border-radius:14px;padding:7px 8px;text-align:center;background:rgba(255,255,255,.52)"
+              style="border:1.2px dashed rgba(244,63,99,.44);border-radius:15px;padding:8px 9px;text-align:center;background:rgba(255,255,255,.68);box-shadow:inset 0 0 0 1px rgba(255,255,255,.45)"
             >
-              <span id="cardStickerText" style="font-size:7.2px;font-weight:950;color:var(--accent)">🔗 링크 스티커 붙이는 자리</span>
+              <div id="cardStickerText" style="font-size:8px;font-weight:950;color:var(--accent)">나도 내 결과 보기</div>
+              <div style="font-size:5.8px;font-weight:850;color:#94a3b8;margin-top:2px">인스타 링크 스티커를 이 자리에 올려줘 · sajuft.com</div>
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px;padding:0 1px">
-              <span style="font-size:5.5px;font-weight:850;color:#cbd5e1;letter-spacing:.02em">You got this ♡</span>
-              <span style="font-size:5.5px;font-weight:900;color:#f9a8b8;letter-spacing:.15em">GOOD PEOPLE, BRIGHTER ME ♥</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding:0 2px">
+              <span style="font-size:5.6px;font-weight:900;color:#cbd5e1;letter-spacing:.04em">어떤언니 · SAJU PERSONA</span>
+              <span style="font-size:5.6px;font-weight:950;color:#f9a8b8;letter-spacing:.08em">SHOW ME YOURS ♡</span>
             </div>
           </div>
         </div>
