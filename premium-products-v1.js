@@ -595,6 +595,26 @@
     return `${productId}:${text.length}:${hash >>> 0}`;
   }
 
+  function isCurrentPaidExport(root, productId, key) {
+    const body = root?.querySelector("#unniProductBody");
+    if (!body || root?.style?.display === "none") return false;
+    return paidExportSignature(productId, body) === key;
+  }
+
+  function requiresFreshShareGesture() {
+    const exporter = global.__UNNI_IMAGE_EXPORT_V2__;
+    return !!(exporter?.isMobileDevice?.() && !exporter?.isKakaoInApp?.());
+  }
+
+  function setPaidExportButtonReady(root, ready) {
+    const button = root?.querySelector("#unniProductSaveAll");
+    if (!button) return;
+    button.disabled = !ready;
+    button.style.opacity = ready ? "1" : ".62";
+    if (ready) button.removeAttribute("aria-busy");
+    else button.setAttribute("aria-busy", "true");
+  }
+
   function setPaidExportProgress(root, current, total, ready = false) {
     const button = root?.querySelector("#unniProductSaveAll");
     const hint = root?.querySelector("#unniProductSaveHint");
@@ -613,14 +633,33 @@
       : "결과 읽는 동안 저장용 사진을 미리 준비해둘게.";
   }
 
-  function waitForExportIdle(key, root) {
-    if (paidExportPriority.get(key)) return Promise.resolve();
-    if (root?.style?.display === "none") return Promise.reject(new Error("EXPORT_IDLE_CANCELLED"));
-    return new Promise((resolve) => {
+  function waitForExportIdle(key, root, productId) {
+    const ensureCurrent = () => {
+      if (!isCurrentPaidExport(root, productId, key)) {
+        throw new Error("EXPORT_IDLE_CANCELLED");
+      }
+    };
+    if (paidExportPriority.get(key)) {
+      try {
+        ensureCurrent();
+        return Promise.resolve();
+      } catch (error) {
+        return Promise.reject(error);
+      }
+    }
+    return new Promise((resolve, reject) => {
+      const finish = () => {
+        try {
+          ensureCurrent();
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
       if (typeof requestIdleCallback === "function") {
-        requestIdleCallback(() => resolve(), { timeout: 500 });
+        requestIdleCallback(finish, { timeout: 500 });
       } else {
-        setTimeout(resolve, 90);
+        setTimeout(finish, 90);
       }
     });
   }
@@ -632,7 +671,13 @@
     if (!body || !exporter?.renderElementToPngBlob) throw new Error("EXPORT_ENGINE_MISSING");
     const key = paidExportSignature(productId, body);
 
-    if (paidExportCache.has(key)) return paidExportCache.get(key);
+    if (paidExportCache.has(key)) {
+      const cached = paidExportCache.get(key);
+      if (isCurrentPaidExport(root, productId, key)) {
+        setPaidExportProgress(root, cached.blobs.length, cached.blobs.length, true);
+      }
+      return cached;
+    }
     if (priority) paidExportPriority.set(key, true);
     if (paidExportJobs.has(key)) return paidExportJobs.get(key);
 
@@ -645,7 +690,7 @@
 
       try {
         for (let index = 0; index < groups.length; index++) {
-          await waitForExportIdle(key, root);
+          await waitForExportIdle(key, root, productId);
           const group = groups[index];
           const page = buildPaidExportPage(product, group, index, groups.length);
           pages.push(page);
@@ -659,6 +704,9 @@
           const targetWidth = exporter.isMobileDevice?.() ? 820 : 900;
           const blob = await exporter.renderElementToPngBlob(page, targetWidth);
           if (!blob || blob.size < 1000) throw new Error("PAID_EXPORT_EMPTY");
+          if (!isCurrentPaidExport(root, productId, key)) {
+            throw new Error("EXPORT_IDLE_CANCELLED");
+          }
           blobs.push(blob);
           filenames.push(
             `어떤언니_${safeFilePart(product?.name || "리포트")}_${safeFilePart(group.slug || group.title)}.png`,
@@ -667,7 +715,13 @@
           pages.pop();
           setPaidExportProgress(root, blobs.length, groups.length, false);
         }
+        if (!isCurrentPaidExport(root, productId, key)) {
+          throw new Error("EXPORT_IDLE_CANCELLED");
+        }
         const prepared = { key, blobs, filenames };
+        // 모바일에서 16장 올인원까지 열어본 뒤 다른 리포트를 보면 Blob이 계속 누적되지 않게
+        // 현재 리포트 한 세트만 보관한다.
+        paidExportCache.clear();
         paidExportCache.set(key, prepared);
         setPaidExportProgress(root, blobs.length, blobs.length, true);
         return prepared;
@@ -683,13 +737,33 @@
   }
 
   function prewarmPaidExport(root, productId) {
+    const body = root?.querySelector("#unniProductBody");
+    if (!body) return;
+    const key = paidExportSignature(productId, body);
+    const freshGesture = requiresFreshShareGesture();
+
+    // iOS/Android의 다중 파일 공유는 사용자 탭 직후의 activation이 중요하다.
+    // 준비가 끝나기 전에 탭해서 렌더링을 기다리게 하지 않고, 준비 완료 후 한 번 탭하면
+    // 곧바로 navigator.share(files)로 넘어가도록 모바일 브라우저에서만 잠깐 잠근다.
+    if (freshGesture) setPaidExportButtonReady(root, false);
+
     const start = () => {
-      if (root?.style?.display === "none") return;
-      preparePaidExportAssets(root, productId, { priority:false }).catch((error) => {
-        if (error?.message !== "EXPORT_IDLE_CANCELLED") {
-          console.warn("유료 리포트 저장 미리 준비 실패:", error);
-        }
-      });
+      if (!isCurrentPaidExport(root, productId, key)) return;
+      preparePaidExportAssets(root, productId, { priority:false })
+        .then((prepared) => {
+          if (!isCurrentPaidExport(root, productId, key)) return;
+          setPaidExportProgress(root, prepared.blobs.length, prepared.blobs.length, true);
+          if (freshGesture) setPaidExportButtonReady(root, true);
+        })
+        .catch((error) => {
+          if (!isCurrentPaidExport(root, productId, key)) return;
+          if (freshGesture) setPaidExportButtonReady(root, true);
+          if (error?.message !== "EXPORT_IDLE_CANCELLED") {
+            const hint = root?.querySelector("#unniProductSaveHint");
+            if (hint) hint.textContent = "미리 준비가 잠깐 꼬였어. 저장을 누르면 다시 준비할게.";
+            console.warn("유료 리포트 저장 미리 준비 실패:", error);
+          }
+        });
     };
     if (typeof requestIdleCallback === "function") {
       requestIdleCallback(start, { timeout: 1400 });
@@ -1123,7 +1197,7 @@
 
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
-  global.__UNNI_PRODUCTS_V1__ = { version: "1.2.0", products: PRODUCTS };
+  global.__UNNI_PRODUCTS_V1__ = { version: "1.3.0", products: PRODUCTS };
 
   const observer = new MutationObserver(() => renderCatalog());
   if (document.documentElement) observer.observe(document.documentElement, { childList: true, subtree: true });
