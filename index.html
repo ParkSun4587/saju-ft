@@ -1154,6 +1154,21 @@
                     </div>
                   </button>
                 </div>
+
+                <input type="hidden" id="selectedConcernSituation" value="" />
+                <div
+                  id="concernSituationBox"
+                  class="mt-2 rounded-2xl border border-rose-100 bg-rose-50/45 px-2.5 py-2.5"
+                >
+                  <div
+                    id="concernSituationPrompt"
+                    class="text-[10px] sm:text-[10.5px] font-black text-slate-700 leading-snug break-keep"
+                  ></div>
+                  <div
+                    id="concernSituationGrid"
+                    class="grid grid-cols-2 gap-1.5 mt-2"
+                  ></div>
+                </div>
               </div>
 
               <!-- 생년월일 -->
@@ -2411,6 +2426,7 @@
           g: data.userGender || "female",
           c: data.userCalendar || "solar",
           k: data.concernKey || "money",
+          q: data.concernSituation || "",
           m: data.currentMode === "T" ? "T" : "F",
           l: data.userCalendar === "lunar" && data.isLeapMonth === true,
         };
@@ -2475,6 +2491,7 @@
           userGender: d.g,
           userCalendar: d.c,
           concernKey: d.k,
+          concernSituation: d.q || "",
           currentMode: d.m,
           isLeapMonth: !!d.l,
           ...result,
@@ -2721,6 +2738,8 @@
           userGender: document.getElementById("genderValue").value,
           userCalendar: document.getElementById("calendarSelect").value,
           concernKey: document.getElementById("selectedConcernKey").value,
+          concernSituation:
+            document.getElementById("selectedConcernSituation")?.value || "",
           currentMode: selectedSplitMode || "F",
           isLeapMonth: document.getElementById("leapMonthCheck").checked,
         };
@@ -2738,6 +2757,9 @@
           keys[index],
           document.querySelectorAll("#concernGrid .concern-chip")[index],
         );
+        if (draft.concernSituation) {
+          selectConcernSituation(draft.concernSituation);
+        }
         saveInputDraft();
       }
 
@@ -3250,6 +3272,127 @@
         }, 180);
       }
 
+      const CONCERN_SITUATIONS = {
+        money: {
+          prompt: "돈 고민, 지금 너랑 제일 가까운 건 뭐야?",
+          options: [
+            ["saving", "돈이 잘 안 모여", "쓰고 나면 남는 게 없어"],
+            ["income", "수입을 더 늘리고 싶어", "연봉·단가·수입이 고민"],
+            ["side", "부업·새 수입을 만들고 싶어", "새 돈줄을 찾는 중"],
+            ["flow", "앞으로 돈 흐름이 궁금해", "언제 움직일지 알고 싶어"],
+          ],
+        },
+        career: {
+          prompt: "학업·직장 고민, 지금 상황은 어디에 가까워?",
+          options: [
+            ["exam", "시험·합격이 궁금해", "시험·자격증·합격"],
+            ["jobsearch", "취업 준비 중이야", "지원·면접·첫 직장"],
+            ["move", "이직·퇴사를 고민 중이야", "옮길지 버틸지 고민"],
+            ["current", "지금 자리에서 잘 풀리고 싶어", "평가·역할·연봉·승진"],
+          ],
+        },
+        love: {
+          prompt: "연애 얘기, 지금 너랑 제일 가까운 건 뭐야?",
+          options: [
+            ["crush", "썸·짝사랑 중이야", "상대 마음과 다음 단계"],
+            ["relationship", "지금 연애 중이야", "우리 관계가 궁금해"],
+            ["breakup", "헤어진 사람이 있어", "이별·재회·정리 고민"],
+            ["new", "새로운 인연을 만나고 싶어", "앞으로 만날 사람"],
+          ],
+        },
+        path: {
+          prompt: "진로 고민, 지금 제일 막히는 건 뭐야?",
+          options: [
+            ["lost", "뭘 해야 할지 모르겠어", "선택지부터 안 보여"],
+            ["current", "지금 가는 길이 맞는지 궁금해", "계속할지 확인하고 싶어"],
+            ["switch", "다른 분야로 바꾸고 싶어", "전향·전공·직무 변경"],
+            ["strength", "내 적성·강점을 알고 싶어", "나한테 맞는 방향 찾기"],
+          ],
+        },
+        people: {
+          prompt: "사람 고민, 누구 때문에 제일 신경 쓰여?",
+          options: [
+            ["friend", "친구·지인 때문에 힘들어", "친구·모임·지인 관계"],
+            ["work", "직장 사람 때문에 힘들어", "상사·동료·팀 관계"],
+            ["family", "가족과 자꾸 부딪혀", "부모·형제·가족 관계"],
+            ["distance", "계속 볼지 거리를 둘지 고민이야", "거리두기·손절 고민"],
+          ],
+        },
+        mental: {
+          prompt: "마음이 힘든데, 지금 제일 가까운 느낌은 뭐야?",
+          options: [
+            ["burnout", "번아웃이 온 것 같아", "너무 오래 버틴 느낌"],
+            ["overthink", "생각이 너무 많아", "머리가 계속 쉬질 않아"],
+            ["low", "아무것도 하기 싫어", "의욕이 바닥난 느낌"],
+            ["recover", "다시 컨디션을 찾고 싶어", "생활 리듬부터 회복"],
+          ],
+        },
+      };
+      window.__CONCERN_SITUATIONS__ = CONCERN_SITUATIONS;
+
+      function concernSituationValid(concernKey, situationKey) {
+        const options = CONCERN_SITUATIONS[concernKey]?.options || [];
+        return options.some(([key]) => key === situationKey);
+      }
+
+      function renderConcernSituationPicker(concernKey) {
+        const config = CONCERN_SITUATIONS[concernKey] || CONCERN_SITUATIONS.money;
+        const prompt = document.getElementById("concernSituationPrompt");
+        const grid = document.getElementById("concernSituationGrid");
+        const hidden = document.getElementById("selectedConcernSituation");
+        if (!prompt || !grid || !hidden) return;
+        prompt.textContent = config.prompt;
+        hidden.value = "";
+        grid.innerHTML = config.options
+          .map(
+            ([key, label, sub]) => `
+              <button
+                type="button"
+                data-concern-situation="${key}"
+                onclick="selectConcernSituation('${key}', this)"
+                class="concern-situation-chip text-left rounded-xl border border-slate-200 bg-white px-2.5 py-2 active:scale-[0.98] transition-all"
+              >
+                <div class="text-[10px] font-black text-slate-800 leading-tight break-keep">${label}</div>
+                <div class="text-[8px] font-semibold text-slate-400 leading-tight mt-1 break-keep">${sub}</div>
+              </button>`,
+          )
+          .join("");
+      }
+
+      function selectConcernSituation(situationKey, buttonEl) {
+        const concernKey =
+          document.getElementById("selectedConcernKey")?.value || "money";
+        if (!concernSituationValid(concernKey, situationKey)) return false;
+        const hidden = document.getElementById("selectedConcernSituation");
+        if (hidden) hidden.value = situationKey;
+        document
+          .querySelectorAll("#concernSituationGrid .concern-situation-chip")
+          .forEach((btn) => {
+            btn.style.borderColor = "#e2e8f0";
+            btn.style.background = "#ffffff";
+            btn.style.boxShadow = "none";
+            btn.querySelector("div")?.style &&
+              (btn.querySelector("div").style.color = "#1e293b");
+          });
+        const target =
+          buttonEl ||
+          document.querySelector(
+            `#concernSituationGrid [data-concern-situation="${situationKey}"]`,
+          );
+        if (target) {
+          const isT = selectedSplitMode === "T";
+          target.style.borderColor = isT ? "#38bdf8" : "#fb7185";
+          target.style.background = isT ? "#f0f9ff" : "#fff1f2";
+          target.style.boxShadow = isT
+            ? "0 0 0 1px rgba(56,189,248,.12)"
+            : "0 0 0 1px rgba(251,113,133,.12)";
+          const title = target.querySelector("div");
+          if (title) title.style.color = isT ? "#0284c7" : "#e11d48";
+        }
+        saveInputDraft();
+        return true;
+      }
+
       // T/F 모드 연동 카테고리 선택 함수 (2px 테두리 두께 고정으로 울렁거림 방지)
       function selectConcern(key, buttonEl) {
         document.getElementById("selectedConcernKey").value = key;
@@ -3270,7 +3413,14 @@
 
         buttonEl.classList.add("selected");
         applyConcernStyle(buttonEl, selectedSplitMode);
+        renderConcernSituationPicker(key);
       }
+
+      // 첫 화면 기본 고민(돈·재물)의 세부 상황 선택지를 먼저 보여준다.
+      queueMicrotask(() => {
+        const current = document.getElementById("selectedConcernKey")?.value || "money";
+        renderConcernSituationPicker(current);
+      });
 
       // 선택된 칩에 모드별 스타일 적용 (서아=스카이블루, 로아=로즈)
       function applyConcernStyle(el, mode) {
@@ -4042,6 +4192,13 @@ const CONCERN_LABELS = {
   people: "사람·관계",
   mental: "마음·스트레스",
 };
+
+function getConcernSituationLabel(concernKey, situationKey) {
+  const config = globalThis.__CONCERN_SITUATIONS__?.[concernKey];
+  const row = config?.options?.find?.(([key]) => key === situationKey);
+  return row?.[1] || "";
+}
+
 
 function generateConcernNotes(data, mode) {
         const isT = mode === "T";
@@ -5050,12 +5207,22 @@ return [
           const name = document.getElementById("nameInput").value.trim();
           const concernKey =
             document.getElementById("selectedConcernKey").value;
+          const concernSituation =
+            document.getElementById("selectedConcernSituation")?.value || "";
+          if (!concernSituationValid(concernKey, concernSituation)) {
+            showToast("지금 상황도 하나 골라줘. 그래야 언니가 엉뚱한 말 안 해.");
+            document
+              .getElementById("concernSituationBox")
+              ?.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+          }
 
           // GA4: 분석 시작 이벤트 (선택한 모드와 고민 키워드 수집)
           if (typeof gtag === "function")
             gtag("event", "generate_lead", {
               mode_type: mode,
               concern_type: concernKey,
+              concern_situation: concernSituation,
             });
           const rawBirth = document
             .getElementById("birthDateInput")
@@ -5331,6 +5498,7 @@ currentResultData = {
                 isLeapMonth: isLeapMonth,
                 currentMode: mode,
                 concernKey: concernKey,
+                concernSituation: concernSituation,
                 ...sazuResult,
                 };
               const appendSisterMsg = (text, isFollowUp = false) => {
