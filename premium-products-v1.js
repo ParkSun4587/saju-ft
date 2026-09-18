@@ -823,7 +823,6 @@
     window.addEventListener("afterprint", cleanup, { once:true });
     try {
       window.print();
-      setTimeout(cleanup, 30000);
     } catch (error) {
       cleanup();
       console.error("PDF 인쇄 화면 열기 실패:", error);
