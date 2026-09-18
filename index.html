@@ -6403,24 +6403,18 @@ currentResultData = {
         if (!layer) {
           layer = document.createElement("div");
           layer.id = "unniImageFallback";
-          layer.style.cssText = "position:fixed;inset:0;z-index:1000000;background:rgba(15,23,42,.94);overflow:auto;padding:14px;box-sizing:border-box;-webkit-overflow-scrolling:touch";
+          layer.style.cssText = "position:fixed;inset:0;z-index:1000000;background:rgba(15,23,42,.96);overflow:auto;padding:10px 12px max(18px,env(safe-area-inset-bottom));box-sizing:border-box;-webkit-overflow-scrolling:touch";
           document.body.appendChild(layer);
         }
         const isShare = purpose === "share";
         layer.innerHTML = `
-          <div style="max-width:390px;margin:0 auto;padding:6px 0 max(18px,env(safe-area-inset-bottom))">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 2px 10px;color:white">
-              <div>
-                <div style="font-size:16px;font-weight:950">${isShare ? "카톡 안에서는 사진 먼저 꺼내줄게." : "이 사진 그대로 저장하면 돼."}</div>
-                <div style="font-size:11px;line-height:1.6;color:#cbd5e1;margin-top:3px">${isShare ? "이미지를 길게 눌러 저장한 다음 인스타 스토리에서 불러오면 돼." : "아래 이미지를 길게 눌러 ‘이미지 저장’ 또는 ‘다운로드’를 골라줘."}</div>
-              </div>
-              <button id="unniImageFallbackClose" type="button" style="flex:none;width:36px;height:36px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);color:white;font-size:22px;line-height:1;cursor:pointer">×</button>
+          <div style="max-width:370px;margin:0 auto">
+            <div style="position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:max(8px,env(safe-area-inset-top)) 0 9px;background:linear-gradient(180deg,rgba(15,23,42,.98),rgba(15,23,42,.88),rgba(15,23,42,0));color:white">
+              <div style="font-size:13px;font-weight:950">${isShare ? "이 사진 저장해서 인스타에서 불러오면 돼 ♡" : "사진 길게 눌러 저장하면 돼 ♡"}</div>
+              <button id="unniImageFallbackClose" type="button" style="flex:none;width:38px;height:38px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.10);color:white;font-size:24px;line-height:1;cursor:pointer">×</button>
             </div>
-            <div style="padding:8px;border-radius:24px;background:white;box-shadow:0 22px 70px rgba(0,0,0,.35)">
-              <img src="${dataUrl}" alt="저장할 이미지" style="display:block;width:100%;height:auto;border-radius:18px;-webkit-touch-callout:default;user-select:auto" />
-            </div>
-            <div style="margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.08);color:#e2e8f0;font-size:10.5px;line-height:1.65;text-align:center;font-weight:750">
-              카카오톡 안에서는 파일 다운로드가 막히는 경우가 있어서<br>파일 대신 <b style="color:white">진짜 이미지</b>로 열어뒀어.
+            <div style="padding:6px;border-radius:24px;background:white;box-shadow:0 22px 70px rgba(0,0,0,.38)">
+              <img src="${dataUrl}" alt="저장할 이미지" style="display:block;width:100%;height:auto;border-radius:19px;-webkit-touch-callout:default;user-select:auto" />
             </div>
           </div>`;
         layer.style.display = "block";
@@ -6564,7 +6558,7 @@ currentResultData = {
       }
 
       window.__UNNI_IMAGE_EXPORT_V2__ = {
-        version: "2.0.0",
+        version: "2.1.0",
         renderElementToPngBlob,
         downloadPngBlob,
         nativeSharePng,
@@ -6586,18 +6580,16 @@ currentResultData = {
         ].join("|");
       }
 
-      function setStoryExportReady(ready, message) {
+      function setStoryExportReady(ready) {
         const saveBtn = document.getElementById("storySaveBtn");
         const shareBtn = document.getElementById("storyShareBtn");
-        const hint = document.getElementById("storySaveHint");
-        if (saveBtn) saveBtn.disabled = !ready;
-        if (shareBtn) shareBtn.disabled = !ready;
-        if (hint) {
-          hint.textContent = message || (ready
-            ? (isIOSDevice()
-              ? "아이폰은 저장 버튼을 누른 뒤 ‘이미지 저장’을 고르면 사진 앱에 들어가."
-              : "저장은 PNG로, 공유는 휴대폰 공유창으로 바로 이어져.")
-            : "언니가 카드 예쁘게 담는 중이야. 잠깐만.");
+        if (saveBtn) {
+          saveBtn.disabled = !ready;
+          saveBtn.style.opacity = ready ? "1" : ".6";
+        }
+        if (shareBtn) {
+          shareBtn.disabled = !ready;
+          shareBtn.style.opacity = ready ? "1" : ".6";
         }
       }
 
@@ -6623,7 +6615,7 @@ currentResultData = {
             return blob;
           } catch (error) {
             console.warn("스토리 카드 이미지 생성 실패:", error);
-            setStoryExportReady(false, "이미지 준비가 잠깐 꼬였어. 닫았다가 다시 열어줘.");
+            setStoryExportReady(false);
             return null;
           } finally {
             storyCardRenderPromise = null;
@@ -6674,26 +6666,16 @@ currentResultData = {
         try {
           const blob = storyCardAsset || await prepareStoryCardAsset(false);
           if (!blob) throw new Error("STORY_ASSET_NOT_READY");
-          const filename = "어떤언니_내결과.png";
-          if (isKakaoInApp()) {
-            await showImageSaveFallback(blob, "share");
-          } else {
-            const shared = await nativeSharePng(blob, filename, "어떤언니에서 본 내 결과");
-            if (!shared) {
-              downloadPngBlob(blob, filename);
-              showToast(isMobileDevice() ? "공유 기능이 막혀 있어서 PNG로 저장했어." : "PNG를 저장했어. 원하는 곳에 바로 올리면 돼.");
-            }
-          }
+          await showImageSaveFallback(blob, "share");
         } catch (error) {
-          if (error?.name !== "AbortError") {
-            console.error("스토리 카드 공유 실패:", error);
-            showToast("공유가 잠깐 꼬였어. 한 번만 다시 눌러줘.");
-          }
+          console.error("인스타용 이미지 열기 실패:", error);
+          showToast("사진을 여는 중에 잠깐 꼬였어. 한 번만 다시 눌러줘.");
         } finally {
           isSavingCard = false;
           if (button) button.disabled = false;
         }
       }
+
       // 캔버스 둥근 모서리 지원 헬퍼
       
       // 타이틀 자동 줄바꿈 헬퍼
