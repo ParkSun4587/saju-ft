@@ -387,7 +387,7 @@
         font-weight: 800 !important;
       }
       .mobile-title {
-        font-size: clamp(1.1rem, 4.8vw, 1.5rem);
+        font-size: clamp(1.05rem, 4.4vw, 1.4rem);
         line-height: 1.4;
         word-break: keep-all;
         white-space: normal;
@@ -1035,14 +1035,14 @@
               <div>
                 <label
                   class="block text-[9.5px] font-bold text-slate-500 mb-0.5"
-                  >지금 제일 답답한 문제는?</label
+                  >가장 궁금한 고민 1개를 눌러줘</label
                 >
-                <input type="hidden" id="selectedConcernKey" value="money" />
+                <input type="hidden" id="selectedConcernKey" value="" />
                 <div class="grid grid-cols-2 gap-1" id="concernGrid">
                   <button
                     type="button"
                     onclick="selectConcern('money', this)"
-                    class="concern-chip selected p-1.5 rounded-xl flex items-center gap-1.5"
+                    class="concern-chip p-1.5 rounded-xl flex items-center gap-1.5"
                   >
                     <span class="text-sm shrink-0">💸</span>
                     <div class="truncate text-left leading-tight">
@@ -1422,52 +1422,55 @@
           </div>
         </div>
 
-        <!-- 카드 1: 프로필 & 세부 스탯 -->
+        <!-- 카드 1: 핵심 요약 → 3줄 설명 → MBTI → 궁합 -->
         <div
-          class="card-box p-4 sm:p-6 rounded-3xl space-y-2.5 relative overflow-hidden text-center"
+          class="card-box p-4 sm:p-6 rounded-3xl space-y-2 relative overflow-hidden text-center"
         >
-          <!-- 먼저 '맞다'는 느낌을 주는 핵심 성향 -->
+          <!-- B안 1순위: 첫눈에 꽂히는 한 줄 요약 -->
+          <div id="coreOneLineSummary" class="px-1 pt-0.5 pb-1">
+            <h1
+              class="mobile-title font-black text-center w-full px-2 mt-0 mb-0.5 leading-snug text-slate-900"
+              id="sazuCharacterTitle"
+            >
+              -
+            </h1>
+            <div
+              id="characterHashTags"
+              class="flex flex-wrap justify-center gap-1 text-[9.5px] font-bold"
+            ></div>
+          </div>
+
+          <!-- B안 2순위: 한 줄 요약을 바로 뒷받침하는 3줄 -->
           <div
-            class="bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200 text-left mt-1 shadow-inner"
+            id="coreThreeLineSummary"
+            class="bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200 text-left shadow-inner"
           >
             <div
-              class="flex justify-between items-center pb-2 mb-2 border-b border-slate-200/60"
+              class="flex justify-between items-center pb-1.5 mb-1.5 border-b border-slate-200/60"
             >
               <span
                 class="text-xs font-black text-slate-800 tracking-tight flex items-center gap-1"
               >
-                <span>📌</span> <span>먼저, 너를 설명하는 3줄</span>
+                <span>📌</span> <span>나를 설명하는 3줄</span>
               </span>
-              <span class="text-[9.5px] text-slate-400 font-bold"
+              <span class="text-[9px] text-slate-300 font-semibold"
                 >사주 기준</span
               >
             </div>
             <div
               id="manualBulletList"
-              class="space-y-2 text-xs text-slate-700 leading-relaxed font-medium break-keep"
+              class="space-y-1.5 text-xs text-slate-700 leading-relaxed font-medium break-keep"
             >
               <!-- JS에서 3줄 자동 주입 -->
             </div>
           </div>
 
-          <!-- MBTI는 정답 판정이 아니라 재미로 보는 '사주 번역' -->
+          <!-- B안 3순위: 정답 판정이 아닌 가벼운 MBTI 번역 -->
           <div
             id="gradeSection"
-            class="pt-2 pb-1 flex flex-col items-center justify-center space-y-1"
+            class="pt-1 pb-0.5 flex flex-col items-center justify-center"
           >
-            <h1
-              class="mobile-title font-black text-center w-full px-2 mt-0.5 mb-1 leading-snug"
-              id="sazuCharacterTitle"
-            >
-              -
-            </h1>
-
-            <div
-              id="characterHashTags"
-              class="flex flex-wrap justify-center gap-1 text-[10px] font-bold mb-1"
-            ></div>
-
-            <div class="w-full border-t border-slate-100 mt-1 pt-3">
+            <div class="w-full border-t border-slate-100 mt-0 pt-2">
               <div
                 class="inline-flex items-center gap-1 rounded-full bg-white border border-slate-200 px-2.5 py-1 text-[9.5px] text-slate-500 font-black"
               >
@@ -1475,7 +1478,7 @@
               </div>
               <div
                 id="resultBigMbti"
-                class="text-[34px] sm:text-[40px] font-black tracking-widest font-mono drop-shadow-sm leading-none pt-2 pb-1"
+                class="text-[32px] sm:text-[38px] font-black tracking-widest font-mono drop-shadow-sm leading-none pt-1.5 pb-0.5"
               >
                 -
               </div>
@@ -1485,8 +1488,8 @@
             </div>
           </div>
 
-          <!-- [바이럴 치트키] 환상의 찰떡 깐부 vs 숨 막히는 상극 (동적 테마 연동형) -->
-          <div class="grid grid-cols-2 gap-2.5 mt-2.5 text-left">
+          <!-- B안 4순위: 저장·공유하기 쉬운 찰떡/상극 -->
+          <div class="grid grid-cols-2 gap-2.5 mt-2 text-left">
             <div
               id="chemBestCard"
               class="p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between shadow-sm"
@@ -1494,7 +1497,7 @@
               <div>
                 <div
                   id="chemBestHeader"
-                  class="text-[10.5px] font-black flex items-center gap-1 mb-1"
+                  class="text-[11px] font-black flex items-center gap-1 mb-1"
                 >
                   <span>💖</span>
                   <span id="chemBestTitle">환상의 찰떡 깐부</span>
@@ -1507,7 +1510,7 @@
                 </div>
               </div>
               <div
-                class="text-[10px] font-bold truncate mt-1.5 px-2 py-0.5 rounded-md w-max max-w-full"
+                class="text-[10.5px] leading-snug font-bold mt-1.5 px-2 py-1 rounded-md w-fit max-w-full break-keep"
                 id="chemBestTag"
               >
                 영혼의 단짝
@@ -1520,7 +1523,7 @@
               <div>
                 <div
                   id="chemWorstHeader"
-                  class="text-[10.5px] font-black flex items-center gap-1 mb-1"
+                  class="text-[11px] font-black flex items-center gap-1 mb-1"
                 >
                   <span>💣</span>
                   <span id="chemWorstTitle">숨 막히는 상극</span>
@@ -1533,7 +1536,7 @@
                 </div>
               </div>
               <div
-                class="text-[10px] font-bold truncate mt-1.5 px-2 py-0.5 rounded-md w-max max-w-full"
+                class="text-[10.5px] leading-snug font-bold mt-1.5 px-2 py-1 rounded-md w-fit max-w-full break-keep"
                 id="chemWorstTag"
               >
                 거리 두기 시급
@@ -2738,13 +2741,17 @@
         restartAnalysisWithOtherConcern();
         currentResultData = previous;
         const keys = ["money", "career", "love", "path", "people", "mental"];
-        const index = Math.max(0, keys.indexOf(draft.concernKey));
-        selectConcern(
-          keys[index],
-          document.querySelectorAll("#concernGrid .concern-chip")[index],
-        );
-        if (draft.concernSituation) {
-          selectConcernSituation(draft.concernSituation);
+        const index = keys.indexOf(draft.concernKey);
+        if (index >= 0) {
+          selectConcern(
+            keys[index],
+            document.querySelectorAll("#concernGrid .concern-chip")[index],
+          );
+          if (draft.concernSituation) {
+            selectConcernSituation(draft.concernSituation);
+          }
+        } else {
+          clearConcernSelection();
         }
         saveInputDraft();
       }
@@ -3220,7 +3227,7 @@
           if (nextButtonContainer) {
             nextButtonContainer.style.display = "block";
             nextButtonContainer.innerHTML = `
-                        <button type="button" onclick="startAnalysis('${mode}')" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
+                        <button id="analysisSubmitButton" type="button" disabled aria-disabled="true" onclick="startAnalysis('${mode}')" style="opacity:.48;cursor:default" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
                             <span>${mode === "F" ? "로아 언니한테 사주 정보 보내기" : "서아 언니한테 사주 정보 보내기"}</span>
                             <span>💌</span>
                         </button>
@@ -3250,8 +3257,7 @@
           document.documentElement.scrollTop = 0;
 
           const currentSelectedChip =
-            document.querySelector("#concernGrid .concern-chip.selected") ||
-            document.querySelector("#concernGrid .concern-chip");
+            document.querySelector("#concernGrid .concern-chip.selected");
           if (currentSelectedChip) {
             applyConcernStyle(currentSelectedChip, selectedSplitMode);
           }
@@ -3329,7 +3335,8 @@
       }
 
       function renderConcernSituationPicker(concernKey, { preserve = false } = {}) {
-        const config = CONCERN_SITUATIONS[concernKey] || CONCERN_SITUATIONS.money;
+        const config = CONCERN_SITUATIONS[concernKey];
+        if (!config) return;
         const prompt = document.getElementById("concernSituationPrompt");
         const grid = document.getElementById("concernSituationGrid");
         const hidden = document.getElementById("selectedConcernSituation");
@@ -3355,7 +3362,8 @@
 
       function editConcernSituation() {
         const concernKey =
-          document.getElementById("selectedConcernKey")?.value || "money";
+          document.getElementById("selectedConcernKey")?.value || "";
+        if (!CONCERN_SITUATIONS[concernKey]) return;
         const selected =
           document.getElementById("selectedConcernSituation")?.value || "";
         renderConcernSituationPicker(concernKey, { preserve: true });
@@ -3376,11 +3384,12 @@
 
       function selectConcernSituation(situationKey, buttonEl) {
         const concernKey =
-          document.getElementById("selectedConcernKey")?.value || "money";
+          document.getElementById("selectedConcernKey")?.value || "";
+        if (!CONCERN_SITUATIONS[concernKey]) return false;
         if (!concernSituationValid(concernKey, situationKey)) return false;
         const hidden = document.getElementById("selectedConcernSituation");
         if (hidden) hidden.value = situationKey;
-        const config = CONCERN_SITUATIONS[concernKey] || CONCERN_SITUATIONS.money;
+        const config = CONCERN_SITUATIONS[concernKey];
         const selectedRow = config.options.find(([key]) => key === situationKey);
         const summaryText = document.getElementById("concernSituationSummaryText");
         if (summaryText) summaryText.textContent = selectedRow?.[1] || "";
@@ -3410,6 +3419,7 @@
         }
         // 모바일에서는 선택 직후 접어서 입력 화면을 다시 가볍게 만든다.
         setConcernSituationExpanded(false);
+        refreshAnalysisSubmitState();
         saveInputDraft();
         return true;
       }
@@ -3435,6 +3445,45 @@
         buttonEl.classList.add("selected");
         applyConcernStyle(buttonEl, selectedSplitMode);
         renderConcernSituationPicker(key);
+        refreshAnalysisSubmitState();
+      }
+
+      function refreshAnalysisSubmitState() {
+        const concernKey = document.getElementById("selectedConcernKey")?.value || "";
+        const situationKey = document.getElementById("selectedConcernSituation")?.value || "";
+        const button = document.getElementById("analysisSubmitButton");
+        if (!button) return;
+        const ready = !!CONCERN_SITUATIONS[concernKey] && concernSituationValid(concernKey, situationKey);
+        button.disabled = !ready;
+        button.style.opacity = ready ? "1" : ".48";
+        button.style.cursor = ready ? "pointer" : "default";
+        button.setAttribute("aria-disabled", ready ? "false" : "true");
+      }
+
+      function clearConcernSelection() {
+        const concern = document.getElementById("selectedConcernKey");
+        const situation = document.getElementById("selectedConcernSituation");
+        if (concern) concern.value = "";
+        if (situation) situation.value = "";
+        document.querySelectorAll("#concernGrid .concern-chip").forEach((btn) => {
+          btn.classList.remove("selected");
+          btn.style.borderColor = "#e2e8f0";
+          btn.style.borderWidth = "2px";
+          btn.style.backgroundColor = "#ffffff";
+          btn.style.boxShadow = "none";
+          const title = btn.querySelector(".chip-title");
+          if (title) {
+            title.style.color = "#334155";
+            title.style.fontWeight = "700";
+          }
+        });
+        const box = document.getElementById("concernSituationBox");
+        const summary = document.getElementById("concernSituationSummary");
+        const grid = document.getElementById("concernSituationGrid");
+        if (box) box.style.display = "none";
+        if (summary) summary.style.display = "none";
+        if (grid) grid.innerHTML = "";
+        refreshAnalysisSubmitState();
       }
 
       // 첫 화면은 6개 고민만 보여준다. 세부 상황은 고민을 누른 뒤에만 펼친다.
@@ -5232,6 +5281,13 @@ return [
             document.getElementById("selectedConcernKey").value;
           const concernSituation =
             document.getElementById("selectedConcernSituation")?.value || "";
+          if (!CONCERN_SITUATIONS[concernKey]) {
+            showToast("가장 궁금한 고민부터 하나 눌러줘.");
+            document
+              .getElementById("concernGrid")
+              ?.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+          }
           if (!concernSituationValid(concernKey, concernSituation)) {
             showToast("지금 상황도 하나만 골라줘. 그래야 언니가 네 얘기만 정확히 볼 수 있어.");
             renderConcernSituationPicker(concernKey);
@@ -5845,7 +5901,7 @@ currentResultData = {
         if (sazuTitle) {
           sazuTitle.innerText = `"${isT ? prof.title_T : prof.title_F}"`;
           sazuTitle.className =
-            "mobile-title font-black text-center w-full px-2 mt-2 mb-1.5 leading-snug text-slate-900";
+            "mobile-title font-black text-center w-full px-2 mt-0 mb-0.5 leading-snug text-slate-900";
         }
 
         // 2) 📌 핵심 성향 3줄 불렛 주입 (모바일 균형 줄바꿈 최적화)
@@ -6813,6 +6869,34 @@ currentResultData = {
         });
       }
 
+      async function showKakaoCardQualityGuide(blob) {
+        let layer = document.getElementById("unniKakaoCardQualityGuide");
+        if (!layer) {
+          layer = document.createElement("div");
+          layer.id = "unniKakaoCardQualityGuide";
+          layer.style.cssText = "position:fixed;inset:0;z-index:1000002;background:rgba(15,23,42,.96);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box";
+          document.body.appendChild(layer);
+        }
+        layer.innerHTML = `
+          <div style="width:min(360px,100%);border-radius:24px;background:#fff;padding:20px 18px;box-shadow:0 24px 70px rgba(0,0,0,.36);text-align:center">
+            <div style="font-size:18px;font-weight:950;color:#0f172a;letter-spacing:-.04em">카카오톡 안에서는 카드가 뭉개질 수 있어</div>
+            <div style="font-size:12px;line-height:1.7;color:#64748b;font-weight:750;margin-top:9px">화면에서 본 디자인에 가깝게 저장하려면<br><b style="color:#0f172a">카카오톡 ⋮ → 다른 브라우저로 열기 → 사진으로 저장</b>을 추천해.</div>
+            <button id="unniKakaoCardClose" type="button" style="width:100%;margin-top:16px;border:0;border-radius:14px;background:#0f172a;color:#fff;padding:13px 14px;font-size:12px;font-weight:900;cursor:pointer">확인</button>
+            <button id="unniKakaoCardFallback" type="button" style="width:100%;margin-top:8px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;color:#64748b;padding:11px 14px;font-size:11px;font-weight:850;cursor:pointer">그래도 여기서 현재 화질로 저장하기</button>
+          </div>`;
+        layer.style.display = "flex";
+        document.body.style.overflow = "hidden";
+        layer.querySelector("#unniKakaoCardClose")?.addEventListener("click", () => {
+          layer.style.display = "none";
+          document.body.style.overflow = isShareModalOpen() ? "hidden" : "auto";
+        }, { once:true });
+        layer.querySelector("#unniKakaoCardFallback")?.addEventListener("click", async () => {
+          layer.style.display = "none";
+          await showImageSaveFallback(blob, "save");
+        }, { once:true });
+        return true;
+      }
+
       async function showImageSaveFallback(blob, purpose = "save") {
         const dataUrl = await blobToDataUrl(blob);
         let layer = document.getElementById("unniImageFallback");
@@ -7152,7 +7236,7 @@ currentResultData = {
       }
 
       window.__UNNI_IMAGE_EXPORT_V2__ = {
-        version: "2.3.0",
+        version: "2.4.0",
         renderElementToPngBlob,
         renderVisibleElementToPngBlob,
         renderElementToPngPages,
@@ -7229,7 +7313,7 @@ currentResultData = {
           if (!blob) throw new Error("STORY_ASSET_NOT_READY");
 
           if (isKakaoInApp()) {
-            await showImageSaveFallback(blob, "save");
+            await showKakaoCardQualityGuide(blob);
           } else if (isIOSDevice()) {
             const shared = await nativeSharePng(blob, filename, "어떤언니에서 본 내 결과");
             if (!shared) await showImageSaveFallback(blob, "save");
@@ -7586,6 +7670,7 @@ currentResultData = {
         if (nextBtn) {
           nextBtn.innerHTML = `
             <button
+                id="analysisSubmitButton"
                 type="button"
                 onclick="startAnalysis('${targetMode}')"
                 class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5"
@@ -7722,10 +7807,7 @@ currentResultData = {
         const unknown = document.getElementById("birthTimeUnknown");
         unknown.checked = false;
         toggleBirthTimeUnknown(unknown, false);
-        selectConcern(
-          "money",
-          document.querySelector("#concernGrid .concern-chip"),
-        );
+        clearConcernSelection();
         for (const id of ["resultSection", "loadingSection", "landingSection"])
           document.getElementById(id).style.display = "none";
         document.getElementById("sajuInputCardBox").style.display = "none";
