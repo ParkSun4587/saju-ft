@@ -342,8 +342,8 @@ async function load(page) {
         note2Valid:!!(n2?.title && n2?.desc && n2?.checklist),
         note3Valid:!!(n3?.title && n3?.desc && n3?.checklist && n3.badge?.includes('놓친 포인트')),
         note3Integrated:!!(notes?.[2]?.title === n3.title && notes?.[2]?.desc?.startsWith(n3.desc) && notes?.[2]?.checklist === n3.checklist),
-        note4Valid:!!(notes?.[3]?.title && notes?.[3]?.desc && notes?.[3]?.checklist && notes?.[3]?.badge?.includes('7일 처방')),
-        note5Valid:!!(notes?.[4]?.title && notes?.[4]?.desc && notes?.[4]?.checklist && notes?.[4]?.badge?.includes('사람 필터')),
+        note4Valid:!!(notes?.[3]?.title && notes?.[3]?.desc && notes?.[3]?.checklist && notes?.[3]?.badge && !notes[3].badge.includes('7일 처방')),
+        note5Valid:!!(notes?.[4]?.title && notes?.[4]?.desc && notes?.[4]?.checklist && notes?.[4]?.badge && !notes[4].badge.includes('사람 필터')),
         note6Valid:!!(notes?.[5]?.title && notes?.[5]?.desc && notes?.[5]?.checklist && notes[5].desc.includes('2026') && notes[5].desc.includes('2027')),
         forbiddenVisible:[
           '언니가 잡은 사주 근거','언니가 잡은 계산 근거','왜 이 처방이 너한테 맞나','왜 이런 필터가 맞나','타이밍 읽는 법',
