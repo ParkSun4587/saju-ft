@@ -316,11 +316,9 @@ async function load(page) {
       const data = currentResultData;
       if (!data) return {ok:false, reason:'currentResultData missing', body:document.body.innerText.slice(-1200)};
 
+      const diagnosis = buildConcernDiagnosisV2(data);
       const notes = generateConcernNotes(data, c.mode);
-      const n1 = buildNoteOneInsight(data, c.concern, labels[c.concern], c.mode === 'T');
-      const n2 = buildNoteTwoPattern(data, c.concern, labels[c.concern], c.mode === 'T');
-      const n3 = buildNoteThreeBlindSpot(data, c.concern, labels[c.concern], c.mode === 'T');
-      const generated = JSON.stringify([notes,n1,n2,n3]);
+      const generated = JSON.stringify([notes,diagnosis,data.noteV2Audit]);
       const visible = document.body.innerText;
       return {
         ok:true,
@@ -338,13 +336,16 @@ async function load(page) {
         classical:[!!data.analysisProfile?.classical?.japyeong, !!data.analysisProfile?.classical?.jeokcheon, !!data.analysisProfile?.classical?.qiongtong],
         noteCount:Array.isArray(notes) ? notes.length : -1,
         noteNums:Array.isArray(notes) ? notes.map(x=>x.themeNum) : [],
-        note1Valid:!!(n1?.title && n1?.desc && n1?.checklist),
-        note2Valid:!!(n2?.title && n2?.desc && n2?.checklist),
-        note3Valid:!!(n3?.title && n3?.desc && n3?.checklist && n3.badge?.includes('놓친 포인트')),
-        note3Integrated:!!(notes?.[2]?.title === n3.title && notes?.[2]?.desc?.startsWith(n3.desc) && notes?.[2]?.checklist === n3.checklist),
-        note4Valid:!!(notes?.[3]?.title && notes?.[3]?.desc && notes?.[3]?.checklist && notes?.[3]?.badge && !notes[3].badge.includes('7일 처방')),
-        note5Valid:!!(notes?.[4]?.title && notes?.[4]?.desc && notes?.[4]?.checklist && notes?.[4]?.badge && !notes[4].badge.includes('사람 필터')),
-        note6Valid:!!(notes?.[5]?.title && notes?.[5]?.desc && notes?.[5]?.checklist && notes[5].desc.includes('2026') && notes[5].desc.includes('2027')),
+        note1Valid:!!(notes?.[0]?.title && notes?.[0]?.desc && notes?.[0]?.checklist),
+        note2Valid:!!(notes?.[1]?.title && notes?.[1]?.desc && notes?.[1]?.checklist),
+        note3Valid:!!(notes?.[2]?.title && notes?.[2]?.desc && notes?.[2]?.checklist && notes?.[2]?.badge),
+        note3Integrated:!!(data.noteV2Audit?.fingerprint && data.noteV2Audit?.primary?.cluster && diagnosis?.fingerprint === data.noteV2Audit?.fingerprint),
+        note4Valid:!!(notes?.[3]?.title && notes?.[3]?.desc && notes?.[3]?.checklist && notes?.[3]?.badge),
+        note5Valid:!!(notes?.[4]?.title && notes?.[4]?.desc && notes?.[4]?.checklist && notes?.[4]?.badge),
+        note6Valid:!!(notes?.[5]?.title && notes?.[5]?.desc && notes?.[5]?.checklist && notes?.[5]?.__timingQA?.firstDate && notes?.[5]?.__timingQA?.secondDate),
+        noteV2Version:data.noteV2Audit?.version || '',
+        noteV2Primary:data.noteV2Audit?.primary?.cluster || '',
+        noteV2Secondary:data.noteV2Audit?.secondary?.cluster || '',
         forbiddenVisible:[
           '언니가 잡은 사주 근거','언니가 잡은 계산 근거','왜 이 처방이 너한테 맞나','왜 이런 필터가 맞나','타이밍 읽는 법',
           '개수는 원국 겉글자 기준','한국 만세력 기준','시간 -30분 보정'
@@ -379,10 +380,11 @@ async function load(page) {
     assert(report.note1Valid, `${c.id}: NOTE1 content missing`);
     assert(report.note2Valid, `${c.id}: NOTE2 content missing`);
     assert(report.note3Valid, `${c.id}: NOTE3 content missing`);
-    assert(report.note3Integrated, `${c.id}: NOTE3 builder not integrated into generated notes`);
+    assert(report.note3Integrated, `${c.id}: NOTE v2 diagnosis not integrated into generated notes`);
+    assert(report.noteV2Version === '2.0.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: NOTE v2 evidence audit missing`);
     assert(report.note4Valid, `${c.id}: NOTE4 prescription missing`);
-    assert(report.note5Valid, `${c.id}: NOTE5 people filter missing`);
-    assert(report.note6Valid, `${c.id}: NOTE6 2026/2027 timeline missing`);
+    assert(report.note5Valid, `${c.id}: NOTE5 domain-specific fit section missing`);
+    assert(report.note6Valid, `${c.id}: NOTE6 timing metadata missing`);
     assert(!report.forbiddenVisible, `${c.id}: removed meta/explanation copy leaked into UI`);
     assert(!report.badText, `${c.id}: undefined/NaN leaked into generated note text`);
     assert(!report.failureToast, `${c.id}: calculation failure toast visible`);
