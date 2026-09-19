@@ -335,8 +335,8 @@ function norm(v) {
   assert(ui.tOheng.includes('중요한 건 이 차이가 지금 고민에서 어떤 반복을 만드는지야') && ui.tOheng.includes('바로 아래 비밀 메모') && !/\d+%/.test(ui.tOheng) && ui.tOheng.length <= 235, `T five-element secret-note teaser drift: ${ui.tOheng}`);
   assert(await page.locator('#sisterSwitchCard').count() === 0, 'bottom F/T mode-switch CTA must be removed');
   assert(ui.noteBadges.every((x) => x.length <= 16), `visible NOTE badges too long: ${JSON.stringify(ui.noteBadges)}`);
-  assert(ui.noteBadges.join('|').includes('유독 지치는 이유') && ui.noteBadges.join('|').includes('번아웃 패턴') && ui.noteBadges.join('|').includes('지금 진짜 문제') && ui.noteBadges.join('|').includes('회복 처방') && ui.noteBadges.join('|').includes('나를 편하게 하는 사람') && ui.noteBadges.join('|').includes('회복 흐름이 들어올 때'), `mental NOTE badges are not direct enough: ${JSON.stringify(ui.noteBadges)}`);
-  assert(!ui.noteBadges.some((x) => /·|핵심|사람 필터|7일 처방/.test(x)), `old technical NOTE badges remain: ${JSON.stringify(ui.noteBadges)}`);
+  assert(ui.noteBadges.join('|').includes('마음 핵심') && ui.noteBadges.join('|').includes('지치는 패턴') && ui.noteBadges.join('|').includes('진짜 원인') && ui.noteBadges.join('|').includes('이번 주 행동') && ui.noteBadges.join('|').includes('회복 환경') && ui.noteBadges.join('|').includes('회복 시기'), `mental NOTE v2 badges are not direct enough: ${JSON.stringify(ui.noteBadges)}`);
+  assert(!ui.noteBadges.some((x) => /·|사람 필터|7일 처방|놓친 포인트/.test(x)), `old technical NOTE badges remain: ${JSON.stringify(ui.noteBadges)}`);
   assert(ui.share.version === '5', `story card version ${ui.share.version}`);
   assert(ui.share.text.includes('사주 성향을 MBTI로 번역하면') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('너는 뭐 나왔어?') && ui.share.text.includes('나도 내 결과 보기') && ui.share.text.includes('sajuft.com'), 'story card viral/share copy missing');
   assert(ui.share.core && ui.share.strong && ui.share.need, `story card element strip missing: ${JSON.stringify(ui.share)}`);
