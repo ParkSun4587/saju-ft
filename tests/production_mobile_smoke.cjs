@@ -6,15 +6,15 @@ const sleep = (ms) => new Promise(r => setTimeout(r,ms));
 async function deployed(page) {
   for (let i=0;i<36;i++) {
     try {
-      await page.goto(BASE + '?smoke=v20-' + i, {waitUntil:'domcontentloaded',timeout:30000});
+      await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-        globalThis.__UNNI_PRODUCTS_V1__?.version === '1.7.0' &&
+        globalThis.__UNNI_PRODUCTS_V1__?.version === '1.8.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach paid 1.5.0 / products 1.7.0');
+  throw new Error('production did not reach paid 1.5.0 / products 1.8.0');
 }
 
 async function enter(page, mode, concern, situation) {
@@ -35,7 +35,7 @@ async function enter(page, mode, concern, situation) {
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
-  if (mode==='F') assert(firstState.sisterText.includes('왔구나.')&&firstState.sisterText.includes('깊게 봐줄게')&&!firstState.sisterText.includes('ㅎㅎ'),'F input is not natural close-sister tone '+firstState.sisterText);
+  if (mode==='F') assert(firstState.sisterText.includes('왔구나!')&&firstState.sisterText.includes('진짜 깊게 봐줄게')&&!firstState.sisterText.includes('ㅎㅎ'),'F input is not warm close-sister tone '+firstState.sisterText);
   if (mode==='T') assert(firstState.sisterText.includes('쓸데없이 겁주는 말')&&firstState.sisterText.includes('좋은 건 좋다, 아닌 건 아니다')&&!firstState.sisterText.includes('왔네'),'T input is not tsundere/direct-care tone '+firstState.sisterText);
   await page.fill('#nameInput','테스트');
   const label = concern === 'love' ? '연애 · 썸' : '마음 · 스트레스';
@@ -87,19 +87,20 @@ async function inspect(page, mode) {
   assert(r.n5.length>=330,mode+' paid NOTE5 too short '+r.n5.length);
   assert(r.n1.includes('사주 전체'),mode+' NOTE1 personalization missing');
   assert(/반복|패턴|같은 데서/.test(r.n2),mode+' NOTE2 pattern missing');
-  if (mode==='F') assert(r.oheng.includes('언니가 딱 보면')&&r.oheng.includes('지금 고민도 이 차이가 어디서 반복되는지가 포인트')&&r.oheng.includes('아래 NOTE에서 그 이유부터')&&r.oheng.length<=260,'F oheng NOTE teaser '+r.oheng);
-  if (mode==='T') assert(r.oheng.includes('지금 고민의 반복 패턴도 이 강약 차이')&&r.oheng.includes('아래 NOTE에서 원인부터')&&r.oheng.length<=235,'T oheng NOTE teaser '+r.oheng);
+  if (mode==='F') assert(r.oheng.includes('언니가 보기엔')&&r.oheng.includes('지금 네 고민도 여기서 반복되는 장면이 보여')&&r.oheng.includes('바로 아래 비밀메모에서')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng secret-note teaser '+r.oheng);
+  if (mode==='T') assert(r.oheng.includes('중요한 건 이 조합이 지금 고민에서 어떤 반복을 만드는지야')&&r.oheng.includes('바로 아래 비밀메모에서')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng secret-note teaser '+r.oheng);
   assert(!/[나무불흙쇠물]\)/.test(r.oheng+r.dayMasterTag),'old parenthetical five-element wording remains '+JSON.stringify({oheng:r.oheng,day:r.dayMasterTag}));
   assert(r.count===4&&r.visible===4,'premium products hidden '+JSON.stringify(r));
   assert(r.catalog.includes('다른 리포트도 있어')&&!r.catalog.includes('다른 리포트 3개 보기'),'old product disclosure remains');
   assert(r.catalog.includes('내 사주 완전판')&&!r.catalog.includes('어떤언니 올인원'),'all-in-one product name did not update');
+  assert(r.catalog.includes('우리 둘 깊게 보기')&&r.catalog.includes('내 사주 전부 보기')&&!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
   assert(r.switchCount===0,'bottom F/T CTA remains');
   assert(r.hierarchy.oneLineBeforeThreeLine&&r.hierarchy.threeLineBeforeMbti&&r.hierarchy.mbtiBeforeChem&&r.hierarchy.mbtiSize<=38,
     'result hierarchy is wrong '+JSON.stringify(r.hierarchy));
   assert(!r.badges.some(x=>x.includes('·')||x.includes('핵심')||x.includes('사람 필터')||x.includes('7일 처방')),
     'old NOTE badge wording remains '+JSON.stringify(r.badges));
   assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
-  if (mode==='F') assert(r.resultGreeting.includes('다 봤어.')&&r.resultGreeting.includes('어려운 말 없이 하나씩 풀어줄게')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=105,'F result natural close-sister intro drift '+r.resultGreeting);
+  if (mode==='F') assert(r.resultGreeting.includes('다 봤어!')&&r.resultGreeting.includes('어려운 말 없이 하나씩 풀어줄게')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=105,'F result warm close-sister intro drift '+r.resultGreeting);
   if (mode==='T') assert(r.resultGreeting.includes('뭐가 진짜 문제고')&&r.resultGreeting.includes('좋은 건 좋다, 아닌 건 아니다')&&r.resultGreeting.length<=105,'T result tsundere intro drift '+r.resultGreeting);
   assert(!r.resultGreeting.includes('ㅎㅎ'),'repeated laughter remains in result '+r.resultGreeting);
   return r;
@@ -117,6 +118,7 @@ async function inspect(page, mode) {
   const f=await inspect(page,'F');
 
   assert((await page.locator('#mainShareBtnText').innerText()).includes('인스타 스토리 카드 만들기'),'main CTA should name the story action');
+  assert(await page.evaluate(()=>window.__UNNI_IMAGE_EXPORT_V2__?.version)==='2.8.0','live image export version did not update');
   await page.locator('#mainShareBtn').click();
   await page.waitForSelector('#storyCaptureMode',{state:'visible',timeout:5000});
   assert(await page.locator('#shareModal').isHidden(),'live one-tap share should bypass intermediate modal');
@@ -129,7 +131,7 @@ async function inspect(page, mode) {
   assert(captureOpen.parent==='storyCaptureCardSlot'&&captureOpen.topInside&&captureOpen.layerZ>captureOpen.shareZ,
     'live capture mode does not isolate the original card '+JSON.stringify(captureOpen));
   const guideText=await page.locator('#storyCaptureChrome').innerText();
-  assert(guideText.includes('인스타 스토리에 올려봐')&&guideText.includes('전체화면으로 바꾼 뒤 카드만 남겨둘게'),'live F capture prep should explain fullscreen mode');
+  assert(guideText.includes('인스타 스토리에 올려봐')&&guideText.includes('캡처 후 화면을 한 번 톡 누르면 바로 돌아가'),'live capture prep should make the exit gesture obvious');
   const liveCardBox=await page.locator('#storyCard').boundingBox();
   assert(liveCardBox&&liveCardBox.width>=350&&liveCardBox.width<=390&&Math.abs(liveCardBox.height/liveCardBox.width-16/9)<0.03,
     'live capture card is not viewport-sized '+JSON.stringify(liveCardBox));
@@ -162,6 +164,13 @@ async function inspect(page, mode) {
   await page.waitForFunction(()=>getComputedStyle(document.getElementById('storyCaptureMode')).display==='none',null,{timeout:5000});
   assert(await page.locator('#shareModal').isHidden(),'tap-to-return should go directly to result');
   assert(await page.locator('#resultSection').isVisible(),'tap-to-return lost the result view');
+
+  await page.locator('#unniProductLadder [data-unni-product="compatibility"]').click();
+  await page.waitForSelector('#unniProductModal',{state:'visible'});
+  const compatibilitySetup=await page.locator('#unniProductModal').innerText();
+  assert(compatibilitySetup.includes('양력')&&compatibilitySetup.includes('음력')&&!compatibilitySetup.includes('양력 생일')&&!compatibilitySetup.includes('음력 생일'),'live compatibility calendar labels are not simplified');
+  assert(!compatibilitySetup.includes('예: 오후 3시 20분이면'),'live compatibility time helper was not removed');
+  await page.locator('#unniProductClose').click();
 
   await page.locator('#unniProductLadder [data-unni-product="full_saju"]').click();
   await page.waitForSelector('#unniProductModal',{state:'visible'});
