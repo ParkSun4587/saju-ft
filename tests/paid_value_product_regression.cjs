@@ -268,7 +268,20 @@ function norm(v) {
     renderUnniProductCatalog();
     const notes = generateConcernNotes(currentResultData, 'F');
     const note6 = notes[5];
+
+    const lockedCatalog = document.getElementById('unniProductLadder');
+    const note2Preview = document.getElementById('note2PreviewCard');
+    const fPaywallText = document.getElementById('lockedOverlay')?.innerText || '';
+    const previewPlain = note2Preview?.innerText || '';
+    updateResultContentByMode('T');
+    const tPaywallText = document.getElementById('lockedOverlay')?.innerText || '';
+    updateResultContentByMode('F');
+
+    unlockFullReport(null, true);
+    renderUnniProductCatalog();
     const catalog = document.getElementById('unniProductLadder');
+    const unlockedNoteCards = document.querySelectorAll('#notesListContainer > div').length;
+    const previewAfterUnlock = !!document.getElementById('note2PreviewCard');
     const fChem = {
       best:document.getElementById('chemBestCard')?.className || '',
       worst:document.getElementById('chemWorstCard')?.className || '',
@@ -307,6 +320,13 @@ function norm(v) {
     };
     return {
       result:!!currentResultData,
+      lockedCatalog:!!lockedCatalog,
+      previewPlain,
+      fullNote2Plain:String(notes[1]?.desc || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),
+      fPaywallText,
+      tPaywallText,
+      unlockedNoteCards,
+      previewAfterUnlock,
       catalog:!!catalog,
       buttons:catalog ? catalog.querySelectorAll('[data-unni-product]').length : 0,
       visibleProducts:catalog ? [...catalog.querySelectorAll('[data-unni-product]')].filter((el) => getComputedStyle(el).display !== 'none').length : 0,
@@ -328,13 +348,20 @@ function norm(v) {
     };
   });
   assert(ui.result, 'production-like result missing');
-  assert(ui.catalog, 'product catalog not rendered');
+  assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
+  assert(ui.previewPlain && ui.previewPlain.includes('NOTE 2'), 'NOTE2 teaser missing before paywall');
+  assert(ui.previewPlain.length < ui.fullNote2Plain.length + 120, 'NOTE2 teaser is not meaningfully shorter than the full note');
+  assert(ui.fPaywallText.includes('로아 언니 · NOTE 02 이어서') && ui.fPaywallText.includes('990원') && ui.fPaywallText.includes('방금 읽던 NOTE 02 다음 내용'), `F NOTE2 paywall handoff missing: ${ui.fPaywallText}`);
+  assert(ui.tPaywallText.includes('서아 언니 · NOTE 02 이어서') && ui.tPaywallText.includes('990원') && ui.tPaywallText.includes('원인·행동·사람·시기'), `T NOTE2 paywall handoff missing: ${ui.tPaywallText}`);
+  assert(!ui.fPaywallText.includes('오픈 체험가') && !ui.tPaywallText.includes('오픈 체험가'), 'stale generic sale badge remains in NOTE2 paywall');
+  assert(ui.unlockedNoteCards === 6 && !ui.previewAfterUnlock, `unlock must replace teaser with all six full notes: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
+  assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
-  assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3, `premium catalog should keep one recommendation prominent while all alternatives stay discoverable: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts})}`);
+  assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3, `premium catalog should keep one recommendation prominent while all alternatives stay discoverable after NOTE6: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts})}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
   assert(ui.fGreeting.includes('다 봤어!') && ui.fGreeting.includes('네 얘기부터 차근차근 같이 풀어볼게') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 105, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
   assert(ui.tGreeting.includes('뭐가 진짜 문제고') && ui.tGreeting.includes('좋은 건 좋다, 아닌 건 아니다') && ui.tGreeting.length <= 105, `T result intro should feel dry but caring: ${ui.tGreeting}`);
-  assert(ui.catalogText.includes('언니가 너한테 다음 하나만 골라봤어') && ui.catalogText.includes('왜 이걸 먼저 추천하냐면') && ui.catalogText.includes('다른 게 더 궁금하다면') && !ui.catalogText.includes('다른 리포트 3개 보기'), 'F premium recommendation/discoverability handoff missing');
+  assert(ui.catalogText.includes('이 고민 끝까지 같이 봤으니까') && ui.catalogText.includes('언니가 너한테 다음 하나만 골라봤어') && ui.catalogText.includes('왜 이걸 먼저 추천하냐면') && ui.catalogText.includes('다른 게 더 궁금하다면') && !ui.catalogText.includes('다른 리포트 3개 보기'), 'post-NOTE6 premium recommendation/discoverability handoff missing');
   assert(ui.mbtiInfo.gradeText.includes('재미로 보는 사주 MBTI 번역') && ui.mbtiInfo.gradeText.includes('실제 검사 MBTI와 다를 수 있어'), `MBTI risk framing missing: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.mbtiInfo.fontSize <= 38 && ui.mbtiInfo.oneLineBeforeThreeLine && ui.mbtiInfo.threeLineBeforeMbti && ui.mbtiInfo.mbtiBeforeChem, `result hierarchy must be one-line → 3-line → MBTI → chemistry: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.fChem.best.includes('rose') && ui.fChem.worst.includes('violet') && ui.fChem.bestTitle === '환상의 찰떡 깐부' && ui.fChem.worstTitle === '기 빨리는 상극', `F chemistry theme drift: ${JSON.stringify(ui.fChem)}`);
@@ -611,7 +638,7 @@ function norm(v) {
   assert(premium.includes('isCurrentPaidExport') && premium.includes('EXPORT_IDLE_CANCELLED'), 'stale paid-export jobs must stop when the report changes');
   assert(premium.includes('paidExportCache.clear()') && premium.includes('paidExportCache.set(key, prepared)'), 'paid PNG blob cache must stay bounded to the current report');
   assert(premium.includes('nativeSharePngFiles') && premium.includes('isMobileDevice'), 'one-action mobile multi-image share path missing');
-  assert(premium.includes('recommendedProductId') && premium.includes('recommendationReason') && premium.includes('data-secondary-product') && premium.includes('다른 게 더 궁금하다면'), 'personalized premium recommendation + discoverable alternatives missing');
+  assert(premium.includes('recommendedProductId') && premium.includes('recommendationReason') && premium.includes('const unlocked = typeof isUnlocked') && premium.includes('if (!unlocked)') && premium.includes('data-secondary-product') && premium.includes('다른 게 더 궁금하다면'), 'post-unlock personalized premium recommendation + discoverable alternatives missing');
   assert(!premium.includes('unniShowOtherProducts') && !premium.includes('다른 리포트 3개 보기'), 'premium alternatives should not be hidden behind a disclosure toggle');
   assert(!premium.includes('unniProductSavePdf') && !premium.includes('printPaidReport') && !premium.includes('unniPaidPrintHost') && !premium.includes('PDF로 한 파일 보관하기'), 'PDF save code must be fully removed');
   assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="concern"'), 'semantic paid-report grouping missing');
@@ -639,7 +666,7 @@ function norm(v) {
   assert(!html.includes('팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐'), 'old generic harsh T greeting remains');
   for (const harsh of ['아이고 왔어?', '시간 낭비 말고', '똑바로 찍어', '똥고집', '미련 곰탱이', '팩트 꽂힌', '팩폭 모드', '징징대지 말고 와', '살인 충동 느낌', '상대방 사람 취급', '멍청한 질문 3번']) assert(!html.includes(harsh), `harsh/old sister copy remains: ${harsh}`);
   assert(html.includes('왔구나! 잘 왔어') && html.includes('아 이거였구나.') && html.includes('잠깐만! 언니가 네 사주랑 지금 고민') && html.includes('쓸데없이 겁주는 말부터 할 생각은 없어') && !html.includes('ㅎㅎ'), 'distinct F/T sister copy missing');
-  assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 2)') && html.includes('지금 진짜 문제와 7일 처방까지'), 'paid teaser must be NOTE1 full + partial NOTE2');
+  assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 1)') && html.includes('방금 읽던 NOTE 02 다음 내용') && html.includes('이 고민 끝까지 같이 봐줘'), 'paid teaser must be NOTE1 full + short NOTE2 + sister-led 990 handoff');
   assert(!html.includes('storyCaptureReturnTimer') && !html.includes('7000') && html.includes('storyCaptureCleanTimer'), 'capture should use delayed fullscreen-clean transition, not timed auto-return');
   assert(premium.includes('data-bundle-situation') && premium.includes('data-all-situation'), 'premium situation selectors missing');
   assert(premium.includes('<option value="solar">양력</option><option value="lunar">음력</option>') && !premium.includes('양력 생일') && !premium.includes('음력 생일'), 'compatibility calendar labels should be simple');
