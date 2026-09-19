@@ -29,7 +29,7 @@
     <meta property="og:title" content="똑같은 내 사주, 어떤 언니한테 풀래?" />
     <meta
       property="og:description"
-      content="극F 위로 vs 극T 팩폭. 생일 넣고 1:1 갠톡 시작"
+      content="F 공감 vs T 정리. 생일 넣고 1:1 갠톡 시작"
     />
     <meta property="og:url" content="https://sajuft.com/" />
     <link rel="canonical" href="https://sajuft.com/" />
@@ -51,7 +51,7 @@
     <meta name="twitter:title" content="똑같은 내 사주, 어떤 언니한테 풀래?" />
     <meta
       name="twitter:description"
-      content="극F 위로 vs 극T 팩폭. 생일 넣고 1:1 갠톡 시작"
+      content="F 공감 vs T 정리. 생일 넣고 1:1 갠톡 시작"
     />
     <meta
       name="twitter:image"
@@ -741,8 +741,8 @@
               <p
                 class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-800 leading-snug break-keep"
               >
-                사주 결과가 어떻든 무조건 네 편할 거니까 걱정 마. 힘든 거 있으면
-                다 기대도 돼.
+                네가 왜 여기서 마음 쓰이는지부터 같이 보자. 좋은 얘기만 하진 않아도,
+                혼자 끙끙대게 두진 않을게.
               </p>
             </div>
 
@@ -753,7 +753,7 @@
               >
                 <span
                   class="text-[10.5px] sm:text-[12px] font-black tracking-tighter whitespace-nowrap"
-                  >응, 나 진짜 힘드니까 무조건 내 편부터 들어줘</span
+                  >응, 내 얘기부터 천천히 같이 봐줘</span
                 >
                 <span class="text-[13px] font-black leading-none text-[#e11d48]"
                   >›</span
@@ -810,7 +810,7 @@
               <p
                 class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-100 leading-snug break-keep"
               >
-                사주에 뚫린 구멍부터 팩트로 막아줄 테니까 징징대지 말고 와.
+                괜히 겁주거나 포장 안 해. 좋은 건 좋다, 아닌 건 아니다 말하고 지금 필요한 것만 정리해줄게.
               </p>
             </div>
 
@@ -821,7 +821,7 @@
               >
                 <span
                   class="text-[10.5px] sm:text-[12px] font-black tracking-tighter whitespace-nowrap"
-                  >징징 안 댈게. 필터링 다 빼고 날것 그대로 까줘</span
+                  >좋아. 돌려 말하지 말고 필요한 것만 알려줘</span
                 >
                 <span class="text-[13px] font-black leading-none text-sky-200"
                   >›</span
@@ -1618,11 +1618,11 @@
                     id="vipSectionMainTitle"
                     class="text-sm sm:text-base font-black text-slate-900 tracking-tight"
                   >
-                    언니가 솔직하게 까보는 비밀 메모장
+                    로아 언니가 너한테만 남기는 비밀 메모
                   </h3>
                 </div>
-                <p class="text-[11px] text-slate-500 font-medium pl-6">
-                  사주이랑 진짜 성향 날것 그대로 적어둔 솔직 처방전
+                <p id="vipSectionSubTitle" class="text-[11px] text-slate-500 font-medium pl-6">
+                  지금 고민의 이유부터 행동·사람·시기까지 이어서 적어둔 상담 메모
                 </p>
               </div>
 
@@ -2800,15 +2800,15 @@
       
       const SAZU_CHARACTER_PROFILES = {
         ESTJ: {
-          title_T: "남들 싼 똥 혼자 다 치우면서 속으로 욕하는 프로 총대러",
+          title_T: "책임은 빨리 잡고, 비효율은 못 넘기는 실전 총대형",
           title_F:
             "겉으론 단단해 보여도, 남들 몫까지 챙기느라 혼자 지치는 책임감 많은 사람",
           memeIcon: "🐱",
           memeText: "덤덤하게 총대 메고 기강 잡는 고양이",
           bullets_T: [
-            "일 못하면서 변명 늘어놓는 인간 보면 살인 충동 느낌",
-            "'알아서 해'라고 해놓고 남이 한 거 맘에 안 들어서 결국 지가 다시 함",
-            "남한테 맡기면 복장 터져서 끝까지 혼자 일 쥐고 있다 번아웃 옴",
+            "일이 꼬이면 누가 할지 기다리기보다 네가 먼저 정리하는 편",
+            "맡겨도 기준에 안 맞으면 다시 손대서 결국 일이 네 쪽으로 몰리기 쉬움",
+            "버티는 힘이 강해서 과부하 신호를 늦게 알아차리는 게 약점",
           ],
           bullets_F: [
             "덤덤해 보여도 사실 ‘내가 해야지’ 하고 책임을 너무 빨리 가져오는 편이야",
@@ -2821,14 +2821,14 @@
           worstTag: "템포가 맞지 않는 사이",
         },
         ISTJ: {
-          title_T: "계획 5분만 틀어져도 속으로 쌍욕 박는 FM 원칙주의자",
+          title_T: "기준이 분명하고, 흐트러진 계획에 스트레스 받는 원칙형",
           title_F: "겉으론 무덤덤해도, 남들 실수까지 챙기고 집에 와서 혼자 방전되는 사람",
           memeIcon: "🦫",
           memeText: "루틴 깨지면 세상 무너지는 비버",
           bullets_T: [
-            "비효율적인 꼴 죽어도 못 보고 상대방 사람 취급 슬슬 안 함",
-            "융통성 제로라 일상 루틴 깨지면 세상 무너진 것처럼 스트레스받음",
-            "변화가 두려워서 익숙하고 답답한 환경에 계속 갇혀 있으면서 한탄함",
+            "정해진 방식과 약속이 지켜질 때 가장 안정적으로 움직이는 편",
+            "예상 밖 변화가 이어지면 유연하게 넘기기보다 피로가 빨리 쌓임",
+            "익숙한 선택이 안전해서 답답해도 오래 버티는 경향이 있음",
           ],
           bullets_F: [
             "차가워 보인단 말 들으면 사실 은근히 상처받는데, 뭐라고 설명해야 할지 몰라 그냥 입 닫을 때가 있어",
@@ -2841,14 +2841,14 @@
           worstTag: "무계획에 지치는 관계",
         },
         INTJ: {
-          title_T: "머릿속 계산은 강남 빌딩주, 현실 실행은 0건인 방구석 전략가",
+          title_T: "판을 먼저 읽고, 확신이 설 때 움직이는 전략형",
           title_F: "겉으로는 단단해 보여도, 완벽해야 한다는 마음 때문에 혼자 오래 버텨온 사람",
           memeIcon: "🦊",
           memeText: "머릿속 엑셀 켜고 인간 관찰하는 여우",
           bullets_T: [
-            "멍청한 질문 3번 들으면 마음속으로 이미 영구 손절 침",
-            "실패해서 밑천 드러날까 봐 완벽한 타이밍만 재다 남이 먼저 하는 거 구경함",
-            "인간관계 영양가 따지다가 정작 필요할 때 부를 사람 한 명도 없음",
+            "질문이나 결정이 반복되면 비효율부터 먼저 보여 답답함을 느끼기 쉬움",
+            "완성도를 높이려다 시작 시점을 늦추는 게 가장 큰 손해",
+            "사람도 관계도 목적이 흐려지면 거리를 빨리 두는 편",
           ],
           bullets_F: [
             "속마음을 아무한테나 꺼내지 못해서 결국 혼자 정리하고 삭이는 시간이 길어질 때가 있어",
@@ -2862,14 +2862,14 @@
         },
         INTP: {
           title_T:
-            "아이디어는 노벨상급인데 침대 밖으로 1도 안 나오는 게으른 천재",
+            "생각은 깊고 빠른데, 실행 속도는 관심도에 크게 좌우되는 탐구형",
           title_F: "남들이 당연하다고 넘기는 것도 혼자 한 번 더 생각해보는, 호기심 많은 사람",
           memeIcon: "🐨",
           memeText: "침대에 누워 우주 정복 중인 코알라",
           bullets_T: [
-            "벌여놓은 구상은 우주 정복인데 완성된 결과물은 0개",
-            "관심 없는 분야 대화 나오면 영혼 실시간으로 로그아웃됨",
-            "벼락치기로 대충 넘기려다 결정적 순간에 뒷심 부족으로 피 봄",
+            "아이디어를 넓게 벌리는 힘은 큰데 흥미가 떨어지면 마무리 속도가 급격히 느려짐",
+            "관심 없는 대화에서는 에너지가 빠르게 꺼지는 편",
+            "막판 집중력에 의존하면 중요한 순간에 체력이 부족해질 수 있음",
           ],
           bullets_F: [
             "생각이 남들과 조금 다를 때 ‘나만 이상한가?’ 싶어서 은근히 외로워질 때가 있어",
@@ -2882,14 +2882,14 @@
           worstTag: "답답함이 쌓이는 관계",
         },
         ENTJ: {
-          title_T: "남들 일하는 꼬락서니 답답해서 지 성질 못 이기는 불도저",
+          title_T: "결과를 만들기 위해 먼저 움직이고, 답답한 지점을 바로 잡는 추진형",
           title_F: "다들 흔들릴 때 먼저 중심을 잡아주지만, 정작 자기 힘듦은 뒤로 미루는 사람",
           memeIcon: "🦁",
           memeText: "눈빛으로 회의실 제압하는 사자",
           bullets_T: [
-            "징징댈 시간에 해결책부터 가져오라고 면전에 소리치고 싶음",
-            "남들 느려터진 속도 못 기다려서 혼자 다 하다가 과부하 걸림",
-            "지 말이 무조건 맞다고 우기다가 주변 사람들 다 떠나보냄",
+            "문제 생기면 감정보다 해결책을 먼저 찾는 편",
+            "속도가 느리면 기다리기보다 직접 처리해서 일이 네 쪽으로 몰리기 쉬움",
+            "네 기준이 명확한 만큼 상대가 따라오지 못할 때 말이 세질 수 있음",
           ],
           bullets_F: [
             "네가 흔들리면 다 같이 무너질 것 같아서, 힘들어도 괜찮은 척 버티는 날이 많아",
@@ -2903,14 +2903,14 @@
         },
         ENTP: {
           title_T:
-            "말빨로 세계 정복해놓고 정작 지 인생 마무리는 안 하는 프로 벌림러",
+            "아이디어와 말이 빠르고, 새 판을 여는 데 강한 확장형",
           title_F: "늘 유쾌해 보여도, 혼자 남으면 생각이 깊어지는 장난기 많은 사람",
           memeIcon: "🦜",
           memeText: "토론으로 영혼까지 털어버리는 앵무새",
           bullets_T: [
-            "시작할 땐 텐션 200%, 3일 지나면 흥미 잃고 침대로 도망침",
-            "맞는 말로 뼈 때려놓고 상대방이 왜 우는지 진짜 이해 못 함",
-            "논쟁에서 이기는 데 집중하느라 정작 중요한 실속은 다 놓침",
+            "시작할 때 속도가 빠른 대신 흥미가 떨어지면 마무리 힘이 약해질 수 있음",
+            "맞는 말을 빠르게 꺼내는 편이라 상대 감정을 놓칠 때가 있음",
+            "논쟁의 승패보다 실제 결과를 남기는 습관이 필요함",
           ],
           bullets_F: [
             "사람들 앞에서는 금방 분위기를 살리는데, 혼자 남으면 갑자기 허전해질 때가 있어",
@@ -2923,14 +2923,14 @@
           worstTag: "융통성이 부족한 관계",
         },
         INFJ: {
-          title_T: "겉으론 다 맞춰주다 속으로 조용히 손절 점수 깎는 회피 만렙",
+          title_T: "겉으론 맞춰줘도, 안쪽 기준은 꽤 단단한 관찰형",
           title_F: "남의 마음을 너무 잘 알아봐서, 정작 자기 마음은 뒤로 미루기 쉬운 사람",
           memeIcon: "🦉",
           memeText: "인간관계 셔터 내릴 각 재는 부엉이",
           bullets_T: [
-            "불편한 티 하나도 안 내놓고 혼자 마음 정리하고 예고 없이 셔터 내림",
-            "상대방 밑천 다 꿰뚫어 보면서 모르는 척 연기하느라 기 빨림",
-            "벽 치고 혼자 동굴로 숨어서 세상 모든 고뇌 혼자 다 짊어진 척함",
+            "불편해도 바로 말하기보다 혼자 정리한 뒤 거리를 두는 편",
+            "사람의 의도와 분위기를 많이 읽어서 관계 피로가 쉽게 쌓임",
+            "생각이 많아질수록 혼자 있는 시간이 길어져 회복이 늦어질 수 있음",
           ],
           bullets_F: [
             "상대 표정이 조금만 달라져도 ‘내가 뭐 잘못했나?’ 하고 혼자 오래 되짚을 때가 있어",
@@ -2944,15 +2944,15 @@
         },
         INFP: {
           title_T:
-            "남 눈치 보느라 거절 못 해놓고 방구석에서 이불킥 차는 쿠쿠다스",
+            "마음은 섬세하고 기준은 분명한데, 거절 타이밍을 놓치기 쉬운 가치형",
           title_F:
             "남 상처 줄까 봐 오래 고민하고, 그만큼 자기 마음은 뒤로 미뤄온 사람",
           memeIcon: "🐰",
           memeText: "이불 속에서 후회하며 눈물 훔치는 토끼",
           bullets_T: [
-            "싫은 소리 한마디 못 해놓고 집에 와서 시뮬레이션 돌리며 후회함",
-            "완벽하게 시작하려다 엄두가 안 나서 침대에서 누워만 있음",
-            "돈 달란 말도 미안해서 못 꺼내 호구 잡히고 혼자 눈물 찔끔 흘림",
+            "싫은 걸 바로 말하기보다 한 번 더 참았다가 뒤늦게 후회하는 편",
+            "잘하고 싶어서 시작 기준을 높게 잡으면 오히려 출발이 늦어짐",
+            "돈·시간·감정의 경계를 미리 정해두는 게 특히 중요함",
           ],
           bullets_F: [
             "거친 말에 마음이 오래 아파도, 그래도 사람을 완전히 포기하고 싶지는 않은 편이야",
@@ -2966,14 +2966,14 @@
         },
         ENFJ: {
           title_T:
-            "남 고민 무료 상담해주다 정작 지 인생 통장은 털리는 오지랖 호구",
+            "사람을 챙기는 힘은 큰데, 자기 몫은 뒤로 미루기 쉬운 조율형",
           title_F: "사람들 마음은 잘 챙기면서, 정작 자기 몫의 위로는 자꾸 미루는 사람",
           memeIcon: "🐶",
           memeText: "남 챙기느라 정작 지 밥그릇 놓친 댕댕이",
           bullets_T: [
-            "남들 챙기느라 내 인생 가장 중요한 마감과 건강은 뒷전으로 밀림",
-            "고마워할 줄 모르는 이기적인 인간들한테 진심 다 퍼주고 현타 옴",
-            "갈등 생기는 게 무서워서 문제점을 알면서도 덮어두다 화를 키움",
+            "주변 문제를 먼저 챙기다 네 일정과 체력이 밀릴 때가 많음",
+            "고마움이 없는 관계에서도 쉽게 손을 떼지 못해 소모될 수 있음",
+            "갈등을 피하려고 덮어두면 나중에 더 크게 터질 수 있음",
           ],
           bullets_F: [
             "누구 하나 서운하게 만들기 싫어서 분위기와 표정을 계속 살피느라 긴장이 잘 안 풀려",
@@ -2987,15 +2987,15 @@
         },
         ENFP: {
           title_T:
-            "도파민 터지면 앞뒤 안 보고 지르고 다음 날 카드값 보고 우는 프로 벌림러",
+            "에너지와 아이디어가 빠르고, 재미가 붙으면 크게 움직이는 확장형",
           title_F:
             "겉으론 제일 밝아 보여도, 혼자 있을 땐 생각과 감정이 한꺼번에 몰려오는 사람",
           memeIcon: "🐬",
           memeText: "기분파 쇼핑하고 카드값 보고 우는 돌고래",
           bullets_T: [
-            "벌여놓은 일 20개, 제대로 수습해서 끝맺은 일 0개",
-            "기분 좋다고 골든벨 울려놓고 다음 날 텅장 보고 머리 쥐어뜯음",
-            "감정 기복 롤러코스터 타면서 주변 사람까지 덩달아 멀미 나게 함",
+            "동시에 여러 일을 벌이기 쉬워 마무리 우선순위가 흐려질 수 있음",
+            "기분이 좋을 때 소비나 약속이 커지기 쉬워 기준을 미리 정해두는 게 좋음",
+            "감정 기복이 클 때는 결정까지 같이 흔들릴 수 있어 하루 정도 간격을 두는 게 도움 됨",
           ],
           bullets_F: [
             "남들 앞에선 밝게 웃다가도 혼자 되면 갑자기 기운이 쭉 빠지고 마음이 가라앉을 때가 있어",
@@ -3009,15 +3009,15 @@
         },
         ISFJ: {
           title_T:
-            "앞에선 '괜찮아' 해놓고 밤마다 카톡 다시 읽으며 앓는 착한아이 콤플렉스",
+            "책임감이 세고, 불편함을 오래 참는 안정형",
           title_F:
             "남에게 짐 되기 싫어서, 어느새 남의 짐까지 조용히 같이 들고 있는 사람",
           memeIcon: "🐹",
           memeText: "부탁 거절 못 해서 짐 싸 짊어진 햄스터",
           bullets_T: [
-            "거절 한 번 못 해서 남의 궂은일 다 떠맡고 속으로 원망만 쌓음",
-            "불만 있어도 절대 티 안 내다가 혼자 폭발해서 관계 끝내버림",
-            "과거의 서운했던 기억들을 머릿속에 다 저장해두고 혼자 괴로워함",
+            "부탁을 거절하기 어려워 남의 일까지 떠안기 쉬움",
+            "불만을 바로 말하지 않으면 쌓였다가 한 번에 관계를 정리할 수 있음",
+            "지난 서운함을 오래 기억하는 편이라 제때 말로 풀어두는 게 중요함",
           ],
           bullets_F: [
             "남 챙길 건 제일 먼저 보이는데 네 피곤함은 늘 마지막 순서라, 뒤늦게 확 지칠 때가 있어",
@@ -3030,15 +3030,15 @@
           worstTag: "날 선 팩폭에 다치는 관계",
         },
         ESFJ: {
-          title_T: "남들 시선 맞추느라 영혼이랑 지갑 다 털리는 핵인싸 쇼윈도",
+          title_T: "사람 분위기를 잘 읽고, 관계를 유지하는 데 힘을 많이 쓰는 조율형",
           title_F:
             "분위기 맞춰주느라 밖에서는 잘 웃지만, 집에 오면 말할 힘도 남지 않는 사람",
           memeIcon: "🦭",
           memeText: "남들 시선 눈치 보느라 안절부절 물개",
           bullets_T: [
-            "남의 시선과 평판에 목매느라 체면 유지비와 에너지 출혈 심각",
-            "갈등 생길까 봐 불합리한 상황에서도 웃으면서 호구 짓 자처함",
-            "남의 일에 참견하고 조언하려다 역효과 나고 혼자 서운해함",
+            "평판과 분위기를 신경 쓰느라 시간·돈·에너지가 새기 쉬움",
+            "갈등을 피하려고 웃고 넘기면 네 기준이 뒤로 밀릴 수 있음",
+            "도와주고 싶은 마음이 앞설 때는 상대가 원한 조언인지 먼저 확인하는 게 좋음",
           ],
           bullets_F: [
             "분위기 살리려고 한 번 더 웃고 한 번 더 챙기다 보니, 집 문 닫는 순간 배터리가 0%가 되기 쉬워",
@@ -3051,15 +3051,15 @@
           worstTag: "공감이 통하지 않는 관계",
         },
         ISTP: {
-          title_T: "발등에 불 떨어져 활활 타야 움직이는 침대 위 귀차니즘 만렙",
+          title_T: "필요한 순간엔 정확히 움직이지만, 간섭이 많으면 바로 지치는 실전형",
           title_F:
             "말은 짧아도 필요한 순간엔 조용히 행동으로 챙겨주는 사람",
           memeIcon: "🐱",
           memeText: "카톡 안 읽씹하고 침대에서 뒹굴거리는 고양이",
           bullets_T: [
-            "카톡 연락 귀찮아서 안 읽씹하다가 인간관계 자연 소멸각 만듦",
-            "벼락치기로 어떻게든 되겠지 하다가 결정적 타이밍에 큰코다침",
-            "'알아서 해' 하고 방관하다가 결국 나중에 일 더 커짐",
+            "연락을 미루다 관계가 자연스럽게 멀어질 수 있음",
+            "마감 직전 집중력에 의존하면 중요한 타이밍을 놓칠 수 있음",
+            "문제를 알아도 일단 두고 보는 습관이 있으면 나중에 처리량이 커짐",
           ],
           bullets_F: [
             "표현이 길지 않아서 무심해 보일 뿐, 마음에 든 사람은 행동으로 꽤 오래 챙기는 편이야",
@@ -3073,14 +3073,14 @@
         },
         ISFP: {
           title_T:
-            "골치 아픈 일 생기면 '잠수' 타고 침대 속으로 숨는 회피형 끝판왕",
+            "자기 속도와 취향이 분명하고, 갈등은 오래 끌고 싶어 하지 않는 감각형",
           title_F: "다투기 싫어서 한 번 더 양보하다가, 자기 마음까지 뒤로 미루기 쉬운 사람",
           memeIcon: "🦥",
           memeText: "이불 밖은 위험해서 누워있는 나무늘보",
           bullets_T: [
-            "누워서 숏폼 보며 인생 낭비하다가 새벽에 혼자 자책하고 괴로워함",
-            "결정 장애 와서 차일피일 미루다 눈앞의 황금 기회 다 날려먹음",
-            "거절 못 해서 약속 잡아놓고 당일 되면 나가기 싫어서 온갖 핑계 댐",
+            "불편한 일이 생기면 잠깐 피하고 싶어져 결정이 늦어질 수 있음",
+            "생각이 많아질수록 행동보다 회복부터 찾는 편",
+            "거절을 미루면 약속과 관계가 네 에너지보다 많아질 수 있음",
           ],
           bullets_F: [
             "갈등 분위기만 와도 마음이 먼저 긴장해서 ‘그냥 내가 참지 뭐’ 하고 넘길 때가 있어",
@@ -3094,15 +3094,15 @@
         },
         ESTP: {
           title_T:
-            "도파민 터지면 앞뒤 안 재고 풀악셀 밟다가 다음 날 후회하는 기분파",
+            "반응과 실행이 빠르고, 기회가 보이면 먼저 움직이는 행동형",
           title_F:
             "겁 없이 부딪치는 것 같아도, 실패 앞에서는 누구보다 마음이 작아질 때가 있는 사람",
           memeIcon: "🐆",
           memeText: "도파민 냄새 맡고 풀악셀 밟는 표범",
           bullets_T: [
-            "생각 없이 충동적으로 저질러놓고 수습하느라 돈과 시간 배로 탕진함",
-            "진지한 분위기나 감정 대화 나오면 알레르기 반응 일으키며 도망침",
-            "눈앞의 재미만 좇다가 장기적인 커리어 플랜 다 놓치고 뒤처짐",
+            "빠르게 결정하는 만큼 뒤처리 비용이 커질 수 있어 한 번 더 계산하는 습관이 필요함",
+            "감정 대화가 길어지면 피하고 싶어져 중요한 말을 놓칠 수 있음",
+            "눈앞의 재미와 장기 계획을 같이 잡는 장치가 있으면 강점이 더 잘 살아남",
           ],
           bullets_F: [
             "겉으로는 자신 있어 보여도 결과가 안 좋을까 봐 속으론 압박을 꽤 크게 안고 가는 편이야",
@@ -3116,15 +3116,15 @@
         },
         ESFP: {
           title_T:
-            "분위기 타면 지갑 열고 다음 날 통장 잔고 보고 오열하는 분위기메이커",
+            "사람과 현장에서 에너지가 살아나고, 분위기를 움직이는 관계형",
           title_F:
             "사람들한테 웃음은 잘 주는데, 혼자 조용해지면 마음이 허전해질 때가 있는 사람",
           memeIcon: "🐶",
           memeText: "신나서 꼬리 흔들다 통장 털린 비글",
           bullets_T: [
-            "남의 부탁 거절 못 하고 분위기 맞추느라 실속은 다 털리고 빈털터리 됨",
-            "골치 아픈 현실 고민 회피하다가 발등에 불 떨어져서 멘붕 옴",
-            "칭찬에 너무 약해서 사탕발림하는 얌체들에게 쉽게 이용당함",
+            "분위기를 맞추다 부탁과 지출이 네 한도를 넘을 수 있음",
+            "무거운 문제를 뒤로 미루면 막판에 부담이 크게 몰림",
+            "칭찬과 호의에 빨리 마음을 열기 쉬워 행동으로 꾸준히 보여주는 사람인지 보는 게 중요함",
           ],
           bullets_F: [
             "분위기는 잘 살리는데 문득 ‘정작 내 마음을 아는 사람은 있나?’ 싶어 쓸쓸해질 때가 있어",
@@ -3207,7 +3207,7 @@
             if (senderTitle) senderTitle.textContent = "로아 언니 (F)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔구나! 언니한테 편하게 말해봐.<br>사주 대충 안 보고, 네가 왜 이 고민에서 자꾸 마음 쓰이는지까지 진짜 깊게 봐줄게.<br>이름이랑 생일부터 알려줘!";
+                "왔구나! 잘 왔어. 언니한테 그냥 편하게 털어놔.<br>사주 대충 훑고 끝내지 않고, 네가 왜 이 고민에서 자꾸 마음 쓰이는지까지 같이 깊게 봐줄게.<br>이름이랑 생일부터 알려줘!";
             }
           } else {
             if (sisterImg) sisterImg.src = "./서아.png";
@@ -5525,7 +5525,7 @@ return [
             const ackText =
               mode === "T"
                 ? `${callVoc}, 확인했어. 이 고민 기준으로 볼게. 대충 위로만 하진 않을 거고, 괜히 겁주지도 않을게. 필요한 것만 제대로 짚어줄게.`
-                : `${callVoc}, 아 이 고민이었구나! 알겠어. 언니가 다른 얘기 안 섞고 네 상황만 제대로 볼게.`;
+                : `${callVoc}, 아 이거였구나. 그래서 계속 마음에 걸렸겠다. 좋아, 언니가 다른 얘기 안 섞고 지금 네 상황만 제대로 볼게.`;
 
             const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up mt-1">
@@ -5644,7 +5644,7 @@ currentResultData = {
                 appendSisterMsg(
                   isT
                     ? `${callVoc}, 잠깐. 사주부터 맞춰보고 지금 고민이 어디서 꼬였는지 볼게. 결론은 깔끔하게 줄게.`
-                    : `${callVoc}, 잠깐만! 언니가 네 사주랑 지금 고민 같이 놓고 꼼꼼하게 보고 올게.`,
+                    : `${callVoc}, 잠깐만! 언니가 네 사주랑 지금 고민 같이 놓고, 어디서 자꾸 마음이 걸리는지 꼼꼼하게 보고 올게.`,
                   false,
                 );
 
@@ -5694,7 +5694,7 @@ currentResultData = {
                     appendSisterMsg(
                       isT
                         ? `다 봤어. 괜한 소리 빼고 중요한 것만 정리했어. 이제 보자.`
-                        : `다 봤어! 생각보다 네 얘기랑 이어지는 데가 많네. 언니가 하나씩 풀어줄게.`,
+                        : `다 봤어! 네가 왜 여기서 자꾸 마음이 쓰였는지 연결되는 지점이 보여. 언니가 하나씩 같이 풀어보자.`,
                       true,
                     );
 
@@ -5769,17 +5769,29 @@ currentResultData = {
         const mainShareBtnText = document.getElementById("mainShareBtnText");
 
         const payBtnActionText = document.getElementById("payBtnActionText");
+        const vipSectionMainTitle = document.getElementById("vipSectionMainTitle");
+        const vipSectionSubTitle = document.getElementById("vipSectionSubTitle");
 
         if (payBoxHookMsg) {
           payBoxHookMsg.textContent = isT
             ? "여기서부터가 실제로 어떻게 움직일지 정하는 파트야."
-            : "잠깐, 여기서 멈추면 네 마음을 반만 본 거야.";
+            : "여기까지 보니까 왜 마음 쓰였는지는 보여. 이제 언니가 실제로 어떻게 움직이면 좋을지까지 같이 잡아줄게.";
         }
 
         if (payBtnActionText) {
           payBtnActionText.textContent = isT
             ? "서아 언니, 그다음 행동까지 정리해줘"
             : "로아 언니, 그다음도 같이 봐줘";
+        }
+        if (vipSectionMainTitle) {
+          vipSectionMainTitle.textContent = isT
+            ? "서아 언니가 핵심만 적어둔 비밀 메모"
+            : "로아 언니가 너한테만 남기는 비밀 메모";
+        }
+        if (vipSectionSubTitle) {
+          vipSectionSubTitle.textContent = isT
+            ? "지금 고민의 원인·행동·사람·시기를 필요한 것만 이어서 정리했어"
+            : "지금 고민의 이유부터 행동·사람·시기까지 언니가 이어서 적어뒀어";
         }
         if (mainShareBtnText) {
           mainShareBtnText.textContent = "인스타 스토리 카드 만들기";
@@ -5860,7 +5872,7 @@ currentResultData = {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
             const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
-            resGreeting.innerHTML = `<b>${callVoc}</b>, 다 봤어! [${escapeHTML(situationText)}]에서 왜 마음이 자꾸 쓰였는지 사주랑 같이 보니까 포인트가 딱 보여. 언니가 어려운 말 없이 하나씩 풀어줄게.`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, 다 봤어! [${escapeHTML(situationText)}]에서 왜 자꾸 마음이 쓰였는지 흐름이 보여. 언니가 어려운 말 빼고, 네 얘기부터 차근차근 같이 풀어볼게.`;
           }
         }
         // [추가] '다른 고민도 풀어보기' CTA 버튼 테마 컬러 실시간 동기화
@@ -6275,8 +6287,8 @@ currentResultData = {
 
         if (summaryTxt) {
           summaryTxt.innerHTML = isT
-            ? `<b>${maxOheng.name}</b>이 제일 강해. ${strongestT[maxOheng.name] || "강한 쪽이 먼저 나온다"}. 반대로 <b>${minNames}</b>은 약한 편이라, ${weakMeanings}이 필요한 순간에 막히기 쉽다. <b>중요한 건 이 조합이 지금 고민에서 어떤 반복을 만드는지야.</b> 바로 아래 비밀메모에서 그 패턴부터 짚어줄게.`
-            : `언니가 보기엔 <b>${maxOheng.name}</b>이 제일 강해. ${strongestF[maxOheng.name] || "이 힘이 자연스럽게 먼저 나오는 편이야"}. 반대로 <b>${minNames}</b>은 약한 편이라, ${weakMeanings}이 필요한 순간엔 유독 마음이 걸리거나 힘이 더 들 수 있어. <b>지금 네 고민도 여기서 반복되는 장면이 보여.</b> 바로 아래 비밀메모에서 그 장면부터 같이 풀어볼게.`;
+            ? `<b>${maxOheng.name}</b>이 제일 강해. ${strongestT[maxOheng.name] || "강한 쪽이 먼저 나온다"}. 반대로 <b>${minNames}</b>은 약한 편이라, ${weakMeanings}이 필요한 순간에 막히기 쉽다. <b>중요한 건 이 차이가 지금 고민에서 어떤 반복을 만드는지야.</b> 바로 아래 비밀 메모에서 이어서 보면 돼.`
+            : `<b>${maxOheng.name}</b>이 제일 강해. ${strongestF[maxOheng.name] || "이 힘이 자연스럽게 먼저 나오는 편이야"}. 반대로 <b>${minNames}</b>은 약한 편이라, ${weakMeanings}이 필요한 순간엔 유독 마음이 걸리거나 힘이 더 들 수 있어. <b>지금 네 고민도 이 차이 때문에 같은 장면이 반복되는 부분이 보여.</b> 언니가 바로 아래 비밀 메모에 이어서 적어뒀어.`;
         }
       }
 
@@ -6442,8 +6454,8 @@ currentResultData = {
         const modeBadge = document.getElementById("cardModeBadge");
         if (modeBadge) {
           modeBadge.innerHTML = isT
-            ? `"팩트만 딱 보자" 서아 모드`
-            : `"우리 <b>${escapeHTML(nameSubject)}</b> 다 맞아" 로아 모드 ♡`;
+            ? `서아 언니가 딱 정리한 결과`
+            : `로아 언니랑 같이 풀어본 결과`;
           modeBadge.style.color = isT ? "#0284c7" : "#e11d48";
           modeBadge.style.borderColor = isT
             ? "rgba(56,189,248,.32)"
@@ -6459,11 +6471,11 @@ currentResultData = {
         if (mainTitle) mainTitle.textContent = `"${isT ? prof.title_T : prof.title_F}"`;
 
         const elementNames = {
-          mok: "목 · 나무",
-          hwa: "화 · 불",
-          to: "토 · 흙",
-          geum: "금 · 쇠",
-          su: "수 · 물",
+          mok: "목",
+          hwa: "화",
+          to: "토",
+          geum: "금",
+          su: "수",
         };
         const rawElements =
           data.elementProfiles?.raw ||
@@ -7241,13 +7253,13 @@ currentResultData = {
           <div id="storyCaptureChrome" style="position:absolute;inset:0;z-index:5;pointer-events:none">
             <div style="position:absolute;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none">
               <div id="storyCaptureGuideMain" style="max-width:285px;padding:10px 12px;border-radius:15px;background:rgba(15,23,42,.90);color:white;box-shadow:0 10px 30px rgba(0,0,0,.22);font-size:11px;line-height:1.55;font-weight:800;word-break:keep-all">
-                카드만 딱 남겨둘게. 캡처해서 인스타 스토리에 올려봐 ♡
+                카드만 딱 남겨둘게. 캡처한 뒤 화면 아무 데나 한 번 톡하면 바로 결과로 돌아가.
               </div>
               <button id="storyCaptureClose" type="button" aria-label="캡처 모드 닫기" style="pointer-events:auto;flex:none;width:42px;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(15,23,42,.86);color:white;font-size:25px;line-height:1;cursor:pointer">×</button>
             </div>
             <div style="position:absolute;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));pointer-events:none">
-              <button id="storyCaptureReady" type="button" style="pointer-events:auto;width:100%;max-width:360px;margin:0 auto;display:block;border:0;border-radius:16px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:950;box-shadow:0 12px 32px rgba(15,23,42,.30);cursor:pointer">캡처 준비</button>
-              <div id="storyCaptureGuideSub" style="margin-top:7px;text-align:center;color:#475569;font-size:10px;font-weight:800;text-shadow:0 1px 2px rgba(255,255,255,.8)">캡처했으면 화면을 한 번 톡 눌러줘 · 바로 결과로 돌아가</div>
+              <button id="storyCaptureReady" type="button" style="pointer-events:auto;width:100%;max-width:360px;margin:0 auto;display:block;border:0;border-radius:16px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:950;box-shadow:0 12px 32px rgba(15,23,42,.30);cursor:pointer">캡처 화면 열기</button>
+              <div id="storyCaptureGuideSub" style="margin-top:7px;text-align:center;color:#475569;font-size:10px;font-weight:800;text-shadow:0 1px 2px rgba(255,255,255,.8)">3초 뒤 카드만 남아 · 스크린샷 → 화면 톡 → 결과 복귀</div>
             </div>
           </div>
         `;
@@ -7288,8 +7300,8 @@ currentResultData = {
           readyBtn.textContent = "화면 정리 중...";
           readyBtn.style.opacity = ".72";
         }
-        if (guideMain) guideMain.textContent = "전체화면으로 바꾸는 중이야. 잠깐만 기다려줘.";
-        if (guideSub) guideSub.textContent = "회색 안내가 사라지면 캡처 → 끝나면 화면 한 번 톡!";
+        if (guideMain) guideMain.textContent = "곧 카드만 남아. 스크린샷 찍은 뒤 화면 아무 데나 한 번 톡하면 바로 돌아가!";
+        if (guideSub) guideSub.textContent = "회색 전체화면 안내가 사라질 때까지만 잠깐 기다려줘";
 
         let fullscreenEntered = false;
         const root = document.documentElement;
@@ -7308,7 +7320,7 @@ currentResultData = {
           showStoryCaptureChrome(false);
           if (readyBtn) {
             readyBtn.disabled = false;
-            readyBtn.textContent = "캡처 준비";
+            readyBtn.textContent = "캡처 화면 열기";
             readyBtn.style.opacity = "1";
           }
         }, fullscreenEntered ? 3200 : 180);
@@ -8014,6 +8026,6 @@ currentResultData = {
   <script src="./classical-engine-v2.js?v=2"></script>
     <script src="./integrated-saju-profile-v1.js?v=1.0.0"></script>
     <script src="./paid-value-layer-v1.js?v=1.5.0"></script>
-    <script src="./premium-products-v1.js?v=1.8.0"></script>
+    <script src="./premium-products-v1.js?v=1.9.0"></script>
   </body>
 </html>
