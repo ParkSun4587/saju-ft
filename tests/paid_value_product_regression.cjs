@@ -404,7 +404,7 @@ function norm(v) {
     clean:getComputedStyle(document.getElementById('storyCaptureChrome')).display === 'none',
   }));
   assert(fullscreenQA.calls === 1 && fullscreenQA.clean, `fullscreen clean flow failed: ${JSON.stringify(fullscreenQA)}`);
-  assert(html.includes('fullscreenEntered ? 3200 : 180'), 'fullscreen system-notice delay source missing');
+  assert(fs.readFileSync('index.html','utf8').includes('fullscreenEntered ? 3200 : 180'), 'fullscreen system-notice delay source missing');
   const cleanCapture = await page.evaluate(() => {
     const layer = document.getElementById('storyCaptureMode');
     const top = document.elementFromPoint(4,4);
