@@ -466,7 +466,34 @@ function norm(v) {
   await page.evaluate(() => openUnniProduct('full_saju'));
   await page.waitForSelector('#unniProductModal', { state:'visible' });
   let modal = await page.locator('#unniProductModal').innerText();
-  assert(modal.includes('내 전체 사주판') && modal.includes('무료 이벤트로 미리보기'), 'full_saju modal setup missing');
+  const sourceFreeLaunch = await page.evaluate(() => FREE_LAUNCH_MODE);
+  const initialActionText = await page.locator('#unniProductAction').innerText();
+  assert(modal.includes('내 전체 사주판'), 'full_saju modal setup missing');
+  assert(
+    sourceFreeLaunch
+      ? initialActionText.includes('무료 이벤트')
+      : initialActionText.includes('4,900원에 열기'),
+    `free/paid toggle UI mismatch: sourceFreeLaunch=${sourceFreeLaunch}, action=${initialActionText}`
+  );
+
+  // Always verify the opposite state too, without changing the source file.
+  await page.evaluate(() => { FREE_LAUNCH_MODE = !FREE_LAUNCH_MODE; });
+  await page.locator('#unniProductClose').click();
+  await page.evaluate(() => openUnniProduct('full_saju'));
+  await page.waitForSelector('#unniProductModal', { state:'visible' });
+  const oppositeActionText = await page.locator('#unniProductAction').innerText();
+  assert(
+    sourceFreeLaunch
+      ? oppositeActionText.includes('4,900원에 열기')
+      : oppositeActionText.includes('무료 이벤트'),
+    `opposite free/paid toggle UI mismatch: sourceFreeLaunch=${sourceFreeLaunch}, action=${oppositeActionText}`
+  );
+
+  // The rest of this regression inspects the unlocked report without opening a real checkout.
+  await page.evaluate(() => { FREE_LAUNCH_MODE = true; });
+  await page.locator('#unniProductClose').click();
+  await page.evaluate(() => openUnniProduct('full_saju'));
+  await page.waitForSelector('#unniProductModal', { state:'visible' });
   await page.locator('#unniProductAction').click();
   modal = await page.locator('#unniProductModal').innerText();
   const fullSections = await page.locator('#unniProductBody section').count();
