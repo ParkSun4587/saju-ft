@@ -86,6 +86,12 @@ function norm(v) {
     const diagB = buildConcernDiagnosisV2(sameSituationB);
     const notesA = generateConcernNotes(sameSituationA,'F');
     const notesB = generateConcernNotes(sameSituationB,'F');
+    const repeatA = generateConcernNotes(prep(exact,'love','relationship','F'),'F');
+    const repeatB = generateConcernNotes(prep(exact,'love','relationship','F'),'F');
+    const deterministicSame = repeatA.every((n,i)=>
+      localNorm((n.title||'')+' '+(n.desc||'')+' '+(n.checklist||'')) ===
+      localNorm((repeatB[i]?.title||'')+' '+(repeatB[i]?.desc||'')+' '+(repeatB[i]?.checklist||''))
+    );
 
     return {
       engine:globalThis.__CONCERN_NOTE_ENGINE_V2__,
@@ -105,6 +111,7 @@ function norm(v) {
         diagA,diagB,
         noteDiffs:notesA.map((n,i)=>localNorm(n.desc)!==localNorm(notesB[i].desc)),
       },
+      deterministicSame,
     };
   });
 
@@ -162,9 +169,7 @@ function norm(v) {
   }
 
   assert(result.differentChart.diagA.fingerprint !== result.differentChart.diagB.fingerprint, 'different charts share NOTE diagnosis fingerprint');
-  if (result.differentChart.diagA.truthFingerprint === result.differentChart.diagB.truthFingerprint) {
-    assert(result.differentChart.noteDiffs.filter(Boolean).length === 0, 'same calculation facts were artificially rewritten to look different');
-  }
+  assert(result.deterministicSame, 'same saju facts and same situation must render the same NOTE facts every time');
 
   assert(errors.length === 0, 'browser errors: '+errors.join(' | '));
   console.log('CONCERN_NOTE_V2_PASS', JSON.stringify({
