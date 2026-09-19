@@ -384,6 +384,9 @@
       meta:{
         firstDate:cards[0]?.best ? formatMonth(cards[0].best) : null,
         secondDate:cards[1]?.best ? formatMonth(cards[1].best) : null,
+        firstBody:cards[0] ? String(cards[0].year)+" "+cards[0].yearLine+" "+cards[0].bestLine : "",
+        secondBody:cards[1] ? String(cards[1].year)+" "+cards[1].yearLine+" "+cards[1].bestLine : "",
+        concernSituation:situation.key,
         structureFingerprint:reasoning?.structureFingerprint||"",
         timingFingerprint:reasoning?.timingFingerprint||"",
         method:reasoning?.timing?.method||"",
@@ -485,6 +488,7 @@
     const audit = {
       version:VERSION,
       engine:"classical-causal",
+      fingerprint:r.structureFingerprint+"|"+s.concern+"|"+s.key,
       genericClusterDependency:false,
       structureFingerprint:r.structureFingerprint,
       timingFingerprint:r.timingFingerprint,
