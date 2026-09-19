@@ -21,7 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.3.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.0.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.1' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
@@ -93,9 +93,8 @@ function norm(v) {
             concern,situation,mode,
             label:situations[concern][situation]?.label || '',
             diagnosis:{
-              fingerprint:diagnosis.fingerprint,
-              primary:diagnosis.primary,
-              secondary:diagnosis.secondary,
+              structureFingerprint:diagnosis.structureFingerprint,
+              timingFingerprint:diagnosis.timingFingerprint,
             },
             noteAudit:data.noteV2Audit,
             notes:notes.map(n=>({
@@ -123,22 +122,21 @@ function norm(v) {
       products:globalThis.__UNNI_PRODUCTS_V1__.products,
       wrappers:{
         noteV2:!!generateConcernNotes.__noteV2Wrapped,
-        paid:!!generateConcernNotes.__paidValueWrapped,
-        integrated:!!generateConcernNotes.__integratedProfileWrapped,
+        causal:!!generateConcernNotes.__classicalCausal,
       },
       situationRows,
       chartCompare:{
-        diagA:{fingerprint:diagA.fingerprint,primary:diagA.primary,secondary:diagA.secondary},
-        diagB:{fingerprint:diagB.fingerprint,primary:diagB.primary,secondary:diagB.secondary},
+        diagA:{structureFingerprint:diagA.structureFingerprint,timingFingerprint:diagA.timingFingerprint},
+        diagB:{structureFingerprint:diagB.structureFingerprint,timingFingerprint:diagB.timingFingerprint},
         diffs:notesA.map((n,i)=>localNorm(n.desc)!==localNorm(notesB[i].desc)),
       },
     };
   });
 
   assert(qa.paidVersion.version === '1.5.0', 'paid value layer missing');
-  assert(qa.noteVersion.version === '2.3.0', 'NOTE v2 engine missing');
+  assert(qa.noteVersion.version === '3.0.0', 'NOTE v3 engine missing');
   assert(qa.productVersion.version === '1.9.1', 'product layer missing');
-  assert(qa.wrappers.noteV2 && qa.wrappers.paid && qa.wrappers.integrated, 'NOTE v2 lost legacy engine metadata');
+  assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
   for (const [id, price] of Object.entries(expectedPrices)) assert(qa.products[id]?.price === price, `${id} price drift`);
@@ -151,12 +149,13 @@ function norm(v) {
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
     assert(row.notes.length === 6, `${row.concern}/${row.situation}/${row.mode}: note count ${row.notes.length}`);
-    assert(row.noteAudit?.version === '2.3.0' && row.noteAudit?.fingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v2 audit missing`);
-      assert((row.noteAudit?.sourceCount||0) >= 2 && (row.noteAudit?.pairPattern||'').length >= 18, `${row.concern}/${row.situation}/${row.mode}: behavioral specificity audit missing`);
-    assert(row.noteAudit?.primary?.cluster && row.noteAudit?.secondary?.cluster, `${row.concern}/${row.situation}/${row.mode}: evidence diagnosis missing`);
-    assert(row.noteAudit?.classicalFusion?.fingerprint, `${row.concern}/${row.situation}/${row.mode}: classical fusion fingerprint missing`);
-    for (const source of ['japyeong','jeokcheon','qiongtong','yongshin','sipsin','relations']) assert(row.noteAudit.classicalFusion.sources?.[source] === true, `${row.concern}/${row.situation}/${row.mode}: classical source not fused ${source}`);
-    assert((row.noteAudit?.classicalFusion?.signalCount||0) >= 8, `${row.concern}/${row.situation}/${row.mode}: too few classical signals`);
+    assert(row.noteAudit?.version === '3.0.0' && row.noteAudit?.structureFingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v3 audit missing`);
+    assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
+    assert(Array.isArray(row.noteAudit?.claims) && row.noteAudit.claims.length === 6, `${row.concern}/${row.situation}/${row.mode}: six causal claims missing`);
+    for (const claim of row.noteAudit.claims) {
+      assert(claim.rawFacts && claim.ditianRuleIds?.filter(Boolean).length && claim.zipingRuleIds?.filter(Boolean).length && claim.noteSentence,
+        `${row.concern}/${row.situation}/${row.mode}: auditable rule provenance missing`);
+    }
 
     const n1=String(row.notes[0]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
     const n2=String(row.notes[1]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
@@ -167,7 +166,7 @@ function norm(v) {
     assert(n2.length >= 140 && n2.length <= 1200, `${row.concern}/${row.situation}/${row.mode}: NOTE2 classical-fusion size drift (${n2.length})`);
     assert(n4.length >= 150 && n4.length <= 1400, `${row.concern}/${row.situation}/${row.mode}: NOTE4 classical-fusion action size drift (${n4.length})`);
     assert(n5.length >= 120 && n5.length <= 760, `${row.concern}/${row.situation}/${row.mode}: NOTE5 domain-fit size drift (${n5.length})`);
-    assert(/시작|첫 반응|보통/.test(n2) && /결국|그다음/.test(n2), `${row.concern}/${row.situation}/${row.mode}: NOTE2 lacks concrete behavior sequence`);
+    assert(/시작|보통/.test(n2) && /갈림길|여기서|그리고/.test(n2), `${row.concern}/${row.situation}/${row.mode}: NOTE2 lacks concrete causal sequence`);
     assert(row.notes[5]?.timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: NOTE6 situation metadata missing`);
     assert(norm(row.notes[5]?.timing?.firstBody) !== norm(row.notes[5]?.timing?.secondBody), `${row.concern}/${row.situation}/${row.mode}: NOTE6 timing roles duplicated`);
     assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: hard saju jargon leaked`);
@@ -175,9 +174,6 @@ function norm(v) {
     assert(!/(undefined|NaN|null)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: bad token leaked`);
     for (const note of row.notes) assert((note.badge||'').length <= 16, `${row.concern}/${row.situation}/${row.mode}: NOTE badge too long ${note.badge}`);
 
-    for (const h of [row.noteAudit.primary,row.noteAudit.secondary].filter(x=>x?.confidence==='high')) {
-      assert(new Set((h.evidence||[]).map(x=>x.source)).size >= 2, `${row.concern}/${row.situation}/${row.mode}: high-confidence claim lacks two signals`);
-    }
   }
 
   for (const concern of ['money','career','love','path','people','mental']) {
@@ -191,9 +187,8 @@ function norm(v) {
     const tRows=qa.situationRows.filter(r=>r.concern===concern && r.mode==='T');
     for (const fRow of fRows) {
       const tRow=tRows.find(r=>r.situation===fRow.situation);
-      assert(tRow && fRow.diagnosis.fingerprint===tRow.diagnosis.fingerprint, `${concern}/${fRow.situation}: F/T fact diagnosis diverged`);
-      assert(fRow.diagnosis.primary.cluster===tRow.diagnosis.primary.cluster && fRow.diagnosis.secondary.cluster===tRow.diagnosis.secondary.cluster,
-        `${concern}/${fRow.situation}: F/T core facts diverged`);
+      assert(tRow && fRow.diagnosis.structureFingerprint===tRow.diagnosis.structureFingerprint, `${concern}/${fRow.situation}: F/T natal reasoning diverged`);
+      assert(fRow.diagnosis.timingFingerprint===tRow.diagnosis.timingFingerprint, `${concern}/${fRow.situation}: F/T timing reasoning diverged`);
       assert(norm(fRow.notes[0].desc)!==norm(tRow.notes[0].desc), `${concern}/${fRow.situation}: F/T voice renderer did not differ`);
     }
   }
@@ -204,7 +199,7 @@ function norm(v) {
   assert(/이별|재회|헤어진/.test(loveF.breakup?.allText||''), 'breakup path lacks breakup context');
   assert(/썸|상대 반응/.test(loveF.crush?.allText||''), 'crush path lacks crush context');
 
-  assert(qa.chartCompare.diagA.fingerprint !== qa.chartCompare.diagB.fingerprint, 'different charts share NOTE v2 diagnosis fingerprint');
+  assert(qa.chartCompare.diagA.structureFingerprint !== qa.chartCompare.diagB.structureFingerprint, 'different charts share NOTE v3 structure fingerprint');
   assert(qa.chartCompare.diffs.filter(Boolean).length >= 4, 'different charts do not materially change enough NOTE outputs');
 
   // Production-like result path: verify catalog is actually visible and free-launch previews work.
