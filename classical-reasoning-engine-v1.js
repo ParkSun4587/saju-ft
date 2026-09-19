@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.0.0";
+  const VERSION = "1.0.1";
   const ELEMENTS = ["mok","hwa","to","geum","su"];
   const GAN_ELEMENT = {
     甲:"mok",乙:"mok",丙:"hwa",丁:"hwa",戊:"to",己:"to",庚:"geum",辛:"geum",壬:"su",癸:"su",
@@ -160,11 +160,13 @@
         if(typeof rule.applies==="function" && !rule.applies(ctx)) continue;
         const row=typeof rule.evaluate==="function" ? rule.evaluate(ctx) : null;
         if(!row) continue;
+        const resolvedSourceIds = (row.sourceIds || rule.sourceIds || []).filter(Boolean);
         out.push({
-          id:row.id||rule.id,
-          sourceIds:row.sourceIds||rule.sourceIds||[],
-          sources:sourceDetails(row.sourceIds||rule.sourceIds||[],sourcePack),
           ...row,
+          id: row.id || rule.id,
+          kind: row.kind || rule.kind || "unknown",
+          sourceIds: resolvedSourceIds,
+          sources: sourceDetails(resolvedSourceIds, sourcePack),
         });
       }catch(err){
         out.push({
@@ -256,7 +258,17 @@
   }
 
   function coreRuleIds(rows){
-    return rows.filter(r=>r.implementationStatus!=="error").map(r=>r.id);
+    return uniq(
+      rows
+        .filter(r=>r.implementationStatus!=="error")
+        .map(r=>r.id)
+        .filter(Boolean)
+    );
+  }
+
+  function validRuleIds(requested, fallback){
+    const ids=uniq((requested||[]).filter(Boolean));
+    return ids.length ? ids : uniq((fallback||[]).filter(Boolean));
   }
 
   function buildIntegratedClaims(ctx, ditianRows, zipingRows, cross){
@@ -283,8 +295,8 @@
         id:`NOTE${noteNum}_claim_core`,
         noteNum,
         rawFacts:{...monthFacts,...extraFacts},
-        ditianRuleIds:uniq(dRuleIds?.length?dRuleIds:dIds),
-        zipingRuleIds:uniq(zRuleIds?.length?zRuleIds:zIds),
+        ditianRuleIds:validRuleIds(dRuleIds,dIds),
+        zipingRuleIds:validRuleIds(zRuleIds,zIds),
         conditions:[
           ...(strength?.conditions||[]),
           ...(zMain?.conditions||[]),
