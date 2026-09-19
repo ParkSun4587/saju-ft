@@ -127,7 +127,9 @@ function norm(v) {
     for (const [mode, notes, audit] of [['F',row.notesF,row.auditF],['T',row.notesT,row.auditT]]) {
       assert(notes.length === 6, row.concern+'/'+row.situation+'/'+mode+': expected six notes');
       assert(audit?.version === '2.1.0' && audit?.fingerprint, row.concern+'/'+row.situation+'/'+mode+': NOTE v2 audit missing');
-      assert(audit.primary?.cluster && audit.secondary?.cluster, row.concern+'/'+row.situation+'/'+mode+': diagnosis cluster missing');\n      assert((audit.sourceCount||0) >= 2 && (audit.pairPattern||'').length >= 18, row.concern+'/'+row.situation+'/'+mode+': multi-signal behavioral portrait missing');\n      assert((audit.specificity?.cue||'').length >= 10 && (audit.specificity?.metric||'').length >= 10, row.concern+'/'+row.situation+'/'+mode+': situation-level specificity missing');
+      assert(audit.primary?.cluster && audit.secondary?.cluster, row.concern+'/'+row.situation+'/'+mode+': diagnosis cluster missing');
+      assert((audit.sourceCount||0) >= 2 && (audit.pairPattern||'').length >= 18, row.concern+'/'+row.situation+'/'+mode+': multi-signal behavioral portrait missing');
+      assert((audit.specificity?.cue||'').length >= 10 && (audit.specificity?.metric||'').length >= 10, row.concern+'/'+row.situation+'/'+mode+': situation-level specificity missing');
       const all=notes.map(n=>plain((n.title||'')+' '+(n.desc||'')+' '+(n.checklist||''))).join(' ');
       assert(!jargon.test(all), row.concern+'/'+row.situation+'/'+mode+': hard saju jargon leaked');
       assert(!/(undefined|NaN|null)/.test(all), row.concern+'/'+row.situation+'/'+mode+': bad token leaked');
