@@ -10,7 +10,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   page.on('console',m=>{ if(m.type()==='error') errors.push(m.text()); });
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load'});
   await page.waitForFunction(() =>
-    globalThis.__CLASSICAL_REASONING_V1__?.version==='1.0.0' &&
+    globalThis.__CLASSICAL_REASONING_V1__?.version==='1.0.1' &&
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='3.0.0' &&
     typeof buildClassicalReasoningV1==='function'
   );
@@ -171,6 +171,17 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         special:G.reasoning.ditian.findings.find(x=>x.id==='DTS_SPECIAL_120')||null,
         note:plain(G.notes[0].desc),
       },
+      runtimeIntegrity:{
+        ditianKinds:A1.reasoning.ditian.findings.map(x=>({id:x.id,kind:x.kind})),
+        claims:A1.audit.claims.map((claim,i)=>({
+          noteNum:claim.noteNum,
+          ditianRuleIds:claim.ditianRuleIds,
+          zipingRuleIds:claim.zipingRuleIds,
+          noteSentence:claim.noteSentence,
+          actualSentence:plain(A1.notes[i]?.desc),
+          sentenceMatches:claim.noteSentence===plain(A1.notes[i]?.desc),
+        })),
+      },
       versions:{
         note:globalThis.__CONCERN_NOTE_ENGINE_V2__?.version,
         profile:globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version,
@@ -179,7 +190,19 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     };
   });
 
-  assert(r.versions.note==='3.0.0'&&r.versions.profile==='2.0.0'&&r.versions.reasoning==='1.0.0','v3 runtime versions missing');
+  assert(r.versions.note==='3.0.0'&&r.versions.profile==='2.0.0'&&r.versions.reasoning==='1.0.1','v3 runtime versions missing');
+
+  const requiredKinds=['strength','root','flow','pressure'];
+  for(const kind of requiredKinds){
+    assert(r.runtimeIntegrity.ditianKinds.some(x=>x.kind===kind), 'runtime Ditian finding kind missing: '+kind+' '+JSON.stringify(r.runtimeIntegrity.ditianKinds));
+  }
+  const bridgeFinding=r.runtimeIntegrity.ditianKinds.find(x=>x.id==='DTS_BRIDGE_112');
+  if(bridgeFinding) assert(bridgeFinding.kind==='bridge','runtime bridge finding lost kind: '+JSON.stringify(bridgeFinding));
+  for(const claim of r.runtimeIntegrity.claims){
+    assert(claim.ditianRuleIds.filter(Boolean).length>0,'NOTE'+claim.noteNum+': no valid Ditian provenance');
+    assert(claim.zipingRuleIds.filter(Boolean).length>0,'NOTE'+claim.noteNum+': no valid Ziping provenance');
+    assert(claim.noteSentence && claim.sentenceMatches,'NOTE'+claim.noteNum+': audit noteSentence is not the actual rendered NOTE sentence');
+  }
 
   assert(r.A.sameDay && r.A.month1!==r.A.month2,'A setup invalid');
   assert(r.A.fp1!==r.A.fp2,'A: different month command did not change structural reasoning');
@@ -210,6 +233,14 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(!/종격|가종|전왕/.test(r.G.note),'G: unimplemented special structure leaked as a user-facing assertion');
 
   assert(errors.length===0,'browser errors: '+errors.join(' | '));
+  console.log('CLASSICAL_RUNTIME_KINDS',JSON.stringify(r.runtimeIntegrity.ditianKinds));
+  console.log('CLASSICAL_NOTE_PROVENANCE',JSON.stringify(r.runtimeIntegrity.claims.map(x=>({
+    noteNum:x.noteNum,
+    ditianRuleIds:x.ditianRuleIds,
+    zipingRuleIds:x.zipingRuleIds,
+    sentenceMatches:x.sentenceMatches,
+    noteSentence:x.noteSentence,
+  }))));
   console.log('CLASSICAL_REASONING_A_G_PASS',JSON.stringify({
     A:true,B:true,C:true,D:true,E:true,F:r.F.conflicts.length,G:r.G.unsupported.map(x=>x.ruleId)
   }));
