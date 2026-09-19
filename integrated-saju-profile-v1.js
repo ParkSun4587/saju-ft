@@ -241,15 +241,22 @@
     ].join("|");
 
     return {
-      version: "1.0.0",
+      version: "1.1.0",
       fingerprint,
       coverage,
       pillars,
       strength: {
         verdict,
+        extreme: strength.extreme || null,
+        score: safeNum(strength.score, null),
         supportRatio,
         supportForce: safeNum(strength.supportForce, null),
         drainForce: safeNum(strength.drainForce, null),
+        roots: Array.isArray(strength.roots) ? strength.roots : [],
+        monthCommand: strength.monthCommand || null,
+        components: Array.isArray(strength.components) ? strength.components : [],
+        evidence: Array.isArray(strength.evidence) ? strength.evidence : [],
+        method: strength.method || "",
         code: strengthText.code,
         F: strengthText.F,
         T: strengthText.T,
@@ -268,19 +275,28 @@
         dominant: gods.first,
         secondary: gods.second,
         counts: ap.sipsin?.count || {},
+        all: Array.isArray(ap.sipsin?.all) ? ap.sipsin.all : [],
         dominantHuman: TEN_GOD_BEHAVIOR[gods.first] || "상황을 오래 읽고 자기 기준을 찾는 성향",
         secondaryHuman: TEN_GOD_BEHAVIOR[gods.second] || "",
       },
       structure: {
         gyeokName: structure.gyeokName || data.gyeokguk?.name || "",
+        gyeokSipsin: structure.gyeokSipsin || data.gyeokguk?.sipsin || "",
+        basisGan: structure.basisGan || data.gyeokguk?.basisGan || "",
+        basis: structure.basis || data.gyeokguk?.basis || "",
         status,
         flow: structure.flow || data.gyeokStatus?.flow || "",
         sangsin,
         gisin,
         touchul: !!structure.touchul,
-        branchType: structure.branchType || "",
-        saryeongGan: structure.saryeongGan || "",
+        branchType: structure.branchType || data.gyeokguk?.branchType || "",
+        saryeongGan: structure.saryeongGan || data.gyeokguk?.saryeongGan || "",
+        hiddenGans: Array.isArray(data.gyeokguk?.hiddenGans) ? data.gyeokguk.hiddenGans : [],
+        visibleHidden: Array.isArray(data.gyeokguk?.visibleHidden) ? data.gyeokguk.visibleHidden : [],
+        candidates: Array.isArray(structure.candidates) ? structure.candidates : (Array.isArray(data.gyeokguk?.candidates) ? data.gyeokguk.candidates : []),
         candidateCount,
+        confidence: data.gyeokguk?.confidence || "",
+        statusEvidence: Array.isArray(data.gyeokStatus?.evidence) ? data.gyeokStatus.evidence : [],
         depthHuman: structureDepth(structure),
         statusHuman: statusHuman(status),
       },
@@ -289,14 +305,30 @@
         secondary,
         avoid,
         scores: yong.scores || {},
+        detail: yong.detail || {},
+        strengthVerdict: yong.strengthVerdict || verdict,
         bridge,
         climateReasons,
         climateHuman: climateHuman(climateReasons),
+        method: yong.method || "",
+        caveat: yong.caveat || "",
       },
-      relations: { hasClash },
+      relations: {
+        hasClash,
+        raw: ap.relations || {},
+      },
       behavior: {
         weakStat,
         weakStatHuman: statHuman(weakStat),
+        stats: data.stats || ap.stats || {},
+      },
+      calendarMeta: data.calendarMeta || null,
+      classical: {
+        japyeong: classical.japyeong || null,
+        jeokcheon: classical.jeokcheon || null,
+        qiongtong: classical.qiongtong || null,
+        yongshin: classical.yongshin || null,
+        elements: classical.elements || null,
       },
       timing: { raw: timing, hash: timingHash },
       audit: {
@@ -408,7 +440,7 @@
 
   global.buildIntegratedSajuProfile = buildIntegratedSajuProfile;
   global.applyIntegratedSajuToNotes = applyIntegratedSajuToNotes;
-  global.__INTEGRATED_SAJU_PROFILE_V1__ = { version: "1.0.0" };
+  global.__INTEGRATED_SAJU_PROFILE_V1__ = { version: "1.1.0" };
 
   const base = global.generateConcernNotes;
   if (typeof base === "function" && !base.__integratedProfileWrapped) {
