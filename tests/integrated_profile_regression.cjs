@@ -19,7 +19,7 @@ function norm(v) {
   await page.waitForFunction(() =>
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.0.0' &&
     globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version === '2.0.0' &&
-    globalThis.__CLASSICAL_REASONING_V1__?.version === '1.0.0' &&
+    globalThis.__CLASSICAL_REASONING_V1__?.version === '1.0.1' &&
     typeof buildIntegratedSajuProfile === 'function' &&
     typeof buildConcernDiagnosisV2 === 'function' &&
     typeof buildClassicalReasoningV1 === 'function' &&
@@ -101,7 +101,7 @@ function norm(v) {
 
   assert(result.engine?.version === '3.0.0', 'NOTE v3 engine missing');
   assert(result.integrated?.version === '2.0.0', 'integrated profile v2 missing');
-  assert(result.reasoning?.version === '1.0.0', 'classical reasoning engine missing');
+  assert(result.reasoning?.version === '1.0.1', 'classical reasoning engine missing');
   assert(result.wrapper, 'classical-causal NOTE wrapper missing');
   assert(result.exactPillars.join(',') === '戊寅,甲寅,己亥,乙丑', 'canonical pillars drift: '+result.exactPillars.join(','));
   assert(JSON.stringify(result.exactRaw) === JSON.stringify({mok:4,hwa:0,to:3,geum:0,su:1}), 'canonical raw elements drift');
