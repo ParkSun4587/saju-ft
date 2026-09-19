@@ -6,7 +6,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r,ms));
 async function deployed(page) {
   for (let i=0;i<36;i++) {
     try {
-      await page.goto(BASE + '?smoke=v18-' + i, {waitUntil:'domcontentloaded',timeout:30000});
+      await page.goto(BASE + '?smoke=v19-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '1.7.0' &&
@@ -35,8 +35,8 @@ async function enter(page, mode, concern, situation) {
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
-  if (mode==='F') assert(firstState.sisterText.includes('편하게 말해줘')&&firstState.sisterText.includes('차근차근 풀어줄게')&&!firstState.sisterText.includes('아이고'),'F input is not careful sister counseling '+firstState.sisterText);
-  if (mode==='T') assert(firstState.sisterText.includes('대충 보진 않아')&&firstState.sisterText.includes('하나씩 정리해줄게')&&!firstState.sisterText.includes('시간 낭비'),'T input is not direct-but-caring sister counseling '+firstState.sisterText);
+  if (mode==='F') assert(firstState.sisterText.includes('왔구나 ㅎㅎ')&&firstState.sisterText.includes('깊게 봐줄게')&&!firstState.sisterText.includes('왔네'),'F input is not close-sister F tone '+firstState.sisterText);
+  if (mode==='T') assert(firstState.sisterText.includes('쓸데없이 겁주는 말')&&firstState.sisterText.includes('좋은 건 좋다, 아닌 건 아니다')&&!firstState.sisterText.includes('왔네'),'T input is not tsundere/direct-care tone '+firstState.sisterText);
   await page.fill('#nameInput','테스트');
   const label = concern === 'love' ? '연애 · 썸' : '마음 · 스트레스';
   await page.locator('#concernGrid .concern-chip').filter({hasText:label}).click();
@@ -86,8 +86,8 @@ async function inspect(page, mode) {
   assert(r.n5.length>=330,mode+' paid NOTE5 too short '+r.n5.length);
   assert(r.n1.includes('사주 전체'),mode+' NOTE1 personalization missing');
   assert(/반복|패턴|같은 데서/.test(r.n2),mode+' NOTE2 pattern missing');
-  if (mode==='F') assert(r.oheng.includes('언니가 보니까')&&r.oheng.includes('잘하는 힘과 놓치기 쉬운 힘')&&!r.oheng.includes('로아가'),'F oheng counseling copy '+r.oheng);
-  if (mode==='T') assert(r.oheng.includes('여기서 재밌는 건')&&r.oheng.includes('반복 패턴의 힌트')&&!r.oheng.includes('서아가'),'T oheng counseling copy '+r.oheng);
+  if (mode==='F') assert(r.oheng.includes('언니가 보면')&&r.oheng.includes('강한 쪽은 자연스럽게 쓰고')&&r.oheng.length<=210&&!r.oheng.includes('로아가'),'F oheng concise copy '+r.oheng);
+  if (mode==='T') assert(r.oheng.includes('정리하면')&&r.oheng.includes('반복 패턴은 이 강약 차이')&&r.oheng.length<=190&&!r.oheng.includes('서아가'),'T oheng concise copy '+r.oheng);
   assert(r.count===4&&r.visible===4,'premium products hidden '+JSON.stringify(r));
   assert(r.catalog.includes('다른 리포트도 있어')&&!r.catalog.includes('다른 리포트 3개 보기'),'old product disclosure remains');
   assert(r.catalog.includes('내 사주 완전판')&&!r.catalog.includes('어떤언니 올인원'),'all-in-one product name did not update');
@@ -97,8 +97,8 @@ async function inspect(page, mode) {
   assert(!r.badges.some(x=>x.includes('·')||x.includes('핵심')||x.includes('사람 필터')||x.includes('7일 처방')),
     'old NOTE badge wording remains '+JSON.stringify(r.badges));
   assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
-  if (mode==='F') assert(r.resultGreeting.includes('사주를 같이 봤어')&&r.resultGreeting.includes('천천히 풀어줄게')&&r.resultGreeting.length<=105,'F result counseling intro drift '+r.resultGreeting);
-  if (mode==='T') assert(r.resultGreeting.includes('기준으로 다 봤어')&&r.resultGreeting.includes('하나씩 정리해줄게')&&r.resultGreeting.length<=100,'T result counseling intro drift '+r.resultGreeting);
+  if (mode==='F') assert(r.resultGreeting.includes('다 봤어 ㅎㅎ')&&r.resultGreeting.includes('어려운 말 없이 하나씩 풀어줄게')&&r.resultGreeting.length<=105,'F result close-sister intro drift '+r.resultGreeting);
+  if (mode==='T') assert(r.resultGreeting.includes('뭐가 진짜 문제고')&&r.resultGreeting.includes('좋은 건 좋다, 아닌 건 아니다')&&r.resultGreeting.length<=105,'T result tsundere intro drift '+r.resultGreeting);
   return r;
 }
 
@@ -126,7 +126,7 @@ async function inspect(page, mode) {
   assert(captureOpen.parent==='storyCaptureCardSlot'&&captureOpen.topInside&&captureOpen.layerZ>captureOpen.shareZ,
     'live capture mode does not isolate the original card '+JSON.stringify(captureOpen));
   const guideText=await page.locator('#storyCaptureChrome').innerText();
-  assert(guideText.includes('인스타 스토리에 올려봐')&&guideText.includes('7초 뒤 결과로 자동으로 돌아갈게'),'live F capture prep should be short and sister-like');
+  assert(guideText.includes('인스타 스토리에 올려봐')&&guideText.includes('화면을 한 번 누르면 결과로 돌아가'),'live F capture prep should be short and tap-controlled');
   const liveCardBox=await page.locator('#storyCard').boundingBox();
   assert(liveCardBox&&liveCardBox.width>=350&&liveCardBox.width<=390&&Math.abs(liveCardBox.height/liveCardBox.width-16/9)<0.03,
     'live capture card is not viewport-sized '+JSON.stringify(liveCardBox));
@@ -141,9 +141,16 @@ async function inspect(page, mode) {
   await page.locator('#storyCaptureReady').click();
   await page.waitForFunction(()=>getComputedStyle(document.getElementById('storyCaptureChrome')).display==='none',null,{timeout:5000});
   assert(await page.locator('#unniKakaoCardQualityGuide').count()===0,'old rendered-card quality warning exists');
-  await page.waitForFunction(()=>getComputedStyle(document.getElementById('storyCaptureMode')).display==='none',null,{timeout:10000});
-  assert(await page.locator('#shareModal').isHidden(),'timed capture return should go directly to result');
-  assert(await page.locator('#resultSection').isVisible(),'timed capture return lost the result view');
+  assert(await page.locator('#storyCaptureMode').isVisible(),'clean capture should remain until user taps');
+  const captureSource=await page.evaluate(()=>({
+    requestFullscreen:document.documentElement.requestFullscreen ? String(enterStoryCaptureCleanView).includes('requestFullscreen') : false,
+    timer:String(enterStoryCaptureCleanView).includes('7000'),
+  }));
+  assert(!captureSource.requestFullscreen&&!captureSource.timer,'capture should not use fullscreen API or timed return '+JSON.stringify(captureSource));
+  await page.locator('#storyCaptureMode').click({position:{x:4,y:4},force:true});
+  await page.waitForFunction(()=>getComputedStyle(document.getElementById('storyCaptureMode')).display==='none',null,{timeout:5000});
+  assert(await page.locator('#shareModal').isHidden(),'tap-to-return should go directly to result');
+  assert(await page.locator('#resultSection').isVisible(),'tap-to-return lost the result view');
 
   await page.locator('#unniProductLadder [data-unni-product="full_saju"]').click();
   await page.waitForSelector('#unniProductModal',{state:'visible'});
