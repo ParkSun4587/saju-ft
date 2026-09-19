@@ -103,7 +103,7 @@ async function load(page) {
       };
     });
     assert(r.manseScriptSrc.includes('manse-korea-v2.js?v=2.2.0'), `stale manse asset URL ${r.manseScriptSrc}`);
-    assert(r.runtimeVersion === '2.3.0', `stale manse runtime ${r.runtimeVersion}`);
+    assert(r.runtimeVersion === '2.2.0', `stale manse runtime ${r.runtimeVersion}`);
     assert(r.staleGuard.code === 'MANSE_ENGINE_STALE', `stale engine did not fail closed ${JSON.stringify(r.staleGuard)}`);
     assert(r.exact.year === '戊寅', `1998 year drift ${r.exact.year}`);
     assert(r.exact.month === '甲寅', `1998 month drift ${r.exact.month}`);
