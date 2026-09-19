@@ -10,13 +10,13 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.3.0' &&
+        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.0.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.1' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach NOTE v2 / paid 1.5.0 / products 1.9.1');
+  throw new Error('production did not reach NOTE v3 / paid 1.5.0 / products 1.9.1');
 }
 
 async function enter(page, mode, concern, situation) {
@@ -116,15 +116,15 @@ async function inspect(page, mode) {
       },
     };
   },mode);
-  assert(r.noteV2Audit?.version==='2.3.0'&&r.noteV2Audit?.fingerprint,mode+' NOTE v2 audit missing');
-  assert(r.noteV2Audit?.primary?.cluster&&r.noteV2Audit?.secondary?.cluster,mode+' NOTE v2 diagnosis clusters missing');
-  assert(r.noteV2Audit?.classicalFusion?.fingerprint,mode+' classical fusion fingerprint missing');
-  for(const source of ['japyeong','jeokcheon','qiongtong','yongshin','sipsin','relations']) assert(r.noteV2Audit.classicalFusion.sources?.[source]===true,mode+' classical source not fused '+source);
+  assert(r.noteV2Audit?.version==='3.0.0'&&r.noteV2Audit?.structureFingerprint,mode+' NOTE v3 audit missing');
+  assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
+  assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six causal claims missing');
+  for(const claim of r.noteV2Audit.claims) assert(claim.ditianRuleIds?.filter(Boolean).length&&claim.zipingRuleIds?.filter(Boolean).length&&claim.noteSentence,mode+' claim provenance missing');
   assert(r.n1.length>=140&&r.n1.length<=1200,mode+' NOTE1 classical-fusion size drift '+r.n1.length);
   assert(r.n2.length>=140&&r.n2.length<=1200,mode+' NOTE2 classical-fusion size drift '+r.n2.length);
   assert(r.n4.length>=150&&r.n4.length<=1400,mode+' NOTE4 classical-fusion action size drift '+r.n4.length);
   assert(r.n5.length>=120&&r.n5.length<=760,mode+' NOTE5 domain-fit size drift '+r.n5.length);
-  assert(/시작|첫 반응|보통/.test(r.n2)&&/결국|그다음/.test(r.n2),mode+' NOTE2 behavior chain missing '+r.n2);
+  assert(/시작|보통/.test(r.n2)&&/갈림길|여기서|그리고/.test(r.n2),mode+' NOTE2 causal chain missing '+r.n2);
   assert(r.note6Timing?.concernSituation,mode+' NOTE6 situation metadata missing');
   assert(norm(r.note6Timing?.firstBody)!==norm(r.note6Timing?.secondBody),mode+' NOTE6 timing roles duplicated');
   if (mode==='F') assert(r.oheng.includes('이 제일 강해')&&r.oheng.includes('같은 장면이 반복되는 부분이 보여')&&r.oheng.includes('바로 아래 비밀 메모')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng secret-note teaser '+r.oheng);
