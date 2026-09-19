@@ -43,29 +43,29 @@
       id: "concern_bundle3",
       name: "고민 3개 더 깊게",
       price: 2900,
-      badge: "고민 3개 추가상담",
-      desc: "지금 본 고민 말고 3가지를 골라. 각 고민마다 이유 → 반복패턴 → 진짜 문제 → 7일 처방 → 사람 기준 → 시기까지 NOTE 1~6, 총 18개로 이어서 봐.",
+      badge: "다른 고민도 3개 더",
+      desc: "지금 본 방식 그대로, 궁금한 고민 3개를 골라 원인·반복패턴·진짜 문제·행동법·사람 기준·시기까지 이어서 봐.",
     },
     full_saju: {
       id: "full_saju",
       name: "내 전체 사주판",
       price: 4900,
-      badge: "내 사용설명서 12챕터",
-      desc: "지금 고민 하나를 반복하는 리포트가 아니야. 타고난 기질·강점·지치는 방식·결정법·일·돈·사랑·관계·회복·변화 대응까지 내 사주 전체를 12개 챕터로 이어서 봐.",
+      badge: "내 사주 전체 보기",
+      desc: "내 성향부터 일·돈·연애·관계·회복까지, 고민 하나가 아니라 내 사주 전체 흐름을 한 번에 봐.",
     },
     compatibility: {
       id: "compatibility",
       name: "우리 둘 궁합",
       price: 5900,
-      badge: "둘 사이 16챕터",
-      desc: "두 사람의 사주를 각각 계산해서 왜 끌리는지부터 대화·갈등·화해·애정표현·연락·생활·돈·경계·오래 가는 방식까지 16개 챕터로 봐.",
+      badge: "우리 둘 깊게 보기",
+      desc: "왜 끌리는지부터 연락·대화·싸움·화해·애정표현·생활·돈·오래 가는 방식까지 둘 사이를 깊게 봐.",
     },
     all_in_one: {
       id: "all_in_one",
       name: "내 사주 완전판",
       price: 9900,
-      badge: "전체사주 12 + 고민 NOTE 36",
-      desc: "내 전체 사주판 12개 챕터에 돈·일·연애·진로·관계·마음 6가지 고민 NOTE 36개까지 한 번에 이어서 보는 완전판이야. 궁합만 별도 상품이야.",
+      badge: "내 사주 전부 보기",
+      desc: "내 성향·일·돈·연애·관계·마음까지 전체 사주와 6가지 고민을 한 번에 이어서 봐. 궁합만 별도야.",
     },
   };
 
@@ -919,7 +919,7 @@
       return `<div style="display:grid;gap:10px">
         <div><div style="font-size:11px;font-weight:900;color:#475569;margin:0 0 5px">상대 이름</div><input id="partnerName" placeholder="이름 또는 별명" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-radius:12px"></div>
         <div><div style="font-size:11px;font-weight:900;color:#475569;margin:0 0 5px">상대 생년월일</div><input id="partnerBirth" inputmode="numeric" maxlength="8" placeholder="예: 1999년 2월 14일 → 19990214" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-radius:12px"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><select id="partnerGender" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="female">여성</option><option value="male">남성</option></select><select id="partnerCalendar" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="solar">양력 생일</option><option value="lunar">음력 생일</option></select></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><select id="partnerGender" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="female">여성</option><option value="male">남성</option></select><select id="partnerCalendar" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="solar">양력</option><option value="lunar">음력</option></select></div>
         <div style="padding:12px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0">
           <div style="font-size:11px;font-weight:900;color:#334155;margin-bottom:7px">상대가 태어난 시간 <span style="font-weight:700;color:#94a3b8">(알면 선택)</span></div>
           <div style="display:grid;grid-template-columns:.9fr 1fr 1fr;gap:6px">
@@ -928,7 +928,6 @@
             <select id="partnerMinute" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:10px;background:white"><option value="">몇 분</option>${minuteOpts}</select>
           </div>
           <label style="display:flex;align-items:center;gap:7px;margin-top:9px;font-size:11px;font-weight:800;color:#64748b;cursor:pointer"><input id="partnerTimeUnknown" type="checkbox"> 태어난 시간을 몰라요</label>
-          <div style="font-size:10px;line-height:1.5;color:#94a3b8;margin-top:6px">예: 오후 3시 20분이면 ‘오후 · 3시 · 20분’만 고르면 돼.</div>
         </div>
       </div>`;
     }
@@ -1117,10 +1116,10 @@
   }
 
   const PRODUCT_SHORT = {
-    concern_bundle3: "다른 고민 3개 · 이유부터 처방·시기까지 NOTE 18개",
-    full_saju: "일·돈·연애·관계·회복까지 내 사주 사용설명서 12챕터",
-    compatibility: "끌림·대화·갈등·연락·돈·경계·장기 관계까지 16챕터",
-    all_in_one: "전체사주 12챕터 + 6가지 고민 NOTE 36개",
+    concern_bundle3: "지금 본 방식 그대로, 다른 고민 3개도 깊게",
+    full_saju: "내 성향·일·돈·연애·관계·회복까지 한 번에",
+    compatibility: "끌림부터 연락·싸움·화해·오래 가는 법까지",
+    all_in_one: "전체 사주 + 돈·일·연애·관계·마음 고민까지 전부",
   };
 
   function productButtonHtml(p, { recommended = false, secondary = false } = {}) {
@@ -1176,7 +1175,7 @@
 
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
-  global.__UNNI_PRODUCTS_V1__ = { version: "1.7.0", products: PRODUCTS };
+  global.__UNNI_PRODUCTS_V1__ = { version: "1.8.0", products: PRODUCTS };
 
   const observer = new MutationObserver(() => renderCatalog());
   if (document.documentElement) observer.observe(document.documentElement, { childList: true, subtree: true });
