@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "2.2.0";
+  const VERSION = "2.3.0";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   const SITUATIONS = {
@@ -314,228 +314,190 @@
 
   const ELEMENT_LABEL = { mok:"목", hwa:"화", to:"토", geum:"금", su:"수" };
   const ELEMENT_ORDER = ["mok","hwa","to","geum","su"];
-  const GOD_PLAIN = {
-    "비견":"자기 기준·자기주도", "겁재":"경쟁·비교·확보", "식신":"꾸준한 생산·생활 안정",
-    "상관":"표현·문제제기·변화", "정재":"관리·안정·정해진 보상", "편재":"기회·거래·확장",
-    "정관":"규칙·책임·평가", "편관":"압박·돌파·위기 대응", "정인":"학습·정리·보호",
-    "편인":"깊은 분석·비정형 해석",
-  };
-  const GOD_ORDER = ["비견","겁재","식신","상관","정재","편재","정관","편관","정인","편인"];
-  const STRUCTURE_PLAIN = {
-    "정관격":"규칙·책임·평가를 중심으로 힘이 모이는 구조",
-    "편관격":"압박·경쟁·돌파에서 힘이 강하게 작동하는 구조",
-    "정재격":"관리·안정·실속을 중심으로 힘이 모이는 구조",
-    "편재격":"기회·거래·확장을 중심으로 힘이 모이는 구조",
-    "식신격":"꾸준한 생산·생활 리듬·결과물을 만드는 구조",
-    "상관격":"표현·문제제기·새 방식으로 바꾸는 힘이 중심인 구조",
-    "정인격":"배움·정리·보호·축적이 중심인 구조",
-    "편인격":"깊게 파고드는 해석·비정형 학습이 중심인 구조",
-    "건록격":"자기 힘·독립성·자기 기준이 중심인 구조",
-    "양인격":"결단·경쟁·강한 자기 힘이 중심인 구조",
-    "겁재격":"경쟁·확보·자기 몫을 지키는 힘이 중심인 구조",
-    "평격":"한 가지 중심보다 여러 힘이 함께 작동하는 구조",
-  };
-  const STATUS_PLAIN = {
-    "성격":"중심 흐름을 돕는 신호가 실제로 드러나 있고, 방해 신호는 겉에 드러나지 않은 상태",
-    "성중유패":"중심 흐름을 돕는 신호와 방해하는 신호가 동시에 드러난 상태",
-    "파격":"중심 흐름을 돕는 신호보다 방해하는 신호가 더 직접 드러난 상태",
-    "평격":"도움과 방해가 한쪽으로 뚜렷하게 기울지 않은 상태",
-  };
-  const FLOW_PLAIN = {
-    "순용":"현재 중심 흐름을 살려 쓰는 쪽",
-    "역용":"그 힘을 그대로 밀기보다 제어·조절해서 쓰는 쪽",
-    "복합":"상황에 따라 살릴 힘과 누를 힘을 나눠야 하는 쪽",
-    "중립":"한 방향으로 고정하기보다 전체 균형을 같이 보는 쪽",
-  };
-  const BRANCH_PLAIN = {
-    "왕지":"한 힘이 중심을 강하게 잡는 달",
-    "생지":"움직임과 시작 성격이 강한 달",
-    "고지":"여러 힘이 저장되고 섞이는 달",
-    "기타":"한 가지 성격으로 단정하기 어려운 달",
-  };
-  const GROUP_PLAIN = {
-    self:"자기 힘", print:"받쳐주는 힘", output:"표현·생산으로 빠지는 힘",
-    wealth:"결과·돈으로 쓰이는 힘", officer:"책임·압박으로 쓰이는 힘",
+  const STRUCTURE_CLUSTER = {
+    "정관격":"responsibility","편관격":"intensity","정재격":"stability","편재격":"expansion",
+    "식신격":"stability","상관격":"expression","정인격":"analysis","편인격":"analysis",
+    "건록격":"boundary","양인격":"intensity","겁재격":"comparison","평격":"stability",
   };
 
-  function num(v, digits=2) {
-    const n=Number(v);
-    if (!Number.isFinite(n)) return null;
-    return Number(n.toFixed(digits));
-  }
-
-  function elemValues(obj) {
-    return ELEMENT_ORDER.map(k => ELEMENT_LABEL[k]+" "+(num(obj?.[k],2) ?? 0)).join(" · ");
-  }
-
-  function godPlain(v) {
-    return GOD_PLAIN[v] || (v ? "계산된 반응 "+v : "뚜렷하게 잡힌 반응 없음");
-  }
-
-  function basisPlain(v) {
-    const map={
-      "월령 본기":"태어난 달의 가장 중심 힘을 기준으로 잡음",
-      "왕지 본기 고정":"태어난 달의 중심 힘을 그대로 기준으로 잡음",
-      "고지 사령":"태어난 달 안에서 그 시점에 실제로 힘을 쓰는 쪽을 기준으로 잡음",
-      "고지 투출 지장간":"태어난 달 안쪽 힘 중 밖으로 드러난 쪽을 기준으로 잡음",
-      "생지 본기":"태어난 달의 중심 힘을 기준으로 잡음",
-      "생지 투출 지장간":"태어난 달 안쪽 힘 중 밖으로 드러난 쪽을 기준으로 잡음",
-      "자료 부족":"확정할 자료가 부족해 한쪽으로 정하지 않음",
-    };
-    return map[v] || (v ? "태어난 달의 중심을 "+v+" 방식으로 잡음" : "태어난 달의 중심 기준이 별도로 잡히지 않음");
-  }
-
-  function strengthPlain(v) {
-    if (v==="신강") return "나를 받쳐주는 힘이 밖으로 쓰이는 힘보다 우세한 쪽";
-    if (v==="신약") return "나를 받쳐주는 힘보다 밖으로 쓰이는 힘이 더 큰 쪽";
-    return "나를 받치는 힘과 밖으로 쓰이는 힘이 비교적 비슷한 쪽";
-  }
-
-  function groupTotals(components) {
-    const out={self:0,print:0,output:0,wealth:0,officer:0};
-    for(const row of (components||[])) if(out[row?.group]!==undefined) out[row.group]+=Number(row.amount||0);
-    return Object.entries(out).map(([k,v])=>GROUP_PLAIN[k]+" "+num(v,2)).join(" · ");
-  }
-
-  function timingFacts(raw) {
-    const rows=Object.values(raw||{}).filter(Boolean);
-    if(!rows.length) return "현재 해·달 흐름 데이터가 비어 있어서 시기 판단은 과하게 확정하지 않았어.";
-    const years=rows.map(x=>x.year).filter(Boolean);
-    const months=rows.reduce((s,x)=>s+(Array.isArray(x.wolun)?x.wolun.length:0),0);
-    return "시기 계산에는 "+years.join("·")+"년의 실제 흐름과 총 "+months+"개월 데이터를 넣었어.";
-  }
-
-  function appStatsText(stats) {
-    const labels={wealth:"돈",mental:"마음",drive:"실행",network:"관계"};
-    return ["wealth","mental","drive","network"].map(k=>labels[k]+" "+(num(stats?.[k],1) ?? 0)).join(" · ");
-  }
-
-  function sipsinDistribution(counts) {
-    return GOD_ORDER.map(k=>GOD_PLAIN[k]+" "+Number(counts?.[k]||0)).join(" · ");
-  }
-
-  function helpDrainText(v) {
-    return godPlain(v);
-  }
-
-  function factHash(value) {
+  function stableHash(value) {
     const s=JSON.stringify(value);
     let h=2166136261;
     for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); }
     return (h>>>0).toString(16).padStart(8,"0");
   }
 
-  function buildFactLedger(d, data) {
-    const p=d.profile||{};
-    const facts=[];
-    const push=(layer,note,text,raw)=>{
-      if(!text) return;
-      facts.push({layer,note,text,raw,signature:factHash(raw)});
-    };
-    const raw=p.elements?.raw||{};
-    const influence=p.elements?.influence||{};
-    const strength=p.strength||{};
-    const structure=p.structure||{};
-    const balance=p.balance||{};
-    const hourKnown=!!p.pillars?.hour;
-    const dayElement=ELEMENT_LABEL[data?.dayOheng]||"확인 불가";
-
-    push("pillars",1,
-      "기본 계산축은 태어난 해·달·날"+(hourKnown?"·시간까지 4개":" 3개")+"야. "+(hourKnown?"시간축까지 실제 분석에 포함했어.":"태어난 시간을 모르는 경우라 시간축은 억지로 만들지 않고 제외했어.")+" 나 자신을 나타내는 중심 오행은 "+dayElement+"로 잡혔어.",
-      {pillars:p.pillars||{},hourKnown,dayOheng:data?.dayOheng||""});
-
-    push("rawElements",1,
-      "겉으로 드러난 오행 개수는 "+elemValues(raw)+"야. 0인 값도 그대로 0으로 봤어.",
-      raw);
-
-    push("influenceElements",1,
-      "태어난 달·숨은 힘·자리 가중치까지 반영한 실제 세력값은 "+elemValues(influence)+"야. 가장 강한 쪽은 "+(ELEMENT_LABEL[p.elements?.influenceRank?.strongest]||"확인 불가")+", 가장 약한 쪽은 "+(ELEMENT_LABEL[p.elements?.influenceRank?.weakest]||"확인 불가")+"로 계산됐어.",
-      {influence,strongest:p.elements?.influenceRank?.strongest,weakest:p.elements?.influenceRank?.weakest});
-
-    const ratio=Math.round(Number(strength.supportRatio||0)*1000)/10;
-    push("strength",1,
-      "전체 힘의 방향은 "+strengthPlain(strength.verdict)+"이야. 나를 받치는 비율은 "+ratio+"%"+(Number.isFinite(Number(strength.score))?"이고 균형 점수는 "+num(strength.score,2):"")+"야"+(strength.extreme?" — 한쪽 치우침도 큰 편으로 잡혔어.":"."),
-      {verdict:strength.verdict,extreme:strength.extreme,score:strength.score,supportRatio:strength.supportRatio});
-
-    push("strengthForces",1,
-      "세부 힘은 받쳐주는 쪽 "+(num(strength.supportForce,2) ?? 0)+" / 밖으로 쓰이는 쪽 "+(num(strength.drainForce,2) ?? 0)+"이야. 구성값을 풀면 "+groupTotals(strength.components)+"이고, 자기 힘으로 이어지는 뿌리 계산은 "+(strength.roots?.length||0)+"곳이 잡혔어.",
-      {supportForce:strength.supportForce,drainForce:strength.drainForce,roots:strength.roots||[],monthCommand:strength.monthCommand||null,components:strength.components||[]});
-
-    push("sipsin",1,
-      "반응 분포도 하나만 뽑지 않고 전부 봤어. "+sipsinDistribution(p.sipsin?.counts||{})+". 이 중 가장 많이 반복된 반응은 "+godPlain(p.sipsin?.dominant)+", 다음은 "+godPlain(p.sipsin?.secondary)+" 쪽이야.",
-      {counts:p.sipsin?.counts||{},all:p.sipsin?.all||[],dominant:p.sipsin?.dominant,secondary:p.sipsin?.secondary});
-
-    push("relations",2,
-      p.relations?.hasClash
-        ? "기둥끼리 정면으로 부딪히는 관계가 실제 계산에 잡혀 있어. 그래서 변수가 겹칠 때 평소보다 판단 폭이 커지는 쪽을 같이 봐야 해."
-        : "기둥끼리 정면으로 부딪히는 관계는 계산상 잡히지 않았어. 큰 충돌 하나를 억지 원인으로 만들지 않고 다른 반복 신호를 더 중요하게 봤어.",
-      {hasClash:!!p.relations?.hasClash,raw:p.relations?.raw||{}});
-
-    push("touchul",2,
-      structure.touchul
-        ? "태어난 달에서 잡힌 중심 힘이 겉에도 실제로 드러난 편이야. 속 기준과 밖으로 보이는 행동의 연결이 비교적 빠른 쪽으로 계산했어."
-        : "태어난 달에서 잡힌 중심 힘이 겉에 바로 드러난 형태는 아니야. 안쪽에서 작동하는 기준과 밖 행동 사이에 간격이 있을 수 있는 쪽으로 계산했어.",
-      {touchul:!!structure.touchul});
-
-    push("appStats",2,
-      "앱 안에서 따로 계산한 네 가지 생활 수치도 버리지 않았어. "+appStatsText(p.behavior?.stats||{})+". 이 네 값 중 상대적으로 약한 축은 "+(p.behavior?.weakStatHuman||"한쪽으로 뚜렷하게 잡히지 않음")+"으로 반영했어.",
-      {stats:p.behavior?.stats||{},weakStat:p.behavior?.weakStat||""});
-
-    const seasonDirection=p.classical?.qiongtong?.direction || "";
-    push("monthSeason",3,
-      "태어난 달의 계절 조건은 "+(seasonDirection||"극단적인 덥고 차갑고 건조하고 습한 보정이 크게 필요하지 않은 쪽")+"으로 계산했어.",
-      {monthBranch:p.classical?.japyeong?.monthBranch||p.pillars?.month?.zhi||"",direction:seasonDirection});
-
-    push("hiddenAndCommanding",3,
-      "태어난 달의 중심을 고를 때는 "+(BRANCH_PLAIN[structure.branchType]||BRANCH_PLAIN["기타"])+"로 보고, "+basisPlain(structure.basis)+". 가능한 중심 후보는 "+Number(structure.candidateCount||0)+"개였고, 그중 실제 밖으로 드러난 달 안쪽 힘은 "+Number(structure.visibleHidden?.length||0)+"개였어.",
-      {branchType:structure.branchType,basis:structure.basis,basisGan:structure.basisGan,saryeongGan:structure.saryeongGan,hiddenGans:structure.hiddenGans||[],visibleHidden:structure.visibleHidden||[],candidates:structure.candidates||[],confidence:structure.confidence});
-
-    push("gyeok",3,
-      "사주 전체의 중심 구조는 "+(STRUCTURE_PLAIN[structure.gyeokName]||"한 가지 행동축만으로 단정하지 않는 구조")+"로 잡혔어. 중심 흐름은 "+(FLOW_PLAIN[structure.flow]||"전체 균형을 같이 보는 쪽")+"이야.",
-      {gyeokName:structure.gyeokName,gyeokSipsin:structure.gyeokSipsin,flow:structure.flow});
-
-    push("gyeokStatus",3,
-      "그 중심 구조가 실제 사주에서 얼마나 잘 이어지는지도 따로 봤어. 결과는 "+(STATUS_PLAIN[structure.status]||STATUS_PLAIN["평격"])+"으로 계산됐어.",
-      {status:structure.status,statusEvidence:structure.statusEvidence||[]});
-
-    push("sangsinGisin",3,
-      "중심 흐름을 도와 실제로 드러난 반응은 "+(structure.sangsin?helpDrainText(structure.sangsin):"별도로 잡히지 않았고")+"; 반대로 흐름을 깨는 쪽으로 실제 드러난 반응은 "+(structure.gisin?helpDrainText(structure.gisin):"별도로 잡히지 않았어")+". 둘 다 없으면 없는 그대로 두고 다른 신호를 만들어 넣지 않았어.",
-      {sangsin:structure.sangsin||"",gisin:structure.gisin||""});
-
-    push("yongshin",4,
-      "균형을 되찾는 1순위는 "+(ELEMENT_LABEL[balance.primary]||"확인 불가")+" 쪽이야. 행동으로 바꾸면 "+(ACTION_BY_ELEMENT[balance.primary]||ACTION_BY_ELEMENT.to)+"이 먼저야.",
-      {primary:balance.primary});
-
-    push("yongshinSecondaryAvoid",4,
-      "2순위 보완은 "+(ELEMENT_LABEL[balance.secondary]||"확인 불가")+"이고, 과하게 쓰면 오히려 흐름을 깨는 쪽은 "+(ELEMENT_LABEL[balance.avoid]||"확인 불가")+"로 계산됐어. 그래서 1순위 다음에 "+(ACTION_BY_ELEMENT[balance.secondary]||ACTION_BY_ELEMENT.to)+"을 붙이고, "+(AVOID_BY_ELEMENT[balance.avoid]||AVOID_BY_ELEMENT.su)+"은 줄이는 순서로 잡았어.",
-      {secondary:balance.secondary,avoid:balance.avoid});
-
-    push("climate",4,
-      "계절 보정은 "+(balance.climateReasons?.length?balance.climateReasons.join(" / "):"추가 보정이 크게 필요하지 않은 쪽")+"이 실제 점수에 들어갔어.",
-      {climateReasons:balance.climateReasons||[]});
-
-    const br=balance.bridge;
-    push("bridge",4,
-      br
-        ? "강한 힘 둘이 맞부딪히는 구간에는 중간 연결값도 잡혔어. "+(ELEMENT_LABEL[br.controller]||"한쪽")+"와 "+(ELEMENT_LABEL[br.controlled]||"다른 쪽")+" 사이를 "+(ELEMENT_LABEL[br.bridge]||"중간 힘")+"로 이어주는 계산이 들어갔고, 충돌 압력값은 "+(num(br.pressure,2)??0)+"이야."
-        : "강한 힘 둘 사이를 별도 중간값으로 이어줘야 할 정도의 충돌은 계산상 잡히지 않았어. 없는 연결값을 임의로 만들어 넣지 않았어.",
-      br||null);
-
-    push("yongshinScores",4,
-      "다섯 오행의 최종 보완 점수도 전부 반영했어. "+elemValues(balance.scores||{})+". 이 점수 순서로 1순위·2순위·과하면 불리한 방향을 정했어.",
-      {scores:balance.scores||{},detail:balance.detail||{},method:balance.method||"",strengthVerdict:balance.strengthVerdict||""});
-
-    push("timing",6,
-      timingFacts(p.timing?.raw||{}),
-      {timing:p.timing?.raw||{}});
-
-    return facts;
+  function addClassicalSignal(list, cluster, weight, source, detail, role="support") {
+    if(!cluster || !Number.isFinite(Number(weight)) || Number(weight)<=0) return;
+    list.push({cluster,weight:Number(weight),source,detail,role});
   }
 
-  function factsForNote(d, data, noteNum) {
-    const rows=(d.factLedger||buildFactLedger(d,data)).filter(x=>x.note===noteNum);
-    if(!rows.length) return "";
-    return "<br><br><b>계산값 그대로</b><br>"+rows.map(x=>"• "+x.text).join("<br>");
+  function elementCluster(key) {
+    return ELEMENT_CLUSTER[key] || null;
+  }
+
+  function godCluster(god) {
+    return GOD_CLUSTER[god] || null;
+  }
+
+  function structureHuman(s) {
+    const map={
+      "정관격":"기준과 책임을 지키며 결과를 만드는 힘",
+      "편관격":"압박이 와도 돌파하려는 힘",
+      "정재격":"관리하고 안정적으로 쌓는 힘",
+      "편재격":"기회와 사람, 돈의 흐름을 넓게 보는 힘",
+      "식신격":"꾸준히 만들고 생활 리듬으로 이어가는 힘",
+      "상관격":"답답한 걸 바꾸고 표현하는 힘",
+      "정인격":"배우고 정리해 안정시키는 힘",
+      "편인격":"남들이 지나치는 걸 깊게 파고드는 힘",
+      "건록격":"내 기준과 독립성을 지키는 힘",
+      "양인격":"결단하고 밀어붙이는 힘",
+      "겁재격":"경쟁 속에서 내 몫을 확보하는 힘",
+      "평격":"한 가지 방식보다 여러 힘을 같이 쓰는 쪽",
+    };
+    return map[s?.gyeokName] || "한 가지 반응만으로 설명하기 어려운 쪽";
+  }
+
+  function statusHumanLine(s) {
+    if(s?.status==="성격") return "이 중심 힘을 받쳐주는 신호가 실제로 이어져서, 평소엔 자기 방식이 비교적 일관되게 나오는 편";
+    if(s?.status==="성중유패") return "잘되는 방식과 그걸 흐트러뜨리는 신호가 같이 있어서, 같은 사람 안에서도 잘 풀릴 때와 꼬일 때 차이가 커질 수 있는 편";
+    if(s?.status==="파격") return "원래 잘 쓰는 방식이 압박받는 신호가 같이 있어서, 익숙한 방식이 안 먹히는 순간 반응이 달라지기 쉬운 편";
+    return "한쪽 신호가 압도적이라기보다 상황에 따라 여러 반응이 번갈아 나오는 편";
+  }
+
+  function strengthHumanLine(p) {
+    const r=Number(p?.strength?.supportRatio);
+    if(p?.strength?.verdict==="신약") {
+      return r<=0.30
+        ? "안에서 버티는 힘보다 밖으로 빠져나가는 힘이 훨씬 커서, 오래 참는 것 자체가 손실이 되기 쉬워"
+        : "안에서 받치는 힘보다 밖으로 쓰이는 힘이 더 커서, 책임·감정·성과를 오래 들고 있으면 뒤에서 피로가 몰리기 쉬워";
+    }
+    if(p?.strength?.verdict==="신강") {
+      return r>=0.70
+        ? "스스로 버티고 밀어붙이는 힘이 아주 강해서, 멈춰야 할 때도 의지로 더 가는 쪽이 먼저 나올 수 있어"
+        : "스스로 버티고 밀어붙이는 힘이 충분해서, 문제를 알아도 일단 내가 처리하고 보려는 쪽이 먼저 나와";
+    }
+    return "받치는 힘과 밖으로 쓰이는 힘이 크게 한쪽으로 쏠리지 않아, 상황에 따라 밀 때와 멈출 때가 달라지는 편이야";
+  }
+
+  function climateHumanLine(p) {
+    const reasons=p?.balance?.climateReasons||[];
+    if(!reasons.length) return "계절 때문에 한쪽을 강하게 보정해야 하는 사주는 아니라서, 성급하게 한 방향만 밀 필요는 없어";
+    const s=reasons.join(" ");
+    if(s.includes("겨울")) return "차갑게 굳거나 생각만 길어지기 쉬운 계절 조건이라, 실제 행동·표현·온기를 더해줄수록 흐름이 풀려";
+    if(s.includes("여름")) return "열이 과해 속도와 반응이 빨라지기 쉬운 계절 조건이라, 한 박자 식히고 확인하는 과정이 중요해";
+    if(s.includes("건조")) return "메마르고 끊어지기 쉬운 쪽을 보완해야 해서, 너무 빨리 잘라내기보다 여유와 연결을 남기는 게 중요해";
+    if(s.includes("습기")) return "머물고 늘어지는 힘을 덜어야 해서, 생각보다 실행 시점을 분명히 잡는 게 중요해";
+    return "계절 조건까지 같이 보면 한쪽으로 몰기보다 보완 순서를 지키는 게 중요해";
+  }
+
+  function bridgeHumanLine(p) {
+    const b=p?.balance?.bridge;
+    if(!b) return "";
+    return "서로 맞부딪히는 힘 사이에 중간 단계가 필요한 사주라, 바로 결론내리기보다 한 번 시험하고 반응을 본 뒤 확정하는 순서가 더 잘 맞아";
+  }
+
+  function buildClassicalFusion(profile) {
+    const supports=[], frictions=[];
+    const s=profile?.structure||{};
+    const strength=profile?.strength||{};
+    const balance=profile?.balance||{};
+    const counts=profile?.sipsin?.counts||{};
+
+    const structureCluster=godCluster(s.gyeokSipsin) || STRUCTURE_CLUSTER[s.gyeokName] || "stability";
+    addClassicalSignal(supports,structureCluster,3.4,"자평진전·중심 구조",s.gyeokName||"평격");
+
+    if(s.sangsin) addClassicalSignal(supports,godCluster(s.sangsin),2.4,"자평진전·도움 신호",s.sangsin);
+    if(s.gisin) addClassicalSignal(frictions,godCluster(s.gisin),2.4,"자평진전·방해 신호",s.gisin,"friction");
+
+    if(s.status==="성중유패") addClassicalSignal(supports,"reversal",2.0,"자평진전·성패","도움과 방해가 함께 드러남");
+    if(s.status==="파격") addClassicalSignal(supports,"sensitivity",1.9,"자평진전·성패","중심 흐름을 방해하는 신호가 드러남");
+    if(s.status==="성격") addClassicalSignal(supports,structureCluster,1.4,"자평진전·성패","중심 흐름이 비교적 이어짐");
+    if(s.flow==="역용") addClassicalSignal(supports,"boundary",1.1,"자평진전·운용","그대로 밀기보다 조절이 필요한 흐름");
+    if(s.flow==="복합") addClassicalSignal(supports,"mismatch",1.2,"자평진전·운용","살릴 힘과 누를 힘이 함께 있음");
+    if(s.touchul) addClassicalSignal(supports,"expression",0.9,"자평진전·투출","안의 기준이 밖 행동으로 드러남");
+    else addClassicalSignal(supports,"analysis",0.7,"자평진전·투출","안의 기준이 바로 밖으로 드러나지 않음");
+    if((s.candidateCount||0)>=3) addClassicalSignal(supports,"mismatch",0.8,"자평진전·후보","중심 후보가 여러 개 겹침");
+
+    if(strength.code==="push") addClassicalSignal(supports,"intensity",3.0,"적천수·기세","스스로 버티고 미는 힘");
+    if(strength.code==="sensitive") addClassicalSignal(supports,"sensitivity",3.0,"적천수·기세","밖으로 쓰이는 힘이 더 큰 흐름");
+    if(strength.code==="balanced") addClassicalSignal(supports,"stability",1.8,"적천수·기세","받침과 소모가 비교적 균형");
+
+    const ratio=Number(strength.supportRatio);
+    if(Number.isFinite(ratio)){
+      if(ratio<=0.30) addClassicalSignal(supports,"sensitivity",1.4,"적천수·강약 비율","받침보다 소모가 크게 우세");
+      else if(ratio>=0.70) addClassicalSignal(supports,"intensity",1.4,"적천수·강약 비율","받침이 크게 우세");
+    }
+    const roots=Array.isArray(strength.roots)?strength.roots.length:0;
+    if(roots>=2) addClassicalSignal(supports,"stability",1.0,"적천수·뿌리","자기 힘을 받치는 뿌리가 여러 곳");
+    if(roots===0) addClassicalSignal(supports,"sensitivity",0.9,"적천수·뿌리","자기 힘을 받치는 뿌리가 약함");
+
+    for(const row of (profile?.sipsin?.all||[])){
+      const w=row?.pillar==="month"?0.72:row?.pillar==="day"?0.64:row?.pillar==="hour"?0.55:0.48;
+      addClassicalSignal(supports,godCluster(row?.value),w,"십신·위치",(row?.pillar||"")+" "+(row?.position||"")+" "+(row?.value||""));
+    }
+    for(const [god,count] of Object.entries(counts)){
+      if(Number(count)>1) addClassicalSignal(supports,godCluster(god),Math.min(1.2,Number(count)*0.28),"십신·반복",god+" "+count);
+    }
+
+    const influence=profile?.elements?.influence||{};
+    const total=ELEMENT_ORDER.reduce((a,k)=>a+Number(influence[k]||0),0)||1;
+    for(const key of ELEMENT_ORDER){
+      const share=Number(influence[key]||0)/total;
+      if(share>0) addClassicalSignal(supports,elementCluster(key),Math.min(1.25,0.25+share*2.1),"적천수·오행 기세",key+" "+share.toFixed(3));
+    }
+    if(profile?.elements?.rawVsInfluenceMismatch) addClassicalSignal(supports,"mismatch",1.8,"적천수·겉과 실제 기세","겉개수와 실제 세력 순위가 다름");
+
+    for(const key of ELEMENT_ORDER){
+      for(const row of (balance.detail?.[key]||[])){
+        if(row?.layer==="조후" && Number(row.value)>0) addClassicalSignal(supports,elementCluster(key),1.6+Math.min(0.8,Number(row.value)/3),"궁통보감·계절 보정",row.reason||key);
+        if(row?.layer==="과다" && Number(row.value)<0) addClassicalSignal(frictions,elementCluster(key),1.4,"오행 과다",row.reason||key,"friction");
+      }
+    }
+
+    addClassicalSignal(supports,elementCluster(balance.primary),2.2,"용신·1순위 보완",balance.primary||"");
+    addClassicalSignal(supports,elementCluster(balance.secondary),1.3,"용신·2순위 보완",balance.secondary||"");
+    addClassicalSignal(frictions,elementCluster(balance.avoid),1.8,"용신·과용 주의",balance.avoid||"","friction");
+    if(balance.bridge) addClassicalSignal(supports,"analysis",0.9,"통관·중간 연결",balance.bridge.bridge||"");
+
+    if(profile?.relations?.hasClash) addClassicalSignal(supports,"reversal",2.1,"관계 충돌","기둥 사이 충돌");
+
+    const weak=profile?.behavior?.weakStat;
+    if(weak==="mental") addClassicalSignal(supports,"sensitivity",1.2,"생활 수치·취약축","마음");
+    if(weak==="drive") addClassicalSignal(supports,"analysis",1.2,"생활 수치·취약축","실행");
+    if(weak==="wealth") addClassicalSignal(supports,"stability",1.1,"생활 수치·취약축","돈");
+    if(weak==="network") addClassicalSignal(supports,"boundary",1.1,"생활 수치·취약축","관계");
+
+    const sourceCoverage={
+      japyeong:!!(s.gyeokName||s.status||s.sangsin||s.gisin),
+      jeokcheon:!!strength.verdict && Object.keys(influence).length>0,
+      qiongtong:Array.isArray(balance.climateReasons),
+      yongshin:!!balance.primary && !!balance.secondary && !!balance.avoid,
+      sipsin:Object.keys(counts).length>0 || (profile?.sipsin?.all||[]).length>0,
+      relations:typeof profile?.relations?.hasClash==="boolean",
+      timing:Object.keys(profile?.timing?.raw||{}).length>0,
+    };
+    const frictionRank=[...frictions].sort((a,b)=>b.weight-a.weight);
+    return {
+      supports,
+      frictions,
+      topFriction:frictionRank[0]||null,
+      sourceCoverage,
+      structureLine:structureHuman(s),
+      statusLine:statusHumanLine(s),
+      strengthLine:strengthHumanLine(profile),
+      climateLine:climateHumanLine(profile),
+      bridgeLine:bridgeHumanLine(profile),
+      fingerprint:stableHash({
+        structure:{gyeokName:s.gyeokName,gyeokSipsin:s.gyeokSipsin,status:s.status,flow:s.flow,sangsin:s.sangsin,gisin:s.gisin,touchul:s.touchul,candidates:s.candidates},
+        strength:{verdict:strength.verdict,ratio:strength.supportRatio,forces:[strength.supportForce,strength.drainForce],roots:strength.roots},
+        sipsin:{all:profile?.sipsin?.all,counts},
+        influence,
+        balance:{primary:balance.primary,secondary:balance.secondary,avoid:balance.avoid,scores:balance.scores,detail:balance.detail,bridge:balance.bridge,climateReasons:balance.climateReasons},
+        clash:profile?.relations?.hasClash,
+        weak,
+      }),
+    };
   }
 
   function stripHtml(v) {
