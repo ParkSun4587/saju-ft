@@ -78,6 +78,8 @@ async function inspect(page, mode) {
       catalog:document.getElementById('unniProductLadder')?.innerText||'',
       note2Preview:document.getElementById('note2PreviewCard')?.innerText||'',
       paywall:document.getElementById('lockedOverlay')?.innerText||'',
+      paywallNextTeaser:document.getElementById('paywallNextTeaser')?.innerText||'',
+      paywallFeatureCount:document.querySelectorAll('#payBoxFeatures > div').length,
       paywallVisible:document.getElementById('lockedOverlay') ? getComputedStyle(document.getElementById('lockedOverlay')).display!=='none' : false,
       switchCount:document.querySelectorAll('#sisterSwitchCard').length,
       badges:notes.map(n=>n.badge||''),
@@ -105,8 +107,10 @@ async function inspect(page, mode) {
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
     assert(/NOTE 0?2/.test(r.note2Preview)&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
-    assert(r.paywall.includes('NOTE 02 이어서')&&r.paywall.includes('990원')&&r.paywall.includes('방금 읽던 NOTE 02 다음 내용'),'NOTE2 continuation paywall copy missing '+r.paywall);
-    assert(!r.paywall.includes('오픈 체험가'),'stale generic sale copy remains '+r.paywall);
+    if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서부터 같이 보자')&&r.paywall.includes('진짜 중요한 건 이제부터야')&&r.paywall.includes('로아 언니, 나머지도 같이 봐줘'),'live F conversion paywall drift '+r.paywall);
+    if(mode==='T') assert(r.paywall.includes('서아 언니 · 여기서부터 정리할게')&&r.paywall.includes('원인하고 끊을 지점')&&r.paywall.includes('서아 언니, 답까지 정리해줘'),'live T conversion paywall drift '+r.paywall);
+    assert(r.paywall.includes('990원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
+    assert(!/NOTE 0?2 이어서|NOTE 0?6|오픈 체험가/.test(r.paywall),'internal NOTE labels or stale generic sale copy remains '+r.paywall);
   }
   if(r.catalog){
     assert(r.catalog.includes('왜 이걸 먼저 추천하냐면')&&r.catalog.includes('다른 게 더 궁금하다면')&&!r.catalog.includes('다른 리포트 3개 보기'),'old product disclosure remains');
