@@ -7346,10 +7346,10 @@ currentResultData = {
         const isT = currentResultData?.currentMode === "T";
         const guideMain = layer.querySelector("#storyCaptureGuideMain");
         const guideSub = layer.querySelector("#storyCaptureGuideSub");
-        if (guideMain) guideMain.innerHTML = isT
-          ? "카드만 남겨둘게. 캡처해서 올려. 친구들이랑 비교해보면 재밌을 거야."
-          : "카드만 딱 남겨둘게. 예쁘게 캡처해서 인스타 스토리에 올려봐 ♡";
-        if (guideSub) guideSub.textContent = "전체화면으로 바꾼 뒤 카드만 남겨둘게 · 캡처 후 화면을 한 번 톡 누르면 바로 돌아가";
+        if (guideMain) guideMain.textContent = isT
+          ? "카드만 남겨둘게. 스크린샷 찍고 화면 아무 데나 한 번 톡하면 바로 결과로 돌아가."
+          : "카드 예쁘게 남겨둘게! 스크린샷 찍고 화면 아무 데나 한 번 톡하면 바로 결과로 돌아가.";
+        if (guideSub) guideSub.textContent = "캡처 화면 열기 → 스크린샷 → 화면 톡 → 결과 복귀";
         layer.style.background = isT
           ? "linear-gradient(160deg,#eef8ff 0%,#f8fcff 52%,#eef6ff 100%)"
           : "linear-gradient(160deg,#fff1f4 0%,#fffaf7 52%,#fff3f5 100%)";
