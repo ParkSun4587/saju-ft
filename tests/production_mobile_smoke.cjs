@@ -53,7 +53,13 @@ async function enter(page, mode, concern, situation) {
   await page.fill('#birthTimeInput','0310');
   await page.locator('#splitNextButton button').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
-  await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
+  const sourceFreeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
+  if(sourceFreeLaunch){
+    await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
+  }else{
+    await page.waitForSelector('#note2PreviewCard',{state:'visible',timeout:10000});
+    await page.waitForSelector('#lockedOverlay',{state:'visible',timeout:10000});
+  }
 }
 
 async function inspect(page, mode) {
@@ -66,9 +72,13 @@ async function inspect(page, mode) {
       n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc),
       oheng:document.getElementById('ohengSummaryTxt')?.innerText||'',
       dayMasterTag:document.getElementById('dayMasterTag')?.innerText||'',
+      sourceFreeLaunch:FREE_LAUNCH_MODE,
       count:products.length,
       visible:products.filter(x=>getComputedStyle(x).display!=='none').length,
       catalog:document.getElementById('unniProductLadder')?.innerText||'',
+      note2Preview:document.getElementById('note2PreviewCard')?.innerText||'',
+      paywall:document.getElementById('lockedOverlay')?.innerText||'',
+      paywallVisible:document.getElementById('lockedOverlay') ? getComputedStyle(document.getElementById('lockedOverlay')).display!=='none' : false,
       switchCount:document.querySelectorAll('#sisterSwitchCard').length,
       badges:notes.map(n=>n.badge||''),
       resultGreeting:document.getElementById('resultSisterGreeting')?.innerText||'',
@@ -90,10 +100,19 @@ async function inspect(page, mode) {
   if (mode==='F') assert(r.oheng.includes('이 제일 강해')&&r.oheng.includes('같은 장면이 반복되는 부분이 보여')&&r.oheng.includes('바로 아래 비밀 메모')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng secret-note teaser '+r.oheng);
   if (mode==='T') assert(r.oheng.includes('중요한 건 이 차이가 지금 고민에서 어떤 반복을 만드는지야')&&r.oheng.includes('바로 아래 비밀 메모')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng secret-note teaser '+r.oheng);
   assert(!/[나무불흙쇠물]\)/.test(r.oheng+r.dayMasterTag),'old parenthetical five-element wording remains '+JSON.stringify({oheng:r.oheng,day:r.dayMasterTag}));
-  assert(r.count===4&&r.visible===4,'premium products hidden '+JSON.stringify(r));
-  assert(r.catalog.includes('왜 이걸 먼저 추천하냐면')&&r.catalog.includes('다른 게 더 궁금하다면')&&!r.catalog.includes('다른 리포트 3개 보기'),'old product disclosure remains');
-  assert(r.catalog.includes('내 사주 완전판')&&!r.catalog.includes('어떤언니 올인원'),'all-in-one product name did not update');
-  assert(r.catalog.includes('우리 둘 깊게 보기')&&r.catalog.includes('내 사주 전부 보기')&&!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
+  if(r.sourceFreeLaunch){
+    assert(r.count===4&&r.visible===4,'free-launch should expose the post-NOTE6 product catalog '+JSON.stringify(r));
+  }else{
+    assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
+    assert(r.note2Preview.includes('NOTE 2')&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
+    assert(r.paywall.includes('NOTE 02 이어서')&&r.paywall.includes('990원')&&r.paywall.includes('방금 읽던 NOTE 02 다음 내용'),'NOTE2 continuation paywall copy missing '+r.paywall);
+    assert(!r.paywall.includes('오픈 체험가'),'stale generic sale copy remains '+r.paywall);
+  }
+  if(r.catalog){
+    assert(r.catalog.includes('왜 이걸 먼저 추천하냐면')&&r.catalog.includes('다른 게 더 궁금하다면')&&!r.catalog.includes('다른 리포트 3개 보기'),'old product disclosure remains');
+    assert(r.catalog.includes('내 사주 완전판')&&!r.catalog.includes('어떤언니 올인원'),'all-in-one product name did not update');
+    assert(r.catalog.includes('우리 둘 깊게 보기')&&r.catalog.includes('내 사주 전부 보기')&&!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
+  }
   assert(r.switchCount===0,'bottom F/T CTA remains');
   assert(r.hierarchy.oneLineBeforeThreeLine&&r.hierarchy.threeLineBeforeMbti&&r.hierarchy.mbtiBeforeChem&&r.hierarchy.mbtiSize<=38,
     'result hierarchy is wrong '+JSON.stringify(r.hierarchy));
@@ -165,6 +184,21 @@ async function inspect(page, mode) {
   await page.waitForFunction(()=>getComputedStyle(document.getElementById('storyCaptureMode')).display==='none',null,{timeout:5000});
   assert(await page.locator('#shareModal').isHidden(),'tap-to-return should go directly to result');
   assert(await page.locator('#resultSection').isVisible(),'tap-to-return lost the result view');
+
+  if(await page.locator('#unniProductLadder').count()===0){
+    await page.evaluate(()=>{
+      FREE_LAUNCH_MODE=true;
+      unlockFullReport(null,true);
+      renderUnniProductCatalog();
+    });
+    await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
+  }
+  const postUnlock=await page.evaluate(()=>({
+    cards:document.querySelectorAll('#notesListContainer > div').length,
+    preview:!!document.getElementById('note2PreviewCard'),
+    catalogAfterNotes:(document.getElementById('notesListContainer').compareDocumentPosition(document.getElementById('unniProductLadder')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+  }));
+  assert(postUnlock.cards===6&&!postUnlock.preview&&postUnlock.catalogAfterNotes,'990 unlock must reveal NOTE2-6 before post-report upsells '+JSON.stringify(postUnlock));
 
   await page.locator('#unniProductLadder [data-unni-product="compatibility"]').click();
   await page.waitForSelector('#unniProductModal',{state:'visible'});
