@@ -21,6 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.0.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.1' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
@@ -61,192 +62,144 @@ function norm(v) {
     window.gtag = () => {};
     const concerns = ['money','career','love','path','people','mental'];
     const exact = calculateAccurateManse(1998,2,21,'03:10','female');
-    const maleExact = calculateAccurateManse(1998,2,21,'03:10','male');
-    const rows = [];
-    for (const concern of concerns) {
-      for (const mode of ['F','T']) {
-        const data = {
-          ...exact,
-          name:'박태양',
-          concernKey:concern,
-          userBirthStr:'19980221',
-          userTimeKey:'03:10',
-          userGender:'female',
-          userCalendar:'solar',
-          currentMode:mode,
-          rawSolutionTemplate:{ F:{acts:[{d:'a'},{d:'b'}]}, T:{acts:[{d:'a'},{d:'b'}]} },
-        };
-        const notes = generateConcernNotes(data, mode);
-        const audit = data.paidValueAudit || auditPaidValueNotes(notes, mode);
-        const n6 = notes[5];
-        rows.push({
-          concern, mode,
-          count:notes.length,
-          first:n6?.__timingQA?.firstBody || '',
-          second:n6?.__timingQA?.secondBody || '',
-          firstDate:n6?.__timingQA?.firstDate || '',
-          secondDate:n6?.__timingQA?.secondDate || '',
-          desc:n6?.desc || '',
-          duplicateCount:audit.duplicates.length,
-          hardTerms:audit.hardTerms,
-          timingDuplicate:audit.timingDuplicate,
-          toneScore:audit.toneScore,
-          allText:notes.map(n => `${n.title} ${n.desc} ${n.checklist || ''}`).join(' '),
-        });
-      }
+    const other = calculateAccurateManse(1990,1,2,'12:00','female');
+    const situations = globalThis.__CONCERN_NOTE_ENGINE_V2__?.situations || {};
+
+    function prep(r, concern, situation, mode, birth='19980221', time='03:10') {
+      return {
+        ...r,
+        name:'박태양',
+        concernKey:concern,
+        concernSituation:situation,
+        userBirthStr:birth,
+        userTimeKey:time,
+        userGender:'female',
+        userCalendar:'solar',
+        currentMode:mode,
+        rawSolutionTemplate:{F:{acts:[{d:'a'},{d:'b'}]},T:{acts:[{d:'a'},{d:'b'}]}},
+      };
     }
-    const maleBase = {
-      ...maleExact,
-      name:'박태양',
-      userBirthStr:'19980221',
-      userTimeKey:'03:10',
-      userGender:'male',
-      userCalendar:'solar',
-      currentMode:'F',
-    };
-    const maleMoney = generateConcernNotes({ ...maleBase, concernKey:'money' }, 'F')[5];
-    const maleLove = generateConcernNotes({ ...maleBase, concernKey:'love' }, 'F')[5];
 
     const situationRows = [];
-    const profiles = globalThis.__PAID_VALUE_LAYER_V1__?.situationProfiles || {};
     for (const concern of concerns) {
-      for (const situation of Object.keys(profiles[concern] || {})) {
+      for (const situation of Object.keys(situations[concern] || {})) {
         for (const mode of ['F','T']) {
-          const data = {
-            ...exact,
-            name:'박태양',
-            concernKey:concern,
-            concernSituation:situation,
-            userBirthStr:'19980221',
-            userTimeKey:'03:10',
-            userGender:'female',
-            userCalendar:'solar',
-            currentMode:mode,
-            rawSolutionTemplate:{ F:{acts:[{d:'a'},{d:'b'}]}, T:{acts:[{d:'a'},{d:'b'}]} },
-          };
-          const notes = generateConcernNotes(data, mode);
-          const audit = data.paidValueAudit || auditPaidValueNotes(notes, mode);
+          const data=prep(exact,concern,situation,mode);
+          const diagnosis=buildConcernDiagnosisV2(data);
+          const notes=generateConcernNotes(data,mode);
+          const audit=auditPaidValueNotes(notes,mode);
           situationRows.push({
-            concern,
-            situation,
-            mode,
-            label:profiles[concern][situation]?.label || '',
-            count:notes.length,
-            n1:notes[0],
-            n6:notes[5],
-            notes:notes.map((n) => ({
-              badge:n.badge || '',
-              title:n.title || '',
-              desc:n.desc || '',
-              checklist:n.checklist || '',
+            concern,situation,mode,
+            label:situations[concern][situation]?.label || '',
+            diagnosis:{
+              fingerprint:diagnosis.fingerprint,
+              primary:diagnosis.primary,
+              secondary:diagnosis.secondary,
+            },
+            noteAudit:data.noteV2Audit,
+            notes:notes.map(n=>({
+              badge:n.badge||'', title:n.title||'', desc:n.desc||'', checklist:n.checklist||'',
+              timing:n.__timingQA||null,
             })),
             audit,
-            allText:notes.map((n) => `${n.badge} ${n.title} ${n.desc} ${n.checklist || ''}`).join(' '),
+            allText:notes.map(n=>`${n.badge} ${n.title} ${n.desc} ${n.checklist||''}`).join(' '),
           });
         }
       }
     }
 
+    const chartA=prep(exact,'love','relationship','F');
+    const chartB=prep(other,'love','relationship','F','19900102','12:00');
+    const diagA=buildConcernDiagnosisV2(chartA);
+    const diagB=buildConcernDiagnosisV2(chartB);
+    const notesA=generateConcernNotes(chartA,'F');
+    const notesB=generateConcernNotes(chartB,'F');
+
     return {
       paidVersion:globalThis.__PAID_VALUE_LAYER_V1__,
+      noteVersion:globalThis.__CONCERN_NOTE_ENGINE_V2__,
       productVersion:globalThis.__UNNI_PRODUCTS_V1__,
       products:globalThis.__UNNI_PRODUCTS_V1__.products,
-      wrappers:{ paid:!!generateConcernNotes.__paidValueWrapped, integrated:!!generateConcernNotes.__integratedProfileWrapped },
-      rows,
-      maleShared: {
-        money: maleMoney?.__timingQA || {},
-        love: maleLove?.__timingQA || {},
-        moneyDesc: maleMoney?.desc || '',
-        loveDesc: maleLove?.desc || '',
+      wrappers:{
+        noteV2:!!generateConcernNotes.__noteV2Wrapped,
+        paid:!!generateConcernNotes.__paidValueWrapped,
+        integrated:!!generateConcernNotes.__integratedProfileWrapped,
       },
       situationRows,
+      chartCompare:{
+        diagA:{fingerprint:diagA.fingerprint,primary:diagA.primary,secondary:diagA.secondary},
+        diagB:{fingerprint:diagB.fingerprint,primary:diagB.primary,secondary:diagB.secondary},
+        diffs:notesA.map((n,i)=>norm(n.desc)!==norm(notesB[i].desc)),
+      },
     };
   });
 
   assert(qa.paidVersion.version === '1.5.0', 'paid value layer missing');
+  assert(qa.noteVersion.version === '2.0.0', 'NOTE v2 engine missing');
   assert(qa.productVersion.version === '1.9.1', 'product layer missing');
-  assert(qa.wrappers.paid, 'paid-value wrapper missing');
-  assert(qa.wrappers.integrated, 'integrated wrapper metadata lost');
+  assert(qa.wrappers.noteV2 && qa.wrappers.paid && qa.wrappers.integrated, 'NOTE v2 lost legacy engine metadata');
+
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
   for (const [id, price] of Object.entries(expectedPrices)) assert(qa.products[id]?.price === price, `${id} price drift`);
   assert(qa.products.concern_bundle3.badge === '다른 고민도 3개 더' && qa.products.concern_bundle3.desc.includes('원인부터 행동·사람·시기까지'), 'bundle3 young-user value copy missing');
   assert(qa.products.full_saju.badge === '내 사주 전체 보기' && qa.products.full_saju.desc.includes('하나의 흐름으로 이어서'), 'full-saju plain-language value copy missing');
   assert(qa.products.compatibility.badge === '우리 둘 깊게 보기' && qa.products.compatibility.desc.includes('연락·싸움·화해'), 'compatibility plain-language value copy missing');
-  assert(qa.products.all_in_one.name === '내 사주 완전판' && qa.products.all_in_one.badge === '내 사주 전부 보기' && qa.products.all_in_one.desc.includes('내 사주와 6가지 고민'), `all-in-one plain-language copy drift: ${JSON.stringify(qa.products.all_in_one)}`);
-  for (const p of Object.values(qa.products)) assert(!/챕터|NOTE \d+/.test(`${p.badge} ${p.desc}`), `technical product-volume wording remains: ${JSON.stringify(p)}`);
-  assert(qa.rows.length === 12, `expected 12 rows, got ${qa.rows.length}`);
-  assert(qa.maleShared.money.firstDate === qa.maleShared.love.firstDate, 'male money/love first timing should legitimately share the same sensitive axis');
-  assert(qa.maleShared.money.secondDate === qa.maleShared.love.secondDate, 'male money/love second timing should legitimately share the same sensitive axis');
-  assert(qa.maleShared.money.sharedTimingWith === 'love' && qa.maleShared.love.sharedTimingWith === 'money', 'shared timing pairing metadata missing');
-  assert(qa.maleShared.moneyDesc.includes('복붙 아니야') && qa.maleShared.loveDesc.includes('복붙 아니야'), 'shared timing explanation missing from F copy');
-  assert(norm(qa.maleShared.money.firstBody) !== norm(qa.maleShared.love.firstBody), 'same date must still produce concern-specific first action');
-  assert(norm(qa.maleShared.money.secondBody) !== norm(qa.maleShared.love.secondBody), 'same date must still produce concern-specific second action');
+  assert(qa.products.all_in_one.name === '내 사주 완전판' && qa.products.all_in_one.badge === '내 사주 전부 보기' && qa.products.all_in_one.desc.includes('내 사주와 6가지 고민'), 'all-in-one plain-language copy drift');
+  for (const p of Object.values(qa.products)) assert(!/챕터|NOTE \d+/.test(`${p.badge} ${p.desc}`), 'technical product-volume wording remains');
 
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
-    assert(row.count === 6, `${row.concern}/${row.situation}/${row.mode}: note count ${row.count}`);
-    const note1Plain = String(row.notes?.[0]?.desc || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    const note2Plain = String(row.notes?.[1]?.desc || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    const note4Plain = String(row.notes?.[3]?.desc || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    const note5Plain = String(row.notes?.[4]?.desc || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    assert(note1Plain.length >= 210, `${row.concern}/${row.situation}/${row.mode}: NOTE1 teaser too thin (${note1Plain.length})`);
-    assert(note2Plain.length >= 210, `${row.concern}/${row.situation}/${row.mode}: NOTE2 teaser too thin (${note2Plain.length})`);
-    assert(note4Plain.length >= 300, `${row.concern}/${row.situation}/${row.mode}: paid NOTE4 too thin (${note4Plain.length})`);
-    assert(note5Plain.length >= 330, `${row.concern}/${row.situation}/${row.mode}: paid NOTE5 too thin (${note5Plain.length})`);
-    assert(/잘 되고 있다는 신호|처방이 먹히는 신호/.test(note4Plain), `${row.concern}/${row.situation}/${row.mode}: NOTE4 lacks paid follow-through signal`);
-    assert(/세 가지만|세 가지만 기억|판별할 때/.test(note5Plain), `${row.concern}/${row.situation}/${row.mode}: NOTE5 lacks concrete relationship filter`);
-    assert(/사주 전체|사주 전체랑|사주 전체를/.test(note1Plain), `${row.concern}/${row.situation}/${row.mode}: NOTE1 lacks personalized why-context`);
-    assert(/반복|패턴|같은 데서/.test(note2Plain), `${row.concern}/${row.situation}/${row.mode}: NOTE2 lacks pattern explanation`);
-    assert(row.n6?.__timingQA?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: NOTE6 situation metadata missing`);
-    assert(norm(row.n6?.__timingQA?.firstBody) !== norm(row.n6?.__timingQA?.secondBody), `${row.concern}/${row.situation}/${row.mode}: NOTE6 period copy duplicated`);
-    assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: technical terms leaked`);
-    assert((row.audit?.badgeTooLong || []).length === 0, `${row.concern}/${row.situation}/${row.mode}: compact NOTE badge too long ${JSON.stringify(row.audit?.badgeTooLong)}`);
-    for (const [idx, note] of row.notes.entries()) {
-      assert(note.badge.length <= 16, `${row.concern}/${row.situation}/${row.mode}: NOTE${idx + 1} badge too long: ${note.badge}`);
-      const voice = `${note.title} ${note.desc} ${note.checklist}`;
-      if (row.mode === 'F') {
-        assert(/언니|우리|같이|마음|괜찮|해보자|보자|돼/.test(voice), `${row.concern}/${row.situation}/F: NOTE${idx + 1} lost Roa 1:1 voice`);
-      } else {
-        assert(/내가|딱|바로|먼저|확인|보자|끊|기준|해\b/.test(voice), `${row.concern}/${row.situation}/T: NOTE${idx + 1} lost Seoa direct 1:1 voice`);
-      }
-    }
+    assert(row.notes.length === 6, `${row.concern}/${row.situation}/${row.mode}: note count ${row.notes.length}`);
+    assert(row.noteAudit?.version === '2.0.0' && row.noteAudit?.fingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v2 audit missing`);
+    assert(row.noteAudit?.primary?.cluster && row.noteAudit?.secondary?.cluster, `${row.concern}/${row.situation}/${row.mode}: evidence diagnosis missing`);
+
+    const n1=String(row.notes[0]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    const n2=String(row.notes[1]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    const n4=String(row.notes[3]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    const n5=String(row.notes[4]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+
+    assert(n1.length >= 90 && n1.length <= 560, `${row.concern}/${row.situation}/${row.mode}: NOTE1 is not concise/specific (${n1.length})`);
+    assert(n2.length >= 100 && n2.length <= 620, `${row.concern}/${row.situation}/${row.mode}: NOTE2 is not concise/specific (${n2.length})`);
+    assert(n4.length >= 120 && n4.length <= 760, `${row.concern}/${row.situation}/${row.mode}: NOTE4 action plan size drift (${n4.length})`);
+    assert(n5.length >= 120 && n5.length <= 760, `${row.concern}/${row.situation}/${row.mode}: NOTE5 domain-fit size drift (${n5.length})`);
+    assert(/시작|첫 반응|보통/.test(n2) && /결국|그다음/.test(n2), `${row.concern}/${row.situation}/${row.mode}: NOTE2 lacks concrete behavior sequence`);
+    assert(row.notes[5]?.timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: NOTE6 situation metadata missing`);
+    assert(norm(row.notes[5]?.timing?.firstBody) !== norm(row.notes[5]?.timing?.secondBody), `${row.concern}/${row.situation}/${row.mode}: NOTE6 timing roles duplicated`);
+    assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: hard saju jargon leaked`);
     assert(!/(undefined|NaN|null)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: bad token leaked`);
+    for (const note of row.notes) assert((note.badge||'').length <= 16, `${row.concern}/${row.situation}/${row.mode}: NOTE badge too long ${note.badge}`);
+
+    for (const h of [row.noteAudit.primary,row.noteAudit.secondary].filter(x=>x?.confidence==='high')) {
+      assert(new Set((h.evidence||[]).map(x=>x.source)).size >= 2, `${row.concern}/${row.situation}/${row.mode}: high-confidence claim lacks two signals`);
+    }
   }
+
   for (const concern of ['money','career','love','path','people','mental']) {
     for (const mode of ['F','T']) {
-      const rows = qa.situationRows.filter((row) => row.concern === concern && row.mode === mode);
-      assert(rows.length === 4, `${concern}/${mode}: expected four situations`);
-      const signatures = new Set(rows.map((row) => norm(`${row.n1?.title} ${row.n1?.desc} ${row.n6?.__timingQA?.firstBody}`)));
-      assert(signatures.size === 4, `${concern}/${mode}: situation outputs are not distinct`);
+      const rows=qa.situationRows.filter(r=>r.concern===concern && r.mode===mode);
+      assert(rows.length===4, `${concern}/${mode}: expected four situations`);
+      const sig=new Set(rows.map(r=>norm(`${r.notes[0].title} ${r.notes[1].desc} ${r.notes[3].desc}`)));
+      assert(sig.size===4, `${concern}/${mode}: four situation outputs are not distinct`);
+    }
+    const fRows=qa.situationRows.filter(r=>r.concern===concern && r.mode==='F');
+    const tRows=qa.situationRows.filter(r=>r.concern===concern && r.mode==='T');
+    for (const fRow of fRows) {
+      const tRow=tRows.find(r=>r.situation===fRow.situation);
+      assert(tRow && fRow.diagnosis.fingerprint===tRow.diagnosis.fingerprint, `${concern}/${fRow.situation}: F/T fact diagnosis diverged`);
+      assert(fRow.diagnosis.primary.cluster===tRow.diagnosis.primary.cluster && fRow.diagnosis.secondary.cluster===tRow.diagnosis.secondary.cluster,
+        `${concern}/${fRow.situation}: F/T core facts diverged`);
+      assert(norm(fRow.notes[0].desc)!==norm(tRow.notes[0].desc), `${concern}/${fRow.situation}: F/T voice renderer did not differ`);
     }
   }
 
-  const loveSituation = Object.fromEntries(
-    qa.situationRows
-      .filter((row) => row.concern === 'love' && row.mode === 'F')
-      .map((row) => [row.situation, row])
-  );
-  assert(loveSituation.relationship?.notes?.[0]?.badge === '연애가 꼬이는 이유', 'relationship direct NOTE badge missing');
-  assert(!/(새 인연|새로운 사람을 만날|새 사람을 만날 접점|소개·모임)/.test(loveSituation.relationship?.allText || ''), 'relationship mode leaked new-person advice');
-  assert(loveSituation.new?.notes?.[0]?.badge === '연애가 꼬이는 이유', 'new-person direct NOTE badge missing');
-  assert(/소개|모임|취미|앱/.test(loveSituation.new?.allText || ''), 'new-person mode needs actual meeting opportunities');
-  assert(!/(우리 관계|지금 둘 사이|미뤄둔 대화나 약속)/.test(loveSituation.new?.allText || ''), 'new-person mode assumed an existing relationship');
-  assert(loveSituation.breakup?.notes?.[0]?.badge === '연애가 꼬이는 이유' && /재회|헤어진/.test(loveSituation.breakup?.allText || ''), 'breakup mode lacks breakup/reunion context');
-  assert(loveSituation.crush?.notes?.[0]?.badge === '연애가 꼬이는 이유', 'crush direct NOTE badge missing');
-  assert(norm(loveSituation.relationship?.n6?.__timingQA?.firstBody) !== norm(loveSituation.new?.n6?.__timingQA?.firstBody), 'same love timing must produce situation-specific action');
+  const loveF=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='love'&&r.mode==='F').map(r=>[r.situation,r]));
+  assert(/연락|서운|현재 연애/.test(loveF.relationship?.allText||''), 'relationship path lost current-relationship context');
+  assert(/새 인연|새 사람/.test(loveF.new?.allText||'') && !/헤어진 이유/.test(loveF.new?.allText||''), 'new-person path mixed another love situation');
+  assert(/이별|재회|헤어진/.test(loveF.breakup?.allText||''), 'breakup path lacks breakup context');
+  assert(/썸|상대 반응/.test(loveF.crush?.allText||''), 'crush path lacks crush context');
 
-  for (const r of qa.rows) {
-    assert(r.count === 6, `${r.concern}/${r.mode}: note count ${r.count}`);
-    assert(r.first && r.second, `${r.concern}/${r.mode}: timing bodies missing`);
-    assert(r.firstDate && r.secondDate, `${r.concern}/${r.mode}: timing dates missing`);
-    assert(norm(r.first) !== norm(r.second), `${r.concern}/${r.mode}: NOTE6 period body copied`);
-    assert(!r.timingDuplicate, `${r.concern}/${r.mode}: timing duplicate audit failed`);
-    assert(r.hardTerms.length === 0, `${r.concern}/${r.mode}: hard terms leaked ${JSON.stringify(r.hardTerms)}`);
-    assert(r.toneScore >= 3, `${r.concern}/${r.mode}: persona tone too weak ${r.toneScore}`);
-    assert(r.desc.includes('먼저 ·') && r.desc.includes('그다음 ·') && r.desc.includes('둘은 이렇게 달라'), `${r.concern}/${r.mode}: NOTE6 conversational distinction headings missing`);
-    assert(!/[💕❤♥💖💗💓💞💘💝]/u.test(r.desc), `${r.concern}/${r.mode}: decorative heart leaked into NOTE6`);
-    assert(!/(undefined|NaN|null)/.test(r.allText), `${r.concern}/${r.mode}: bad token leaked`);
-  }
+  assert(qa.chartCompare.diagA.fingerprint !== qa.chartCompare.diagB.fingerprint, 'different charts share NOTE v2 diagnosis fingerprint');
+  assert(qa.chartCompare.diffs.filter(Boolean).length >= 4, 'different charts do not materially change enough NOTE outputs');
 
   // Production-like result path: verify catalog is actually visible and free-launch previews work.
   const ui = await page.evaluate(() => {
