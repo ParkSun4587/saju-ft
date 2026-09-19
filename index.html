@@ -5781,72 +5781,89 @@ currentResultData = {
         const paywallCard = document.getElementById("paywallCard");
         const paywallSisterAvatar = document.getElementById("paywallSisterAvatar");
         const paywallSisterLabel = document.getElementById("paywallSisterLabel");
-        const paywallPriceChip = document.getElementById("paywallPriceChip");
+        const paywallSisterSub = document.getElementById("paywallSisterSub");
         const payBoxSubMsg = document.getElementById("payBoxSubMsg");
         const payBoxFeatures = document.getElementById("payBoxFeatures");
+        const paywallFeatureTitle = document.getElementById("paywallFeatureTitle");
+        const paywallNextTeaserBox = document.getElementById("paywallNextTeaserBox");
+        const paywallNextLabel = document.getElementById("paywallNextLabel");
+        const paywallLockedBadge = document.getElementById("paywallLockedBadge");
         const vipSectionMainTitle = document.getElementById("vipSectionMainTitle");
         const vipSectionSubTitle = document.getElementById("vipSectionSubTitle");
 
         if (payBoxHookMsg) {
           payBoxHookMsg.textContent = isT
-            ? "패턴은 확인했어. 이제 왜 반복되는지, 어디서 끊어야 하는지까지 정리하면 돼."
-            : "지금 보인 패턴, 언니가 왜 반복되는지부터 풀 방법까지 이어서 같이 봐줄게.";
+            ? "패턴은 확인했어. 이제 원인하고 끊을 지점만 잡으면 돼."
+            : "여기까지 보니까 왜 마음 쓰였는지는 보여. 근데 진짜 중요한 건 이제부터야.";
         }
         if (payBoxSubMsg) {
           payBoxSubMsg.textContent = isT
-            ? "결제하면 방금 읽던 NOTE 02 다음 내용부터 원인·행동·사람·시기까지 바로 이어져."
-            : "결제하면 방금 읽던 NOTE 02 다음 내용부터 NOTE 06까지 언니가 끊김 없이 이어서 봐줄게.";
+            ? "반복 원인부터 지금 끊을 행동, 사람 기준, 움직일 타이밍까지 바로 정리해줄게."
+            : "왜 반복되는지부터 지금 어떻게 움직이면 좋을지까지 이어서 같이 볼게.";
         }
         if (payBtnActionText) {
           payBtnActionText.textContent = isT
-            ? "서아 언니, 이 고민 끝까지 정리해줘"
-            : "로아 언니, 이 고민 끝까지 같이 봐줘";
+            ? "서아 언니, 답까지 정리해줘"
+            : "로아 언니, 나머지도 같이 봐줘";
         }
         if (payBtnSubText) {
-          payBtnSubText.textContent = "990원 · 카드 · 카카오페이 · 토스페이";
+          payBtnSubText.textContent = "990원 · 결제 후 바로 이어서 열림";
         }
         if (paywallSisterAvatar) paywallSisterAvatar.src = isT ? "./서아.png" : "./로아.png";
         if (paywallSisterLabel) {
           paywallSisterLabel.textContent = isT
-            ? "서아 언니 · NOTE 02 이어서"
-            : "로아 언니 · NOTE 02 이어서";
+            ? "서아 언니 · 여기서부터 정리할게"
+            : "로아 언니 · 여기서부터 같이 보자";
           paywallSisterLabel.className = isT
             ? "text-[11px] font-black text-sky-600"
             : "text-[11px] font-black text-rose-600";
         }
-        if (paywallPriceChip) {
-          paywallPriceChip.className = isT
-            ? "shrink-0 rounded-full border border-sky-200 bg-white px-2.5 py-1 text-[11px] font-black text-sky-600"
-            : "shrink-0 rounded-full border border-rose-200 bg-white px-2.5 py-1 text-[11px] font-black text-rose-600";
+        if (paywallSisterSub) {
+          paywallSisterSub.textContent = isT
+            ? "방금 확인한 패턴에서 바로 이어간다"
+            : "방금 보던 얘기, 끊지 않고 이어갈게";
+        }
+        if (paywallFeatureTitle) {
+          paywallFeatureTitle.textContent = isT
+            ? "이어보면 바로 정리되는 것"
+            : "이어보면 알게 되는 것";
         }
         if (paywallCard) {
           paywallCard.className = isT
-            ? "max-w-sm w-full mx-auto rounded-[26px] border border-sky-200 bg-gradient-to-b from-sky-50/80 via-white to-white p-4 sm:p-5 shadow-[0_14px_36px_rgba(14,165,233,0.10)] text-left"
-            : "max-w-sm w-full mx-auto rounded-[26px] border border-rose-200 bg-gradient-to-b from-rose-50/80 via-white to-white p-4 sm:p-5 shadow-[0_14px_36px_rgba(244,63,94,0.10)] text-left";
+            ? "max-w-sm w-full mx-auto rounded-[24px] border border-sky-200 bg-gradient-to-b from-sky-50/70 via-white to-white p-4 sm:p-4.5 shadow-[0_12px_30px_rgba(14,165,233,0.09)] text-left"
+            : "max-w-sm w-full mx-auto rounded-[24px] border border-rose-200 bg-gradient-to-b from-rose-50/70 via-white to-white p-4 sm:p-4.5 shadow-[0_12px_30px_rgba(244,63,94,0.09)] text-left";
           const openBtn = document.getElementById("directPaymentOpenButton");
           if (openBtn) {
             openBtn.className = isT
-              ? "w-full rounded-2xl border-0 bg-sky-500 px-4 py-3.5 text-white shadow-[0_10px_24px_rgba(14,165,233,0.22)] transition-all active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center gap-0.5"
-              : "w-full rounded-2xl border-0 bg-rose-500 px-4 py-3.5 text-white shadow-[0_10px_24px_rgba(244,63,94,0.24)] transition-all active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center gap-0.5";
+              ? "mt-3 w-full rounded-2xl border-0 bg-sky-500 px-4 py-3.5 text-white shadow-[0_10px_24px_rgba(14,165,233,0.22)] transition-all active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center gap-0.5"
+              : "mt-3 w-full rounded-2xl border-0 bg-rose-500 px-4 py-3.5 text-white shadow-[0_10px_24px_rgba(244,63,94,0.24)] transition-all active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center gap-0.5";
           }
-          paywallCard.querySelectorAll(".paywall-step").forEach((el) => {
-            el.className = isT
-              ? "paywall-step text-sky-500 font-black text-[11px] shrink-0"
-              : "paywall-step text-rose-500 font-black text-[11px] shrink-0";
-          });
+        }
+        if (paywallNextTeaserBox) {
+          paywallNextTeaserBox.className = isT
+            ? "mt-3 rounded-2xl border border-sky-100 bg-white px-3.5 py-3 shadow-sm"
+            : "mt-3 rounded-2xl border border-rose-100 bg-white px-3.5 py-3 shadow-sm";
+        }
+        if (paywallNextLabel) {
+          paywallNextLabel.className = isT
+            ? "text-[10px] font-black text-sky-500"
+            : "text-[10px] font-black text-rose-500";
+        }
+        if (paywallLockedBadge) {
+          paywallLockedBadge.className = isT
+            ? "rounded-full bg-sky-50 px-2 py-0.5 text-[9px] font-black text-sky-500"
+            : "rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-black text-rose-500";
         }
         if (payBoxFeatures) {
           payBoxFeatures.innerHTML = isT
             ? `
-              <div class="flex items-start gap-2.5"><span class="paywall-step text-sky-500 font-black text-[11px] shrink-0">01</span><div><div class="text-[12px] font-black text-slate-800">반복 패턴의 정확한 원인</div><div class="text-[10.5px] text-slate-500 mt-0.5">NOTE 02 나머지에서 왜 같은 데서 막히는지 확인</div></div></div>
-              <div class="flex items-start gap-2.5"><span class="paywall-step text-sky-500 font-black text-[11px] shrink-0">02</span><div><div class="text-[12px] font-black text-slate-800">지금 문제에서 잘못 짚은 부분</div><div class="text-[10.5px] text-slate-500 mt-0.5">감정 말고 실제로 먼저 손댈 핵심을 분리</div></div></div>
-              <div class="flex items-start gap-2.5"><span class="paywall-step text-sky-500 font-black text-[11px] shrink-0">03</span><div><div class="text-[12px] font-black text-slate-800">7일 행동 처방</div><div class="text-[10.5px] text-slate-500 mt-0.5">오늘부터 뭘 하고 뭘 멈출지 순서대로 정리</div></div></div>
-              <div class="flex items-start gap-2.5"><span class="paywall-step text-sky-500 font-black text-[11px] shrink-0">04</span><div><div class="text-[12px] font-black text-slate-800">사람 기준 + 움직일 시기</div><div class="text-[10.5px] text-slate-500 mt-0.5">남길 사람과 피할 환경, 움직일 타이밍까지 확인</div></div></div>`
+              <div class="flex items-center gap-2 text-[11.5px] font-bold text-slate-700"><span class="paywall-step text-sky-500">•</span><span>반복되는 원인이 정확히 뭔지</span></div>
+              <div class="flex items-center gap-2 text-[11.5px] font-bold text-slate-700"><span class="paywall-step text-sky-500">•</span><span>지금 끊어야 할 행동이 뭔지</span></div>
+              <div class="flex items-center gap-2 text-[11.5px] font-bold text-slate-700"><span class="paywall-step text-sky-500">•</span><span>남길 사람과 움직일 타이밍</span></div>`
             : `
-              <div class="flex items-start gap-2.5"><span class="paywall-step text-rose-500 font-black text-[11px] shrink-0">01</span><div><div class="text-[12px] font-black text-slate-800">반복되는 패턴의 진짜 이유</div><div class="text-[10.5px] text-slate-500 mt-0.5">NOTE 02 나머지에서 지금 패턴의 원인을 이어서 봐</div></div></div>
-              <div class="flex items-start gap-2.5"><span class="paywall-step text-rose-500 font-black text-[11px] shrink-0">02</span><div><div class="text-[12px] font-black text-slate-800">지금 놓치고 있는 핵심</div><div class="text-[10.5px] text-slate-500 mt-0.5">상대나 상황보다 먼저 봐야 할 진짜 문제를 짚어줘</div></div></div>
-              <div class="flex items-start gap-2.5"><span class="paywall-step text-rose-500 font-black text-[11px] shrink-0">03</span><div><div class="text-[12px] font-black text-slate-800">오늘부터 7일 동안 할 행동</div><div class="text-[10.5px] text-slate-500 mt-0.5">생각만 늘리지 않게 실제 행동 순서까지 같이 잡아줘</div></div></div>
-              <div class="flex items-start gap-2.5"><span class="paywall-step text-rose-500 font-black text-[11px] shrink-0">04</span><div><div class="text-[12px] font-black text-slate-800">사람 기준 + 움직일 시기</div><div class="text-[10.5px] text-slate-500 mt-0.5">누굴 가까이할지, 언제 움직일지까지 끝까지 이어져</div></div></div>`;
+              <div class="flex items-center gap-2 text-[11.5px] font-bold text-slate-700"><span class="paywall-step text-rose-500">•</span><span>왜 같은 고민이 반복되는지</span></div>
+              <div class="flex items-center gap-2 text-[11.5px] font-bold text-slate-700"><span class="paywall-step text-rose-500">•</span><span>지금 당장 뭘 해야 하는지</span></div>
+              <div class="flex items-center gap-2 text-[11.5px] font-bold text-slate-700"><span class="paywall-step text-rose-500">•</span><span>어떤 사람을 남기고 언제 움직일지</span></div>`;
         }
         if (vipSectionMainTitle) {
           vipSectionMainTitle.textContent = isT
@@ -6140,6 +6157,23 @@ currentResultData = {
               const nextNote = notesData[1];
               const previewParts = String(nextNote.desc || "").split(/<br\s*\/?>\s*<br\s*\/?>/i);
               const previewDesc = previewParts.slice(0, 1).join("<br><br>");
+              const teaserProbe = document.createElement("div");
+              teaserProbe.innerHTML =
+                previewParts.slice(1).join(" ") || String(nextNote.checklist || "");
+              const teaserPlain = String(teaserProbe.textContent || "")
+                .replace(/\s+/g, " ")
+                .trim();
+              const teaserCut =
+                teaserPlain.length > 54
+                  ? teaserPlain.slice(0, 54).trim() + "…"
+                  : teaserPlain;
+              const paywallNextTeaser = document.getElementById("paywallNextTeaser");
+              if (paywallNextTeaser) {
+                const fallback = isT
+                  ? "지금 문제에서 먼저 끊어야 할 지점은…"
+                  : "네가 여기서 자꾸 마음 쓰이는 진짜 이유는…";
+                paywallNextTeaser.textContent = "“" + (teaserCut || fallback) + "”";
+              }
 
               notesContainer.insertAdjacentHTML(
                 "beforeend",
@@ -6166,8 +6200,8 @@ currentResultData = {
                       <div class="mt-3 rounded-xl border border-dashed border-amber-300 bg-amber-50/80 px-3 py-3 text-center">
                           <p class="text-[11px] font-bold text-amber-800 leading-relaxed break-keep">
                               ${isT
-                                ? "여기까진 패턴 확인. 이제 왜 반복되는지와 어디서 끊어야 하는지 보면 돼."
-                                : "응, 여기서부터가 진짜 중요해. 왜 같은 장면이 반복되는지부터 언니가 이어서 같이 볼게."}
+                                ? "여기서부터 원인과 끊을 지점이 나온다."
+                                : "응, 여기서부터가 진짜 중요한 부분이야."}
                           </p>
                       </div>
                   </div>
