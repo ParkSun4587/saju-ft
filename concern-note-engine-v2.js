@@ -353,7 +353,7 @@
       const caution = y.cautionMonth;
       const cls = y.class;
       const yearLine = cls === "supportive" || cls === "mild-support"
-        ? "큰 흐름이 원국을 비교적 받쳐주는 해"
+        ? "큰 흐름이 기본 사주를 비교적 받쳐주는 해"
         : cls === "caution" || cls === "mild-caution"
           ? "무리하게 넓히기보다 손실을 줄이는 게 중요한 해"
           : "큰 흐름이 한쪽으로 강하게 기울지 않는 해";
@@ -367,7 +367,7 @@
     });
     if (!cards.length) {
       return {
-        desc:isT ? "현재 저장된 대운·세운·월운 데이터가 부족해서 특정 시기를 만들지 않을게." : "지금은 대운·세운·월운 자료가 충분하지 않아서 언니가 날짜를 지어내진 않을게.",
+        desc:isT ? "현재 저장된 시기 데이터가 부족해서 특정 때를 만들어내지 않을게." : "지금은 시기 자료가 충분하지 않아서 언니가 날짜를 지어내진 않을게.",
         meta:{firstDate:null,secondDate:null,structureFingerprint:reasoning?.structureFingerprint||"",timingFingerprint:reasoning?.timingFingerprint||""},
       };
     }
@@ -375,7 +375,7 @@
     const action = situation.move;
     const intro = isT
       ? "기본 사주는 그대로고, 시기마다 그 구조를 받치는 힘과 흔드는 힘만 달라져. 큰 흐름 → 해의 흐름 → 달의 흐름 순서로 겹쳐 봤어."
-      : "네 기본 사주가 해마다 바뀌는 건 아니야. 언니는 같은 구조 위에 대운·세운·월운이 어떻게 겹치는지를 따로 봤어.";
+      : "네 기본 사주가 해마다 바뀌는 건 아니야. 언니는 같은 구조 위에 큰 흐름, 해의 흐름, 달의 흐름이 어떻게 겹치는지를 따로 봤어.";
     const close = isT
       ? `좋은 구간엔 ${action}. 조심 구간엔 같은 속도로 밀지 마.`
       : `움직이기 좋은 구간에는 ${action}. 반대로 힘이 덜 받쳐주는 때는 억지로 같은 속도를 내지 않아도 돼.`;
