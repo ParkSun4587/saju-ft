@@ -128,8 +128,8 @@ function assert(cond, msg) {
   assert(result.ohengCards.length === 5, `oheng card count ${result.ohengCards.length}`);
   assert(result.ohengCards[1].includes('(0개)') && result.ohengCards[1].includes('0%'), `zero fire must display 0%: ${result.ohengCards[1]}`);
   assert(result.ohengCards[3].includes('(0개)') && result.ohengCards[3].includes('0%'), `zero metal must display 0%: ${result.ohengCards[3]}`);
-  assert(result.ohengSummaryF.includes('언니가 보면') && result.ohengSummaryF.includes('강한 쪽은 자연스럽게 쓰고') && !result.ohengSummaryF.includes('로아가'), `F oheng concise counseling copy missing: ${result.ohengSummaryF}`);
-  assert(result.ohengSummaryT.includes('정리하면') && result.ohengSummaryT.includes('반복 패턴은 이 강약 차이') && !result.ohengSummaryT.includes('서아가'), `T oheng concise counseling copy missing: ${result.ohengSummaryT}`);
+  assert(result.ohengSummaryF.includes('언니가 딱 보면') && result.ohengSummaryF.includes('아래 NOTE에서 그 이유부터') && !result.ohengSummaryF.includes('로아가'), `F oheng NOTE teaser copy missing: ${result.ohengSummaryF}`);
+  assert(result.ohengSummaryT.includes('지금 고민의 반복 패턴도 이 강약 차이') && result.ohengSummaryT.includes('아래 NOTE에서 원인부터') && !result.ohengSummaryT.includes('서아가'), `T oheng NOTE teaser copy missing: ${result.ohengSummaryT}`);
   assert(!/(이 공백|누수)/.test(result.ohengSummaryF + result.ohengSummaryT), 'stiff oheng copy leaked');
   assert(result.exactProfile.fingerprint !== result.otherFingerprint, 'different charts share integrated fingerprint');
   assert(result.exactProfile.audit.missing.length === 0, `semantic layer coverage missing: ${result.exactProfile.audit.missing.join(',')}`);
