@@ -21,7 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.2.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.3.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.1' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
@@ -136,7 +136,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.5.0', 'paid value layer missing');
-  assert(qa.noteVersion.version === '2.2.0', 'NOTE v2 engine missing');
+  assert(qa.noteVersion.version === '2.3.0', 'NOTE v2 engine missing');
   assert(qa.productVersion.version === '1.9.1', 'product layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.paid && qa.wrappers.integrated, 'NOTE v2 lost legacy engine metadata');
 
@@ -151,26 +151,27 @@ function norm(v) {
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
     assert(row.notes.length === 6, `${row.concern}/${row.situation}/${row.mode}: note count ${row.notes.length}`);
-    assert(row.noteAudit?.version === '2.2.0' && row.noteAudit?.fingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v2 audit missing`);
+    assert(row.noteAudit?.version === '2.3.0' && row.noteAudit?.fingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v2 audit missing`);
       assert((row.noteAudit?.sourceCount||0) >= 2 && (row.noteAudit?.pairPattern||'').length >= 18, `${row.concern}/${row.situation}/${row.mode}: behavioral specificity audit missing`);
     assert(row.noteAudit?.primary?.cluster && row.noteAudit?.secondary?.cluster, `${row.concern}/${row.situation}/${row.mode}: evidence diagnosis missing`);
-    assert(Array.isArray(row.noteAudit?.availableLayers) && row.noteAudit.availableLayers.length >= 18, `${row.concern}/${row.situation}/${row.mode}: semantic calculation layers missing`);
-    assert((row.noteAudit?.missingUsedLayers||[]).length === 0, `${row.concern}/${row.situation}/${row.mode}: not every available calculation layer reached NOTE output ${JSON.stringify(row.noteAudit?.missingUsedLayers)}`);
-    assert(Array.isArray(row.noteAudit?.factLedger) && row.noteAudit.factLedger.length >= (row.noteAudit?.usedLayers||[]).length, `${row.concern}/${row.situation}/${row.mode}: factual ledger missing`);
+    assert(row.noteAudit?.classicalFusion?.fingerprint, `${row.concern}/${row.situation}/${row.mode}: classical fusion fingerprint missing`);
+    for (const source of ['japyeong','jeokcheon','qiongtong','yongshin','sipsin','relations']) assert(row.noteAudit.classicalFusion.sources?.[source] === true, `${row.concern}/${row.situation}/${row.mode}: classical source not fused ${source}`);
+    assert((row.noteAudit?.classicalFusion?.signalCount||0) >= 8, `${row.concern}/${row.situation}/${row.mode}: too few classical signals`);
 
     const n1=String(row.notes[0]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
     const n2=String(row.notes[1]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
     const n4=String(row.notes[3]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
     const n5=String(row.notes[4]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
 
-    assert(n1.length >= 300 && n1.length <= 2600, `${row.concern}/${row.situation}/${row.mode}: NOTE1 full-fidelity size drift (${n1.length})`);
-    assert(n2.length >= 220 && n2.length <= 1800, `${row.concern}/${row.situation}/${row.mode}: NOTE2 full-fidelity size drift (${n2.length})`);
-    assert(n4.length >= 260 && n4.length <= 2600, `${row.concern}/${row.situation}/${row.mode}: NOTE4 full-fidelity action size drift (${n4.length})`);
+    assert(n1.length >= 140 && n1.length <= 1200, `${row.concern}/${row.situation}/${row.mode}: NOTE1 classical-fusion size drift (${n1.length})`);
+    assert(n2.length >= 140 && n2.length <= 1200, `${row.concern}/${row.situation}/${row.mode}: NOTE2 classical-fusion size drift (${n2.length})`);
+    assert(n4.length >= 150 && n4.length <= 1400, `${row.concern}/${row.situation}/${row.mode}: NOTE4 classical-fusion action size drift (${n4.length})`);
     assert(n5.length >= 120 && n5.length <= 760, `${row.concern}/${row.situation}/${row.mode}: NOTE5 domain-fit size drift (${n5.length})`);
     assert(/시작|첫 반응|보통/.test(n2) && /결국|그다음/.test(n2), `${row.concern}/${row.situation}/${row.mode}: NOTE2 lacks concrete behavior sequence`);
     assert(row.notes[5]?.timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: NOTE6 situation metadata missing`);
     assert(norm(row.notes[5]?.timing?.firstBody) !== norm(row.notes[5]?.timing?.secondBody), `${row.concern}/${row.situation}/${row.mode}: NOTE6 timing roles duplicated`);
     assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: hard saju jargon leaked`);
+    assert(!row.allText.includes('계산값 그대로'), `${row.concern}/${row.situation}/${row.mode}: raw calculation dump leaked`);
     assert(!/(undefined|NaN|null)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: bad token leaked`);
     for (const note of row.notes) assert((note.badge||'').length <= 16, `${row.concern}/${row.situation}/${row.mode}: NOTE badge too long ${note.badge}`);
 
