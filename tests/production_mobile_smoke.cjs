@@ -2,6 +2,7 @@ const { chromium } = require('playwright');
 const BASE = process.env.PRODUCTION_BASE || 'https://sajuft.com/index.html';
 const assert = (v,m) => { if (!v) throw new Error(m); };
 const sleep = (ms) => new Promise(r => setTimeout(r,ms));
+const norm = (v) => String(v || '').replace(/<[^>]+>/g,' ').replace(/[\s.,!?·‘’'"“”()\[\]]/g,'');
 
 async function deployed(page) {
   for (let i=0;i<36;i++) {
