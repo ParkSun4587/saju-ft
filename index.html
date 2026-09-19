@@ -6241,7 +6241,7 @@ currentResultData = {
           ohengList[0],
         );
 
-        // 가장 강한 기운과 가장 약한 기운을 한 번에 보여주고, 아래 NOTE로 자연스럽게 연결한다.
+        // 가장 강한 기운과 가장 약한 기운을 한 번에 보여주고, 아래 비밀메모로 자연스럽게 연결한다.
         const minCount = Math.min(...ohengList.map((o) => o.count));
         const minItems = ohengList.filter((o) => o.count === minCount);
         const minNames = minItems.map((o) => o.name).join("·");
@@ -8014,6 +8014,6 @@ currentResultData = {
   <script src="./classical-engine-v2.js?v=2"></script>
     <script src="./integrated-saju-profile-v1.js?v=1.0.0"></script>
     <script src="./paid-value-layer-v1.js?v=1.5.0"></script>
-    <script src="./premium-products-v1.js?v=1.7.0"></script>
+    <script src="./premium-products-v1.js?v=1.8.0"></script>
   </body>
 </html>
