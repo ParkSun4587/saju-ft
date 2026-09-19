@@ -21,7 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.1.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.2.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.1' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
@@ -136,7 +136,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.5.0', 'paid value layer missing');
-  assert(qa.noteVersion.version === '2.1.0', 'NOTE v2 engine missing');
+  assert(qa.noteVersion.version === '2.2.0', 'NOTE v2 engine missing');
   assert(qa.productVersion.version === '1.9.1', 'product layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.paid && qa.wrappers.integrated, 'NOTE v2 lost legacy engine metadata');
 
@@ -151,18 +151,21 @@ function norm(v) {
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
     assert(row.notes.length === 6, `${row.concern}/${row.situation}/${row.mode}: note count ${row.notes.length}`);
-    assert(row.noteAudit?.version === '2.1.0' && row.noteAudit?.fingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v2 audit missing`);
+    assert(row.noteAudit?.version === '2.2.0' && row.noteAudit?.fingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v2 audit missing`);
       assert((row.noteAudit?.sourceCount||0) >= 2 && (row.noteAudit?.pairPattern||'').length >= 18, `${row.concern}/${row.situation}/${row.mode}: behavioral specificity audit missing`);
     assert(row.noteAudit?.primary?.cluster && row.noteAudit?.secondary?.cluster, `${row.concern}/${row.situation}/${row.mode}: evidence diagnosis missing`);
+    assert(Array.isArray(row.noteAudit?.availableLayers) && row.noteAudit.availableLayers.length >= 18, `${row.concern}/${row.situation}/${row.mode}: semantic calculation layers missing`);
+    assert((row.noteAudit?.missingUsedLayers||[]).length === 0, `${row.concern}/${row.situation}/${row.mode}: not every available calculation layer reached NOTE output ${JSON.stringify(row.noteAudit?.missingUsedLayers)}`);
+    assert(Array.isArray(row.noteAudit?.factLedger) && row.noteAudit.factLedger.length >= (row.noteAudit?.usedLayers||[]).length, `${row.concern}/${row.situation}/${row.mode}: factual ledger missing`);
 
     const n1=String(row.notes[0]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
     const n2=String(row.notes[1]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
     const n4=String(row.notes[3]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
     const n5=String(row.notes[4]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
 
-    assert(n1.length >= 90 && n1.length <= 560, `${row.concern}/${row.situation}/${row.mode}: NOTE1 is not concise/specific (${n1.length})`);
-    assert(n2.length >= 100 && n2.length <= 620, `${row.concern}/${row.situation}/${row.mode}: NOTE2 is not concise/specific (${n2.length})`);
-    assert(n4.length >= 120 && n4.length <= 760, `${row.concern}/${row.situation}/${row.mode}: NOTE4 action plan size drift (${n4.length})`);
+    assert(n1.length >= 300 && n1.length <= 2600, `${row.concern}/${row.situation}/${row.mode}: NOTE1 full-fidelity size drift (${n1.length})`);
+    assert(n2.length >= 220 && n2.length <= 1800, `${row.concern}/${row.situation}/${row.mode}: NOTE2 full-fidelity size drift (${n2.length})`);
+    assert(n4.length >= 260 && n4.length <= 2600, `${row.concern}/${row.situation}/${row.mode}: NOTE4 full-fidelity action size drift (${n4.length})`);
     assert(n5.length >= 120 && n5.length <= 760, `${row.concern}/${row.situation}/${row.mode}: NOTE5 domain-fit size drift (${n5.length})`);
     assert(/시작|첫 반응|보통/.test(n2) && /결국|그다음/.test(n2), `${row.concern}/${row.situation}/${row.mode}: NOTE2 lacks concrete behavior sequence`);
     assert(row.notes[5]?.timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: NOTE6 situation metadata missing`);
@@ -279,6 +282,7 @@ function norm(v) {
       avatar: document.getElementById('cardSisterAvatar')?.getAttribute('src') || '',
     };
     return {
+      sourceFreeLaunch:FREE_LAUNCH_MODE,
       result:!!currentResultData,
       lockedCatalog:!!lockedCatalog,
       previewPlain,
@@ -313,14 +317,19 @@ function norm(v) {
     };
   });
   assert(ui.result, 'production-like result missing');
-  assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
-  assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
-  assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-  assert(ui.fPaywallText.includes('로아 언니 · 여기서부터 같이 보자') && ui.fPaywallText.includes('진짜 중요한 건 이제부터야') && ui.fPaywallText.includes('로아 언니, 나머지도 같이 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
-  assert(ui.tPaywallText.includes('서아 언니 · 여기서부터 정리할게') && ui.tPaywallText.includes('원인하고 끊을 지점') && ui.tPaywallText.includes('서아 언니, 답까지 정리해줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
-  assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
-  assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
-  assert(!/NOTE 0?2 이어서|NOTE 0?6|오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), 'internal NOTE labels or stale sale badge leaked into the conversion card');
+  if (ui.sourceFreeLaunch) {
+    assert(ui.lockedCatalog, 'free-launch mode should expose the post-report product catalog');
+    assert(!ui.previewPlain && !ui.fPaywallText && !ui.tPaywallText, 'free-launch mode must not render the 990 won lock UI');
+  } else {
+    assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
+    assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
+    assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
+    assert(ui.fPaywallText.includes('로아 언니 · 여기서부터 같이 보자') && ui.fPaywallText.includes('진짜 중요한 건 이제부터야') && ui.fPaywallText.includes('로아 언니, 나머지도 같이 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
+    assert(ui.tPaywallText.includes('서아 언니 · 여기서부터 정리할게') && ui.tPaywallText.includes('원인하고 끊을 지점') && ui.tPaywallText.includes('서아 언니, 답까지 정리해줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
+    assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
+    assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
+    assert(!/NOTE 0?2 이어서|NOTE 0?6|오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), 'internal NOTE labels or stale sale badge leaked into the conversion card');
+  }
   assert(ui.unlockedNoteCards === 6 && !ui.previewAfterUnlock, `unlock must replace teaser with all six full notes: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
