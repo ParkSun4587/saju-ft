@@ -40,6 +40,8 @@ async function load(page) {
     typeof buildNoteFourPrescription === 'function' &&
     typeof buildNoteFiveEnvironmentFilter === 'function' &&
     typeof buildNoteSixTiming === 'function' &&
+    typeof buildConcernDiagnosisV2 === 'function' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.0.0' &&
     typeof analyzeDayMasterStrengthV2 === 'function' &&
     globalThis.__MANSE_KOREA_V2__?.version === '2.2.0',
     null, {timeout:60000}
