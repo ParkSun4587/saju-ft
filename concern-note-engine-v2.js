@@ -280,7 +280,7 @@
 
   function noteTitle(d, idx, isT) {
     const s=d.situation, p=d.primary.cluster;
-    if (idx===0) return isT ? s.label+"에서 네가 먼저 보이는 반응" : s.label+"라면, 언니는 네 이 반응부터 볼래";
+    if (idx===0) return isT ? s.label+" — 먼저 봐야 할 반응은 이거야" : s.label+" — 언니는 네 이 반응부터 볼래";
     if (idx===1) return isT ? "막히는 순서는 여기서 갈려" : "네가 지치기 시작하는 순서가 보여";
     if (idx===2) return isT ? "원인, 네가 생각한 데랑 다를 수 있어" : "언니가 보기엔 진짜 문제는 조금 다른 데 있어";
     if (idx===3) return isT ? "이번 주엔 이것만 바꿔" : "이번 주엔 언니랑 이것만 바꿔보자";
