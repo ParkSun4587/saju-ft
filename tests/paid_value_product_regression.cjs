@@ -60,6 +60,7 @@ function norm(v) {
 
   const qa = await page.evaluate(() => {
     window.gtag = () => {};
+    const localNorm = (v) => String(v || '').replace(/<[^>]+>/g,' ').replace(/[\\s.,!?·‘’'"“”()\\[\\]]/g,'');
     const concerns = ['money','career','love','path','people','mental'];
     const exact = calculateAccurateManse(1998,2,21,'03:10','female');
     const other = calculateAccurateManse(1990,1,2,'12:00','female');
@@ -129,7 +130,7 @@ function norm(v) {
       chartCompare:{
         diagA:{fingerprint:diagA.fingerprint,primary:diagA.primary,secondary:diagA.secondary},
         diagB:{fingerprint:diagB.fingerprint,primary:diagB.primary,secondary:diagB.secondary},
-        diffs:notesA.map((n,i)=>norm(n.desc)!==norm(notesB[i].desc)),
+        diffs:notesA.map((n,i)=>localNorm(n.desc)!==localNorm(notesB[i].desc)),
       },
     };
   });
