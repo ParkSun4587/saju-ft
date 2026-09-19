@@ -297,10 +297,12 @@
   function changeOrder(reasoning, situation, isT) {
     const bridge = reasoning?.integrated?.bridgeElement;
     const balance = reasoning?.profile?.balance || {};
-    const firstElement = bridge || balance.primary || "";
-    const secondElement = bridge ? (balance.primary || balance.secondary || "") : (balance.secondary || "");
+    const firstElement = bridge || balance.primary || balance.secondary || "";
+    const secondElement = [balance.primary, balance.secondary]
+      .find((element) => element && element !== firstElement) || "";
     const firstAction = ELEMENT_ACTION[firstElement] || groupText(reasoning?.integrated?.neededGroups?.[0] || "unknown").action;
-    const secondAction = ELEMENT_ACTION[secondElement] || groupText(reasoning?.integrated?.neededGroups?.[1] || "unknown").action;
+    const secondAction = ELEMENT_ACTION[secondElement]
+      || groupText(reasoning?.integrated?.neededGroups?.[1] || reasoning?.integrated?.neededGroups?.[0] || "unknown").action;
     const harmful = godsHuman(reasoning?.integrated?.harmfulGods);
     const special = reasoning?.unsupported || [];
     const caution = special.length
@@ -401,7 +403,7 @@
       love:["연애 핵심","반복 패턴","진짜 원인","바꿀 순서","맞는 사람","관계 시기"],
       path:["진로 핵심","고민 패턴","진짜 원인","바꿀 순서","맞는 일 방식","움직일 시기"],
       people:["관계 핵심","반복 패턴","진짜 원인","바꿀 순서","남길 사람","관계 시기"],
-      mental:["마음 핵심","지치는 패턴","진짜 원인","바꿀 순서","회복 환경","회복 시기"],
+      mental:["마음 핵심","지치는 패턴","진짜 원인","이번 주 행동","회복 환경","회복 시기"],
     };
     return rows[concern]?.[idx] || "비밀 메모";
   }
