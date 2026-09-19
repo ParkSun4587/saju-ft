@@ -19,7 +19,7 @@ function norm(v) {
 
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil:'load' });
   await page.waitForFunction(() =>
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.2.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.3.0' &&
     typeof buildIntegratedSajuProfile === 'function' &&
     typeof buildConcernDiagnosisV2 === 'function' &&
     typeof generateConcernNotes === 'function'
@@ -108,7 +108,7 @@ function norm(v) {
     };
   });
 
-  assert(result.engine?.version === '2.2.0', 'NOTE v2 engine missing');
+  assert(result.engine?.version === '2.3.0', 'NOTE v2 engine missing');
   assert(result.integrated?.version === '1.1.0', 'integrated profile missing');
   assert(result.wrapper, 'NOTE v2 wrapper missing');
   assert(result.exactPillars.join(',') === '戊寅,甲寅,己亥,乙丑', 'canonical pillars drift: '+result.exactPillars.join(','));
@@ -126,20 +126,21 @@ function norm(v) {
 
     for (const [mode, notes, audit] of [['F',row.notesF,row.auditF],['T',row.notesT,row.auditT]]) {
       assert(notes.length === 6, row.concern+'/'+row.situation+'/'+mode+': expected six notes');
-      assert(audit?.version === '2.2.0' && audit?.fingerprint, row.concern+'/'+row.situation+'/'+mode+': NOTE v2 audit missing');
+      assert(audit?.version === '2.3.0' && audit?.fingerprint, row.concern+'/'+row.situation+'/'+mode+': NOTE v2 audit missing');
       assert(audit.primary?.cluster && audit.secondary?.cluster, row.concern+'/'+row.situation+'/'+mode+': diagnosis cluster missing');
       assert((audit.sourceCount||0) >= 2 && (audit.pairPattern||'').length >= 18, row.concern+'/'+row.situation+'/'+mode+': multi-signal behavioral portrait missing');
       assert((audit.specificity?.cue||'').length >= 10 && (audit.specificity?.metric||'').length >= 10, row.concern+'/'+row.situation+'/'+mode+': situation-level specificity missing');
-      assert(Array.isArray(audit.availableLayers) && audit.availableLayers.length >= 18, row.concern+'/'+row.situation+'/'+mode+': semantic calculation layers missing');
-      assert(Array.isArray(audit.usedLayers) && audit.missingUsedLayers?.length === 0, row.concern+'/'+row.situation+'/'+mode+': not every available calculation layer reached NOTE output '+JSON.stringify(audit.missingUsedLayers));
-      assert(audit.usedLayers.length === new Set(audit.availableLayers).size, row.concern+'/'+row.situation+'/'+mode+': layer coverage count drift');
-      assert(Array.isArray(audit.factLedger) && audit.factLedger.length >= audit.usedLayers.length, row.concern+'/'+row.situation+'/'+mode+': factual ledger missing');
-      assert(audit.truthFingerprint && audit.truthFingerprint.length >= 8, row.concern+'/'+row.situation+'/'+mode+': factual fingerprint missing');
+      assert(audit.classicalFusion?.fingerprint, row.concern+'/'+row.situation+'/'+mode+': classical fusion fingerprint missing');
+      for (const source of ['japyeong','jeokcheon','qiongtong','yongshin','sipsin','relations']) {
+        assert(audit.classicalFusion?.sources?.[source] === true, row.concern+'/'+row.situation+'/'+mode+': classical source not fused '+source);
+      }
+      assert((audit.classicalFusion?.signalCount||0) >= 8, row.concern+'/'+row.situation+'/'+mode+': too few classical signals reached diagnosis');
       const all=notes.map(n=>plain((n.title||'')+' '+(n.desc||'')+' '+(n.checklist||''))).join(' ');
       assert(!jargon.test(all), row.concern+'/'+row.situation+'/'+mode+': hard saju jargon leaked');
+      assert(!all.includes('계산값 그대로'), row.concern+'/'+row.situation+'/'+mode+': raw calculation dump leaked');
       assert(!/(undefined|NaN|null)/.test(all), row.concern+'/'+row.situation+'/'+mode+': bad token leaked');
-      assert(plain(notes[0].desc).length >= 300 && plain(notes[0].desc).length <= 2600, row.concern+'/'+row.situation+'/'+mode+': NOTE1 full-fidelity size drift');
-      assert(plain(notes[1].desc).length >= 220 && plain(notes[1].desc).length <= 1800, row.concern+'/'+row.situation+'/'+mode+': NOTE2 full-fidelity size drift');
+      assert(plain(notes[0].desc).length >= 140 && plain(notes[0].desc).length <= 1200, row.concern+'/'+row.situation+'/'+mode+': NOTE1 classical-fusion size drift');
+      assert(plain(notes[1].desc).length >= 140 && plain(notes[1].desc).length <= 1200, row.concern+'/'+row.situation+'/'+mode+': NOTE2 classical-fusion size drift');
       assert(notes[5]?.__timingQA?.concernSituation === row.situation, row.concern+'/'+row.situation+'/'+mode+': NOTE6 situation metadata missing');
       assert(norm(notes[5]?.__timingQA?.firstBody) !== norm(notes[5]?.__timingQA?.secondBody), row.concern+'/'+row.situation+'/'+mode+': timing roles duplicated');
       const high=[audit.primary,audit.secondary].filter(x=>x.confidence==='high');
@@ -150,7 +151,7 @@ function norm(v) {
 
     assert(norm(row.notesF[0].desc) !== norm(row.notesT[0].desc), row.concern+'/'+row.situation+': F/T renderer voice did not differ');
     assert(row.notesF[0].title !== row.notesT[0].title, row.concern+'/'+row.situation+': F/T title voice did not differ');
-    assert(JSON.stringify(row.auditF.factLedger) === JSON.stringify(row.auditT.factLedger), row.concern+'/'+row.situation+': F/T changed factual calculation output');
+    assert(row.auditF.classicalFusion?.fingerprint === row.auditT.classicalFusion?.fingerprint, row.concern+'/'+row.situation+': F/T changed classical diagnosis facts');
   }
 
   for (const concern of ['money','career','love','path','people','mental']) {
@@ -170,7 +171,7 @@ function norm(v) {
     version:result.engine.version,
     rows:result.rows.length,
     differentChartNotes:result.differentChart.noteDiffs.filter(Boolean).length,
-    fullFidelityLayers:result.rows[0]?.auditF?.usedLayers?.length || 0,
+    classicalSignals:result.rows[0]?.auditF?.classicalFusion?.signalCount || 0,
   }));
   await browser.close();
 })().catch(err=>{ console.error(err.stack||err); process.exit(1); });
