@@ -10,7 +10,7 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.2.0' &&
+        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.3.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.1' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
@@ -97,13 +97,13 @@ async function inspect(page, mode) {
       },
     };
   },mode);
-  assert(r.noteV2Audit?.version==='2.2.0'&&r.noteV2Audit?.fingerprint,mode+' NOTE v2 audit missing');
+  assert(r.noteV2Audit?.version==='2.3.0'&&r.noteV2Audit?.fingerprint,mode+' NOTE v2 audit missing');
   assert(r.noteV2Audit?.primary?.cluster&&r.noteV2Audit?.secondary?.cluster,mode+' NOTE v2 diagnosis clusters missing');
-  assert(Array.isArray(r.noteV2Audit?.availableLayers)&&r.noteV2Audit.availableLayers.length>=18,mode+' semantic calculation layers missing');
-  assert((r.noteV2Audit?.missingUsedLayers||[]).length===0,mode+' not every calculation layer reached NOTE output '+JSON.stringify(r.noteV2Audit?.missingUsedLayers));
-  assert(r.n1.length>=300&&r.n1.length<=2600,mode+' NOTE1 full-fidelity size drift '+r.n1.length);
-  assert(r.n2.length>=220&&r.n2.length<=1800,mode+' NOTE2 full-fidelity size drift '+r.n2.length);
-  assert(r.n4.length>=260&&r.n4.length<=2600,mode+' NOTE4 full-fidelity action size drift '+r.n4.length);
+  assert(r.noteV2Audit?.classicalFusion?.fingerprint,mode+' classical fusion fingerprint missing');
+  for(const source of ['japyeong','jeokcheon','qiongtong','yongshin','sipsin','relations']) assert(r.noteV2Audit.classicalFusion.sources?.[source]===true,mode+' classical source not fused '+source);
+  assert(r.n1.length>=140&&r.n1.length<=1200,mode+' NOTE1 classical-fusion size drift '+r.n1.length);
+  assert(r.n2.length>=140&&r.n2.length<=1200,mode+' NOTE2 classical-fusion size drift '+r.n2.length);
+  assert(r.n4.length>=150&&r.n4.length<=1400,mode+' NOTE4 classical-fusion action size drift '+r.n4.length);
   assert(r.n5.length>=120&&r.n5.length<=760,mode+' NOTE5 domain-fit size drift '+r.n5.length);
   assert(/시작|첫 반응|보통/.test(r.n2)&&/결국|그다음/.test(r.n2),mode+' NOTE2 behavior chain missing '+r.n2);
   assert(r.note6Timing?.concernSituation,mode+' NOTE6 situation metadata missing');
