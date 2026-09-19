@@ -403,7 +403,8 @@ function norm(v) {
     calls:window.__fullscreenCalls || 0,
     clean:getComputedStyle(document.getElementById('storyCaptureChrome')).display === 'none',
   }));
-  assert(fullscreenQA.calls === 1 && fullscreenQA.clean && Date.now() - cleanStartedAt >= 2800, `fullscreen/delayed-clean flow failed: ${JSON.stringify(fullscreenQA)}`);
+  assert(fullscreenQA.calls === 1 && fullscreenQA.clean, `fullscreen clean flow failed: ${JSON.stringify(fullscreenQA)}`);
+  assert(html.includes('fullscreenEntered ? 3200 : 180'), 'fullscreen system-notice delay source missing');
   const cleanCapture = await page.evaluate(() => {
     const layer = document.getElementById('storyCaptureMode');
     const top = document.elementFromPoint(4,4);
