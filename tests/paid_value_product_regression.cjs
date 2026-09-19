@@ -21,7 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.0.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.1.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.1' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
@@ -136,7 +136,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.5.0', 'paid value layer missing');
-  assert(qa.noteVersion.version === '2.0.0', 'NOTE v2 engine missing');
+  assert(qa.noteVersion.version === '2.1.0', 'NOTE v2 engine missing');
   assert(qa.productVersion.version === '1.9.1', 'product layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.paid && qa.wrappers.integrated, 'NOTE v2 lost legacy engine metadata');
 
@@ -151,7 +151,7 @@ function norm(v) {
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
     assert(row.notes.length === 6, `${row.concern}/${row.situation}/${row.mode}: note count ${row.notes.length}`);
-    assert(row.noteAudit?.version === '2.0.0' && row.noteAudit?.fingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v2 audit missing`);
+    assert(row.noteAudit?.version === '2.1.0' && row.noteAudit?.fingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v2 audit missing`);\n    assert((row.noteAudit?.sourceCount||0) >= 2 && (row.noteAudit?.pairPattern||'').length >= 18, `${row.concern}/${row.situation}/${row.mode}: behavioral specificity audit missing`);
     assert(row.noteAudit?.primary?.cluster && row.noteAudit?.secondary?.cluster, `${row.concern}/${row.situation}/${row.mode}: evidence diagnosis missing`);
 
     const n1=String(row.notes[0]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
