@@ -658,7 +658,7 @@ function norm(v) {
 
   assert(errors.length === 0, `browser errors: ${errors.join(' | ')}`);
   console.log('PAID_VALUE_PRODUCT_PASS', JSON.stringify({
-    rows:qa.rows.length,
+    rows:qa.situationRows.length,
     prices:expectedPrices,
     catalogButtons:ui.buttons,
     note6Distinct:true,
