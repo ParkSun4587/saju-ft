@@ -9,7 +9,7 @@
     <meta name="color-scheme" content="only light" />
     <meta name="supported-color-schemes" content="light" />
     <meta name="darkreader-lock" />
-    <title>어떤언니 - 똑같은 내 사주, 어떤 언니한테 풀래?</title>
+    <title>어떤언니 - 똑같은 내 사주, 누구한테 먼저 털어놓을래?</title>
 
     <!-- 구글/네이버 검색엔진 최적화(SEO) 표준 메타 태그 -->
     <meta
@@ -26,7 +26,7 @@
     <!-- 소셜 공유(카카오톡/인스타/페이스북/스레드) 메타 태그 -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="어떤언니" />
-    <meta property="og:title" content="똑같은 내 사주, 어떤 언니한테 풀래?" />
+    <meta property="og:title" content="똑같은 내 사주, 누구한테 먼저 털어놓을래?" />
     <meta
       property="og:description"
       content="F 공감 vs T 정리. 생일 넣고 1:1 갠톡 시작"
@@ -48,7 +48,7 @@
 
     <!-- 트위터(X) 카드 메타 태그 -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="똑같은 내 사주, 어떤 언니한테 풀래?" />
+    <meta name="twitter:title" content="똑같은 내 사주, 누구한테 먼저 털어놓을래?" />
     <meta
       name="twitter:description"
       content="F 공감 vs T 정리. 생일 넣고 1:1 갠톡 시작"
@@ -666,6 +666,28 @@
         .t-dot-3 {
           animation: typing-dot 1.2s infinite ease-in-out 0.4s;
         }
+        .split-choice-bubble {
+          transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease,
+            border-color 0.2s ease;
+        }
+        .split-choice-cta {
+          transition:
+            transform 0.18s ease,
+            box-shadow 0.18s ease;
+        }
+        @media (hover: hover) and (pointer: fine) {
+          .char-panel:hover .panel-img {
+            transform: scale(1.015);
+          }
+          .char-panel:hover .split-choice-bubble {
+            transform: translateY(-2px);
+          }
+          .char-panel:hover .split-choice-cta {
+            transform: translateY(-1px) scale(1.01);
+          }
+        }
       </style>
 
       <!-- 모바일 크기 고정 컨테이너 -->
@@ -679,29 +701,51 @@
           class="absolute top-1/2 left-0 w-full h-px bg-white/50 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.6)] transition-opacity duration-200"
         ></div>
 
-        <!-- 최상단 헤더 (1020 감성 카피 & 투명 블러 디자인 적용) -->
+        <!-- 첫 상담자 선택 헤더 -->
         <div
           id="splitTitle"
           class="absolute left-0 w-full z-[70] pointer-events-none px-3 flex justify-center"
-          style="top: calc(env(safe-area-inset-top, 0px) + 12px)"
+          style="top: calc(env(safe-area-inset-top, 0px) + 10px)"
         >
           <div
             id="topTitleBox"
-            class="bg-white/70 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-[0_4px_15px_rgba(0,0,0,0.05)] border border-white/50 flex items-center justify-center w-max max-w-full"
+            class="bg-white/80 backdrop-blur-md px-4 py-2.5 rounded-[18px] shadow-[0_5px_18px_rgba(15,23,42,0.08)] border border-white/60 flex flex-col items-center justify-center w-[calc(100%-24px)] max-w-[390px]"
           >
-            <span
-              class="text-[11.5px] sm:text-[12.5px] font-extrabold text-slate-800 tracking-tight whitespace-nowrap"
+            <p
+              class="text-[12px] sm:text-[13px] font-black text-slate-900 tracking-tight leading-tight text-center break-keep"
             >
-              똑같은 내 사주, <span class="text-rose-500">어떤 언니</span>한테
-              풀래?
-            </span>
+              똑같은 내 사주, 누구한테 먼저 털어놓을래?
+            </p>
+            <p
+              class="mt-1 text-[9.5px] sm:text-[10px] font-bold text-slate-500 tracking-tight text-center"
+            >
+              원하는 상담 스타일을 골라봐
+            </p>
+          </div>
+        </div>
+
+        <!-- 선택이 결과 끝까지 이어진다는 안내 -->
+        <div
+          id="splitContinuityHint"
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[85] pointer-events-none transition-opacity duration-200"
+        >
+          <div
+            class="bg-slate-950/72 backdrop-blur-md border border-white/25 text-white px-3 py-1.5 rounded-full shadow-[0_4px_14px_rgba(15,23,42,0.22)] whitespace-nowrap"
+          >
+            <span class="text-[9px] sm:text-[9.5px] font-extrabold tracking-tight"
+              >선택한 언니의 말투로 결과 끝까지 이어져</span
+            >
           </div>
         </div>
 
         <!-- F 패널 (로아) -->
         <div
           id="panelRoa"
+          role="button"
+          tabindex="0"
+          aria-label="감정 공감형 로아 언니와 상담 시작"
           onclick="selectSplitMode('F')"
+          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectSplitMode('F')}"
           class="char-panel relative w-full h-1/2 cursor-pointer bg-rose-50/30 overflow-hidden flex flex-col justify-end active:scale-[0.98] transition-transform duration-100"
         >
           <img
@@ -712,7 +756,7 @@
           />
 
           <div
-            class="absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-rose-100/80 via-transparent to-transparent pointer-events-none"
+            class="absolute inset-x-0 bottom-0 h-[34%] bg-gradient-to-t from-rose-100/85 via-rose-50/20 to-transparent pointer-events-none"
           ></div>
 
           <div
@@ -728,32 +772,36 @@
                 class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]"
                 >로아</span
               >
+              <span
+                class="ml-0.5 bg-white/92 backdrop-blur-sm text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[9px] font-black shadow-sm"
+                >감정 공감형</span
+              >
             </div>
 
             <!-- 언니 말풍선 -->
             <div
-              class="relative bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[90%] ml-1 border border-rose-200"
+              class="split-choice-bubble relative bg-white/96 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[92%] ml-1 border border-rose-200"
             >
               <span
                 class="absolute -left-[5px] top-0 w-3 h-3 bg-white"
                 style="clip-path: polygon(100% 0, 0 0, 100% 100%)"
               ></span>
               <p
-                class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-800 leading-snug break-keep"
+                class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-800 leading-[1.42] break-keep"
               >
-                네가 왜 여기서 마음 쓰이는지부터 같이 보자. 좋은 얘기만 하진 않아도,
-                혼자 끙끙대게 두진 않을게.
+                네가 왜 여기서 마음 쓰이는지부터 같이 볼래.<br />
+                좋은 말만 하진 않을게. 대신 네 편에서 끝까지 풀어줄게.
               </p>
             </div>
 
             <!-- 유저 답장형 CTA -->
             <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
               <div
-                class="relative bg-[#fff0f3] text-[#9f1239] border-2 border-[#fb7185] px-3.5 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_12px_rgba(244,63,94,0.22)] flex items-center gap-1.5 active:scale-95 transition-transform max-w-full"
+                class="split-choice-cta relative bg-[#fff0f3] text-[#9f1239] border-2 border-[#fb7185] px-3.5 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_12px_rgba(244,63,94,0.22)] flex items-center gap-1.5 active:scale-95 max-w-full"
               >
                 <span
                   class="text-[10.5px] sm:text-[12px] font-black tracking-tighter whitespace-nowrap"
-                  >응, 내 얘기부터 천천히 같이 봐줘</span
+                  >응, 언니랑 천천히 풀어볼래</span
                 >
                 <span class="text-[13px] font-black leading-none text-[#e11d48]"
                   >›</span
@@ -770,7 +818,11 @@
         <!-- T 패널 (서아) -->
         <div
           id="panelSeoa"
+          role="button"
+          tabindex="0"
+          aria-label="핵심 정리형 서아 언니와 상담 시작"
           onclick="selectSplitMode('T')"
+          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectSplitMode('T')}"
           class="char-panel relative w-full h-1/2 cursor-pointer bg-slate-950 overflow-hidden flex flex-col justify-end active:scale-[0.98] transition-transform duration-100"
         >
           <img
@@ -781,7 +833,7 @@
           />
 
           <div
-            class="absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none"
+            class="absolute inset-x-0 bottom-0 h-[34%] bg-gradient-to-t from-slate-950/90 via-slate-900/28 to-transparent pointer-events-none"
           ></div>
 
           <div
@@ -797,31 +849,36 @@
                 class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]"
                 >서아</span
               >
+              <span
+                class="ml-0.5 bg-sky-400/20 backdrop-blur-sm text-sky-100 border border-sky-300/40 px-2 py-0.5 rounded-full text-[9px] font-black shadow-sm"
+                >핵심 정리형</span
+              >
             </div>
 
             <!-- 언니 말풍선 -->
             <div
-              class="relative bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[90%] ml-1 border border-slate-700"
+              class="split-choice-bubble relative bg-slate-900/96 backdrop-blur-md px-3.5 py-2.5 rounded-2xl rounded-tl-none shadow-md max-w-[92%] ml-1 border border-slate-700"
             >
               <span
                 class="absolute -left-[5px] top-0 w-3 h-3 bg-slate-900"
                 style="clip-path: polygon(100% 0, 0 0, 100% 100%)"
               ></span>
               <p
-                class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-100 leading-snug break-keep"
+                class="text-[11.5px] sm:text-[12px] font-extrabold text-slate-100 leading-[1.42] break-keep"
               >
-                괜히 겁주거나 포장 안 해. 좋은 건 좋다, 아닌 건 아니다 말하고 지금 필요한 것만 정리해줄게.
+                돌려 말 안 할게.<br />
+                지금 네 상황에서 뭐가 문제고 뭘 먼저 봐야 하는지 딱 정리해줄게.
               </p>
             </div>
 
             <!-- 유저 답장형 CTA -->
             <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
               <div
-                class="relative bg-[#0284c7] text-white border-2 border-sky-400 px-3.5 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_12px_rgba(2,132,199,0.3)] flex items-center gap-1.5 active:scale-95 transition-transform max-w-full"
+                class="split-choice-cta relative bg-[#0284c7] text-white border-2 border-sky-400 px-3.5 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_12px_rgba(2,132,199,0.3)] flex items-center gap-1.5 active:scale-95 max-w-full"
               >
                 <span
                   class="text-[10.5px] sm:text-[12px] font-black tracking-tighter whitespace-nowrap"
-                  >좋아. 돌려 말하지 말고 필요한 것만 알려줘</span
+                  >좋아, 핵심만 바로 알려줘</span
                 >
                 <span class="text-[13px] font-black leading-none text-sky-200"
                   >›</span
@@ -3165,11 +3222,13 @@
           isF ? "panelSeoa" : "panelRoa",
         );
         const divider = document.getElementById("centerDivider");
+        const continuityHint = document.getElementById("splitContinuityHint");
 
         // 1단계: 인물 일러스트만 앞으로 탁! 튕겨나옴 (스프링 팝업) + 반대편 딤 처리
         if (targetImg) targetImg.classList.add("img-pop-spring");
         if (otherPanel) otherPanel.classList.add("panel-dimmed");
         if (divider) divider.style.opacity = "0";
+        if (continuityHint) continuityHint.style.opacity = "0";
 
         // 2단계: 손맛을 인지하는 0.18초 뒤 카톡 대화방 우측 슬라이드-인
         runSafeTimeout(() => {
