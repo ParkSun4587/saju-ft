@@ -1155,7 +1155,17 @@
   function renderCatalog() {
     const data = getData();
     const notes = document.getElementById("notesListContainer");
-    if (!data || !notes || document.getElementById("unniProductLadder")) return;
+    const existing = document.getElementById("unniProductLadder");
+    const unlocked = typeof isUnlocked === "undefined" ? true : !!isUnlocked;
+    if (!data || !notes) {
+      existing?.remove();
+      return;
+    }
+    if (!unlocked) {
+      existing?.remove();
+      return;
+    }
+    if (existing) return;
     const isT = data?.currentMode === "T";
     const recommendedId = recommendedProductId(data);
     const recommended = PRODUCTS[recommendedId] || PRODUCTS.full_saju;
@@ -1163,13 +1173,13 @@
     const wrap = document.createElement("section");
     wrap.id = "unniProductLadder";
     wrap.style.cssText = "margin-top:24px;padding:18px 14px;border-radius:22px;background:#fff;border:1px solid #fde2e8;box-shadow:0 10px 30px rgba(225,175,185,.10)";
-    const eyebrow = isT ? "이 고민 다음에 더 볼 거면" : "여기까지 같이 봤으니까";
+    const eyebrow = isT ? "이 고민은 여기까지 정리했어" : "이 고민 끝까지 같이 봤으니까";
     const headline = isT
       ? "다음으로 볼 건 이게 제일 맞아"
       : "언니가 너한테 다음 하나만 골라봤어";
     const sub = isT
-      ? "방금 본 상담에서 바로 이어지는 기준으로 맨 위에 뒀어. 아래 셋은 목적이 다를 때 고르면 돼."
-      : "방금 상담이랑 이어지는 걸 맨 위에 뒀어. 더 알고 싶은 게 남았다면 여기서부터 보는 게 제일 자연스러워.";
+      ? "더 궁금한 게 남았다면 지금 상담 다음으로 이어지는 걸 맨 위에 뒀어. 목적이 다르면 아래에서 고르면 돼."
+      : "이제 다른 것도 궁금하다면, 방금 상담 다음으로 자연스럽게 이어지는 걸 언니가 맨 위에 골라뒀어.";
     const reason = recommendationReason(recommended.id, data, isT);
     wrap.innerHTML = `<div style="font-size:11px;font-weight:900;color:#f43f5e">${eyebrow}</div><h3 style="font-size:18px;font-weight:950;margin:5px 0 5px">${headline}</h3><p style="font-size:11.5px;line-height:1.6;color:#64748b;margin:0 0 12px">${sub}</p><div style="display:grid;gap:9px">${productButtonHtml(recommended,{recommended:true,reason})}<div style="font-size:10px;font-weight:900;color:#94a3b8;margin:6px 2px -1px">다른 게 더 궁금하다면</div>${others.map((p)=>productButtonHtml(p,{secondary:true})).join("")}</div>`;
     notes.insertAdjacentElement("afterend", wrap);
