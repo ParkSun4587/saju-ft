@@ -9,12 +9,12 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-        globalThis.__UNNI_PRODUCTS_V1__?.version === '1.8.0' &&
+        globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach paid 1.5.0 / products 1.8.0');
+  throw new Error('production did not reach paid 1.5.0 / products 1.9.0');
 }
 
 async function enter(page, mode, concern, situation) {
