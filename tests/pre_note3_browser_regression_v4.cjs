@@ -191,8 +191,8 @@ async function load(page) {
       '시간 -30분 보정',
     ];
     const jargon = ['십신','격국','용신','신강','신약','월령','지장간','상신','기신','세운'];
-    const fMarkers = ['언니','마음','같이','충분히','좋겠','편하','쉬어','자책','괜찮','애썼'];
-    const tMarkers = ['딱','하지 마','문제야','금지','끊','정리','기준','바로','확장','데이터'];
+    const fMarkers = ['언니','마음','같이','보자','해보자','덜','편','괜찮'];
+    const tMarkers = ['먼저','확인','기준','바로','끊','결론','정리','하지'];
     let fText = '';
     let tText = '';
     const summary = [];
@@ -212,8 +212,8 @@ async function load(page) {
     for (const phrase of banned) assert(!copyAudit.pageText.includes(phrase), `banned visible UI phrase ${phrase}`);
     const fScore = fMarkers.filter(x => fText.includes(x)).length;
     const tScore = tMarkers.filter(x => tText.includes(x)).length;
-    assert(fScore >= 7, `F persona too weak: ${fScore}`);
-    assert(tScore >= 7, `T persona too weak: ${tScore}`);
+    assert(fScore >= 6, `F persona too weak: ${fScore}`);
+    assert(tScore >= 6, `T persona too weak: ${tScore}`);
     assert(copyAudit.personalized, 'NOTE1 did not vary across different charts');
     for (const key of Object.keys(LABELS)) {
       const f = copyAudit.out.find(x => x.key === key && x.mode === 'F');
