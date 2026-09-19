@@ -516,39 +516,13 @@
   }
 
   function buildEvidence(profile) {
-    const list = [];
-    const dom = profile?.sipsin?.dominant || "";
-    const sec = profile?.sipsin?.secondary || "";
-    addEvidence(list, GOD_CLUSTER[dom], 3.4, "주된 반응", dom);
-    if (sec && sec !== dom) addEvidence(list, GOD_CLUSTER[sec], 2.0, "보조 반응", sec);
-
-    const sc = profile?.strength?.code;
-    if (sc === "push") addEvidence(list, "intensity", 2.8, "기본 힘", "압박 속에서도 버티고 밀어붙이는 쪽");
-    if (sc === "sensitive") addEvidence(list, "sensitivity", 2.8, "기본 힘", "주변 변화와 반응을 빨리 받아들이는 쪽");
-    if (sc === "balanced") addEvidence(list, "stability", 1.6, "기본 힘", "한쪽으로 몰기보다 균형을 잡으려는 쪽");
-
-    const status = profile?.structure?.status || "";
-    if (status === "성중유패") addEvidence(list, "reversal", 2.8, "흐름 전환", "잘 버티다가 특정 지점에서 방향이 크게 바뀌기 쉬움");
-    if (status === "파격") addEvidence(list, "sensitivity", 2.4, "흐름 마찰", "익숙한 방식이 안 먹히는 순간 소모가 커짐");
-    if (status === "성격") addEvidence(list, GOD_CLUSTER[dom] || "stability", 1.8, "흐름 일관성", "중심 반응이 비교적 반복해서 이어짐");
-
-    if (profile?.relations?.hasClash) addEvidence(list, "reversal", 2.6, "변수 충돌", "변수가 겹치면 판단이나 방향을 크게 바꾸기 쉬움");
-    if (profile?.elements?.rawVsInfluenceMismatch) addEvidence(list, "mismatch", 2.6, "겉과 실제 힘", "겉으로 보이는 모습과 실제 소모 지점이 다름");
-    if (profile?.structure?.touchul) addEvidence(list, "expression", 1.6, "표현 속도", "속 기준이 행동과 말로 비교적 빨리 드러남");
-
-    const strongElement = profile?.elements?.influenceRank?.strongest;
-    addEvidence(list, ELEMENT_CLUSTER[strongElement], 1.7, "실제 힘의 중심", strongElement || "");
-
-    const weak = profile?.behavior?.weakStat;
-    if (weak === "mental") addEvidence(list, "sensitivity", 1.9, "취약 지점", "회복시간과 감정 경계가 먼저 무너지기 쉬움");
-    if (weak === "drive") addEvidence(list, "analysis", 1.9, "취약 지점", "실행을 밖에 걸지 않으면 시작이 늦어지기 쉬움");
-    if (weak === "wealth") addEvidence(list, "stability", 1.7, "취약 지점", "손익과 내 몫을 숫자로 확인해야 안정됨");
-    if (weak === "network") addEvidence(list, "boundary", 1.7, "취약 지점", "도움 요청과 관계 경계가 중요함");
-
-    if ((profile?.structure?.candidateCount || 0) >= 3) {
-      addEvidence(list, "mismatch", 1.4, "반응 복합성", "한 장면에서도 여러 반응이 겹쳐 단순화하기 어려움");
-    }
-    return list.filter(x => x.cluster && x.detail);
+    const fusion=buildClassicalFusion(profile || {});
+    return fusion.supports.map(x=>({
+      cluster:x.cluster,
+      weight:x.weight,
+      source:x.source,
+      detail:x.detail,
+    }));
   }
 
   function rankClusters(evidence) {
@@ -618,7 +592,8 @@
     if (data && profile) data.integratedSajuProfile = profile;
     const situation = situationFor(data || {});
     const detail = detailFor(situation);
-    const evidence = buildEvidence(profile || {});
+    const classical = buildClassicalFusion(profile || {});
+    const evidence = classical.supports.map(x=>({cluster:x.cluster,weight:x.weight,source:x.source,detail:x.detail}));
     const ranked = rankClusters(evidence);
     const primary = ranked[0] || {cluster:"analysis",score:0,evidence:[]};
     const secondary = ranked.find(x=>x.cluster !== primary.cluster) || {cluster:"stability",score:0,evidence:[]};
@@ -645,6 +620,7 @@
       situation,
       detail,
       profile,
+      classical,
       evidence,
       ranked,
       primary:{...primary, confidence:confidence(primary)},
@@ -655,11 +631,9 @@
       secondaryElement: profile?.balance?.secondary || profile?.balance?.primary || "to",
       avoidElement: profile?.balance?.avoid || "su",
     };
-    diagnosis.factLedger=buildFactLedger(diagnosis,data||{});
-    diagnosis.availableLayers=(profile?.audit?.semanticLayers||[]).filter(k=>profile?.coverage?.[k]);
-    diagnosis.usedLayers=[...new Set(diagnosis.factLedger.map(x=>x.layer))];
-    diagnosis.missingUsedLayers=diagnosis.availableLayers.filter(k=>!diagnosis.usedLayers.includes(k));
-    diagnosis.truthFingerprint=factHash(diagnosis.factLedger.map(x=>({layer:x.layer,raw:x.raw})));
+    diagnosis.classicalFingerprint=classical.fingerprint;
+    diagnosis.classicalSources=classical.sourceCoverage;
+    diagnosis.topFriction=classical.topFriction;
     if (data && typeof data === "object") data.noteDiagnosisV2 = diagnosis;
     return diagnosis;
   }
@@ -699,35 +673,53 @@
     return rows[concern]?.[idx] || "비밀 메모";
   }
 
+  function frictionSentence(d, isT) {
+    const f=d.classical?.topFriction;
+    if(!f) return "";
+    const a=CLUSTER_ATOM[f.cluster] || CLUSTER_ATOM.analysis;
+    return isT
+      ? "반대로 이 흐름이 꼬일 때는 "+a.after+". 이건 의지 문제가 아니라 네 사주에서 과하게 쓰면 손실이 커지는 쪽이야."
+      : "반대로 이 흐름이 꼬일 때는 "+a.after+". 언니는 이걸 네 성격 탓으로 안 볼래. 네 사주에서 이쪽을 과하게 쓰면 유독 손실이 커지는 거야.";
+  }
+
+  function classicalCoreLine(d,isT) {
+    const c=d.classical||{};
+    const bridge=c.bridgeLine ? " "+c.bridgeLine+"." : "";
+    return isT
+      ? c.structureLine+"이 중심이고, "+c.statusLine+". "+c.strengthLine+"."
+      : "네 사주 바닥에는 "+c.structureLine+"이 깔려 있어. 그런데 "+c.statusLine+"이고, "+c.strengthLine+"."+bridge;
+  }
+
   function portraitNote(d,isT) {
     const p=CLUSTER_ATOM[d.primary.cluster] || CLUSTER_ATOM.analysis;
     const q=CLUSTER_ATOM[d.secondary.cluster] || CLUSTER_ATOM.stability;
     const lead=certaintyLead(d.primary,isT);
     if(isT){
-      return lead+" 특히 <b>"+d.detail.cue+"</b>, "+p.first+". 그다음 "+q.second+". 밖으로는 "+p.visible+"으로 보이지만, 실제 반복 순서는 <b>"+d.pairPattern+"</b>이야. "+strengthModifier(d.profile);
+      return lead+" 특히 <b>"+d.detail.cue+"</b>, "+p.first+". 그다음 "+q.second+". <br><br>"+classicalCoreLine(d,true)+" 그래서 실제 반복 순서는 <b>"+d.pairPattern+"</b> 쪽으로 굳기 쉬워.";
     }
-    return lead+" 특히 <b>"+d.detail.cue+"</b> 있지. 그럴 때 너는 "+p.first+". 그러고 나면 "+q.second+". 겉에서는 "+p.visible+"처럼 보일 수 있는데, 언니가 더 중요하게 보는 건 <b>"+d.pairPattern+"</b>이야. "+strengthModifier(d.profile);
+    return lead+" 특히 <b>"+d.detail.cue+"</b> 있지. 그럴 때 너는 "+p.first+". 그러고 나면 "+q.second+".<br><br>"+classicalCoreLine(d,false)+" 그래서 언니가 제일 중요하게 보는 건 <b>"+d.pairPattern+"</b>이야.";
   }
 
   function behaviorChain(d, isT) {
     const p=CLUSTER_ATOM[d.primary.cluster] || CLUSTER_ATOM.analysis;
     const q=CLUSTER_ATOM[d.secondary.cluster] || CLUSTER_ATOM.stability;
     const s=d.situation;
+    const status=d.classical?.statusLine || "";
     if (isT) {
-      return "<b>시작</b> — "+d.detail.cue+".<br><br><b>첫 반응</b> — "+p.first+".<br><br><b>그다음</b> — "+q.second+".<br><br><b>밖으로 보이는 행동</b> — "+p.visible+".<br><br><b>결국</b> — "+p.after+". "+structureModifier(d.profile)+" 그래서 "+s.object+" 자체보다 이 순서를 먼저 끊어야 해.";
+      return "<b>시작</b> — "+d.detail.cue+".<br><br><b>첫 반응</b> — "+p.first+".<br><br><b>그다음</b> — "+q.second+".<br><br><b>밖으로 보이는 행동</b> — "+p.visible+".<br><br><b>결국</b> — "+p.after+". "+status+". 그래서 "+s.object+" 자체보다 이 순서를 먼저 끊어야 해.";
     }
-    return "보통 <b>"+d.detail.cue+"</b> 시작돼. 그때는 "+p.first+".<br><br>그리고 <b>그다음</b> "+q.second+". 그래서 밖에서는 "+p.visible+"처럼 보여도, 안에서는 이미 판단이 꽤 진행된 뒤일 수 있어.<br><br><b>결국</b> "+p.after+". "+structureModifier(d.profile)+" 언니는 결과가 터진 뒤보다 이 첫 장면을 먼저 잡고 싶어.";
+    return "보통 <b>"+d.detail.cue+"</b> 시작돼. 그때는 "+p.first+".<br><br>그리고 <b>그다음</b> "+q.second+". 그래서 밖에서는 "+p.visible+"처럼 보여도, 안에서는 이미 판단이 꽤 진행된 뒤일 수 있어.<br><br><b>결국</b> "+p.after+". "+status+". 언니는 결과가 터진 뒤보다 이 첫 장면을 먼저 잡고 싶어.";
   }
 
   function blindSpot(d, isT) {
     const p=CLUSTER_ATOM[d.primary.cluster] || CLUSTER_ATOM.analysis;
-    const q=CLUSTER_ATOM[d.secondary.cluster] || CLUSTER_ATOM.stability;
     const mismatch = d.profile?.elements?.rawVsInfluenceMismatch;
     const touchul = d.profile?.structure?.touchul;
+    const friction=frictionSentence(d,isT);
     if (isT) {
-      return "겉으로만 보면 <b>"+p.misread+"</b>처럼 보일 수 있어. 그런데 실제 핵심은 <b>"+d.pairPattern+"</b>이 반복된다는 거야. "+(mismatch?"특히 겉으로 잘하는 방식과 실제로 덜 지치는 방식이 달라서 원인을 잘못 잡기 쉬워. ":"겉으로 보이는 방식과 실제 힘의 방향은 비교적 비슷해서, 알고도 끊는 시점이 늦는 쪽을 봐야 해. ")+(touchul?"속 기준이 행동으로 빨리 나오는 편이라 첫 반응을 잡으면 수정도 빠른 편이야. ":"속에서 판단을 꽤 진행한 뒤 행동이 나오는 편이라 중간 확인 지점을 일부러 만들어야 해.");
+      return "겉으로만 보면 <b>"+p.misread+"</b>처럼 보일 수 있어. 그런데 실제 핵심은 <b>"+d.pairPattern+"</b>이 반복된다는 거야. "+(mismatch?"겉으로 드러난 모습과 실제 힘의 중심도 달라서 원인을 잘못 잡기 쉬워. ":"겉과 실제 힘의 방향은 크게 다르지 않아. 핵심은 아는 것보다 끊는 시점이 늦는 쪽이야. ")+(touchul?"속 기준은 행동으로 비교적 빨리 나오는 편이야. ":"속에서 판단한 뒤 행동까지 간격이 생기는 편이야. ")+" "+friction;
     }
-    return "남들이 보면 네가 <b>"+p.misread+"</b>처럼 느껴질 수도 있어. 근데 언니는 그렇게 단순하게 안 볼래. 실제로는 <b>"+d.pairPattern+"</b>이 겹쳐서 그렇게 보이는 거야. "+(mismatch?"특히 잘해 보이는 모습이랑 실제로 덜 지치는 방식이 달라서, 너도 ‘왜 이렇게 힘들지?’ 원인을 엉뚱한 데서 찾기 쉬워. ":"겉으로 보이는 모습과 안쪽 힘의 방향은 크게 다르지 않아서, 문제를 모르는 것보다 끊어야 할 순간을 늦게 잡는 쪽에 가까워. ")+(touchul?"그래도 마음먹으면 행동으로 옮기는 속도는 빠른 편이야. ":"그래서 언니랑 중간 확인 지점을 하나 만들어두는 게 중요해.");
+    return "남들이 보면 네가 <b>"+p.misread+"</b>처럼 느껴질 수도 있어. 근데 언니는 그렇게 단순하게 안 볼래. 실제로는 <b>"+d.pairPattern+"</b>이 겹쳐서 그렇게 보이는 거야. "+(mismatch?"게다가 겉으로 보이는 모습과 실제 힘의 중심이 달라서, 너도 원인을 엉뚱한 데서 찾기 쉬워. ":"겉과 실제 힘의 방향은 크게 다르지 않아서, 문제를 모르는 것보다 끊어야 할 순간을 늦게 잡는 쪽에 가까워. ")+(touchul?"마음먹으면 밖으로 옮기는 속도는 비교적 빠른 편이야. ":"그래서 중간 확인 지점을 일부러 만드는 게 중요해. ")+" "+friction;
   }
 
   function actionNote(d, isT) {
@@ -741,10 +733,12 @@
       weak==="wealth" ? "느낌 대신 금액·시간·횟수 중 하나를 숫자로 남겨" :
       weak==="network" ? "혼자 정리하기 전에 필요한 도움 하나를 구체적으로 요청해" :
       "한 번에 변수 하나만 바꾸고 결과를 봐";
+    const climate=d.classical?.climateLine || "";
+    const bridge=d.classical?.bridgeLine || "";
     if (isT) {
-      return "<b>오늘</b> — "+s.move+".<br><br><b>이번 7일</b> — "+d.detail.metric+".<br><br><b>네 사주에 맞는 순서</b> — 먼저 "+first+", 그다음 "+second+".<br><br><b>금지</b> — "+avoid+". 그리고 "+guard+". 실행했는지는 기분 말고 횟수로 확인해.";
+      return "<b>오늘</b> — "+s.move+".<br><br><b>이번 7일</b> — "+d.detail.metric+".<br><br><b>순서</b> — 먼저 "+first+", 그다음 "+second+". "+climate+". "+(bridge?bridge+". ":"")+"<br><br><b>피할 것</b> — "+avoid+". 그리고 "+guard+".";
     }
-    return "<b>오늘 먼저</b> — "+s.move+".<br><br><b>이번 7일</b> — "+d.detail.metric+". 이것만 해보자.<br><br>너한테는 처음부터 다 바꾸는 것보다 <b>"+first+"</b>부터 넣고, 괜찮으면 <b>"+second+"</b>을 붙이는 순서가 덜 지쳐.<br><br>이번 주엔 <b>"+avoid+"</b>은 피하고, "+guard+". 언니가 원하는 건 완벽하게 하는 게 아니라 실제 반응 하나를 얻는 거야.";
+    return "<b>오늘 먼저</b> — "+s.move+".<br><br><b>이번 7일</b> — "+d.detail.metric+". 이것만 해보자.<br><br>너한테는 먼저 <b>"+first+"</b>을 넣고, 그다음 <b>"+second+"</b>을 붙이는 순서가 맞아. "+climate+". "+(bridge?bridge+". ":"")+"<br><br>이번 주엔 <b>"+avoid+"</b>은 줄이고, "+guard+".";
   }
 
   function domainFit(d, isT) {
@@ -754,12 +748,13 @@
     const ctx=FIT_CONTEXT[c] || FIT_CONTEXT.money;
     const action=ACTION_BY_ELEMENT[d.actionElement] || ACTION_BY_ELEMENT.to;
     const avoid=AVOID_BY_ELEMENT[d.avoidElement] || AVOID_BY_ELEMENT.su;
+    const friction=d.classical?.topFriction ? (CLUSTER_ATOM[d.classical.topFriction.cluster] || CLUSTER_ATOM.analysis) : null;
     const good=ctx.good+". 특히 "+p.fit+", 그리고 "+q.fit;
-    const bad=ctx.bad+". 여기에 "+p.drain+"까지 겹치면 소모가 빨라져";
+    const bad=ctx.bad+". "+(friction?friction.drain:p.drain);
     if (isT) {
-      return ctx.head+"<br><br><b>잘 맞는 쪽</b> — "+good+".<br><br><b>피할 쪽</b> — "+bad+".<br><br><b>판별법</b> — 그 환경에서 "+action+"이 실제로 가능한지 확인해. 반대로 "+avoid+"을 계속 하게 만든다면 오래 맞는 구조가 아니야.";
+      return ctx.head+"<br><br><b>잘 맞는 쪽</b> — "+good+".<br><br><b>피할 쪽</b> — "+bad+".<br><br><b>판별법</b> — 그 환경에서 "+action+"이 가능한지 봐. 반대로 "+avoid+"을 계속 하게 만든다면 오래 맞는 구조가 아니야.";
     }
-    return ctx.head+"<br><br><b>너를 살리는 쪽</b> — "+good+".<br><br><b>오래 있으면 지치는 쪽</b> — "+bad+".<br><br>언니가 마지막으로 볼 기준은 하나야. 그 사람이나 환경 옆에서 <b>"+action+"</b>이 자연스럽게 되느냐야. 반대로 "+avoid+"만 반복된다면 네가 더 노력할 문제가 아닐 수 있어.";
+    return ctx.head+"<br><br><b>너를 살리는 쪽</b> — "+good+".<br><br><b>오래 있으면 지치는 쪽</b> — "+bad+".<br><br>언니가 마지막으로 볼 기준은 그 사람이나 환경 옆에서 <b>"+action+"</b>이 자연스럽게 되느냐야. 반대로 "+avoid+"만 반복된다면 더 버티는 게 답은 아닐 수 있어.";
   }
 
   function timingFor(d, data, isT) {
