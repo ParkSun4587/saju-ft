@@ -363,7 +363,7 @@
       const cautionLine = caution && caution.score < (best?.score ?? Infinity)
         ? `${formatMonth(caution)}는 같은 속도로 밀기보다 한 번 더 확인해.`
         : "";
-      return {year,yearLine,bestLine,cautionLine,best};
+      return {year:y.year,yearLine,bestLine,cautionLine,best};
     });
     if (!cards.length) {
       return {
