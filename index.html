@@ -3207,7 +3207,7 @@
             if (senderTitle) senderTitle.textContent = "로아 언니 (F)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔네. 어떤 게 제일 마음에 걸리는지 언니한테 편하게 말해줘.<br>사주랑 지금 상황을 같이 보면서, 네 얘기만 놓고 차근차근 풀어줄게.<br>이름이랑 생일부터 알려줘.";
+                "왔구나 ㅎㅎ 언니한테 편하게 말해봐.<br>사주 대충 안 보고, 네가 왜 이 고민에서 자꾸 마음 쓰이는지까지 깊게 봐줄게.<br>이름이랑 생일부터 알려줘!";
             }
           } else {
             if (sisterImg) sisterImg.src = "./서아.png";
@@ -3219,7 +3219,7 @@
             if (senderTitle) senderTitle.textContent = "서아 언니 (T)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔네. 돌려 말하진 않을게. 대신 네 상황도 대충 보진 않아.<br>사주랑 지금 고민을 같이 보고, 뭐가 핵심인지 하나씩 정리해줄게.<br>이름이랑 생일부터 알려줘.";
+                "왔어? 쓸데없이 겁주는 말부터 할 생각은 없어.<br>좋은 건 좋다, 아닌 건 아니다 딱 말해줄 거고 네 상황도 대충 안 봐.<br>이름이랑 생일부터 줘.";
             }
           }
 
@@ -5524,8 +5524,8 @@ return [
 
             const ackText =
               mode === "T"
-                ? `${callVoc}, [${selectedConcernText} · ${selectedSituationText}] 얘기 확인했어. 겁주거나 단정하지 않고, 네 상황에서 실제로 봐야 할 것부터 정리해줄게.`
-                : `${callVoc}, [${selectedConcernText} · ${selectedSituationText}] 얘기구나. 다른 경우 섞지 않고 네 상황만 놓고 차근차근 볼게.`;
+                ? `${callVoc}, 확인했어. 이 고민 기준으로 볼게. 대충 위로만 하진 않을 거고, 괜히 겁주지도 않을게. 필요한 것만 제대로 짚어줄게.`
+                : `${callVoc}, 이 고민이었구나. 알겠어 ㅎㅎ 언니가 다른 얘기 안 섞고 네 상황만 제대로 볼게.`;
 
             const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up mt-1">
@@ -5643,8 +5643,8 @@ currentResultData = {
                 removeLiveTyping("liveT1");
                 appendSisterMsg(
                   isT
-                    ? `${callVoc}, 잠깐만. 사주랑 지금 고민이 어디서 맞물리는지 먼저 볼게.`
-                    : `${callVoc}, 잠깐만. 언니가 사주랑 지금 고민을 같이 놓고 천천히 볼게.`,
+                    ? `${callVoc}, 잠깐. 사주부터 맞춰보고 지금 고민이 어디서 꼬였는지 볼게. 결론은 깔끔하게 줄게.`
+                    : `${callVoc}, 잠깐만 ㅎㅎ 언니가 네 사주랑 지금 고민 같이 놓고 깊게 보고 올게.`,
                   false,
                 );
 
@@ -5693,8 +5693,8 @@ currentResultData = {
                     removeLiveTyping("liveT3");
                     appendSisterMsg(
                       isT
-                        ? `거의 다 봤어. 좋은 말만 고르진 않았고, 네가 실제로 써먹을 수 있게 정리했어. 이제 같이 보자.`
-                        : `거의 다 봤어. 언니가 네 얘기 놓치지 않게 차근차근 정리했어. 이제 같이 보자.`,
+                        ? `다 봤어. 괜한 소리 빼고 중요한 것만 정리했어. 이제 보자.`
+                        : `다 봤어 ㅎㅎ 생각보다 네 얘기랑 이어지는 데가 많네. 언니가 하나씩 풀어줄게.`,
                       true,
                     );
 
@@ -5843,7 +5843,7 @@ currentResultData = {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
             const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
-            resGreeting.innerHTML = `<b>${callVoc}</b>, [${escapeHTML(situationText)}] 기준으로 다 봤어. 애매하게 겁주진 않을게. 네가 놓치기 쉬운 지점부터 하나씩 정리해줄게.`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, 다 봤어. [${escapeHTML(situationText)}]에서 뭐가 진짜 문제고 뭐가 괜한 걱정인지 구분해놨어. 좋은 건 좋다, 아닌 건 아니다 딱 말해줄게.`;
           }
         } else {
           if (resSisterProfile) resSisterProfile.src = "./로아.png";
@@ -5860,7 +5860,7 @@ currentResultData = {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
             const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
-            resGreeting.innerHTML = `<b>${callVoc}</b>, 네가 고른 [${escapeHTML(situationText)}] 얘기 기준으로 사주를 같이 봤어. 좋은 말만 얹지 않고, 왜 이런 마음이 반복되는지부터 천천히 풀어줄게.`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, 다 봤어 ㅎㅎ [${escapeHTML(situationText)}]에서 왜 마음이 자꾸 쓰였는지 사주랑 같이 보니까 포인트가 딱 보여. 언니가 어려운 말 없이 하나씩 풀어줄게.`;
           }
         }
         // [추가] '다른 고민도 풀어보기' CTA 버튼 테마 컬러 실시간 동기화
@@ -6264,19 +6264,18 @@ currentResultData = {
           수: "정보를 읽고 생각을 깊게 가져가는 힘이 가장 먼저 나온다",
         };
         const hasZero = minCount === 0;
-        const weakLeadF = hasZero
-          ? `<b>${minStr}</b> 쪽은 사주에 하나도 없어서`
-          : `반대로 <b>${minStr}</b> 쪽은 상대적으로 적어서`;
-        const weakLeadT = hasZero
-          ? `<b>${minStr}</b>은 0개라`
-          : `<b>${minStr}</b>은 상대적으로 적어서`;
+        const weakF = hasZero
+          ? `<b>${minStr}</b>은 사주에 없어서 의식해서 챙겨야 해`
+          : `<b>${minStr}</b>은 상대적으로 적어서 놓치기 쉬워`;
+        const weakT = hasZero
+          ? `<b>${minStr}</b>은 0개라 의식적으로 보완해야 해`
+          : `<b>${minStr}</b>은 상대적으로 적어서 자동으로 잘 안 나온다`;
 
         if (summaryTxt) {
           summaryTxt.innerHTML = isT
-            ? `여기서 재밌는 건 <b>${maxOheng.label}(${maxOheng.pct}%)</b>이 제일 강하다는 것보다, <b>${minStr}</b>이랑 같이 봤을 때야. ${strongestT[maxOheng.name] || "강한 쪽은 자동으로 먼저 나온다"}. 반대로 ${weakLeadT} 일부러 챙겨야 해. <b>강한 힘은 네가 무심코 쓰는 방식, 약한 힘은 막힐 때 티 나는 빈칸</b>이라고 보면 돼. 이 둘이 어디서 엇갈리는지가 네 반복 패턴의 힌트야.`
-            : `언니가 보니까 <b>${maxOheng.label}(${maxOheng.pct}%)</b> 기운이 제일 먼저 눈에 들어와. ${strongestF[maxOheng.name] || "이 힘이 자연스럽게 먼저 나오는 편이야"}. 그런데 더 궁금하게 봐야 할 건 <b>${minStr}</b> 쪽이야. ${weakLeadF} 네가 바쁘거나 마음이 급할 때 여기서 빈틈이 먼저 보여. <b>잘하는 힘과 놓치기 쉬운 힘이 같이 있을 때 네 성향이 훨씬 선명해져.</b> 뒤에서 이 조합이 지금 고민에 어떻게 튀어나오는지도 같이 볼게.`;
-        }
-      }
+            ? `정리하면 <b>${maxOheng.label}(${maxOheng.pct}%)</b>이 가장 강해. ${strongestT[maxOheng.name] || "강한 쪽이 먼저 나온다"}. 반대로 ${weakT}. <b>네 반복 패턴은 이 강약 차이에서 많이 나온다.</b>`
+            : `언니가 보면 <b>${maxOheng.label}(${maxOheng.pct}%)</b>이 가장 강해. ${strongestF[maxOheng.name] || "이 힘이 자연스럽게 먼저 나오는 편이야"}. 반대로 ${weakF}. <b>강한 쪽은 자연스럽게 쓰고, 약한 쪽은 신경 안 쓰면 빠지는 편</b>이라고 보면 돼.`;
+        }      }
 
       function renderResultView(data, { resumeApproval = true } = {}) {
         invalidateResultView();
@@ -7224,7 +7223,6 @@ currentResultData = {
       };
 
       let storyCaptureState = null;
-      let storyCaptureReturnTimer = null;
 
       function ensureStoryCaptureLayer() {
         let layer = document.getElementById("storyCaptureMode");
@@ -7245,7 +7243,7 @@ currentResultData = {
             </div>
             <div style="position:absolute;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));pointer-events:none">
               <button id="storyCaptureReady" type="button" style="pointer-events:auto;width:100%;max-width:360px;margin:0 auto;display:block;border:0;border-radius:16px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:950;box-shadow:0 12px 32px rgba(15,23,42,.30);cursor:pointer">캡처 준비</button>
-              <div id="storyCaptureGuideSub" style="margin-top:7px;text-align:center;color:#475569;font-size:10px;font-weight:800;text-shadow:0 1px 2px rgba(255,255,255,.8)">캡처 준비를 누르면 7초 뒤 결과로 자동으로 돌아갈게</div>
+              <div id="storyCaptureGuideSub" style="margin-top:7px;text-align:center;color:#475569;font-size:10px;font-weight:800;text-shadow:0 1px 2px rgba(255,255,255,.8)">캡처한 뒤 화면을 한 번 누르면 결과로 돌아가</div>
             </div>
           </div>
         `;
@@ -7275,14 +7273,6 @@ currentResultData = {
 
       async function enterStoryCaptureCleanView() {
         showStoryCaptureChrome(false);
-        if (storyCaptureReturnTimer) clearTimeout(storyCaptureReturnTimer);
-        const root = document.documentElement;
-        if (!document.fullscreenElement && typeof root.requestFullscreen === "function") {
-          try { await root.requestFullscreen(); } catch (_) {}
-        }
-        storyCaptureReturnTimer = setTimeout(() => {
-          if (storyCaptureState) closeStoryCaptureMode();
-        }, 7000);
       }
 
       function openStoryCaptureMode(event) {
@@ -7306,9 +7296,9 @@ currentResultData = {
         const guideMain = layer.querySelector("#storyCaptureGuideMain");
         const guideSub = layer.querySelector("#storyCaptureGuideSub");
         if (guideMain) guideMain.innerHTML = isT
-          ? "카드만 남겨둘게. 캡처해서 스토리에 올리고 친구들이랑 비교해봐."
-          : "카드만 딱 남겨둘게. 캡처해서 인스타 스토리에 올려봐 ♡";
-        if (guideSub) guideSub.textContent = "캡처 준비를 누르면 7초 뒤 결과로 자동으로 돌아갈게";
+          ? "카드만 남겨둘게. 캡처해서 올려. 친구들이랑 비교해보면 재밌을 거야."
+          : "카드만 딱 남겨둘게. 예쁘게 캡처해서 인스타 스토리에 올려봐 ♡";
+        if (guideSub) guideSub.textContent = "캡처한 뒤 화면을 한 번 누르면 결과로 돌아가";
         layer.style.background = isT
           ? "linear-gradient(160deg,#eef8ff 0%,#f8fcff 52%,#eef6ff 100%)"
           : "linear-gradient(160deg,#fff1f4 0%,#fffaf7 52%,#fff3f5 100%)";
@@ -7328,10 +7318,6 @@ currentResultData = {
       }
 
       function closeStoryCaptureMode(fromParentClose = false) {
-        if (storyCaptureReturnTimer) {
-          clearTimeout(storyCaptureReturnTimer);
-          storyCaptureReturnTimer = null;
-        }
         const layer = document.getElementById("storyCaptureMode");
         const state = storyCaptureState;
         if (state?.card && state?.parent) {
@@ -7354,9 +7340,6 @@ currentResultData = {
             shareModal.classList.add("hidden");
             shareModal.style.display = "none";
           }
-        }
-        if (document.fullscreenElement && typeof document.exitFullscreen === "function") {
-          document.exitFullscreen().catch?.(() => {});
         }
         document.body.style.overflow =
           !directFromResult && !fromParentClose && isShareModalOpen() ? "hidden" : "auto";
