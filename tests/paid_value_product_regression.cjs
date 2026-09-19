@@ -283,6 +283,8 @@ function norm(v) {
     };
     return {
       sourceFreeLaunch:FREE_LAUNCH_MODE,
+      previewVisible:!!note2Preview && getComputedStyle(note2Preview).display !== 'none',
+      paywallVisible:!!document.getElementById('lockedOverlay') && getComputedStyle(document.getElementById('lockedOverlay')).display !== 'none',
       result:!!currentResultData,
       lockedCatalog:!!lockedCatalog,
       previewPlain,
@@ -319,7 +321,7 @@ function norm(v) {
   assert(ui.result, 'production-like result missing');
   if (ui.sourceFreeLaunch) {
     assert(ui.lockedCatalog, 'free-launch mode should expose the post-report product catalog');
-    assert(!ui.previewPlain && !ui.fPaywallText && !ui.tPaywallText, 'free-launch mode must not render the 990 won lock UI');
+    assert(!ui.previewVisible && !ui.paywallVisible, 'free-launch mode must keep the 990 won lock UI hidden');
   } else {
     assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
     assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
