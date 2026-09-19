@@ -164,15 +164,15 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.5.0', 'paid value layer missing');
-  assert(qa.productVersion.version === '1.8.0', 'product layer missing');
+  assert(qa.productVersion.version === '1.9.0', 'product layer missing');
   assert(qa.wrappers.paid, 'paid-value wrapper missing');
   assert(qa.wrappers.integrated, 'integrated wrapper metadata lost');
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
   for (const [id, price] of Object.entries(expectedPrices)) assert(qa.products[id]?.price === price, `${id} price drift`);
-  assert(qa.products.concern_bundle3.badge === '다른 고민도 3개 더' && qa.products.concern_bundle3.desc.includes('원인·반복패턴·진짜 문제'), 'bundle3 young-user value copy missing');
-  assert(qa.products.full_saju.badge === '내 사주 전체 보기' && qa.products.full_saju.desc.includes('내 사주 전체 흐름'), 'full-saju plain-language value copy missing');
-  assert(qa.products.compatibility.badge === '우리 둘 깊게 보기' && qa.products.compatibility.desc.includes('연락·대화·싸움·화해'), 'compatibility plain-language value copy missing');
-  assert(qa.products.all_in_one.name === '내 사주 완전판' && qa.products.all_in_one.badge === '내 사주 전부 보기' && qa.products.all_in_one.desc.includes('전체 사주와 6가지 고민'), `all-in-one plain-language copy drift: ${JSON.stringify(qa.products.all_in_one)}`);
+  assert(qa.products.concern_bundle3.badge === '다른 고민도 3개 더' && qa.products.concern_bundle3.desc.includes('원인부터 행동·사람·시기까지'), 'bundle3 young-user value copy missing');
+  assert(qa.products.full_saju.badge === '내 사주 전체 보기' && qa.products.full_saju.desc.includes('하나의 흐름으로 이어서'), 'full-saju plain-language value copy missing');
+  assert(qa.products.compatibility.badge === '우리 둘 깊게 보기' && qa.products.compatibility.desc.includes('연락·싸움·화해'), 'compatibility plain-language value copy missing');
+  assert(qa.products.all_in_one.name === '내 사주 완전판' && qa.products.all_in_one.badge === '내 사주 전부 보기' && qa.products.all_in_one.desc.includes('내 사주와 6가지 고민'), `all-in-one plain-language copy drift: ${JSON.stringify(qa.products.all_in_one)}`);
   for (const p of Object.values(qa.products)) assert(!/챕터|NOTE \d+/.test(`${p.badge} ${p.desc}`), `technical product-volume wording remains: ${JSON.stringify(p)}`);
   assert(qa.rows.length === 12, `expected 12 rows, got ${qa.rows.length}`);
   assert(qa.maleShared.money.firstDate === qa.maleShared.love.firstDate, 'male money/love first timing should legitimately share the same sensitive axis');
