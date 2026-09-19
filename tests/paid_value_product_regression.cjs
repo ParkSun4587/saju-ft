@@ -272,10 +272,14 @@ function norm(v) {
     const lockedCatalog = document.getElementById('unniProductLadder');
     const note2Preview = document.getElementById('note2PreviewCard');
     const fPaywallText = document.getElementById('lockedOverlay')?.innerText || '';
+    const fNextTeaser = document.getElementById('paywallNextTeaser')?.innerText || '';
+    const fFeatureCount = document.querySelectorAll('#payBoxFeatures > div').length;
     const previewPlain = note2Preview?.innerText || '';
     const previewBodyPlain = document.getElementById('note2PreviewBody')?.innerText || '';
     updateResultContentByMode('T');
     const tPaywallText = document.getElementById('lockedOverlay')?.innerText || '';
+    const tNextTeaser = document.getElementById('paywallNextTeaser')?.innerText || '';
+    const tFeatureCount = document.querySelectorAll('#payBoxFeatures > div').length;
     updateResultContentByMode('F');
 
     unlockFullReport(null, true);
@@ -327,6 +331,10 @@ function norm(v) {
       fullNote2Plain:String(notes[1]?.desc || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),
       fPaywallText,
       tPaywallText,
+      fNextTeaser,
+      tNextTeaser,
+      fFeatureCount,
+      tFeatureCount,
       unlockedNoteCards,
       previewAfterUnlock,
       catalog:!!catalog,
@@ -353,9 +361,11 @@ function norm(v) {
   assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
   assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
   assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-  assert(ui.fPaywallText.includes('로아 언니 · NOTE 02 이어서') && ui.fPaywallText.includes('990원') && ui.fPaywallText.includes('방금 읽던 NOTE 02 다음 내용'), `F NOTE2 paywall handoff missing: ${ui.fPaywallText}`);
-  assert(ui.tPaywallText.includes('서아 언니 · NOTE 02 이어서') && ui.tPaywallText.includes('990원') && ui.tPaywallText.includes('원인·행동·사람·시기'), `T NOTE2 paywall handoff missing: ${ui.tPaywallText}`);
-  assert(!ui.fPaywallText.includes('오픈 체험가') && !ui.tPaywallText.includes('오픈 체험가'), 'stale generic sale badge remains in NOTE2 paywall');
+  assert(ui.fPaywallText.includes('로아 언니 · 여기서부터 같이 보자') && ui.fPaywallText.includes('진짜 중요한 건 이제부터야') && ui.fPaywallText.includes('로아 언니, 나머지도 같이 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
+  assert(ui.tPaywallText.includes('서아 언니 · 여기서부터 정리할게') && ui.tPaywallText.includes('원인하고 끊을 지점') && ui.tPaywallText.includes('서아 언니, 답까지 정리해줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
+  assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
+  assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
+  assert(!/NOTE 0?2 이어서|NOTE 0?6|오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), 'internal NOTE labels or stale sale badge leaked into the conversion card');
   assert(ui.unlockedNoteCards === 6 && !ui.previewAfterUnlock, `unlock must replace teaser with all six full notes: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
@@ -668,7 +678,7 @@ function norm(v) {
   assert(!html.includes('팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐'), 'old generic harsh T greeting remains');
   for (const harsh of ['아이고 왔어?', '시간 낭비 말고', '똑바로 찍어', '똥고집', '미련 곰탱이', '팩트 꽂힌', '팩폭 모드', '징징대지 말고 와', '살인 충동 느낌', '상대방 사람 취급', '멍청한 질문 3번']) assert(!html.includes(harsh), `harsh/old sister copy remains: ${harsh}`);
   assert(html.includes('왔구나! 잘 왔어') && html.includes('아 이거였구나.') && html.includes('잠깐만! 언니가 네 사주랑 지금 고민') && html.includes('쓸데없이 겁주는 말부터 할 생각은 없어') && !html.includes('ㅎㅎ'), 'distinct F/T sister copy missing');
-  assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 1)') && html.includes('방금 읽던 NOTE 02 다음 내용') && html.includes('이 고민 끝까지 같이 봐줘'), 'paid teaser must be NOTE1 full + short NOTE2 + sister-led 990 handoff');
+  assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 1)') && html.includes('paywallNextTeaser') && html.includes('teaserProbe') && html.includes('로아 언니, 나머지도 같이 봐줘') && html.includes('서아 언니, 답까지 정리해줘'), 'paid teaser must be NOTE1 full + short NOTE2 + actual locked-content teaser + distinct F/T 990 handoff');
   assert(!html.includes('storyCaptureReturnTimer') && !html.includes('7000') && html.includes('storyCaptureCleanTimer'), 'capture should use delayed fullscreen-clean transition, not timed auto-return');
   assert(premium.includes('data-bundle-situation') && premium.includes('data-all-situation'), 'premium situation selectors missing');
   assert(premium.includes('<option value="solar">양력</option><option value="lunar">음력</option>') && !premium.includes('양력 생일') && !premium.includes('음력 생일'), 'compatibility calendar labels should be simple');
