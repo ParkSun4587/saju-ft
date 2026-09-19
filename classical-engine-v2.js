@@ -219,7 +219,12 @@
       supportForce: Math.round(supportForce * 100) / 100,
       drainForce: Math.round(drainForce * 100) / 100,
       roots,
-      monthCommand: { zhi: monthZhi, mainGan: monthMain, relation: monthGroup },
+      monthCommand: {
+        zhi: monthZhi,
+        mainGan: monthMain,
+        relation: monthGroup,
+        deukryeong: ["self", "print"].includes(monthGroup),
+      },
       components,
       evidence,
       method: "월령·지장간·통근·천간 부조/설극 통합",
@@ -344,27 +349,6 @@
     };
   }
 
-  function climateScores(monthZhi) {
-    const score = emptyElements();
-    const reasons = [];
-    if (["亥", "子", "丑"].includes(monthZhi)) {
-      score.hwa += 2.1;
-      score.mok += 0.35;
-      reasons.push("겨울 한기 보정: 화를 우선, 목은 화를 돕는 보조");
-    } else if (["巳", "午", "未"].includes(monthZhi)) {
-      score.su += 2.1;
-      score.geum += 0.35;
-      reasons.push("여름 열기·건조 보정: 수를 우선, 금은 수를 돕는 보조");
-    } else if (monthZhi === "戌") {
-      score.su += 0.7;
-      reasons.push("술월의 건조 보정: 수에 소폭 가점");
-    } else if (monthZhi === "辰") {
-      score.hwa += 0.35;
-      reasons.push("진월의 습기를 고려해 화에 소폭 가점");
-    }
-    return { score, reasons };
-  }
-
   function bridgeElement(influence) {
     const vals = ELEMENTS.map(e => influence[e] || 0);
     const avg = vals.reduce((a,b) => a+b,0) / 5;
@@ -407,14 +391,6 @@
       detail[e].push({ layer: "억부", value: v, reason: `${strength.verdict}·${roles[e]}` });
     }
 
-    const climate = climateScores(p.month.zhi);
-    for (const e of ELEMENTS) {
-      if (climate.score[e]) {
-        scores[e] += climate.score[e];
-        detail[e].push({ layer: "조후", value: climate.score[e], reason: climate.reasons.join(" / ") });
-      }
-    }
-
     const bridge = bridgeElement(influence);
     if (bridge) {
       scores[bridge.bridge] += 1.15;
@@ -455,8 +431,7 @@
       detail,
       strengthVerdict: strength.verdict,
       bridge,
-      climateReasons: climate.reasons,
-      method: "억부 + 한난조습 보정 + 통관 + 격국 상신 보정",
+      method: "억부 + 통관 + 격국 구조 보정",
       caveat: "용신은 학파별 판정 차이가 있어 이 앱은 위 규칙을 고정해 일관되게 계산합니다.",
     };
   }
@@ -484,11 +459,6 @@
         supportForce: strength.supportForce,
         drainForce: strength.drainForce,
         evidence: strength.evidence,
-      },
-      qiongtong: {
-        principle: "월령의 한난조습을 별도 보정층으로 반영",
-        direction: yong.climateReasons.length ? yong.climateReasons.join(" / ") : "극단적 한난조습 보정이 크지 않은 계절",
-        caveat: "고전의 일간×월령 원문을 그대로 자동 대입한 것이 아니라, 한난조습 원리를 보조 점수로만 사용합니다.",
       },
       yongshin: {
         primary: yong.primary,
@@ -518,7 +488,7 @@
   global.selectYongshinV2 = selectYongshinV2;
   global.buildClassicalLayersV2 = buildClassicalLayersV2;
   global.__CLASSICAL_ENGINE_V2__ = {
-    version: "2.0.0",
+    version: "2.1.0",
     elements: ELEMENTS.slice(),
     hidden: HIDDEN,
     lu: LU,
@@ -527,5 +497,6 @@
     relationGroup,
     tenGodElement,
     saryeongGan,
+    gyeokRule: GYEOK_RULE,
   };
 })(globalThis);
