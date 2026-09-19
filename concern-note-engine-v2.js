@@ -793,25 +793,25 @@
     const note1 = {
       badge:badgeFor(c,0),
       title:noteTitle(d,0,isT),
-      desc:portraitNote(d,isT)+factsForNote(d,data,1),
+      desc:portraitNote(d,isT),
       checklist:isT ? "검증: "+d.detail.proof : "언니가 말한 게 맞는지 확인해보자. "+d.detail.proof,
     };
     const note2 = {
       badge:badgeFor(c,1),
       title:noteTitle(d,1,isT),
-      desc:behaviorChain(d,isT)+factsForNote(d,data,2),
+      desc:behaviorChain(d,isT),
       checklist:isT ? "체크 기준: "+d.detail.metric+"." : "다음에 비슷한 장면이 오면 결과보다 시작점을 보자. "+d.detail.metric+".",
     };
     const note3 = {
       badge:badgeFor(c,2),
       title:noteTitle(d,2,isT),
-      desc:blindSpot(d,isT)+factsForNote(d,data,3),
+      desc:blindSpot(d,isT),
       checklist:isT ? "원인 하나만 바꿔 말해봐. ‘문제는 상황’이 아니라 ‘내가 여기서 자동으로 하는 반응’으로." : "이번엔 상황 탓이나 내 탓으로 끝내지 말고, 내가 자동으로 하는 반응 한 가지만 적어보자.",
     };
     const note4 = {
       badge:badgeFor(c,3),
       title:noteTitle(d,3,isT),
-      desc:actionNote(d,isT)+factsForNote(d,data,4),
+      desc:actionNote(d,isT),
       checklist:isT ? "7일 뒤 실제로 효과 있었던 행동 하나만 남겨." : "7일 뒤 ‘이건 덜 힘들었어’ 싶은 행동 하나만 남기면 돼.",
     };
     const note5 = {
@@ -829,7 +829,7 @@
     const note6 = {
       badge:badgeFor(c,5),
       title:noteTitle(d,5,isT),
-      desc:timing.desc+factsForNote(d,data,6),
+      desc:timing.desc,
       checklist:isT ? "첫 시기엔 확인할 행동 하나, 다음 시기엔 남길 행동 하나만 캘린더에 넣어." : "첫 시기엔 가볍게 확인할 것 하나, 다음 시기엔 이어갈 것 하나만 미리 적어두자.",
       __timingQA:timing.meta,
     };
@@ -843,11 +843,13 @@
         secondary:{cluster:q.cluster,confidence:q.confidence,evidence:q.evidence.map(x=>({source:x.source,detail:x.detail}))},
         sourceCount:d.sourceCount,
         pairPattern:d.pairPattern,
-        truthFingerprint:d.truthFingerprint,
-        availableLayers:d.availableLayers,
-        usedLayers:d.usedLayers,
-        missingUsedLayers:d.missingUsedLayers,
-        factLedger:d.factLedger.map(x=>({layer:x.layer,note:x.note,signature:x.signature,text:x.text})),
+        classicalFusion:{
+          fingerprint:d.classicalFingerprint,
+          sources:d.classicalSources,
+          signalCount:d.classical?.supports?.length || 0,
+          frictionCount:d.classical?.frictions?.length || 0,
+          topFriction:d.classical?.topFriction ? {cluster:d.classical.topFriction.cluster,source:d.classical.topFriction.source} : null,
+        },
         situation:d.situation.key,
         specificity:{cue:d.detail.cue,metric:d.detail.metric},
       };
