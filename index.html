@@ -698,43 +698,35 @@
         <!-- 중앙 구분선 -->
         <div
           id="centerDivider"
-          class="absolute top-1/2 left-0 w-full h-px bg-white/50 z-[80] pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.6)] transition-opacity duration-200"
+          class="absolute top-1/2 left-0 w-full h-px bg-white/35 z-[80] pointer-events-none shadow-[0_0_6px_rgba(255,255,255,0.45)] transition-opacity duration-200"
         ></div>
 
         <!-- 첫 상담자 선택 헤더 -->
         <div
           id="splitTitle"
           class="absolute left-0 w-full z-[70] pointer-events-none px-3 flex justify-center"
-          style="top: calc(env(safe-area-inset-top, 0px) + 10px)"
+          style="top: calc(env(safe-area-inset-top, 0px) + 8px)"
         >
           <div
             id="topTitleBox"
-            class="bg-white/80 backdrop-blur-md px-4 py-2.5 rounded-[18px] shadow-[0_5px_18px_rgba(15,23,42,0.08)] border border-white/60 flex flex-col items-center justify-center w-[calc(100%-24px)] max-w-[390px]"
+            class="bg-white/84 backdrop-blur-md px-3.5 py-1.5 rounded-[17px] shadow-[0_4px_16px_rgba(15,23,42,0.08)] border border-white/65 flex flex-col items-center justify-center w-[calc(100%-24px)] max-w-[390px]"
           >
             <p
-              class="text-[12px] sm:text-[13px] font-black text-slate-900 tracking-tight leading-tight text-center break-keep"
+              class="text-[11.5px] sm:text-[12.5px] font-black text-slate-900 tracking-tight leading-[1.2] text-center break-keep"
             >
               똑같은 내 사주, 누구한테 먼저 털어놓을래?
             </p>
             <p
-              class="mt-1 text-[9.5px] sm:text-[10px] font-bold text-slate-500 tracking-tight text-center"
+              class="mt-[3px] text-[9px] sm:text-[9.5px] font-bold text-slate-500 tracking-tight text-center"
             >
               원하는 상담 스타일을 골라봐
             </p>
-          </div>
-        </div>
-
-        <!-- 선택이 결과 끝까지 이어진다는 안내 -->
-        <div
-          id="splitContinuityHint"
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[85] pointer-events-none transition-opacity duration-200"
-        >
-          <div
-            class="bg-slate-950/72 backdrop-blur-md border border-white/25 text-white px-3 py-1.5 rounded-full shadow-[0_4px_14px_rgba(15,23,42,0.22)] whitespace-nowrap"
-          >
-            <span class="text-[9px] sm:text-[9.5px] font-extrabold tracking-tight"
-              >선택한 언니의 말투로 결과 끝까지 이어져</span
+            <p
+              id="splitContinuityHint"
+              class="mt-0.5 text-[8.5px] sm:text-[9px] font-semibold text-slate-400 tracking-tight text-center transition-opacity duration-200"
             >
+              선택한 언니의 말투로 결과 끝까지 이어져
+            </p>
           </div>
         </div>
 
@@ -760,7 +752,7 @@
           ></div>
 
           <div
-            class="relative z-10 pb-3.5 px-3 flex flex-col gap-1.5 pointer-events-none"
+            class="relative z-10 pb-[18px] px-3 flex flex-col gap-1.5 pointer-events-none"
           >
             <div class="flex items-center gap-1.5 pl-1">
               <img
@@ -795,7 +787,7 @@
             </div>
 
             <!-- 유저 답장형 CTA -->
-            <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
+            <div class="w-full flex justify-end mt-0.5 pr-1 pointer-events-auto">
               <div
                 class="split-choice-cta relative bg-[#fff0f3] text-[#9f1239] border-2 border-[#fb7185] px-3.5 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_12px_rgba(244,63,94,0.22)] flex items-center gap-1.5 active:scale-95 max-w-full"
               >
@@ -872,7 +864,7 @@
             </div>
 
             <!-- 유저 답장형 CTA -->
-            <div class="w-full flex justify-end mt-1 pr-1 pointer-events-auto">
+            <div class="w-full flex justify-end mt-0.5 pr-1 pointer-events-auto">
               <div
                 class="split-choice-cta relative bg-[#0284c7] text-white border-2 border-sky-400 px-3.5 sm:px-4 py-2.5 rounded-2xl rounded-tr-none shadow-[0_4px_12px_rgba(2,132,199,0.3)] flex items-center gap-1.5 active:scale-95 max-w-full"
               >
