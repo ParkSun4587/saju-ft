@@ -104,7 +104,7 @@ async function inspect(page, mode) {
     assert(r.count===4&&r.visible===4,'free-launch should expose the post-NOTE6 product catalog '+JSON.stringify(r));
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
-    assert(r.note2Preview.includes('NOTE 2')&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
+    assert(/NOTE 0?2/.test(r.note2Preview)&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
     assert(r.paywall.includes('NOTE 02 이어서')&&r.paywall.includes('990원')&&r.paywall.includes('방금 읽던 NOTE 02 다음 내용'),'NOTE2 continuation paywall copy missing '+r.paywall);
     assert(!r.paywall.includes('오픈 체험가'),'stale generic sale copy remains '+r.paywall);
   }
