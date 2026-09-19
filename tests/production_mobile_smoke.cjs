@@ -20,6 +20,25 @@ async function deployed(page) {
 }
 
 async function enter(page, mode, concern, situation) {
+  const intro = await page.evaluate(() => {
+    const title=document.getElementById('topTitleBox');
+    const hint=document.getElementById('splitContinuityHint');
+    const roa=document.getElementById('panelRoa');
+    const seoa=document.getElementById('panelSeoa');
+    const bodyText=document.getElementById('splitIntroSection')?.innerText||'';
+    const boxes=[title,hint,roa,seoa].map(el=>el?.getBoundingClientRect()).filter(Boolean);
+    return {
+      bodyText,
+      visible:getComputedStyle(document.getElementById('splitIntroSection')).display!=='none',
+      inViewport:boxes.every(b=>b.top>=-1&&b.left>=-1&&b.right<=innerWidth+1&&b.bottom<=innerHeight+1),
+      titleHeight:title?.getBoundingClientRect().height||0,
+      hintVisible:!!hint && getComputedStyle(hint).opacity!=='0',
+    };
+  });
+  assert(intro.visible && intro.inViewport && intro.titleHeight<=82 && intro.hintVisible,'first counselor-choice viewport layout broken '+JSON.stringify(intro));
+  for(const copy of ['똑같은 내 사주, 누구한테 먼저 털어놓을래?','원하는 상담 스타일을 골라봐','감정 공감형','핵심 정리형','선택한 언니의 말투로 결과 끝까지 이어져','응, 언니랑 천천히 풀어볼래','좋아, 핵심만 바로 알려줘']) {
+    assert(intro.bodyText.includes(copy),'first counselor-choice copy missing '+copy);
+  }
   await page.locator(mode === 'F' ? '#panelRoa' : '#panelSeoa').click();
   await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
   const firstState = await page.evaluate(() => ({
