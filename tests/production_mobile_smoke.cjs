@@ -9,12 +9,13 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
+        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.0.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.1' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach paid 1.5.0 / products 1.9.1');
+  throw new Error('production did not reach NOTE v2 / paid 1.5.0 / products 1.9.1');
 }
 
 async function enter(page, mode, concern, situation) {
@@ -70,6 +71,8 @@ async function inspect(page, mode) {
     return {
       n1:plain(notes[0]?.desc), n2:plain(notes[1]?.desc),
       n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc),
+      noteV2Audit:currentResultData?.noteV2Audit || null,
+      note6Timing:notes[5]?.__timingQA || null,
       oheng:document.getElementById('ohengSummaryTxt')?.innerText||'',
       dayMasterTag:document.getElementById('dayMasterTag')?.innerText||'',
       sourceFreeLaunch:FREE_LAUNCH_MODE,
@@ -93,12 +96,15 @@ async function inspect(page, mode) {
       },
     };
   },mode);
-  assert(r.n1.length>=210,mode+' NOTE1 too short '+r.n1.length);
-  assert(r.n2.length>=210,mode+' NOTE2 too short '+r.n2.length);
-  assert(r.n4.length>=300,mode+' paid NOTE4 too short '+r.n4.length);
-  assert(r.n5.length>=330,mode+' paid NOTE5 too short '+r.n5.length);
-  assert(r.n1.includes('사주 전체'),mode+' NOTE1 personalization missing');
-  assert(/반복|패턴|같은 데서/.test(r.n2),mode+' NOTE2 pattern missing');
+  assert(r.noteV2Audit?.version==='2.0.0'&&r.noteV2Audit?.fingerprint,mode+' NOTE v2 audit missing');
+  assert(r.noteV2Audit?.primary?.cluster&&r.noteV2Audit?.secondary?.cluster,mode+' NOTE v2 diagnosis clusters missing');
+  assert(r.n1.length>=90&&r.n1.length<=560,mode+' NOTE1 should be concise/specific '+r.n1.length);
+  assert(r.n2.length>=100&&r.n2.length<=620,mode+' NOTE2 should be concise/specific '+r.n2.length);
+  assert(r.n4.length>=120&&r.n4.length<=760,mode+' NOTE4 action plan size drift '+r.n4.length);
+  assert(r.n5.length>=120&&r.n5.length<=760,mode+' NOTE5 domain-fit size drift '+r.n5.length);
+  assert(/시작|첫 반응|보통/.test(r.n2)&&/결국|그다음/.test(r.n2),mode+' NOTE2 behavior chain missing '+r.n2);
+  assert(r.note6Timing?.concernSituation,mode+' NOTE6 situation metadata missing');
+  assert(norm(r.note6Timing?.firstBody)!==norm(r.note6Timing?.secondBody),mode+' NOTE6 timing roles duplicated');
   if (mode==='F') assert(r.oheng.includes('이 제일 강해')&&r.oheng.includes('같은 장면이 반복되는 부분이 보여')&&r.oheng.includes('바로 아래 비밀 메모')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng secret-note teaser '+r.oheng);
   if (mode==='T') assert(r.oheng.includes('중요한 건 이 차이가 지금 고민에서 어떤 반복을 만드는지야')&&r.oheng.includes('바로 아래 비밀 메모')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng secret-note teaser '+r.oheng);
   assert(!/[나무불흙쇠물]\)/.test(r.oheng+r.dayMasterTag),'old parenthetical five-element wording remains '+JSON.stringify({oheng:r.oheng,day:r.dayMasterTag}));
@@ -120,7 +126,7 @@ async function inspect(page, mode) {
   assert(r.switchCount===0,'bottom F/T CTA remains');
   assert(r.hierarchy.oneLineBeforeThreeLine&&r.hierarchy.threeLineBeforeMbti&&r.hierarchy.mbtiBeforeChem&&r.hierarchy.mbtiSize<=38,
     'result hierarchy is wrong '+JSON.stringify(r.hierarchy));
-  assert(!r.badges.some(x=>x.includes('·')||x.includes('핵심')||x.includes('사람 필터')||x.includes('7일 처방')),
+  assert(!r.badges.some(x=>x.includes('·')||x.includes('사람 필터')||x.includes('7일 처방')||x.includes('놓친 포인트')),
     'old NOTE badge wording remains '+JSON.stringify(r.badges));
   assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
   if (mode==='F') assert(r.resultGreeting.includes('다 봤어!')&&r.resultGreeting.includes('네 얘기부터 차근차근 같이 풀어볼게')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=105,'F result warm close-sister intro drift '+r.resultGreeting);
