@@ -21,7 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.0' &&
+    globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.1' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
 
@@ -164,7 +164,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.5.0', 'paid value layer missing');
-  assert(qa.productVersion.version === '1.9.0', 'product layer missing');
+  assert(qa.productVersion.version === '1.9.1', 'product layer missing');
   assert(qa.wrappers.paid, 'paid-value wrapper missing');
   assert(qa.wrappers.integrated, 'integrated wrapper metadata lost');
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
@@ -623,7 +623,7 @@ function norm(v) {
 
   const html = fs.readFileSync('index.html','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.0'), 'paid value script include missing');
-  assert(html.includes('./premium-products-v1.js?v=1.9.0'), 'product script include missing');
+  assert(html.includes('./premium-products-v1.js?v=1.9.1'), 'product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
