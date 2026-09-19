@@ -3,7 +3,7 @@ require(path.resolve('classical-engine-v2.js'));
 
 function assert(cond, msg) { if (!cond) throw new Error(msg); }
 const E = global.__CLASSICAL_ENGINE_V2__;
-assert(E && E.version === '2.0.0', 'classical engine v2 not loaded');
+assert(E && E.version === '2.1.0', 'classical engine v2.1 not loaded');
 
 function P(year, month, day, hour) { return { year, month, day, ...(hour ? {hour} : {}) }; }
 
@@ -53,7 +53,7 @@ const statusBroken = global.evaluateGyeokStatusV2(
 );
 assert(statusBroken.status === '파격', `정관격 with 傷官 expected 파격 got ${JSON.stringify(statusBroken)}`);
 
-// ⑥ 용·희·기신: 단일 최저오행이 아니라 억부+한난조습+통관+격국 점수가 합성되는지 검증.
+// ⑥ 용·희·기신: 궁통보감/조후를 제외하고 억부+통관+격국 구조가 합성되는지 검증.
 const yStrong = global.selectYongshinV2({
   pillars: strong,
   strength: s1,
@@ -63,20 +63,8 @@ const yStrong = global.selectYongshinV2({
 assert(['mok','hwa','to','geum','su'].includes(yStrong.primary), 'invalid yongshin element');
 assert(yStrong.primary !== 'su', `very strong water chart should not select self water: ${JSON.stringify(yStrong)}`);
 assert(yStrong.detail[yStrong.primary].length > 0, 'yongshin evidence missing');
-assert(yStrong.method.includes('억부') && yStrong.method.includes('한난조습'), 'yongshin method layers missing');
-
-const winterFire = P(
-  {gan:'甲',zhi:'寅'}, {gan:'癸',zhi:'子'}, {gan:'丁',zhi:'卯'}, {gan:'乙',zhi:'卯'}
-);
-const wfStrength = global.analyzeDayMasterStrengthV2({pillars:winterFire});
-const wfYong = global.selectYongshinV2({
-  pillars:winterFire,
-  strength:wfStrength,
-  elementProfiles:global.getElementProfilesV2(winterFire),
-  gyeokguk:global.determineGyeokgukFromPillarsV2(winterFire,{}),
-});
-assert(wfYong.scores.hwa > -3, 'winter climate fire adjustment missing');
-assert(wfYong.climateReasons.length > 0, 'winter climate reason missing');
+assert(yStrong.method.includes('억부') && yStrong.method.includes('통관') && yStrong.method.includes('격국'), 'yongshin method layers missing');
+assert(!yStrong.method.includes('한난조습') && !('climateReasons' in yStrong), 'Qiongtong/climate layer must be removed');
 
 // 다양한 원국 조합에서 NaN/예외 없이 일관된 객체를 반환해야 한다.
 const gans='甲乙丙丁戊己庚辛壬癸';
@@ -98,7 +86,7 @@ for (let i=0;i<1200;i++) {
   const cl=global.buildClassicalLayersV2({pillars:p,strength:st,elementProfiles:ep,gyeokguk:gg,yongshinDetail:ys,calendarMeta:{}});
   assert(Number.isFinite(st.supportRatio), `NaN strength case ${i}`);
   assert(Object.values(ys.scores).every(Number.isFinite), `NaN yongshin case ${i}`);
-  assert(gg.name && cl.japyeong && cl.jeokcheon && cl.qiongtong, `missing classical layer case ${i}`);
+  assert(gg.name && cl.japyeong && cl.jeokcheon && cl.yongshin && !cl.qiongtong, `classical layer regression case ${i}`);
   fuzz++;
 }
 
@@ -106,7 +94,7 @@ console.log(JSON.stringify({
   strengthCases:2,
   gyeokCases:3,
   gyeokStatusCases:2,
-  yongshinCases:2,
+  yongshinCases:1,
   fuzzCases:fuzz,
   status:'PASS'
 }, null, 2));
