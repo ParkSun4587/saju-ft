@@ -273,6 +273,7 @@ function norm(v) {
     const note2Preview = document.getElementById('note2PreviewCard');
     const fPaywallText = document.getElementById('lockedOverlay')?.innerText || '';
     const previewPlain = note2Preview?.innerText || '';
+    const previewBodyPlain = document.getElementById('note2PreviewBody')?.innerText || '';
     updateResultContentByMode('T');
     const tPaywallText = document.getElementById('lockedOverlay')?.innerText || '';
     updateResultContentByMode('F');
@@ -322,6 +323,7 @@ function norm(v) {
       result:!!currentResultData,
       lockedCatalog:!!lockedCatalog,
       previewPlain,
+      previewBodyPlain,
       fullNote2Plain:String(notes[1]?.desc || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),
       fPaywallText,
       tPaywallText,
@@ -349,8 +351,8 @@ function norm(v) {
   });
   assert(ui.result, 'production-like result missing');
   assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
-  assert(ui.previewPlain && ui.previewPlain.includes('NOTE 2'), 'NOTE2 teaser missing before paywall');
-  assert(ui.previewPlain.length < ui.fullNote2Plain.length + 120, 'NOTE2 teaser is not meaningfully shorter than the full note');
+  assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
+  assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
   assert(ui.fPaywallText.includes('로아 언니 · NOTE 02 이어서') && ui.fPaywallText.includes('990원') && ui.fPaywallText.includes('방금 읽던 NOTE 02 다음 내용'), `F NOTE2 paywall handoff missing: ${ui.fPaywallText}`);
   assert(ui.tPaywallText.includes('서아 언니 · NOTE 02 이어서') && ui.tPaywallText.includes('990원') && ui.tPaywallText.includes('원인·행동·사람·시기'), `T NOTE2 paywall handoff missing: ${ui.tPaywallText}`);
   assert(!ui.fPaywallText.includes('오픈 체험가') && !ui.tPaywallText.includes('오픈 체험가'), 'stale generic sale badge remains in NOTE2 paywall');
