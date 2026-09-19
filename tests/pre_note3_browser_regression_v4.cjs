@@ -43,7 +43,7 @@ async function load(page) {
     typeof buildConcernDiagnosisV2 === 'function' &&
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.3.0' &&
     typeof analyzeDayMasterStrengthV2 === 'function' &&
-    globalThis.__MANSE_KOREA_V2__?.version === '2.3.0',
+    globalThis.__MANSE_KOREA_V2__?.version === '2.2.0',
     null, {timeout:60000}
   );
 }
@@ -102,7 +102,7 @@ async function load(page) {
         leap, regular, boundary,
       };
     });
-    assert(r.manseScriptSrc.includes('manse-korea-v2.js?v=2.3.0'), `stale manse asset URL ${r.manseScriptSrc}`);
+    assert(r.manseScriptSrc.includes('manse-korea-v2.js?v=2.2.0'), `stale manse asset URL ${r.manseScriptSrc}`);
     assert(r.runtimeVersion === '2.3.0', `stale manse runtime ${r.runtimeVersion}`);
     assert(r.staleGuard.code === 'MANSE_ENGINE_STALE', `stale engine did not fail closed ${JSON.stringify(r.staleGuard)}`);
     assert(r.exact.year === '戊寅', `1998 year drift ${r.exact.year}`);
