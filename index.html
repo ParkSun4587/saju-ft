@@ -3207,7 +3207,7 @@
             if (senderTitle) senderTitle.textContent = "로아 언니 (F)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔구나. 언니한테 편하게 말해봐.<br>사주 대충 안 보고, 네가 왜 이 고민에서 자꾸 마음 쓰이는지까지 깊게 봐줄게.<br>이름이랑 생일부터 알려줘!";
+                "왔구나! 언니한테 편하게 말해봐.<br>사주 대충 안 보고, 네가 왜 이 고민에서 자꾸 마음 쓰이는지까지 진짜 깊게 봐줄게.<br>이름이랑 생일부터 알려줘!";
             }
           } else {
             if (sisterImg) sisterImg.src = "./서아.png";
@@ -5525,7 +5525,7 @@ return [
             const ackText =
               mode === "T"
                 ? `${callVoc}, 확인했어. 이 고민 기준으로 볼게. 대충 위로만 하진 않을 거고, 괜히 겁주지도 않을게. 필요한 것만 제대로 짚어줄게.`
-                : `${callVoc}, 이 고민이었구나. 알겠어. 언니가 다른 얘기 안 섞고 네 상황만 제대로 볼게.`;
+                : `${callVoc}, 아 이 고민이었구나! 알겠어. 언니가 다른 얘기 안 섞고 네 상황만 제대로 볼게.`;
 
             const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up mt-1">
@@ -5644,7 +5644,7 @@ currentResultData = {
                 appendSisterMsg(
                   isT
                     ? `${callVoc}, 잠깐. 사주부터 맞춰보고 지금 고민이 어디서 꼬였는지 볼게. 결론은 깔끔하게 줄게.`
-                    : `${callVoc}, 잠깐만. 언니가 네 사주랑 지금 고민 같이 놓고 깊게 보고 올게.`,
+                    : `${callVoc}, 잠깐만! 언니가 네 사주랑 지금 고민 같이 놓고 꼼꼼하게 보고 올게.`,
                   false,
                 );
 
@@ -5664,24 +5664,24 @@ currentResultData = {
 
                   const sazuSneakPeek = {
                     hwa: {
-                      T: `불기운이 강하네. 감정 반응이 빠른 편이라, 참다가 한 번에 터지는 순간만 잘 보면 돼.`,
-                      F: `불기운이 강하네. 마음이 움직일 때 진심도 큰 편이라, 참는 시간이 길어지면 속에서 더 오래 남을 수 있겠어.`,
+                      T: `화가 강하네. 반응이 빠른 건 장점인데, 참다가 한 번에 터지는 순간은 체크해야 해.`,
+                      F: `화가 강하네. 마음이 움직일 때 진심도 큰 편이라, 오래 참으면 속에 더 남을 수 있겠어.`,
                     },
                     su: {
-                      T: `물기운이 강하네. 생각이 깊은 건 장점인데, 결정 직전까지 경우의 수를 늘리는 순간은 체크해야 해.`,
-                      F: `물기운이 강하네. 사람 마음도 상황도 깊게 보는 편이라, 혼자 생각을 오래 들고 있을 때가 있겠어.`,
+                      T: `수가 강하네. 생각이 깊은 건 장점인데, 결정 직전까지 경우의 수를 늘리는 순간은 체크해야 해.`,
+                      F: `수가 강하네. 사람 마음도 상황도 깊게 보는 편이라, 혼자 생각을 오래 들고 있을 때가 있겠어.`,
                     },
                     mok: {
-                      T: `나무기운이 강하네. 시작하고 밀어가는 힘은 좋은데, 방향이 안 맞아도 오래 버티는 순간은 봐야 해.`,
-                      F: `나무기운이 강하네. 마음이 정해지면 앞으로 가는 힘이 큰 대신, 혼자 끝까지 해내려는 쪽으로 갈 때가 있겠어.`,
+                      T: `목이 강하네. 시작하고 밀어가는 힘은 좋은데, 방향이 안 맞아도 오래 버티는 순간은 봐야 해.`,
+                      F: `목이 강하네. 마음 정하면 앞으로 가는 힘이 큰데, 혼자 끝까지 해내려 할 때도 있겠어.`,
                     },
                     geum: {
-                      T: `쇠기운이 강하네. 기준이 분명한 건 장점인데, 네 기준까지 너무 높여 잡는 순간이 있어.`,
-                      F: `쇠기운이 강하네. 대충 넘기지 않는 힘이 있는 대신, 네 자신한테도 너무 엄격해질 때가 있겠어.`,
+                      T: `금이 강하네. 기준이 분명한 건 장점인데, 네 기준까지 너무 높여 잡는 순간은 있어.`,
+                      F: `금이 강하네. 대충 넘기지 않는 힘이 있어서, 네 자신한테도 기준이 높아질 때가 있겠어.`,
                     },
                     to: {
-                      T: `흙기운이 강하네. 오래 버티는 힘은 좋은데, 이미 지쳤는데도 괜찮다고 넘기는 순간은 봐야 해.`,
-                      F: `흙기운이 강하네. 쉽게 포기하지 않는 힘이 큰 만큼, 힘든 걸 혼자 오래 들고 있을 때가 있겠어.`,
+                      T: `토가 강하네. 오래 버티는 힘은 좋은데, 이미 지쳤는데도 괜찮다고 넘기는 순간은 봐야 해.`,
+                      F: `토가 강하네. 쉽게 포기하지 않는 힘이 큰 만큼, 힘든 걸 혼자 오래 들고 있을 때가 있겠어.`,
                     },
                   };
                   const targetMsgObj =
@@ -5694,7 +5694,7 @@ currentResultData = {
                     appendSisterMsg(
                       isT
                         ? `다 봤어. 괜한 소리 빼고 중요한 것만 정리했어. 이제 보자.`
-                        : `다 봤어. 생각보다 네 얘기랑 이어지는 데가 많네. 언니가 하나씩 풀어줄게.`,
+                        : `다 봤어! 생각보다 네 얘기랑 이어지는 데가 많네. 언니가 하나씩 풀어줄게.`,
                       true,
                     );
 
@@ -5860,7 +5860,7 @@ currentResultData = {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
             const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
-            resGreeting.innerHTML = `<b>${callVoc}</b>, 다 봤어. [${escapeHTML(situationText)}]에서 왜 마음이 자꾸 쓰였는지 사주랑 같이 보니까 포인트가 딱 보여. 언니가 어려운 말 없이 하나씩 풀어줄게.`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, 다 봤어! [${escapeHTML(situationText)}]에서 왜 마음이 자꾸 쓰였는지 사주랑 같이 보니까 포인트가 딱 보여. 언니가 어려운 말 없이 하나씩 풀어줄게.`;
           }
         }
         // [추가] '다른 고민도 풀어보기' CTA 버튼 테마 컬러 실시간 동기화
@@ -6275,8 +6275,8 @@ currentResultData = {
 
         if (summaryTxt) {
           summaryTxt.innerHTML = isT
-            ? `<b>${maxOheng.name} ${maxOheng.pct}%</b>가 가장 강해. ${strongestT[maxOheng.name] || "강한 쪽이 먼저 나온다"}. 반대로 <b>${minNames}</b>은 가장 약해서, ${weakMeanings}이 필요한 순간엔 평소보다 힘을 더 써야 해. <b>지금 고민의 반복 패턴도 이 강약 차이에서 시작되는 부분이 있어.</b> 아래 NOTE에서 원인부터 확인해.`
-            : `언니가 딱 보면 <b>${maxOheng.name} ${maxOheng.pct}%</b>가 제일 강해. ${strongestF[maxOheng.name] || "이 힘이 자연스럽게 먼저 나오는 편이야"}. 반대로 <b>${minNames}</b>은 제일 약해서, ${weakMeanings}이 필요한 순간엔 유독 생각이 많아지거나 힘이 더 들 수 있어. <b>지금 고민도 이 차이가 어디서 반복되는지가 포인트야.</b> 아래 NOTE에서 그 이유부터 이어서 볼게.`;
+            ? `<b>${maxOheng.name}</b>이 제일 강해. ${strongestT[maxOheng.name] || "강한 쪽이 먼저 나온다"}. 반대로 <b>${minNames}</b>은 약한 편이라, ${weakMeanings}이 필요한 순간에 막히기 쉽다. <b>중요한 건 이 조합이 지금 고민에서 어떤 반복을 만드는지야.</b> 바로 아래 비밀메모에서 그 패턴부터 짚어줄게.`
+            : `언니가 보기엔 <b>${maxOheng.name}</b>이 제일 강해. ${strongestF[maxOheng.name] || "이 힘이 자연스럽게 먼저 나오는 편이야"}. 반대로 <b>${minNames}</b>은 약한 편이라, ${weakMeanings}이 필요한 순간엔 유독 마음이 걸리거나 힘이 더 들 수 있어. <b>지금 네 고민도 여기서 반복되는 장면이 보여.</b> 바로 아래 비밀메모에서 그 장면부터 같이 풀어볼게.`;
         }
       }
 
@@ -7208,7 +7208,7 @@ currentResultData = {
       }
 
       window.__UNNI_IMAGE_EXPORT_V2__ = {
-        version: "2.7.0",
+        version: "2.8.0",
         renderElementToPngBlob,
         renderVisibleElementToPngBlob,
         renderElementToPngPages,
@@ -7247,7 +7247,7 @@ currentResultData = {
             </div>
             <div style="position:absolute;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));pointer-events:none">
               <button id="storyCaptureReady" type="button" style="pointer-events:auto;width:100%;max-width:360px;margin:0 auto;display:block;border:0;border-radius:16px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:950;box-shadow:0 12px 32px rgba(15,23,42,.30);cursor:pointer">캡처 준비</button>
-              <div id="storyCaptureGuideSub" style="margin-top:7px;text-align:center;color:#475569;font-size:10px;font-weight:800;text-shadow:0 1px 2px rgba(255,255,255,.8)">캡처한 뒤 화면을 한 번 누르면 결과로 돌아가</div>
+              <div id="storyCaptureGuideSub" style="margin-top:7px;text-align:center;color:#475569;font-size:10px;font-weight:800;text-shadow:0 1px 2px rgba(255,255,255,.8)">캡처했으면 화면을 한 번 톡 눌러줘 · 바로 결과로 돌아가</div>
             </div>
           </div>
         `;
@@ -7289,7 +7289,7 @@ currentResultData = {
           readyBtn.style.opacity = ".72";
         }
         if (guideMain) guideMain.textContent = "전체화면으로 바꾸는 중이야. 잠깐만 기다려줘.";
-        if (guideSub) guideSub.textContent = "회색 안내가 사라지면 카드만 깔끔하게 남겨둘게";
+        if (guideSub) guideSub.textContent = "회색 안내가 사라지면 캡처 → 끝나면 화면 한 번 톡!";
 
         let fullscreenEntered = false;
         const root = document.documentElement;
@@ -7338,7 +7338,7 @@ currentResultData = {
         if (guideMain) guideMain.innerHTML = isT
           ? "카드만 남겨둘게. 캡처해서 올려. 친구들이랑 비교해보면 재밌을 거야."
           : "카드만 딱 남겨둘게. 예쁘게 캡처해서 인스타 스토리에 올려봐 ♡";
-        if (guideSub) guideSub.textContent = "캡처 준비를 누르면 전체화면으로 바꾼 뒤 카드만 남겨둘게";
+        if (guideSub) guideSub.textContent = "전체화면으로 바꾼 뒤 카드만 남겨둘게 · 캡처 후 화면을 한 번 톡 누르면 바로 돌아가";
         layer.style.background = isT
           ? "linear-gradient(160deg,#eef8ff 0%,#f8fcff 52%,#eef6ff 100%)"
           : "linear-gradient(160deg,#fff1f4 0%,#fffaf7 52%,#fff3f5 100%)";
