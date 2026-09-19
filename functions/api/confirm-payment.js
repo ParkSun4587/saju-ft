@@ -4,7 +4,7 @@ const PRODUCTS = Object.freeze({
   concern_bundle3: { amount: 2900, name: "어떤언니 고민 3개 더 깊게" },
   full_saju: { amount: 4900, name: "어떤언니 내 전체 사주판" },
   compatibility: { amount: 5900, name: "어떤언니 우리 둘 궁합" },
-  all_in_one: { amount: 9900, name: "어떤언니 올인원" },
+  all_in_one: { amount: 9900, name: "어떤언니 내 사주 완전판" },
 });
 const TTL = 7 * 24 * 60 * 60 * 1000;
 const enc = new TextEncoder();
