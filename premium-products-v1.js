@@ -44,28 +44,28 @@
       name: "고민 3개 더 깊게",
       price: 2900,
       badge: "다른 고민도 3개 더",
-      desc: "지금 본 방식 그대로, 궁금한 고민 3개를 골라 원인·반복패턴·진짜 문제·행동법·사람 기준·시기까지 이어서 봐.",
+      desc: "방금 받은 상담처럼, 아직 마음에 남은 고민 3개를 골라 각각 원인부터 행동·사람·시기까지 이어서 봐.",
     },
     full_saju: {
       id: "full_saju",
       name: "내 전체 사주판",
       price: 4900,
       badge: "내 사주 전체 보기",
-      desc: "내 성향부터 일·돈·연애·관계·회복까지, 고민 하나가 아니라 내 사주 전체 흐름을 한 번에 봐.",
+      desc: "왜 비슷한 선택과 고민이 반복되는지, 내 성향·일·돈·연애·관계·회복을 하나의 흐름으로 이어서 봐.",
     },
     compatibility: {
       id: "compatibility",
       name: "우리 둘 궁합",
       price: 5900,
       badge: "우리 둘 깊게 보기",
-      desc: "왜 끌리는지부터 연락·대화·싸움·화해·애정표현·생활·돈·오래 가는 방식까지 둘 사이를 깊게 봐.",
+      desc: "왜 끌리고 어디서 서운해지는지, 연락·싸움·화해·애정표현·생활·돈·오래 가는 방식까지 둘 사이를 깊게 봐.",
     },
     all_in_one: {
       id: "all_in_one",
       name: "내 사주 완전판",
       price: 9900,
       badge: "내 사주 전부 보기",
-      desc: "내 성향·일·돈·연애·관계·마음까지 전체 사주와 6가지 고민을 한 번에 이어서 봐. 궁합만 별도야.",
+      desc: "내 성향부터 돈·일·연애·관계·마음까지, 따로 하나씩 고르지 않고 내 사주와 6가지 고민을 한 번에 다 이어서 봐. 궁합만 별도야.",
     },
   };
 
@@ -228,7 +228,7 @@
   function fullSajuHtml(data, mode) {
     const isT = mode === "T";
     const intro = isT
-      ? "이 리포트는 지금 선택한 고민 6개를 다시 요약하는 상품이 아니다. 사주 전체에서 반복되는 기질·강점·과부하·판단법·관계·회복·변화 대응을 한 번에 묶은 기본 지도다."
+      ? "이건 방금 본 고민 하나를 길게 반복하는 리포트가 아니야. 사주 전체에서 반복되는 기질·강점·과부하·판단법·관계·회복·변화 대응을 한 번에 묶은 내 기본 지도야."
       : "이건 지금 선택한 고민을 또 풀어쓰는 리포트가 아니야. 언니가 네 사주 전체를 펼쳐놓고, 어떤 고민을 만나도 반복해서 나타나는 기질·강점·지치는 방식·사람 보는 법·회복법을 한 장으로 이어주는 ‘내 사용설명서’에 가까워";
     const sections = fullSajuSections(data, mode);
     return `<div data-export-intro="full" style="padding:14px 15px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;font-size:12.5px;line-height:1.8;color:#7c2d12;margin-bottom:8px"><b>이 리포트에서 보는 것</b><br>${intro}</div>${sections.map((s, index) => `<section data-export-kind="full" data-export-index="${index}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:900;margin:0 0 8px">${s.title}</h4><div style="font-size:13px;line-height:1.85;color:#475569">${s.body}</div></section>`).join("")}`;
@@ -333,8 +333,8 @@
     const bothClash = myClash && partnerClash;
 
     const intro = isT
-      ? `궁합은 ‘좋다/나쁘다’ 한 줄로 끝내면 쓸모가 없어. 너와 ${safeName}의 사주를 따로 본 다음, 실제 관계에서 어디가 맞고 어디서 충돌하는지 16개 항목으로 나눠서 볼게.`
-      : `궁합은 그냥 “둘이 잘 맞아” 한마디 듣고 끝내면 너무 아깝잖아. 언니가 너랑 ${safeName} 사주를 따로 펼쳐놓고, 왜 끌리고 어디서 서운해지고 어떻게 해야 오래 편한지까지 16개로 차근차근 풀어줄게.`;
+      ? `궁합은 ‘좋다/나쁘다’ 한 줄로 끝내면 쓸모가 없어. 너와 ${safeName}의 사주를 따로 본 다음, 실제 관계에서 어디가 맞고 어디서 충돌하는지 처음부터 오래 가는 방식까지 나눠서 볼게.`
+      : `궁합은 그냥 “둘이 잘 맞아” 한마디 듣고 끝내면 너무 아깝잖아. 언니가 너랑 ${safeName} 사주를 따로 펼쳐놓고, 왜 끌리고 어디서 서운해지고 어떻게 해야 오래 편한지까지 관계 흐름대로 차근차근 풀어줄게.`;
 
     const cards = [
       {
@@ -435,7 +435,7 @@
       },
     ];
 
-    const summary = `<div data-export-intro="compat" style="padding:15px;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;margin-bottom:10px"><div style="font-size:11px;font-weight:900;color:#c2410c;margin-bottom:6px">우리 둘 궁합 · 16개 챕터</div><div style="font-size:13px;line-height:1.85;color:#7c2d12">${intro}</div></div>`;
+    const summary = `<div data-export-intro="compat" style="padding:15px;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;margin-bottom:10px"><div style="font-size:11px;font-weight:900;color:#c2410c;margin-bottom:6px">우리 둘 관계를 깊게 보는 궁합</div><div style="font-size:13px;line-height:1.85;color:#7c2d12">${intro}</div></div>`;
     const pairCard = `<div data-export-pair="compat" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 6px"><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">나</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(myDom)}</div></div><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">${safeName}</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(partnerDom)}</div></div></div>`;
     return summary + pairCard + cards.map((s, index) => `<section data-export-kind="compat" data-export-index="${index}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:950;margin:0 0 8px;color:#0f172a">${s.title}</h4><div style="font-size:13px;line-height:1.9;color:#475569">${s.body}</div></section>`).join("");
   }
@@ -905,7 +905,7 @@
     if (productId === "all_in_one") {
       return `
         <div style="font-size:12px;font-weight:900;margin-bottom:5px">6가지 고민의 지금 상황만 맞춰줘</div>
-        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">각 NOTE가 네 실제 상황을 전제로 말하게 만드는 마지막 설정이야.</div>
+        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">각 고민을 네 실제 상황에 맞춰서 봐주기 위한 마지막 설정이야.</div>
         <div id="unniAllInOneSituations" style="display:grid;gap:8px">
           ${Object.keys(CONCERNS).map((k) => {
             const selected = k === data?.concernKey ? data?.concernSituation || "" : "";
@@ -1116,18 +1116,40 @@
   }
 
   const PRODUCT_SHORT = {
-    concern_bundle3: "지금 본 방식 그대로, 다른 고민 3개도 깊게",
-    full_saju: "내 성향·일·돈·연애·관계·회복까지 한 번에",
-    compatibility: "끌림부터 연락·싸움·화해·오래 가는 법까지",
-    all_in_one: "전체 사주 + 돈·일·연애·관계·마음 고민까지 전부",
+    concern_bundle3: "아직 남은 고민 3개를 같은 방식으로 이어서",
+    full_saju: "왜 비슷한 고민이 반복되는지 내 전체 흐름으로",
+    compatibility: "우리 둘이 왜 끌리고 어디서 부딪히는지까지",
+    all_in_one: "내 사주와 6가지 고민을 따로 고르지 않고 전부",
   };
 
-  function productButtonHtml(p, { recommended = false, secondary = false } = {}) {
+  function recommendationReason(productId, data, isT) {
+    const situation = situationLabel(data?.concernKey, data?.concernSituation);
+    if (productId === "compatibility") {
+      return isT
+        ? "지금은 네 사주만 더 보는 것보다, 상대와 실제로 어디서 맞고 부딪히는지 보는 게 바로 이어져."
+        : `${situation ? "방금 말한 ‘" + situation + "’라면 " : ""}이제 네 마음만 보는 것보다, 둘 사이가 왜 이렇게 흘러가는지 같이 보는 게 더 궁금할 거야.`;
+    }
+    if (productId === "full_saju") {
+      return isT
+        ? "지금 고민 하나보다, 비슷한 선택이 왜 반복되는지 전체 사주에서 보는 쪽이 다음 판단에 더 쓸모 있어."
+        : "방금 고민 하나를 봤다면, 이제 ‘왜 나는 비슷한 데서 자꾸 걸리지?’를 내 사주 전체 흐름으로 이어서 보는 게 좋아.";
+    }
+    if (productId === "concern_bundle3") {
+      return isT
+        ? "지금 본 상담 방식이 맞았다면, 아직 남은 다른 고민을 같은 기준으로 이어서 보는 구성이 가장 단순해."
+        : "지금 상담이 잘 맞았다면, 아직 마음에 남아 있는 다른 고민들도 같은 방식으로 이어서 봐줄게.";
+    }
+    return isT
+      ? "하나씩 고르기 싫고 내 사주와 고민을 한 번에 정리하고 싶을 때 맞는 구성."
+      : "이것저것 계속 고르기보다 내 사주랑 고민을 한 번에 쭉 보고 싶다면 이게 제일 편해.";
+  }
+
+  function productButtonHtml(p, { recommended = false, secondary = false, reason = "" } = {}) {
     const border = recommended ? "#fda4af" : "#e2e8f0";
     const bg = recommended ? "linear-gradient(135deg,#fff1f2,#fff)" : "#fff";
-    const pad = recommended ? "14px" : "12px 13px";
+    const pad = recommended ? "15px" : "12px 13px";
     const description = recommended ? p.desc : PRODUCT_SHORT[p.id] || p.desc;
-    return `<button data-unni-product="${p.id}" ${secondary ? 'data-secondary-product="1"' : ""} style="text-align:left;width:100%;padding:${pad};border:1px solid ${border};border-radius:16px;background:${bg};cursor:pointer"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div style="min-width:0"><div style="font-size:10px;font-weight:900;color:${recommended ? "#f43f5e" : "#94a3b8"};margin-bottom:3px">${recommended ? "지금 너한테 먼저 추천 · " : ""}${p.badge}</div><div style="font-size:${recommended ? "14px" : "13px"};font-weight:900;color:#0f172a">${p.name}</div></div><div style="font-size:13px;font-weight:950;color:#0f172a;white-space:nowrap">${won(p.price)}</div></div><div style="font-size:${recommended ? "11px" : "10.5px"};line-height:1.55;color:#64748b;margin-top:${recommended ? "7px" : "5px"}">${description}</div></button>`;
+    return `<button data-unni-product="${p.id}" ${secondary ? 'data-secondary-product="1"' : ""} style="text-align:left;width:100%;padding:${pad};border:${recommended ? "2px" : "1px"} solid ${border};border-radius:16px;background:${bg};cursor:pointer;box-shadow:${recommended ? "0 8px 24px rgba(244,63,94,.10)" : "none"}"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div style="min-width:0"><div style="font-size:10px;font-weight:900;color:${recommended ? "#f43f5e" : "#94a3b8"};margin-bottom:3px">${recommended ? "언니가 지금 먼저 골라준 건 · " : ""}${p.badge}</div><div style="font-size:${recommended ? "15px" : "13px"};font-weight:950;color:#0f172a">${p.name}</div></div><div style="font-size:${recommended ? "14px" : "13px"};font-weight:950;color:#0f172a;white-space:nowrap">${won(p.price)}</div></div><div style="font-size:${recommended ? "11.5px" : "10.5px"};line-height:1.6;color:#64748b;margin-top:${recommended ? "7px" : "5px"}">${description}</div>${recommended && reason ? `<div style="margin-top:8px;padding:8px 9px;border-radius:11px;background:rgba(255,255,255,.75);font-size:10.5px;line-height:1.55;font-weight:800;color:#be123c">왜 이걸 먼저 추천하냐면 · ${reason}</div>` : ""}</button>`;
   }
 
   function renderCatalog() {
@@ -1141,14 +1163,15 @@
     const wrap = document.createElement("section");
     wrap.id = "unniProductLadder";
     wrap.style.cssText = "margin-top:24px;padding:18px 14px;border-radius:22px;background:#fff;border:1px solid #fde2e8;box-shadow:0 10px 30px rgba(225,175,185,.10)";
-    const eyebrow = isT ? "더 볼 거면, 지금 필요한 것부터" : "더 마음에 걸리는 게 있다면";
+    const eyebrow = isT ? "이 고민 다음에 더 볼 거면" : "여기까지 같이 봤으니까";
     const headline = isT
-      ? "내가 하나만 먼저 골라줄게"
-      : "언니가 지금 하나만 먼저 골라줄게";
+      ? "다음으로 볼 건 이게 제일 맞아"
+      : "언니가 너한테 다음 하나만 골라봤어";
     const sub = isT
-      ? "지금 본 걸로 충분하면 여기서 끝. 아래 추천도 필요한 경우에만 봐."
-      : "지금 본 것만으로도 괜찮아. 더 궁금할 때만 언니 추천부터 가볍게 봐.";
-    wrap.innerHTML = `<div style="font-size:11px;font-weight:900;color:#f43f5e">${eyebrow}</div><h3 style="font-size:18px;font-weight:950;margin:5px 0 5px">${headline}</h3><p style="font-size:11.5px;line-height:1.6;color:#64748b;margin:0 0 12px">${sub}</p><div style="display:grid;gap:9px">${productButtonHtml(recommended,{recommended:true})}<div style="font-size:10px;font-weight:900;color:#94a3b8;margin:5px 2px -1px">다른 리포트도 있어 · 필요한 것만 골라봐</div>${others.map((p)=>productButtonHtml(p,{secondary:true})).join("")}</div>`;
+      ? "방금 본 상담에서 바로 이어지는 기준으로 맨 위에 뒀어. 아래 셋은 목적이 다를 때 고르면 돼."
+      : "방금 상담이랑 이어지는 걸 맨 위에 뒀어. 더 알고 싶은 게 남았다면 여기서부터 보는 게 제일 자연스러워.";
+    const reason = recommendationReason(recommended.id, data, isT);
+    wrap.innerHTML = `<div style="font-size:11px;font-weight:900;color:#f43f5e">${eyebrow}</div><h3 style="font-size:18px;font-weight:950;margin:5px 0 5px">${headline}</h3><p style="font-size:11.5px;line-height:1.6;color:#64748b;margin:0 0 12px">${sub}</p><div style="display:grid;gap:9px">${productButtonHtml(recommended,{recommended:true,reason})}<div style="font-size:10px;font-weight:900;color:#94a3b8;margin:6px 2px -1px">다른 게 더 궁금하다면</div>${others.map((p)=>productButtonHtml(p,{secondary:true})).join("")}</div>`;
     notes.insertAdjacentElement("afterend", wrap);
     wrap.querySelectorAll("[data-unni-product]").forEach((btn) => btn.addEventListener("click", () => openProduct(btn.dataset.unniProduct)));
   }
@@ -1175,7 +1198,7 @@
 
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
-  global.__UNNI_PRODUCTS_V1__ = { version: "1.8.0", products: PRODUCTS };
+  global.__UNNI_PRODUCTS_V1__ = { version: "1.9.0", products: PRODUCTS };
 
   const observer = new MutationObserver(() => renderCatalog());
   if (document.documentElement) observer.observe(document.documentElement, { childList: true, subtree: true });
