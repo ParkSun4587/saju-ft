@@ -128,6 +128,15 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     const gData=mk({year:{gan:'庚',zhi:'申'},month:{gan:'庚',zhi:'酉'},day:{gan:'甲',zhi:'午'},hour:{gan:'丙',zhi:'午'}});
     const G=note(gData,'career','current');
 
+    // Runtime kind integrity: force an actual 통관 candidate so bridge kind must exist too.
+    const bridgeData=mk({
+      year:{gan:'甲',zhi:'辰'},
+      month:{gan:'戊',zhi:'辰'},
+      day:{gan:'甲',zhi:'寅'},
+      hour:{gan:'戊',zhi:'戌'},
+    });
+    const BRIDGE=note(bridgeData,'career','current');
+
     const plain=v=>String(v||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
 
     return {
@@ -173,6 +182,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       },
       runtimeIntegrity:{
         ditianKinds:A1.reasoning.ditian.findings.map(x=>({id:x.id,kind:x.kind})),
+        bridgeChartKinds:BRIDGE.reasoning.ditian.findings.map(x=>({id:x.id,kind:x.kind,facts:x.facts})),
         claims:A1.audit.claims.map((claim,i)=>({
           noteNum:claim.noteNum,
           ditianRuleIds:claim.ditianRuleIds,
@@ -196,8 +206,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   for(const kind of requiredKinds){
     assert(r.runtimeIntegrity.ditianKinds.some(x=>x.kind===kind), 'runtime Ditian finding kind missing: '+kind+' '+JSON.stringify(r.runtimeIntegrity.ditianKinds));
   }
-  const bridgeFinding=r.runtimeIntegrity.ditianKinds.find(x=>x.id==='DTS_BRIDGE_112');
-  if(bridgeFinding) assert(bridgeFinding.kind==='bridge','runtime bridge finding lost kind: '+JSON.stringify(bridgeFinding));
+  const bridgeFinding=r.runtimeIntegrity.bridgeChartKinds.find(x=>x.id==='DTS_BRIDGE_112');
+  assert(bridgeFinding?.kind==='bridge','runtime bridge finding kind missing: '+JSON.stringify(r.runtimeIntegrity.bridgeChartKinds));
+  assert(bridgeFinding?.facts?.bridge,'runtime bridge finding has no bridge facts: '+JSON.stringify(bridgeFinding));
   for(const claim of r.runtimeIntegrity.claims){
     assert(claim.ditianRuleIds.filter(Boolean).length>0,'NOTE'+claim.noteNum+': no valid Ditian provenance');
     assert(claim.zipingRuleIds.filter(Boolean).length>0,'NOTE'+claim.noteNum+': no valid Ziping provenance');
@@ -233,7 +244,10 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(!/종격|가종|전왕/.test(r.G.note),'G: unimplemented special structure leaked as a user-facing assertion');
 
   assert(errors.length===0,'browser errors: '+errors.join(' | '));
-  console.log('CLASSICAL_RUNTIME_KINDS',JSON.stringify(r.runtimeIntegrity.ditianKinds));
+  console.log('CLASSICAL_RUNTIME_KINDS',JSON.stringify({
+    base:r.runtimeIntegrity.ditianKinds,
+    bridgeCase:r.runtimeIntegrity.bridgeChartKinds,
+  }));
   console.log('CLASSICAL_NOTE_PROVENANCE',JSON.stringify(r.runtimeIntegrity.claims.map(x=>({
     noteNum:x.noteNum,
     ditianRuleIds:x.ditianRuleIds,
