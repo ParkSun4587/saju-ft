@@ -19,7 +19,7 @@ function norm(v) {
 
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil:'load' });
   await page.waitForFunction(() =>
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.0.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.1.0' &&
     typeof buildIntegratedSajuProfile === 'function' &&
     typeof buildConcernDiagnosisV2 === 'function' &&
     typeof generateConcernNotes === 'function'
@@ -108,7 +108,7 @@ function norm(v) {
     };
   });
 
-  assert(result.engine?.version === '2.0.0', 'NOTE v2 engine missing');
+  assert(result.engine?.version === '2.1.0', 'NOTE v2 engine missing');
   assert(result.integrated?.version === '1.0.0', 'integrated profile missing');
   assert(result.wrapper, 'NOTE v2 wrapper missing');
   assert(result.exactPillars.join(',') === '戊寅,甲寅,己亥,乙丑', 'canonical pillars drift: '+result.exactPillars.join(','));
@@ -126,8 +126,8 @@ function norm(v) {
 
     for (const [mode, notes, audit] of [['F',row.notesF,row.auditF],['T',row.notesT,row.auditT]]) {
       assert(notes.length === 6, row.concern+'/'+row.situation+'/'+mode+': expected six notes');
-      assert(audit?.version === '2.0.0' && audit?.fingerprint, row.concern+'/'+row.situation+'/'+mode+': NOTE v2 audit missing');
-      assert(audit.primary?.cluster && audit.secondary?.cluster, row.concern+'/'+row.situation+'/'+mode+': diagnosis cluster missing');
+      assert(audit?.version === '2.1.0' && audit?.fingerprint, row.concern+'/'+row.situation+'/'+mode+': NOTE v2 audit missing');
+      assert(audit.primary?.cluster && audit.secondary?.cluster, row.concern+'/'+row.situation+'/'+mode+': diagnosis cluster missing');\n      assert((audit.sourceCount||0) >= 2 && (audit.pairPattern||'').length >= 18, row.concern+'/'+row.situation+'/'+mode+': multi-signal behavioral portrait missing');\n      assert((audit.specificity?.cue||'').length >= 10 && (audit.specificity?.metric||'').length >= 10, row.concern+'/'+row.situation+'/'+mode+': situation-level specificity missing');
       const all=notes.map(n=>plain((n.title||'')+' '+(n.desc||'')+' '+(n.checklist||''))).join(' ');
       assert(!jargon.test(all), row.concern+'/'+row.situation+'/'+mode+': hard saju jargon leaked');
       assert(!/(undefined|NaN|null)/.test(all), row.concern+'/'+row.situation+'/'+mode+': bad token leaked');
