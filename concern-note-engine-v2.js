@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "2.0.0";
+  const VERSION = "2.1.0";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   const SITUATIONS = {
@@ -170,6 +170,148 @@
     su:"생각만 늘리고 실제 확인을 미루기",
   };
 
+  const ELEMENT_CLUSTER = {
+    mok:"expansion", hwa:"expression", to:"stability", geum:"boundary", su:"analysis",
+  };
+
+  const CLUSTER_ATOM = {
+    boundary:{
+      first:"내가 어디까지 괜찮은지부터 속으로 선을 그어",
+      second:"상대나 상황이 그 선을 넘는지 확인한 뒤 움직여",
+      visible:"한동안 별말 없이 지켜보는 쪽",
+      after:"선을 여러 번 넘겼다고 느끼면 설명보다 거리두기가 먼저 나올 수 있어",
+      misread:"고집이 세거나 갑자기 차가워진 것",
+      fit:"기준을 말해도 무시하지 않고 조정해주는 환경",
+      drain:"네 기준을 예민함이나 유난으로 돌리는 환경",
+    },
+    comparison:{
+      first:"내 기준보다 다른 사람의 속도·성과가 먼저 눈에 들어와",
+      second:"뒤처지면 안 된다는 압박이 붙으면서 원래 계획보다 힘을 더 써",
+      visible:"갑자기 목표치를 높이거나 속도를 올리는 쪽",
+      after:"성과가 나도 안도보다 다음 비교가 바로 붙어서 만족이 짧아질 수 있어",
+      misread:"욕심이 많거나 승부욕만 센 것",
+      fit:"비교보다 내 변화량과 실제 결과를 보여주는 환경",
+      drain:"순위·눈치·인정 경쟁을 계속 자극하는 환경",
+    },
+    stability:{
+      first:"예측 가능한 기준과 반복 가능한 방식을 먼저 찾고",
+      second:"한번 괜찮다고 판단한 방식은 쉽게 버리지 않아",
+      visible:"익숙한 루틴을 유지하면서 천천히 수정하는 쪽",
+      after:"안정은 강점인데 이미 안 맞는 방식도 오래 들고 갈 수 있어",
+      misread:"변화를 싫어하거나 소극적인 것",
+      fit:"기준이 자주 바뀌지 않고 쌓인 노력이 남는 환경",
+      drain:"오늘 맞는 말이 내일 뒤집히는 환경",
+    },
+    expression:{
+      first:"답답한 지점을 빨리 알아차리고 말이나 행동으로 꺼내고 싶어 해",
+      second:"참을수록 머릿속 문장이 더 세지고",
+      visible:"어느 순간 한꺼번에 말하거나 바로 결과물을 내는 쪽",
+      after:"표현 자체보다 타이밍이 늦었을 때 말의 강도가 커져 후회가 남을 수 있어",
+      misread:"욱하거나 말이 센 것",
+      fit:"질문·제안·표현을 해도 관계가 깨지지 않는 환경",
+      drain:"말할수록 불이익이 생겨 계속 참아야 하는 환경",
+    },
+    expansion:{
+      first:"새 가능성이 보이면 일단 판을 넓혀 보고 싶어 하고",
+      second:"하나를 고르기 전에 여러 선택지를 동시에 비교해",
+      visible:"새 계획·사람·기회를 빠르게 붙여보는 쪽",
+      after:"시작은 빠른데 관리할 축이 없으면 에너지가 여러 군데로 새기 쉬워",
+      misread:"산만하거나 쉽게 질리는 것",
+      fit:"작게 시험해보고 반응 좋은 쪽만 키울 수 있는 환경",
+      drain:"시작부터 하나에 전부 걸라고 압박하는 환경",
+    },
+    responsibility:{
+      first:"문제가 생기면 누가 시키기 전에 내 몫부터 챙기고",
+      second:"힘들어도 맡은 걸 끝내야 마음이 놓여",
+      visible:"괜찮은 척하면서 할 일을 계속 처리하는 쪽",
+      after:"주변은 잘 버틴다고 보는데 정작 본인은 한계 신호를 늦게 알아차릴 수 있어",
+      misread:"원래 강해서 괜찮은 것",
+      fit:"책임 범위와 보상이 같이 정리되는 환경",
+      drain:"잘 버틴다는 이유로 네 몫이 계속 늘어나는 환경",
+    },
+    analysis:{
+      first:"바로 결론내리기보다 이유와 경우의 수를 먼저 늘리고",
+      second:"확실한 근거가 생길 때까지 한 번 더 확인하려 해",
+      visible:"결정 직전에도 검색·비교·생각을 한 번 더 하는 쪽",
+      after:"정확도는 높아지지만 확인이 길어지면 행동할 타이밍이 늦어질 수 있어",
+      misread:"우유부단하거나 겁이 많은 것",
+      fit:"질문하고 검토할 시간을 주되 마감이 분명한 환경",
+      drain:"정보는 계속 늘어나는데 결론 기준은 없는 환경",
+    },
+    intensity:{
+      first:"목표가 생기면 중간 불편함보다 끝까지 가는 쪽을 먼저 택하고",
+      second:"힘들수록 쉬기보다 더 집중해서 밀어붙여",
+      visible:"남들이 멈출 때 한 번 더 버티는 쪽",
+      after:"성과는 만들 수 있지만 멈춰야 할 신호까지 의지로 덮을 수 있어",
+      misread:"체력이 좋고 멘탈이 원래 센 것",
+      fit:"집중할 때와 멈출 때 기준이 둘 다 있는 환경",
+      drain:"버틸수록 칭찬받아서 과부하를 눈치채기 어려운 환경",
+    },
+    sensitivity:{
+      first:"말보다 말투·간격·표정 같은 작은 변화를 먼저 잡고",
+      second:"그 변화가 왜 생겼는지 속으로 여러 번 해석해",
+      visible:"겉으로는 바로 묻지 않고 분위기를 더 보는 쪽",
+      after:"감지한 건 맞아도 설명 없는 빈칸을 혼자 채우면서 마음이 더 커질 수 있어",
+      misread:"예민해서 혼자 의미를 크게 만드는 것",
+      fit:"애매하게 두기보다 말과 행동이 일관된 환경",
+      drain:"신호는 계속 주는데 설명은 하지 않는 환경",
+    },
+    reversal:{
+      first:"처음엔 웬만하면 참고 기존 흐름을 유지하려 하고",
+      second:"작은 불편함을 그때그때 끊기보다 안쪽에 쌓아",
+      visible:"겉으로는 평소와 비슷하게 지내는 쪽",
+      after:"한계를 넘는 순간 그동안의 판단이 한꺼번에 합쳐져 크게 방향을 바꿀 수 있어",
+      misread:"갑자기 마음이 변한 것",
+      fit:"작은 불편함부터 중간중간 조정할 수 있는 환경",
+      drain:"참는 걸 성숙함으로 여기게 만드는 환경",
+    },
+    mismatch:{
+      first:"겉으로 보이는 역할에 맞춰 먼저 움직이지만",
+      second:"실제로 힘이 빠지는 지점은 겉에서 보이는 것과 다르게 생겨",
+      visible:"남들이 보기엔 잘하고 적응한 것처럼 보이는 쪽",
+      after:"잘한다는 평가와 내가 오래 버틸 수 있는지가 달라 스스로도 원인을 늦게 알아챌 수 있어",
+      misread:"잘하고 있으니 문제없는 것",
+      fit:"겉 성과뿐 아니라 실제 소모와 회복까지 볼 수 있는 환경",
+      drain:"잘하는 것만 계속 맡기고 소모는 보지 않는 환경",
+    },
+  };
+
+  const SITUATION_DETAIL = {
+    "money.saving":{ cue:"큰돈 한 번보다 ‘이 정도는 괜찮겠지’ 하는 작은 예외가 몇 번 겹칠 때", proof:"최근 한 달에서 계획에 없던 지출 세 개만 보면 돼. 금액보다 그 직전 상황이 비슷했는지 확인해.", metric:"계획 밖 지출 횟수와 그 직전 이유를 7일만 적기" },
+    "money.income":{ cue:"성과는 냈는데 가격·연봉·조건을 직접 꺼내야 할 때", proof:"최근 보상 얘기를 미룬 장면이 있었는지, 있었다면 무엇이 걸렸는지 떠올려봐.", metric:"내 성과를 숫자 하나와 요구 조건 하나로 바꿔 말해보기" },
+    "money.side":{ cue:"아이디어를 실제 판매·제안으로 바꾸기 직전", proof:"준비한 것과 실제로 밖에 내보낸 것의 개수가 얼마나 다른지 보면 정확해.", metric:"7일 안에 유료 제안 또는 실제 반응을 받는 테스트 1회" },
+    "money.flow":{ cue:"좋은 시기를 기다리면서 지금 뭘 준비해야 할지 애매할 때", proof:"기다리는 동안 준비만 늘었는지, 실제 행동이 하나라도 있었는지 확인해.", metric:"다음 기회가 오면 바로 할 행동 하나를 미리 완료 상태로 만들기" },
+    "career.exam":{ cue:"모의점수나 오답이 기대보다 안 나와 공부법을 바꾸고 싶어질 때", proof:"불안한 날마다 자료·계획을 바꿨는지, 아니면 같은 방식으로 누적했는지 보면 돼.", metric:"7일 동안 공부법은 고정하고 오답 원인만 세 가지로 분류하기" },
+    "career.jobsearch":{ cue:"지원 버튼을 누르거나 내 실력을 남에게 보여줘야 할 때", proof:"준비 시간에 비해 실제 지원·제출 횟수가 적은지 확인해봐.", metric:"지원·제출·면접 연습 중 외부 반응을 받는 행동 2회" },
+    "career.move":{ cue:"퇴사하고 싶은 날과 그냥 버텨야 하나 싶은 날이 번갈아 올 때", proof:"힘든 감정과 실제 조건 문제를 따로 적었을 때 같은 결론이 나오는지 보면 돼.", metric:"이직 기준 3개를 숫자·조건으로 적고 현재 직장과 비교하기" },
+    "career.current":{ cue:"일은 해내는데 역할·보상·사람 중 하나가 계속 답답하게 남을 때", proof:"회사 전체가 싫은 건지, 반복해서 걸리는 한 지점이 있는지 구분해봐.", metric:"바꿀 수 있는 조건 하나를 문장으로 만들어 실제로 요청하기" },
+    "love.crush":{ cue:"답장 속도·말투·약속 잡는 태도가 평소와 조금 달라졌을 때", proof:"상대 신호를 해석한 횟수와 직접 확인한 횟수 중 뭐가 더 많았는지 보면 돼.", metric:"추측 하나를 질문·만남 제안 같은 실제 확인으로 바꾸기" },
+    "love.relationship":{ cue:"연락 간격·약속·표현에서 작게 서운한 일이 생겼을 때", proof:"그 자리에서 짧게 말했는지, 괜찮은 척 넘긴 뒤 다른 장면까지 묶었는지 떠올려봐.", metric:"서운함 하나를 24시간 안에 한 문장으로 말하기" },
+    "love.breakup":{ cue:"좋았던 기억이 올라와 다시 연락하고 싶어질 때", proof:"그리움 말고 헤어진 원인이 실제로 달라졌다는 증거가 있는지 세 개만 확인해.", metric:"재회 판단 기준을 말이 아니라 행동 변화 세 가지로 정하기" },
+    "love.new":{ cue:"새 사람이 괜찮아 보여도 마음을 열지 말지 재게 될 때", proof:"첫인상 하나로 기대를 키우거나 닫았는지, 두세 번의 행동을 본 뒤 판단했는지 봐.", metric:"호감보다 일관된 행동을 세 번 확인한 뒤 다음 판단하기" },
+    "path.lost":{ cue:"선택지는 있는데 하나를 고르면 다른 걸 놓칠 것 같을 때", proof:"고민 시간은 긴데 직접 해본 시간은 짧은지 비교해보면 돼.", metric:"가장 궁금한 선택지 하나를 2시간 이상 실제 경험으로 바꾸기" },
+    "path.current":{ cue:"일이 힘든 날마다 ‘이 길 자체가 틀렸나’가 올라올 때", proof:"적성 문제와 환경 문제를 따로 적었을 때 무엇이 반복되는지 봐.", metric:"잘되는 장면 3개와 소모되는 장면 3개를 분리해서 기록하기" },
+    "path.switch":{ cue:"지금 답답함을 끝내려고 아예 다른 길로 뛰고 싶어질 때", proof:"새 길이 좋아서인지 현재가 싫어서인지 이유를 둘로 나눠보면 선명해져.", metric:"전환 전 새 방향을 작은 프로젝트나 체험으로 먼저 검증하기" },
+    "path.strength":{ cue:"잘하는 건 많은데 ‘그래서 뭘 해야 하지?’가 안 정리될 때", proof:"직업명이 아니라 반복해서 칭찬받은 행동 방식이 같은지 세 장면을 모아봐.", metric:"강점이 드러난 장면 3개에서 공통 행동 하나 뽑기" },
+    "people.friend":{ cue:"친한 사이인데 작은 불편함을 말하면 관계가 어색해질까 걱정될 때", proof:"참은 뒤 더 멀어졌는지, 작은 선을 말했을 때 상대가 조정했는지 떠올려봐.", metric:"작은 경계 하나를 말하고 상대 반응을 그대로 기록하기" },
+    "people.work":{ cue:"일 때문에 계속 봐야 하는 사람이 내 역할까지 넘겨올 때", proof:"싫다는 감정보다 실제로 내 일이 얼마나 늘었는지 보면 더 정확해.", metric:"업무 범위·기한·연락 기준 중 하나를 문장으로 고정하기" },
+    "people.family":{ cue:"가족 부탁이라 거절하면 죄책감이 먼저 올라올 때", proof:"도와준 뒤 괜찮았는지, 아니면 며칠씩 피로와 화가 남았는지 봐.", metric:"할 수 있는 범위와 못 하는 범위를 한 문장씩 정하기" },
+    "people.distance":{ cue:"계속 참다가 아예 끊어버리고 싶다는 생각이 들 때", proof:"이미 여러 번 넘긴 경계가 있었는지, 한 번도 말하지 않은 채 쌓였는지 확인해.", metric:"연락·만남·도움 중 하나만 먼저 줄이고 내 반응 보기" },
+    "mental.burnout":{ cue:"해야 할 일을 보면 몸이 먼저 무겁고 그래도 밀어붙이려 할 때", proof:"쉬어도 회복이 안 되는지, 쉬는 동안에도 머릿속으로 일을 계속했는지 나눠봐.", metric:"7일 동안 해야 할 일 하나를 실제로 빼고 수면·피로 변화를 기록하기" },
+    "mental.overthink":{ cue:"같은 생각을 여러 번 돌리는데 새 정보는 더 생기지 않을 때", proof:"생각 횟수와 실제 확인 행동 횟수를 비교하면 패턴이 보여.", metric:"생각거리 하나를 행동·보류·내 일 아님 셋 중 하나로 분류하기" },
+    "mental.low":{ cue:"해야 하는 건 아는데 시작 버튼을 누르는 것부터 버거울 때", proof:"큰 목표를 세운 날보다 생활 리듬 하나를 지킨 날 컨디션이 나았는지 봐.", metric:"기상·식사·걷기 중 하나만 같은 시간에 7일 고정하기" },
+    "mental.recover":{ cue:"하루 괜찮아지면 밀린 걸 한꺼번에 하고 싶어질 때", proof:"좋은 날 활동량을 확 올린 뒤 다음날 다시 꺼진 적이 있는지 확인해.", metric:"좋은 날에도 활동량을 평소보다 20% 이상 갑자기 올리지 않기" },
+  };
+
+  const FIT_CONTEXT = {
+    money:{head:"돈에서는 ‘많이 버는 사람’보다 네 판단이 흔들리지 않는 구조가 중요해.", good:"수입·지출 기준이 보이고 결정 전에 확인할 수 있는 구조", bad:"감정·비교·주변 분위기에 따라 기준이 자주 바뀌는 구조"},
+    career:{head:"일에서는 직함보다 네 힘이 결과로 연결되는 방식이 맞아야 오래 가.", good:"역할·평가·보상이 말이 아니라 기준으로 보이는 환경", bad:"책임은 늘어나는데 기준과 피드백은 계속 바뀌는 환경"},
+    love:{head:"연애에서는 설렘보다 네 자동반응을 덜 소모시키는 사람이 오래 맞아.", good:"말과 행동이 일관되고 불편함을 말해도 조정이 가능한 사람", bad:"확신은 안 주면서 네 반응만 계속 확인하게 만드는 관계"},
+    path:{head:"적성은 직업명보다 어떤 방식으로 일할 때 네 강점이 오래 남는지로 봐야 해.", good:"작게 시험하고 수정하면서 결과를 확인할 수 있는 방식", bad:"정답을 미리 정해놓고 네 방식과 속도를 계속 막는 환경"},
+    people:{head:"관계는 좋은 사람/나쁜 사람보다 네 경계를 말했을 때의 반응이 더 정확한 기준이야.", good:"작은 선을 말했을 때 방어보다 조정이 먼저 나오는 사람", bad:"네 경계를 예민함으로 돌리고 같은 선을 반복해서 넘는 사람"},
+    mental:{head:"회복은 의지보다 네 과부하가 덜 생기는 환경을 만드는 게 먼저야.", good:"혼자 정리할 여백과 반복 가능한 생활 리듬이 있는 환경", bad:"쉬는 시간까지 성과·눈치·연락으로 채워지는 환경"},
+  };
+
   function stripHtml(v) {
     return String(v || "").replace(/<br\s*\/?\s*>/gi," ").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
   }
@@ -189,30 +331,36 @@
     const list = [];
     const dom = profile?.sipsin?.dominant || "";
     const sec = profile?.sipsin?.secondary || "";
-    addEvidence(list, GOD_CLUSTER[dom], 3.2, "주된 반응", dom);
-    if (sec && sec !== dom) addEvidence(list, GOD_CLUSTER[sec], 1.9, "보조 반응", sec);
+    addEvidence(list, GOD_CLUSTER[dom], 3.4, "주된 반응", dom);
+    if (sec && sec !== dom) addEvidence(list, GOD_CLUSTER[sec], 2.0, "보조 반응", sec);
 
     const sc = profile?.strength?.code;
-    if (sc === "push") addEvidence(list, "intensity", 2.7, "기본 힘", "버티고 밀어붙이는 힘이 강함");
-    if (sc === "sensitive") addEvidence(list, "sensitivity", 2.7, "기본 힘", "주변 변수의 영향을 빨리 받음");
-    if (sc === "balanced") addEvidence(list, "stability", 1.4, "기본 힘", "기본 균형은 있으나 애매함에서 결정이 늦어질 수 있음");
+    if (sc === "push") addEvidence(list, "intensity", 2.8, "기본 힘", "압박 속에서도 버티고 밀어붙이는 쪽");
+    if (sc === "sensitive") addEvidence(list, "sensitivity", 2.8, "기본 힘", "주변 변화와 반응을 빨리 받아들이는 쪽");
+    if (sc === "balanced") addEvidence(list, "stability", 1.6, "기본 힘", "한쪽으로 몰기보다 균형을 잡으려는 쪽");
 
     const status = profile?.structure?.status || "";
-    if (status === "성중유패") addEvidence(list, "reversal", 2.6, "격의 흐름", "잘 가다가 특정 지점에서 흐름이 끊기기 쉬움");
-    if (status === "파격") addEvidence(list, "sensitivity", 2.3, "격의 흐름", "익숙한 방식이 상황과 충돌하면 마찰이 커짐");
-    if (status === "성격") addEvidence(list, GOD_CLUSTER[dom] || "stability", 1.8, "격의 흐름", "중심 반응이 비교적 일관되게 이어짐");
+    if (status === "성중유패") addEvidence(list, "reversal", 2.8, "흐름 전환", "잘 버티다가 특정 지점에서 방향이 크게 바뀌기 쉬움");
+    if (status === "파격") addEvidence(list, "sensitivity", 2.4, "흐름 마찰", "익숙한 방식이 안 먹히는 순간 소모가 커짐");
+    if (status === "성격") addEvidence(list, GOD_CLUSTER[dom] || "stability", 1.8, "흐름 일관성", "중심 반응이 비교적 반복해서 이어짐");
 
-    if (profile?.relations?.hasClash) addEvidence(list, "reversal", 2.5, "관계 변화", "변수가 겹치면 방향을 크게 바꾸는 반응");
-    if (profile?.elements?.rawVsInfluenceMismatch) addEvidence(list, "mismatch", 2.4, "겉과 실제 세력", "겉으로 보이는 것과 실제 힘 쓰는 방식이 다름");
-    if (profile?.structure?.touchul) addEvidence(list, "expression", 1.5, "겉으로 드러나는 방식", "속 기준이 행동에 비교적 빨리 드러남");
+    if (profile?.relations?.hasClash) addEvidence(list, "reversal", 2.6, "변수 충돌", "변수가 겹치면 판단이나 방향을 크게 바꾸기 쉬움");
+    if (profile?.elements?.rawVsInfluenceMismatch) addEvidence(list, "mismatch", 2.6, "겉과 실제 힘", "겉으로 보이는 모습과 실제 소모 지점이 다름");
+    if (profile?.structure?.touchul) addEvidence(list, "expression", 1.6, "표현 속도", "속 기준이 행동과 말로 비교적 빨리 드러남");
+
+    const strongElement = profile?.elements?.influenceRank?.strongest;
+    addEvidence(list, ELEMENT_CLUSTER[strongElement], 1.7, "실제 힘의 중심", strongElement || "");
 
     const weak = profile?.behavior?.weakStat;
-    if (weak === "mental") addEvidence(list, "sensitivity", 1.8, "취약 지점", "회복시간과 감정 경계가 먼저 무너지기 쉬움");
-    if (weak === "drive") addEvidence(list, "analysis", 1.8, "취약 지점", "실행을 밖에 걸어두지 않으면 시작이 늦어짐");
-    if (weak === "wealth") addEvidence(list, "stability", 1.5, "취약 지점", "손익과 내 몫을 숫자로 확인해야 안정됨");
-    if (weak === "network") addEvidence(list, "boundary", 1.5, "취약 지점", "도움 요청과 관계 경계가 중요함");
+    if (weak === "mental") addEvidence(list, "sensitivity", 1.9, "취약 지점", "회복시간과 감정 경계가 먼저 무너지기 쉬움");
+    if (weak === "drive") addEvidence(list, "analysis", 1.9, "취약 지점", "실행을 밖에 걸지 않으면 시작이 늦어지기 쉬움");
+    if (weak === "wealth") addEvidence(list, "stability", 1.7, "취약 지점", "손익과 내 몫을 숫자로 확인해야 안정됨");
+    if (weak === "network") addEvidence(list, "boundary", 1.7, "취약 지점", "도움 요청과 관계 경계가 중요함");
 
-    return list;
+    if ((profile?.structure?.candidateCount || 0) >= 3) {
+      addEvidence(list, "mismatch", 1.4, "반응 복합성", "한 장면에서도 여러 반응이 겹쳐 단순화하기 어려움");
+    }
+    return list.filter(x => x.cluster && x.detail);
   }
 
   function rankClusters(evidence) {
@@ -228,25 +376,78 @@
 
   function confidence(row) {
     const sources = new Set((row?.evidence || []).map(x=>x.source));
-    if (sources.size >= 3 || (sources.size >= 2 && row.score >= 4.5)) return "high";
-    if (sources.size >= 2 || row.score >= 3.2) return "medium";
+    if (sources.size >= 3 && row.score >= 5.2) return "high";
+    if (sources.size >= 2 && row.score >= 3.8) return "high";
+    if (sources.size >= 2 || row.score >= 3.1) return "medium";
     return "soft";
+  }
+
+  function detailFor(situation) {
+    return SITUATION_DETAIL[situation.concern+"."+situation.key] || {
+      cue:situation.scene,
+      proof:"비슷한 장면 하나를 떠올려 첫 반응과 마지막 행동이 어떻게 달랐는지 확인해.",
+      metric:"7일 동안 같은 장면이 오면 첫 반응과 실제 행동을 한 줄씩 적기",
+    };
+  }
+
+  function pairPattern(primary, secondary) {
+    const a=primary, b=secondary;
+    const has=(x,y)=>(a===x&&b===y)||(a===y&&b===x);
+    if (has("analysis","sensitivity")) return "작은 변화를 빨리 감지한 뒤 이유를 여러 개 만들고, 직접 확인은 가장 늦어지는 순서";
+    if (has("responsibility","reversal")) return "내 몫부터 더 들고 버티다가 한계가 오면 설명보다 큰 결론이 먼저 나오는 순서";
+    if (has("intensity","reversal")) return "버틸 수 있을 때까지 세게 밀고, 한계를 넘으면 방향을 크게 바꾸는 순서";
+    if (has("boundary","reversal")) return "선을 바로 말하기보다 지켜보다가 반복되면 관계나 선택을 크게 정리하는 순서";
+    if (has("expansion","analysis")) return "가능성을 많이 열어둔 뒤 비교가 길어져 마지막 선택이 늦어지는 순서";
+    if (has("expansion","stability")) return "새 기회에는 끌리지만 안전한 기반도 놓치기 싫어 시작과 유지 사이에서 흔들리는 순서";
+    if (has("expression","sensitivity")) return "작은 변화를 빨리 느끼지만 바로 말하지 못하면 나중에 표현 강도가 커지는 순서";
+    if (has("expression","boundary")) return "기준이 분명해서 참을 때는 조용하지만 말할 때는 핵심을 한 번에 꺼내는 순서";
+    if (has("comparison","intensity")) return "비교 신호가 들어오면 목표치를 올리고 몸이나 마음이 따라오지 않아도 속도를 더 내는 순서";
+    if (has("comparison","analysis")) return "남의 속도를 본 뒤 내 선택을 다시 검토하면서 원래 계획까지 의심하는 순서";
+    if (has("stability","responsibility")) return "익숙한 역할을 끝까지 지키려다 바꿔야 할 시점까지 오래 버티는 순서";
+    if (has("mismatch","responsibility")) return "겉으로는 잘 해내서 계속 맡지만 실제 소모는 뒤늦게 한꺼번에 드러나는 순서";
+    if (has("mismatch","sensitivity")) return "겉으로는 담담하게 처리하면서 안쪽에서는 작은 신호를 계속 받아들이는 순서";
+    const x=CLUSTER_ATOM[a] || CLUSTER_ATOM.analysis;
+    const y=CLUSTER_ATOM[b] || CLUSTER_ATOM.stability;
+    return x.first+"고, 이어서 "+y.second+"는 순서";
+  }
+
+  function strengthModifier(profile) {
+    const code=profile?.strength?.code;
+    if (code==="push") return "게다가 힘들다고 바로 멈추는 편이 아니라서, 문제를 알아도 ‘조금만 더’가 붙기 쉬워.";
+    if (code==="sensitive") return "게다가 주변 반응이 바뀌면 네 판단 속도도 같이 흔들릴 수 있어서, 첫 느낌과 최종 결론 사이가 길어질 수 있어.";
+    return "기본적으로 한쪽으로 확 기울기보다 여러 조건을 같이 보려 해서, 애매한 상황일수록 결론이 늦어질 수 있어.";
+  }
+
+  function structureModifier(profile) {
+    if (profile?.relations?.hasClash) return "변수가 두세 개 겹치는 날에는 평소보다 결론 폭이 커질 수 있어.";
+    if (profile?.structure?.status==="성중유패") return "평소엔 잘 굴러가던 방식도 특정 지점에서 한 번에 뒤집히는 구간이 생길 수 있어.";
+    if (profile?.structure?.status==="파격") return "익숙한 방식이 통하지 않는 장면에서 소모가 갑자기 커지는 편이야.";
+    return "큰 사건 하나보다 작은 패턴이 반복될 때 네 선택이 더 선명하게 드러나는 편이야.";
   }
 
   function buildConcernDiagnosisV2(data) {
     const profile = data?.integratedSajuProfile || (typeof global.buildIntegratedSajuProfile === "function" ? global.buildIntegratedSajuProfile(data || {}) : null);
     if (data && profile) data.integratedSajuProfile = profile;
     const situation = situationFor(data || {});
+    const detail = detailFor(situation);
     const evidence = buildEvidence(profile || {});
     const ranked = rankClusters(evidence);
     const primary = ranked[0] || {cluster:"analysis",score:0,evidence:[]};
     const secondary = ranked.find(x=>x.cluster !== primary.cluster) || {cluster:"stability",score:0,evidence:[]};
+    const sourceCount = new Set([...(primary.evidence||[]),...(secondary.evidence||[])].map(x=>x.source)).size;
     const fingerprint = [
       profile?.fingerprint || "no-profile",
       situation.concern,
       situation.key,
       primary.cluster,
       secondary.cluster,
+      profile?.strength?.code || "",
+      profile?.structure?.status || "",
+      profile?.elements?.influenceRank?.strongest || "",
+      profile?.elements?.influenceRank?.weakest || "",
+      profile?.behavior?.weakStat || "",
+      profile?.relations?.hasClash ? "clash" : "steady",
+      profile?.elements?.rawVsInfluenceMismatch ? "mismatch" : "aligned",
       primary.evidence.map(x=>x.source+":"+x.detail).join(","),
       secondary.evidence.map(x=>x.source+":"+x.detail).join(","),
     ].join("|");
@@ -254,11 +455,14 @@
       version: VERSION,
       fingerprint,
       situation,
+      detail,
       profile,
       evidence,
       ranked,
       primary:{...primary, confidence:confidence(primary)},
       secondary:{...secondary, confidence:confidence(secondary)},
+      sourceCount,
+      pairPattern:pairPattern(primary.cluster,secondary.cluster),
       actionElement: profile?.balance?.primary || "to",
       secondaryElement: profile?.balance?.secondary || profile?.balance?.primary || "to",
       avoidElement: profile?.balance?.avoid || "su",
@@ -302,26 +506,35 @@
     return rows[concern]?.[idx] || "비밀 메모";
   }
 
-  function behaviorChain(d, isT) {
-    const s=d.situation;
-    const a=clusterSentence(d.primary.cluster,s.concern);
-    const b=clusterSentence(d.secondary.cluster,s.concern);
-    const scene=s.scene;
-    if (isT) {
-      return "<b>시작</b> — "+scene+".<br><br><b>첫 반응</b> — "+a+"<br><br><b>그다음</b> — "+b+"<br><br><b>결국</b> — 같은 상황이 다시 오면 원래 문제보다 네 자동반응이 더 빨리 튀어나와. 그래서 시작 지점에서 끊어야 해.";
+  function portraitNote(d,isT) {
+    const p=CLUSTER_ATOM[d.primary.cluster] || CLUSTER_ATOM.analysis;
+    const q=CLUSTER_ATOM[d.secondary.cluster] || CLUSTER_ATOM.stability;
+    const lead=certaintyLead(d.primary,isT);
+    if(isT){
+      return lead+" 특히 <b>"+d.detail.cue+"</b>, "+p.first+". 그다음 "+q.second+". 밖으로는 "+p.visible+"으로 보이지만, 실제 반복 순서는 <b>"+d.pairPattern+"</b>이야. "+strengthModifier(d.profile);
     }
-    return "보통 <b>"+scene+"</b>에서 시작돼. 그때 "+a+"<br><br>그리고 그다음엔 "+b+"<br><br>그래서 나중에 보면 처음 문제보다 네가 그 안에서 쓴 에너지가 더 크게 남을 수 있어. 언니는 결과가 나온 뒤보다 <b>처음 반응이 시작되는 순간</b>을 먼저 잡고 싶어.";
+    return lead+" 특히 <b>"+d.detail.cue+"</b> 있지. 그럴 때 너는 "+p.first+". 그러고 나면 "+q.second+". 겉에서는 "+p.visible+"처럼 보일 수 있는데, 언니가 더 중요하게 보는 건 <b>"+d.pairPattern+"</b>이야. "+strengthModifier(d.profile);
+  }
+
+  function behaviorChain(d, isT) {
+    const p=CLUSTER_ATOM[d.primary.cluster] || CLUSTER_ATOM.analysis;
+    const q=CLUSTER_ATOM[d.secondary.cluster] || CLUSTER_ATOM.stability;
+    const s=d.situation;
+    if (isT) {
+      return "<b>시작</b> — "+d.detail.cue+".<br><br><b>첫 반응</b> — "+p.first+".<br><br><b>그다음</b> — "+q.second+".<br><br><b>밖으로 보이는 행동</b> — "+p.visible+".<br><br><b>결국</b> — "+p.after+". "+structureModifier(d.profile)+" 그래서 "+s.object+" 자체보다 이 순서를 먼저 끊어야 해.";
+    }
+    return "보통 <b>"+d.detail.cue+"</b> 시작돼. 그때는 "+p.first+".<br><br>그리고 <b>그다음</b> "+q.second+". 그래서 밖에서는 "+p.visible+"처럼 보여도, 안에서는 이미 판단이 꽤 진행된 뒤일 수 있어.<br><br><b>결국</b> "+p.after+". "+structureModifier(d.profile)+" 언니는 결과가 터진 뒤보다 이 첫 장면을 먼저 잡고 싶어.";
   }
 
   function blindSpot(d, isT) {
-    const s=d.situation;
-    const p=d.primary.cluster, q=d.secondary.cluster;
-    const pLabel=CLUSTER_LABEL[p]||p, qLabel=CLUSTER_LABEL[q]||q;
+    const p=CLUSTER_ATOM[d.primary.cluster] || CLUSTER_ATOM.analysis;
+    const q=CLUSTER_ATOM[d.secondary.cluster] || CLUSTER_ATOM.stability;
     const mismatch = d.profile?.elements?.rawVsInfluenceMismatch;
+    const touchul = d.profile?.structure?.touchul;
     if (isT) {
-      return "네가 문제라고 보기 쉬운 건 <b>"+s.object+"</b> 자체야. 그런데 실제로 먼저 봐야 하는 건 <b>"+pLabel+"</b>과 <b>"+qLabel+"</b>이 같이 작동하는 방식이야."+ (mismatch ? " 겉으로 보이는 모습과 실제 힘 쓰는 방식도 달라서 원인을 잘못 잡기 쉬워." : "") +" 그래서 더 열심히 하기 전에 어디서 자동반응이 시작됐는지부터 분리해.";
+      return "겉으로만 보면 <b>"+p.misread+"</b>처럼 보일 수 있어. 그런데 실제 핵심은 <b>"+d.pairPattern+"</b>이 반복된다는 거야. "+(mismatch?"특히 겉으로 잘하는 방식과 실제로 덜 지치는 방식이 달라서 원인을 잘못 잡기 쉬워. ":"겉으로 보이는 방식과 실제 힘의 방향은 비교적 비슷해서, 알고도 끊는 시점이 늦는 쪽을 봐야 해. ")+(touchul?"속 기준이 행동으로 빨리 나오는 편이라 첫 반응을 잡으면 수정도 빠른 편이야. ":"속에서 판단을 꽤 진행한 뒤 행동이 나오는 편이라 중간 확인 지점을 일부러 만들어야 해.");
     }
-    return "너는 자꾸 <b>"+s.object+"</b> 자체가 문제라고 생각했을 수 있어. 근데 언니는 <b>"+pLabel+"</b>이랑 <b>"+qLabel+"</b>이 같이 작동하는 순간을 먼저 볼래."+ (mismatch ? " 특히 겉으로 보이는 너랑 실제로 힘을 쓰는 방식이 조금 달라서, 스스로도 엉뚱한 이유를 탓하기 쉬워." : "") +" 그러니까 너 자체가 부족하다고 결론내리기 전에, 어디서 마음과 행동이 바뀌는지부터 보자.";
+    return "남들이 보면 네가 <b>"+p.misread+"</b>처럼 느껴질 수도 있어. 근데 언니는 그렇게 단순하게 안 볼래. 실제로는 <b>"+d.pairPattern+"</b>이 겹쳐서 그렇게 보이는 거야. "+(mismatch?"특히 잘해 보이는 모습이랑 실제로 덜 지치는 방식이 달라서, 너도 ‘왜 이렇게 힘들지?’ 원인을 엉뚱한 데서 찾기 쉬워. ":"겉으로 보이는 모습과 안쪽 힘의 방향은 크게 다르지 않아서, 문제를 모르는 것보다 끊어야 할 순간을 늦게 잡는 쪽에 가까워. ")+(touchul?"그래도 마음먹으면 행동으로 옮기는 속도는 빠른 편이야. ":"그래서 언니랑 중간 확인 지점을 하나 만들어두는 게 중요해.");
   }
 
   function actionNote(d, isT) {
@@ -329,43 +542,31 @@
     const first=ACTION_BY_ELEMENT[d.actionElement] || ACTION_BY_ELEMENT.to;
     const second=ACTION_BY_ELEMENT[d.secondaryElement] || first;
     const avoid=AVOID_BY_ELEMENT[d.avoidElement] || AVOID_BY_ELEMENT.su;
+    const weak=d.profile?.behavior?.weakStat;
+    const guard=weak==="mental" ? "피로가 올라간 날은 결정 수를 줄여" :
+      weak==="drive" ? "생각만 한 날은 완료로 치지 말고 밖에 낸 행동만 세" :
+      weak==="wealth" ? "느낌 대신 금액·시간·횟수 중 하나를 숫자로 남겨" :
+      weak==="network" ? "혼자 정리하기 전에 필요한 도움 하나를 구체적으로 요청해" :
+      "한 번에 변수 하나만 바꾸고 결과를 봐";
     if (isT) {
-      return "<b>1. 오늘</b> — "+s.move+".<br><br><b>2. 이번 7일</b> — "+first+"을 실제로 한 번 넣어.<br><br><b>3. 하지 말 것</b> — "+avoid+".<br><br><b>왜 이게 맞냐면</b> — 네 사주는 첫 행동을 "+first+" 쪽으로 잡을 때 힘이 덜 새고, 그다음 "+second+"을 붙일 때 결과가 안정돼.";
+      return "<b>오늘</b> — "+s.move+".<br><br><b>이번 7일</b> — "+d.detail.metric+".<br><br><b>네 사주에 맞는 순서</b> — 먼저 "+first+", 그다음 "+second+".<br><br><b>금지</b> — "+avoid+". 그리고 "+guard+". 실행했는지는 기분 말고 횟수로 확인해.";
     }
-    return "<b>오늘 먼저</b> — "+s.move+".<br><br><b>이번 7일</b> — "+first+"을 딱 한 번만 실제로 해보자.<br><br><b>이번 주엔 이것만 피하자</b> — "+avoid+".<br><br><b>왜 너한테 이 순서냐면</b> — 처음부터 다 바꾸는 것보다 "+first+"부터 시작하고, 괜찮으면 "+second+"을 붙이는 쪽이 네 사주 힘을 덜 낭비해.";
+    return "<b>오늘 먼저</b> — "+s.move+".<br><br><b>이번 7일</b> — "+d.detail.metric+". 이것만 해보자.<br><br>너한테는 처음부터 다 바꾸는 것보다 <b>"+first+"</b>부터 넣고, 괜찮으면 <b>"+second+"</b>을 붙이는 순서가 덜 지쳐.<br><br>이번 주엔 <b>"+avoid+"</b>은 피하고, "+guard+". 언니가 원하는 건 완벽하게 하는 게 아니라 실제 반응 하나를 얻는 거야.";
   }
 
   function domainFit(d, isT) {
-    const c=d.situation.concern, primary=d.primary.cluster;
-    const first=clusterSentence(primary,c);
+    const c=d.situation.concern;
+    const p=CLUSTER_ATOM[d.primary.cluster] || CLUSTER_ATOM.analysis;
+    const q=CLUSTER_ATOM[d.secondary.cluster] || CLUSTER_ATOM.stability;
+    const ctx=FIT_CONTEXT[c] || FIT_CONTEXT.money;
     const action=ACTION_BY_ELEMENT[d.actionElement] || ACTION_BY_ELEMENT.to;
     const avoid=AVOID_BY_ELEMENT[d.avoidElement] || AVOID_BY_ELEMENT.su;
-    const head={
-      money:"돈은 많이 버는 방식보다 <b>어떤 구조에서 새지 않는지</b>가 먼저야.",
-      career:"직장은 이름보다 <b>네 힘이 실제 성과로 연결되는 환경</b>인지가 중요해.",
-      love:"너랑 맞는 사람은 조건보다 <b>네 자동반응을 덜 소모시키는 사람</b>이야.",
-      path:"적성은 직업명보다 <b>어떤 방식으로 일할 때 오래 강한지</b>를 봐야 해.",
-      people:"좋은 사람/나쁜 사람보다 <b>그 사람 옆에서 네 판단과 에너지가 어떻게 변하는지</b>가 기준이야.",
-      mental:"회복은 의지보다 <b>네 과부하가 덜 생기는 환경</b>을 만드는 게 먼저야.",
-    }[c];
-    const fit={
-      money:"수입·지출 기준이 눈에 보이고, "+action+"이 가능한 구조",
-      career:"역할과 피드백이 분명하고, "+action+"을 막지 않는 환경",
-      love:"말과 행동이 꾸준하고, 네가 확인하고 표현해도 관계가 불안정해지지 않는 사람",
-      path:"작게 시험하고 수정할 수 있고, "+action+"이 허용되는 일 방식",
-      people:"불편함을 말했을 때 방어보다 조정이 먼저 나오는 사람",
-      mental:"혼자 회복할 여백이 있고, "+action+"을 생활 안에 둘 수 있는 환경",
-    }[c];
-    const drain={
-      money:avoid+"을 부추기는 돈 환경",
-      career:"기준은 바뀌는데 책임만 계속 늘어나는 환경",
-      love:"확신은 안 주면서 네 반응만 계속 확인하는 관계",
-      path:"정답을 강요하고 직접 시험할 여지를 주지 않는 환경",
-      people:"네 경계를 예민함으로 돌리고 반복해서 넘는 관계",
-      mental:"쉬는 시간까지 성과로 채우게 만드는 환경",
-    }[c];
-    if (isT) return head+"<br><br><b>잘 맞는 쪽</b> — "+fit+".<br><br><b>피할 쪽</b> — "+drain+".<br><br>"+first;
-    return head+"<br><br><b>너를 살리는 쪽</b> — "+fit+".<br><br><b>오래 있으면 지치는 쪽</b> — "+drain+".<br><br>왜냐하면 "+first;
+    const good=ctx.good+". 특히 "+p.fit+", 그리고 "+q.fit;
+    const bad=ctx.bad+". 여기에 "+p.drain+"까지 겹치면 소모가 빨라져";
+    if (isT) {
+      return ctx.head+"<br><br><b>잘 맞는 쪽</b> — "+good+".<br><br><b>피할 쪽</b> — "+bad+".<br><br><b>판별법</b> — 그 환경에서 "+action+"이 실제로 가능한지 확인해. 반대로 "+avoid+"을 계속 하게 만든다면 오래 맞는 구조가 아니야.";
+    }
+    return ctx.head+"<br><br><b>너를 살리는 쪽</b> — "+good+".<br><br><b>오래 있으면 지치는 쪽</b> — "+bad+".<br><br>언니가 마지막으로 볼 기준은 하나야. 그 사람이나 환경 옆에서 <b>"+action+"</b>이 자연스럽게 되느냐야. 반대로 "+avoid+"만 반복된다면 네가 더 노력할 문제가 아닐 수 있어.";
   }
 
   function timingFor(d, data, isT) {
@@ -404,14 +605,14 @@
     const note1 = {
       badge:badgeFor(c,0),
       title:noteTitle(d,0,isT),
-      desc: certaintyLead(p,isT)+"<br><br>"+first+"<br><br>"+certaintyLead(q,isT)+" "+second,
-      checklist:isT ? "맞는지 볼 건 하나야. 최근 같은 상황에서 네 첫 반응이 뭐였는지 떠올려." : "최근 비슷한 장면 하나만 떠올려봐. 언니가 말한 첫 반응이 실제로 있었는지만 보면 돼.",
+      desc:portraitNote(d,isT),
+      checklist:isT ? "검증: "+d.detail.proof : "언니가 말한 게 맞는지 확인해보자. "+d.detail.proof,
     };
     const note2 = {
       badge:badgeFor(c,1),
       title:noteTitle(d,1,isT),
       desc:behaviorChain(d,isT),
-      checklist:isT ? "다음에 같은 장면 오면 결과 말고 첫 반응부터 체크해." : "다음에 비슷한 장면이 오면 ‘아, 여기서 시작되는구나’ 이것만 먼저 알아차려보자.",
+      checklist:isT ? "체크 기준: "+d.detail.metric+"." : "다음에 비슷한 장면이 오면 결과보다 시작점을 보자. "+d.detail.metric+".",
     };
     const note3 = {
       badge:badgeFor(c,2),
@@ -452,7 +653,10 @@
         fingerprint:d.fingerprint,
         primary:{cluster:p.cluster,confidence:p.confidence,evidence:p.evidence.map(x=>({source:x.source,detail:x.detail}))},
         secondary:{cluster:q.cluster,confidence:q.confidence,evidence:q.evidence.map(x=>({source:x.source,detail:x.detail}))},
+        sourceCount:d.sourceCount,
+        pairPattern:d.pairPattern,
         situation:d.situation.key,
+        specificity:{cue:d.detail.cue,metric:d.detail.metric},
       };
     }
     return notes;
