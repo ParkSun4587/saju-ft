@@ -408,8 +408,7 @@ function norm(v) {
   assert(cleanCapture.clean === '1' && cleanCapture.topInsideCapture && cleanCapture.bodyOverflow === 'hidden', `clean capture mode is not isolated: ${JSON.stringify(cleanCapture)}`);
   assert(!cleanCapture.oldImageFallback && !cleanCapture.oldKakaoGuide, 'capture mode must not use rendered-image fallbacks');
 
-  await page.locator('#storyCaptureMode').click({ position:{ x:4, y:4 } });
-  await page.waitForFunction(() => getComputedStyle(document.getElementById('storyCaptureMode')).display === 'none');
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('storyCaptureMode')).display === 'none', null, { timeout:10000 });
   assert(await page.locator('#storyCard').evaluate((el) => el.parentElement?.id !== 'storyCaptureCardSlot'), 'story card was not restored after capture mode');
   assert(await page.locator('#shareModal').isHidden(), 'direct capture close should return straight to the result');
 
