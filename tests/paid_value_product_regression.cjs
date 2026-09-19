@@ -657,6 +657,8 @@ function norm(v) {
   for (const [id, price] of Object.entries({concern_single:990, ...expectedPrices})) {
     assert(server.includes(`${id}: { amount: ${price}`), `server product price missing ${id}/${price}`);
   }
+  assert(server.includes('all_in_one: { amount: 9900, name: "어떤언니 내 사주 완전판" }'), 'Toss all-in-one order name is stale');
+  assert(!server.includes('어떤언니 올인원'), 'old all-in-one order name remains in Toss server');
   assert(server.includes('const product = productFor(order.data);'), 'server does not resolve signed product price');
   assert(server.includes('Number(body.amount) !== product.amount'), 'server does not reject amount mismatch');
   assert(server.includes('if (!d.p || d.p === "concern_single") return legacy;'), 'legacy 990 result key compatibility missing');
