@@ -175,7 +175,22 @@ async function inspect(page, mode) {
 
   await page.locator('#unniProductLadder [data-unni-product="full_saju"]').click();
   await page.waitForSelector('#unniProductModal',{state:'visible'});
-  assert((await page.locator('#unniProductAction').innerText()).includes('무료 이벤트'),'free preview missing');
+  const sourceFreeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
+  const productActionText=await page.locator('#unniProductAction').innerText();
+  assert(
+    sourceFreeLaunch
+      ? productActionText.includes('무료 이벤트')
+      : productActionText.includes('4,900원에 열기'),
+    'live free/paid product toggle mismatch: '+JSON.stringify({sourceFreeLaunch,productActionText})
+  );
+
+  // Never open a real checkout in smoke tests. Temporarily unlock only inside this browser page.
+  if(!sourceFreeLaunch){
+    await page.evaluate(()=>{FREE_LAUNCH_MODE=true;});
+    await page.locator('#unniProductClose').click();
+    await page.locator('#unniProductLadder [data-unni-product="full_saju"]').click();
+    await page.waitForSelector('#unniProductModal',{state:'visible'});
+  }
   await page.locator('#unniProductAction').click();
   await page.waitForFunction(()=>document.querySelectorAll('#unniProductBody section').length===12,null,{timeout:10000});
   assert(await page.locator('#unniProductStickyHead').evaluate(el=>getComputedStyle(el).position)==='sticky','sticky header broken');
