@@ -26,6 +26,7 @@ function norm(v) {
   );
 
   const result = await page.evaluate(() => {
+    const localNorm = (v) => String(v || '').replace(/<[^>]+>/g,' ').replace(/[\\s.,!?·‘’'"“”()\\[\\]]/g,'');
     const exact = calculateAccurateManse(1998,2,21,'03:10','female');
     const other = calculateAccurateManse(1990,1,2,'12:00','female');
     const concerns = ['money','career','love','path','people','mental'];
@@ -102,7 +103,7 @@ function norm(v) {
       rows,
       differentChart:{
         diagA,diagB,
-        noteDiffs:notesA.map((n,i)=>norm(n.desc)!==norm(notesB[i].desc)),
+        noteDiffs:notesA.map((n,i)=>localNorm(n.desc)!==localNorm(notesB[i].desc)),
       },
     };
   });
