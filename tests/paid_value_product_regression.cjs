@@ -584,7 +584,7 @@ function norm(v) {
   assert(premium.includes('isCurrentPaidExport') && premium.includes('EXPORT_IDLE_CANCELLED'), 'stale paid-export jobs must stop when the report changes');
   assert(premium.includes('paidExportCache.clear()') && premium.includes('paidExportCache.set(key, prepared)'), 'paid PNG blob cache must stay bounded to the current report');
   assert(premium.includes('nativeSharePngFiles') && premium.includes('isMobileDevice'), 'one-action mobile multi-image share path missing');
-  assert(premium.includes('recommendedProductId') && premium.includes('data-secondary-product') && premium.includes('다른 리포트도 있어'), 'personalized premium recommendation + discoverable alternatives missing');
+  assert(premium.includes('recommendedProductId') && premium.includes('recommendationReason') && premium.includes('data-secondary-product') && premium.includes('다른 게 더 궁금하다면'), 'personalized premium recommendation + discoverable alternatives missing');
   assert(!premium.includes('unniShowOtherProducts') && !premium.includes('다른 리포트 3개 보기'), 'premium alternatives should not be hidden behind a disclosure toggle');
   assert(!premium.includes('unniProductSavePdf') && !premium.includes('printPaidReport') && !premium.includes('unniPaidPrintHost') && !premium.includes('PDF로 한 파일 보관하기'), 'PDF save code must be fully removed');
   assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="concern"'), 'semantic paid-report grouping missing');
