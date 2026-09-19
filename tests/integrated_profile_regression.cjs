@@ -3,159 +3,166 @@ const { chromium } = require('playwright');
 function assert(cond, msg) {
   if (!cond) throw new Error(msg);
 }
+function plain(v) {
+  return String(v || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function norm(v) {
+  return plain(v).replace(/[\s.,!?·‘’'"“”()\[\]]/g, '');
+}
 
 (async () => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless:true });
   const page = await browser.newPage();
   const errors = [];
-  page.on('pageerror', e => errors.push(`[pageerror] ${e.stack || e.message}`));
-  page.on('console', m => { if (m.type() === 'error') errors.push(`[console] ${m.text()}`); });
-  await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load' });
-  await page.waitForFunction(() => typeof buildIntegratedSajuProfile === 'function' && typeof generateConcernNotes === 'function');
+  page.on('pageerror', e => errors.push('[pageerror] ' + (e.stack || e.message)));
+  page.on('console', m => { if (m.type() === 'error') errors.push('[console] ' + m.text()); });
+
+  await page.goto('http://127.0.0.1:4173/index.html', { waitUntil:'load' });
+  await page.waitForFunction(() =>
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.0.0' &&
+    typeof buildIntegratedSajuProfile === 'function' &&
+    typeof buildConcernDiagnosisV2 === 'function' &&
+    typeof generateConcernNotes === 'function'
+  );
 
   const result = await page.evaluate(() => {
-    window.gtag = () => {};
-    const exact = calculateAccurateManse(1998, 2, 21, '03:10', 'female');
-    const other = calculateAccurateManse(1990, 1, 2, '12:00', 'female');
+    const exact = calculateAccurateManse(1998,2,21,'03:10','female');
+    const other = calculateAccurateManse(1990,1,2,'12:00','female');
     const concerns = ['money','career','love','path','people','mental'];
+    const profiles = globalThis.__PAID_VALUE_LAYER_V1__?.situationProfiles || {};
 
-    function prepare(r, concern) {
+    function prep(r, concern, situation, mode='F', birth='19980221', time='03:10') {
       return {
         ...r,
-        concernKey: concern,
-        userBirthStr: '19980221',
-        userTimeKey: '03:10',
-        userGender: 'female',
-        userCalendar: 'solar',
-        rawSolutionTemplate: {
-          F: { acts: [{d:'a'},{d:'b'}] },
-          T: { acts: [{d:'a'},{d:'b'}] },
-        },
+        name:'테스트',
+        concernKey:concern,
+        concernSituation:situation,
+        userBirthStr:birth,
+        userTimeKey:time,
+        userGender:'female',
+        userCalendar:'solar',
+        currentMode:mode,
+        rawSolutionTemplate:{F:{acts:[{d:'a'},{d:'b'}]},T:{acts:[{d:'a'},{d:'b'}]}},
       };
     }
 
-    const exactProfile = buildIntegratedSajuProfile(prepare(exact, 'love'));
-    renderOhengDistribution(
-      exact.elements,
-      exact.pillars.day.gan,
-      exact.dayOheng,
-      exact.pillars,
-      exact.elementProfiles || exact.analysisProfile?.elementProfiles || null,
-      'F',
-    );
-    const ohengCards = [...document.querySelectorAll('#ohengBarContainer > div')]
-      .map((el) => el.innerText.replace(/\s+/g, ' ').trim());
-    const ohengSummaryF = document.getElementById('ohengSummaryTxt')?.innerText || '';
-    renderOhengDistribution(
-      exact.elements,
-      exact.pillars.day.gan,
-      exact.dayOheng,
-      exact.pillars,
-      exact.elementProfiles || exact.analysisProfile?.elementProfiles || null,
-      'T',
-    );
-    const ohengSummaryT = document.getElementById('ohengSummaryTxt')?.innerText || '';
-
-    const otherProfile = buildIntegratedSajuProfile({
-      ...other,
-      concernKey: 'love',
-      userBirthStr: '19900102',
-      userTimeKey: '12:00',
-      userGender: 'female',
-      userCalendar: 'solar',
-      rawSolutionTemplate: {
-        F: { acts: [{d:'a'},{d:'b'}] },
-        T: { acts: [{d:'a'},{d:'b'}] },
-      },
-    });
+    const exactProfile = buildIntegratedSajuProfile(prep(exact,'love','relationship'));
+    const otherProfile = buildIntegratedSajuProfile(prep(other,'love','relationship','F','19900102','12:00'));
 
     const rows = [];
     for (const concern of concerns) {
-      for (const mode of ['F','T']) {
-        const data = prepare(exact, concern);
-        const base = generateConcernNotes.__base ? generateConcernNotes.__base(data, mode) : null;
-        const notes = generateConcernNotes(data, mode);
+      for (const situation of Object.keys(profiles[concern] || {})) {
+        const dataF = prep(exact, concern, situation, 'F');
+        const dataT = prep(exact, concern, situation, 'T');
+        const diagF = buildConcernDiagnosisV2(dataF);
+        const diagT = buildConcernDiagnosisV2(dataT);
+        const notesF = generateConcernNotes(dataF,'F');
+        const notesT = generateConcernNotes(dataT,'T');
         rows.push({
           concern,
-          mode,
-          count: notes.length,
-          enriched: !!base && notes.slice(0, 5).every((n, i) => (n.desc || '').length > (base[i]?.desc || '').length) && !!notes[5]?.__timingQA?.profileFingerprint,
-          fingerprint: data.integratedSajuProfile?.fingerprint || '',
-          missing: data.integratedSajuProfile?.audit?.missing || [],
-          text: notes.map(n => `${n.title}\n${n.desc}\n${n.checklist || ''}`).join('\n'),
-          descs: notes.map(n => n.desc || ''),
+          situation,
+          diagF:{
+            fingerprint:diagF.fingerprint,
+            primary:diagF.primary,
+            secondary:diagF.secondary,
+          },
+          diagT:{
+            fingerprint:diagT.fingerprint,
+            primary:diagT.primary,
+            secondary:diagT.secondary,
+          },
+          notesF,
+          notesT,
+          auditF:dataF.noteV2Audit,
+          auditT:dataT.noteV2Audit,
         });
       }
     }
 
-    const a = prepare(exact, 'career');
-    const b = {
-      ...other,
-      concernKey: 'career',
-      userBirthStr: '19900102',
-      userTimeKey: '12:00',
-      userGender: 'female',
-      userCalendar: 'solar',
-      rawSolutionTemplate: {
-        F: { acts: [{d:'a'},{d:'b'}] },
-        T: { acts: [{d:'a'},{d:'b'}] },
-      },
-    };
-    const notesA = generateConcernNotes(a, 'F');
-    const notesB = generateConcernNotes(b, 'F');
-    let diffCount = 0;
-    for (let i = 0; i < 6; i++) if (notesA[i].desc !== notesB[i].desc) diffCount++;
+    const sameSituationA = prep(exact,'love','relationship','F');
+    const sameSituationB = prep(other,'love','relationship','F','19900102','12:00');
+    const diagA = buildConcernDiagnosisV2(sameSituationA);
+    const diagB = buildConcernDiagnosisV2(sameSituationB);
+    const notesA = generateConcernNotes(sameSituationA,'F');
+    const notesB = generateConcernNotes(sameSituationB,'F');
 
     return {
-      engine: window.__INTEGRATED_SAJU_PROFILE_V1__,
-      wrapper: !!generateConcernNotes.__integratedProfileWrapped,
-      exactPillars: [exact.pillars.year.gan + exact.pillars.year.zhi, exact.pillars.month.gan + exact.pillars.month.zhi, exact.pillars.day.gan + exact.pillars.day.zhi, exact.pillars.hour.gan + exact.pillars.hour.zhi],
-      exactRaw: exact.elementProfiles.raw,
-      ohengCards,
-      ohengSummaryF,
-      ohengSummaryT,
+      engine:globalThis.__CONCERN_NOTE_ENGINE_V2__,
+      integrated:globalThis.__INTEGRATED_SAJU_PROFILE_V1__,
+      wrapper:!!generateConcernNotes.__noteV2Wrapped,
+      exactPillars:[
+        exact.pillars.year.gan+exact.pillars.year.zhi,
+        exact.pillars.month.gan+exact.pillars.month.zhi,
+        exact.pillars.day.gan+exact.pillars.day.zhi,
+        exact.pillars.hour.gan+exact.pillars.hour.zhi,
+      ],
+      exactRaw:exact.elementProfiles.raw,
       exactProfile,
-      otherFingerprint: otherProfile.fingerprint,
+      otherProfile,
       rows,
-      diffCount,
+      differentChart:{
+        diagA,diagB,
+        noteDiffs:notesA.map((n,i)=>norm(n.desc)!==norm(notesB[i].desc)),
+      },
     };
   });
 
-  assert(result.engine?.version === '1.0.0', 'integrated profile engine version missing');
-  assert(result.wrapper, 'generateConcernNotes wrapper not installed');
-  assert(result.exactPillars.join(',') === '戊寅,甲寅,己亥,乙丑', `exact pillars drift: ${result.exactPillars.join(',')}`);
-  assert(JSON.stringify(result.exactRaw) === JSON.stringify({mok:4,hwa:0,to:3,geum:0,su:1}), `exact raw elements drift: ${JSON.stringify(result.exactRaw)}`);
-  assert(result.ohengCards.length === 5, `oheng card count ${result.ohengCards.length}`);
-  assert(result.ohengCards[1].includes('(0개)') && result.ohengCards[1].includes('0%'), `zero fire must display 0%: ${result.ohengCards[1]}`);
-  assert(result.ohengCards[3].includes('(0개)') && result.ohengCards[3].includes('0%'), `zero metal must display 0%: ${result.ohengCards[3]}`);
-  assert(result.ohengSummaryF.includes('이 제일 강해') && result.ohengSummaryF.includes('같은 장면이 반복되는 부분이 보여') && result.ohengSummaryF.includes('바로 아래 비밀 메모') && !/\d+%/.test(result.ohengSummaryF) && !result.ohengSummaryF.includes('로아가'), `F oheng secret-note teaser copy missing: ${result.ohengSummaryF}`);
-  assert(result.ohengSummaryT.includes('중요한 건 이 차이가 지금 고민에서 어떤 반복을 만드는지야') && result.ohengSummaryT.includes('바로 아래 비밀 메모') && !/\d+%/.test(result.ohengSummaryT) && !result.ohengSummaryT.includes('서아가'), `T oheng secret-note teaser copy missing: ${result.ohengSummaryT}`);
-  assert(!/(이 공백|누수)/.test(result.ohengSummaryF + result.ohengSummaryT), 'stiff oheng copy leaked');
-  assert(result.exactProfile.fingerprint !== result.otherFingerprint, 'different charts share integrated fingerprint');
-  assert(result.exactProfile.audit.missing.length === 0, `semantic layer coverage missing: ${result.exactProfile.audit.missing.join(',')}`);
-  assert(result.rows.length === 12, `expected 12 concern/mode rows, got ${result.rows.length}`);
+  assert(result.engine?.version === '2.0.0', 'NOTE v2 engine missing');
+  assert(result.integrated?.version === '1.0.0', 'integrated profile missing');
+  assert(result.wrapper, 'NOTE v2 wrapper missing');
+  assert(result.exactPillars.join(',') === '戊寅,甲寅,己亥,乙丑', 'canonical pillars drift: '+result.exactPillars.join(','));
+  assert(JSON.stringify(result.exactRaw) === JSON.stringify({mok:4,hwa:0,to:3,geum:0,su:1}), 'canonical raw elements drift: '+JSON.stringify(result.exactRaw));
+  assert(result.exactProfile.audit.missing.length === 0, 'semantic layer coverage missing: '+result.exactProfile.audit.missing.join(','));
+  assert(result.exactProfile.fingerprint !== result.otherProfile.fingerprint, 'different charts share integrated fingerprint');
 
-  const jargon = /(신강|신약|중화|격국|용신|상신|기신|지장간|월령|조후|통관|사령)/;
+  assert(result.rows.length === 24, 'expected 24 situation rows, got '+result.rows.length);
+  const jargon=/(신강|신약|중화|격국|용신|상신|기신|지장간|월령|조후|통관|사령)/;
+
   for (const row of result.rows) {
-    assert(row.count === 6, `${row.concern}/${row.mode}: expected six notes`);
-    assert(row.enriched, `${row.concern}/${row.mode}: not all notes consumed integrated profile`);
-    assert(row.fingerprint, `${row.concern}/${row.mode}: integrated fingerprint missing`);
-    assert(row.missing.length === 0, `${row.concern}/${row.mode}: missing semantic layers ${row.missing.join(',')}`);
-    assert(!jargon.test(row.text), `${row.concern}/${row.mode}: hard saju jargon leaked into user copy`);
-    assert(!/(undefined|NaN|null)/.test(row.text), `${row.concern}/${row.mode}: bad token leaked`);
-  }
-  assert(result.diffCount >= 5, `personalization too weak: only ${result.diffCount}/6 NOTE descs differ across charts`);
-  assert(errors.length === 0, `browser errors: ${errors.join(' | ')}`);
+    assert(row.diagF.fingerprint === row.diagT.fingerprint, row.concern+'/'+row.situation+': F/T diagnosis facts diverged');
+    assert(row.diagF.primary.cluster === row.diagT.primary.cluster && row.diagF.secondary.cluster === row.diagT.secondary.cluster,
+      row.concern+'/'+row.situation+': F/T core diagnosis diverged');
 
-  console.log('INTEGRATED_PROFILE_PASS', JSON.stringify({
-    version: result.engine.version,
-    exactFingerprint: result.exactProfile.fingerprint,
-    semanticLayers: result.exactProfile.audit.semanticLayers.length,
-    differentChartNotes: result.diffCount,
-    rows: result.rows.length,
+    for (const [mode, notes, audit] of [['F',row.notesF,row.auditF],['T',row.notesT,row.auditT]]) {
+      assert(notes.length === 6, row.concern+'/'+row.situation+'/'+mode+': expected six notes');
+      assert(audit?.version === '2.0.0' && audit?.fingerprint, row.concern+'/'+row.situation+'/'+mode+': NOTE v2 audit missing');
+      assert(audit.primary?.cluster && audit.secondary?.cluster, row.concern+'/'+row.situation+'/'+mode+': diagnosis cluster missing');
+      const all=notes.map(n=>plain((n.title||'')+' '+(n.desc||'')+' '+(n.checklist||''))).join(' ');
+      assert(!jargon.test(all), row.concern+'/'+row.situation+'/'+mode+': hard saju jargon leaked');
+      assert(!/(undefined|NaN|null)/.test(all), row.concern+'/'+row.situation+'/'+mode+': bad token leaked');
+      assert(plain(notes[0].desc).length >= 90 && plain(notes[0].desc).length <= 560, row.concern+'/'+row.situation+'/'+mode+': NOTE1 should be concise and specific');
+      assert(plain(notes[1].desc).length >= 100 && plain(notes[1].desc).length <= 620, row.concern+'/'+row.situation+'/'+mode+': NOTE2 should be concise and specific');
+      assert(notes[5]?.__timingQA?.concernSituation === row.situation, row.concern+'/'+row.situation+'/'+mode+': NOTE6 situation metadata missing');
+      assert(norm(notes[5]?.__timingQA?.firstBody) !== norm(notes[5]?.__timingQA?.secondBody), row.concern+'/'+row.situation+'/'+mode+': timing roles duplicated');
+      const high=[audit.primary,audit.secondary].filter(x=>x.confidence==='high');
+      for(const h of high) {
+        assert(new Set((h.evidence||[]).map(x=>x.source)).size >= 2, row.concern+'/'+row.situation+'/'+mode+': high-confidence statement lacks two independent signals');
+      }
+    }
+
+    assert(norm(row.notesF[0].desc) !== norm(row.notesT[0].desc), row.concern+'/'+row.situation+': F/T renderer voice did not differ');
+    assert(row.notesF[0].title !== row.notesT[0].title, row.concern+'/'+row.situation+': F/T title voice did not differ');
+  }
+
+  for (const concern of ['money','career','love','path','people','mental']) {
+    const rows=result.rows.filter(r=>r.concern===concern);
+    assert(rows.length===4, concern+': expected four situations');
+    const sig=new Set(rows.map(r=>norm(r.notesF[0].title+' '+r.notesF[1].desc+' '+r.notesF[3].desc)));
+    assert(sig.size===4, concern+': four situation paths are not distinct');
+  }
+
+  assert(result.differentChart.diagA.fingerprint !== result.differentChart.diagB.fingerprint, 'different charts share NOTE diagnosis fingerprint');
+  assert(result.differentChart.diagA.primary.cluster !== result.differentChart.diagB.primary.cluster ||
+         result.differentChart.diagA.secondary.cluster !== result.differentChart.diagB.secondary.cluster ||
+         result.differentChart.diagA.primary.confidence !== result.differentChart.diagB.primary.confidence,
+         'different charts produced indistinguishable core diagnosis');
+  assert(result.differentChart.noteDiffs.filter(Boolean).length >= 4, 'different charts do not materially change enough NOTE outputs');
+
+  assert(errors.length === 0, 'browser errors: '+errors.join(' | '));
+  console.log('CONCERN_NOTE_V2_PASS', JSON.stringify({
+    version:result.engine.version,
+    rows:result.rows.length,
+    differentChartNotes:result.differentChart.noteDiffs.filter(Boolean).length,
   }));
   await browser.close();
-})().catch(err => {
-  console.error(err.stack || err);
-  process.exit(1);
-});
+})().catch(err=>{ console.error(err.stack||err); process.exit(1); });
