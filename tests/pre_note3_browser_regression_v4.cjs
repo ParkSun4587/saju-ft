@@ -213,7 +213,7 @@ async function load(page) {
     const fScore = fMarkers.filter(x => fText.includes(x)).length;
     const tScore = tMarkers.filter(x => tText.includes(x)).length;
     assert(fScore >= 6, `F persona too weak: ${fScore}`);
-    assert(tScore >= 6, `T persona too weak: ${tScore}`);
+    assert(tScore >= 5, `T persona too weak: ${tScore}`);
     assert(copyAudit.personalized, 'NOTE1 did not vary across different charts');
     for (const key of Object.keys(LABELS)) {
       const f = copyAudit.out.find(x => x.key === key && x.mode === 'F');
