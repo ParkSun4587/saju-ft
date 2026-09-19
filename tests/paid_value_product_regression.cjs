@@ -645,6 +645,19 @@ function norm(v) {
   assert(!html.includes('팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐'), 'old generic harsh T greeting remains');
   for (const harsh of ['아이고 왔어?', '시간 낭비 말고', '똑바로 찍어', '똥고집', '미련 곰탱이', '팩트 꽂힌', '팩폭 모드', '징징대지 말고 와', '살인 충동 느낌', '상대방 사람 취급', '멍청한 질문 3번']) assert(!html.includes(harsh), `harsh/old sister copy remains: ${harsh}`);
   assert(html.includes('왔구나! 잘 왔어') && html.includes('아 이거였구나.') && html.includes('잠깐만! 언니가 네 사주랑 지금 고민') && html.includes('쓸데없이 겁주는 말부터 할 생각은 없어') && !html.includes('ㅎㅎ'), 'distinct F/T sister copy missing');
+  assert(
+    html.includes('똑같은 내 사주, 누구한테 먼저 털어놓을래?') &&
+    html.includes('원하는 상담 스타일을 골라봐') &&
+    html.includes('감정 공감형') &&
+    html.includes('핵심 정리형') &&
+    html.includes('선택한 언니의 말투로 결과 끝까지 이어져') &&
+    html.includes('응, 언니랑 천천히 풀어볼래') &&
+    html.includes('좋아, 핵심만 바로 알려줘'),
+    'immersive first counselor-choice copy missing'
+  );
+  for (const staleIntro of ['응, 내 얘기부터 천천히 같이 봐줘','좋아. 돌려 말하지 말고 필요한 것만 알려줘','괜히 겁주거나 포장 안 해. 좋은 건 좋다, 아닌 건 아니다 말하고 지금 필요한 것만 정리해줄게.']) {
+    assert(!html.includes(staleIntro), `stale first-screen copy remains: ${staleIntro}`);
+  }
   assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 1)') && html.includes('paywallNextTeaser') && html.includes('teaserProbe') && html.includes('로아 언니, 나머지도 같이 봐줘') && html.includes('서아 언니, 답까지 정리해줘'), 'paid teaser must be NOTE1 full + short NOTE2 + actual locked-content teaser + distinct F/T 990 handoff');
   assert(!html.includes('storyCaptureReturnTimer') && !html.includes('7000') && html.includes('storyCaptureCleanTimer'), 'capture should use delayed fullscreen-clean transition, not timed auto-return');
   assert(premium.includes('data-bundle-situation') && premium.includes('data-all-situation'), 'premium situation selectors missing');
