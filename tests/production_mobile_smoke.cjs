@@ -35,7 +35,7 @@ async function enter(page, mode, concern, situation) {
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
-  if (mode==='F') assert(firstState.sisterText.includes('왔구나!')&&firstState.sisterText.includes('진짜 깊게 봐줄게')&&!firstState.sisterText.includes('ㅎㅎ'),'F input is not warm close-sister tone '+firstState.sisterText);
+  if (mode==='F') assert(firstState.sisterText.includes('왔구나! 잘 왔어')&&firstState.sisterText.includes('같이 깊게 봐줄게')&&!firstState.sisterText.includes('ㅎㅎ'),'F input is not warm close-sister tone '+firstState.sisterText);
   if (mode==='T') assert(firstState.sisterText.includes('쓸데없이 겁주는 말')&&firstState.sisterText.includes('좋은 건 좋다, 아닌 건 아니다')&&!firstState.sisterText.includes('왔네'),'T input is not tsundere/direct-care tone '+firstState.sisterText);
   await page.fill('#nameInput','테스트');
   const label = concern === 'love' ? '연애 · 썸' : '마음 · 스트레스';
@@ -87,11 +87,11 @@ async function inspect(page, mode) {
   assert(r.n5.length>=330,mode+' paid NOTE5 too short '+r.n5.length);
   assert(r.n1.includes('사주 전체'),mode+' NOTE1 personalization missing');
   assert(/반복|패턴|같은 데서/.test(r.n2),mode+' NOTE2 pattern missing');
-  if (mode==='F') assert(r.oheng.includes('언니가 보기엔')&&r.oheng.includes('지금 네 고민도 여기서 반복되는 장면이 보여')&&r.oheng.includes('바로 아래 비밀메모에서')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng secret-note teaser '+r.oheng);
-  if (mode==='T') assert(r.oheng.includes('중요한 건 이 조합이 지금 고민에서 어떤 반복을 만드는지야')&&r.oheng.includes('바로 아래 비밀메모에서')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng secret-note teaser '+r.oheng);
+  if (mode==='F') assert(r.oheng.includes('이 제일 강해')&&r.oheng.includes('같은 장면이 반복되는 부분이 보여')&&r.oheng.includes('바로 아래 비밀 메모')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng secret-note teaser '+r.oheng);
+  if (mode==='T') assert(r.oheng.includes('중요한 건 이 차이가 지금 고민에서 어떤 반복을 만드는지야')&&r.oheng.includes('바로 아래 비밀 메모')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng secret-note teaser '+r.oheng);
   assert(!/[나무불흙쇠물]\)/.test(r.oheng+r.dayMasterTag),'old parenthetical five-element wording remains '+JSON.stringify({oheng:r.oheng,day:r.dayMasterTag}));
   assert(r.count===4&&r.visible===4,'premium products hidden '+JSON.stringify(r));
-  assert(r.catalog.includes('다른 리포트도 있어')&&!r.catalog.includes('다른 리포트 3개 보기'),'old product disclosure remains');
+  assert(r.catalog.includes('왜 이걸 먼저 추천하냐면')&&r.catalog.includes('다른 게 더 궁금하다면')&&!r.catalog.includes('다른 리포트 3개 보기'),'old product disclosure remains');
   assert(r.catalog.includes('내 사주 완전판')&&!r.catalog.includes('어떤언니 올인원'),'all-in-one product name did not update');
   assert(r.catalog.includes('우리 둘 깊게 보기')&&r.catalog.includes('내 사주 전부 보기')&&!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
   assert(r.switchCount===0,'bottom F/T CTA remains');
@@ -100,9 +100,10 @@ async function inspect(page, mode) {
   assert(!r.badges.some(x=>x.includes('·')||x.includes('핵심')||x.includes('사람 필터')||x.includes('7일 처방')),
     'old NOTE badge wording remains '+JSON.stringify(r.badges));
   assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
-  if (mode==='F') assert(r.resultGreeting.includes('다 봤어!')&&r.resultGreeting.includes('어려운 말 없이 하나씩 풀어줄게')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=105,'F result warm close-sister intro drift '+r.resultGreeting);
+  if (mode==='F') assert(r.resultGreeting.includes('다 봤어!')&&r.resultGreeting.includes('네 얘기부터 차근차근 같이 풀어볼게')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=105,'F result warm close-sister intro drift '+r.resultGreeting);
   if (mode==='T') assert(r.resultGreeting.includes('뭐가 진짜 문제고')&&r.resultGreeting.includes('좋은 건 좋다, 아닌 건 아니다')&&r.resultGreeting.length<=105,'T result tsundere intro drift '+r.resultGreeting);
   assert(!r.resultGreeting.includes('ㅎㅎ'),'repeated laughter remains in result '+r.resultGreeting);
+  if (mode==='T') assert(!/징징|살인 충동|사람 취급|멍청한 질문/.test(r.resultGreeting+r.catalog),'harsh T voice leaked into live journey '+JSON.stringify({greeting:r.resultGreeting,catalog:r.catalog}));
   return r;
 }
 
@@ -131,7 +132,7 @@ async function inspect(page, mode) {
   assert(captureOpen.parent==='storyCaptureCardSlot'&&captureOpen.topInside&&captureOpen.layerZ>captureOpen.shareZ,
     'live capture mode does not isolate the original card '+JSON.stringify(captureOpen));
   const guideText=await page.locator('#storyCaptureChrome').innerText();
-  assert(guideText.includes('인스타 스토리에 올려봐')&&guideText.includes('캡처 후 화면을 한 번 톡 누르면 바로 돌아가'),'live capture prep should make the exit gesture obvious');
+  assert(guideText.includes('화면 아무 데나 한 번 톡')&&guideText.includes('바로 결과로 돌아가'),'live capture prep should make the exit gesture obvious');
   const liveCardBox=await page.locator('#storyCard').boundingBox();
   assert(liveCardBox&&liveCardBox.width>=350&&liveCardBox.width<=390&&Math.abs(liveCardBox.height/liveCardBox.width-16/9)<0.03,
     'live capture card is not viewport-sized '+JSON.stringify(liveCardBox));
