@@ -289,9 +289,9 @@
     const bridgeLine = bridge ? `그리고 서로 부딪히는 힘 사이에서는 <b>${bridge}</b>이 중간 연결 역할을 할 수 있어.` : "";
     const conflictLine = conflict ? `두 판단이 완전히 같은 방향은 아니라서, ${conflict.priority}` : "";
     if (isT) {
-      return `원인은 단순 성격이 아니야. 월령에서 잡힌 중심 구조상 <b>${monthLine}</b>이고, 실제 성패를 보면 ${z?.conclusion || zipingUser(reasoning)}<br><br>${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "강약 판단과 구조 판단이 같은 방향이면 그 조건을 더 강하게 본다."} 그래서 ${situation.object}의 원인을 범용 성향 하나로 줄이면 안 돼.`;
+      return `원인은 단순 성격이 아니야. 태어난 계절에서 잡힌 중심 구조상 <b>${monthLine}</b>이고, 실제 성패를 보면 ${zipingUser(reasoning)}<br><br>${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "강약 판단과 구조 판단이 같은 방향이면 그 조건을 더 강하게 본다."} 그래서 ${situation.object}의 원인을 범용 성향 하나로 줄이면 안 돼.`;
     }
-    return `진짜 원인은 ‘원래 네 성격이 이래서’가 아니야. 네 사주의 중심을 보면 <b>${monthLine}</b>이야. 그리고 그 구조가 실제로 잘 굴러가는지까지 보면, ${z?.conclusion || zipingUser(reasoning)}<br><br>쉽게 풀면 ${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "두 판단이 같은 방향을 가리킬 때는 그 조건을 더 중요하게 볼 수 있어."} 언니가 ${situation.object}을 볼 때 이 구조부터 보는 이유가 그거야.`;
+    return `진짜 원인은 ‘원래 네 성격이 이래서’가 아니야. 네 사주 전체의 중심을 보면 <b>${monthLine}</b>이야. 그리고 그 구조가 실제로 잘 굴러가는지까지 보면, ${zipingUser(reasoning)}<br><br>쉽게 풀면 ${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "두 판단이 같은 방향을 가리킬 때는 그 조건을 더 중요하게 볼 수 있어."} 언니가 ${situation.object}을 볼 때 이 구조부터 보는 이유가 그거야.`;
   }
 
   function changeOrder(reasoning, situation, isT) {
@@ -304,7 +304,7 @@
     const harmful = godsHuman(reasoning?.integrated?.harmfulGods);
     const special = reasoning?.unsupported || [];
     const caution = special.length
-      ? "다만 특수 구조 후보나 합의 실제 변화처럼 아직 확정 규칙이 없는 부분은 억지로 결론내리지 않았어."
+      ? "다만 특수한 구조나 서로 묶이는 힘의 실제 변화처럼 아직 확정 규칙이 없는 부분은 억지로 결론내리지 않았어."
       : "";
     if (isT) {
       return `<b>첫 순서</b> — ${firstAction}.<br><br><b>그다음</b> — ${secondAction}.<br><br><b>지금 고민에 적용</b> — ${situation.move}.<br><br><b>7일 검증</b> — ${situation.metric}.<br><br>${harmful.length ? `특히 ${harmful.join("·")}이 과해지는 선택은 줄여.` : "한 번에 변수 여러 개를 바꾸지 마."} ${caution}`;
@@ -358,8 +358,8 @@
           ? "무리하게 넓히기보다 손실을 줄이는 게 중요한 해"
           : "큰 흐름이 한쪽으로 강하게 기울지 않는 해";
       const bestLine = best
-        ? `${formatMonth(best)}가 상대적으로 쓰기 좋은 구간이야. ${best.reasons.slice(0,3).join(" · ")}.`
-        : "앞으로 남은 월운에서 강한 우세 구간을 따로 잡지 않았어.";
+        ? `${formatMonth(best)}가 상대적으로 쓰기 좋은 구간이야. 큰 흐름과 해의 흐름 위에 이 달의 힘까지 겹쳐 봤을 때 네 기본 구조를 더 받쳐주는 쪽이야.`
+        : "앞으로 남은 달의 흐름에서 강한 우세 구간을 따로 잡지 않았어.";
       const cautionLine = caution && caution.score < (best?.score ?? Infinity)
         ? `${formatMonth(caution)}는 같은 속도로 밀기보다 한 번 더 확인해.`
         : "";
@@ -374,7 +374,7 @@
     const body = cards.map((c) => `<b>${c.year}년</b> — ${c.yearLine}.<br>${c.bestLine}${c.cautionLine ? "<br>"+c.cautionLine : ""}`).join("<br><br>");
     const action = situation.move;
     const intro = isT
-      ? "원국은 그대로고, 시기마다 그 구조를 받치는 힘과 흔드는 힘만 달라져. 대운 → 세운 → 월운 순서로 겹쳐 봤어."
+      ? "기본 사주는 그대로고, 시기마다 그 구조를 받치는 힘과 흔드는 힘만 달라져. 큰 흐름 → 해의 흐름 → 달의 흐름 순서로 겹쳐 봤어."
       : "네 기본 사주가 해마다 바뀌는 건 아니야. 언니는 같은 구조 위에 대운·세운·월운이 어떻게 겹치는지를 따로 봤어.";
     const close = isT
       ? `좋은 구간엔 ${action}. 조심 구간엔 같은 속도로 밀지 마.`
@@ -409,7 +409,7 @@
     if (idx === 2) return isT ? "원인은 성격 한 줄로 설명 안 돼" : "왜 자꾸 이렇게 되는지 뿌리부터 볼게";
     if (idx === 3) return isT ? "바꿀 건 하나가 아니라 순서야" : "힘을 바꾸는 순서부터 같이 잡자";
     if (idx === 4) return isT ? "잘 맞는 조건과 피할 조건을 나눠" : "너를 살리는 사람·환경은 조건이 달라";
-    return isT ? "원국은 그대로, 움직일 시기만 나눠" : "같은 너라도 힘이 붙는 시기는 따로 있어";
+    return isT ? "기본 사주는 그대로, 움직일 시기만 나눠" : "같은 너라도 힘이 붙는 시기는 따로 있어";
   }
 
   function buildConcernDiagnosisV2(data) {
