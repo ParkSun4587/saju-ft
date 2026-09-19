@@ -128,8 +128,8 @@ function assert(cond, msg) {
   assert(result.ohengCards.length === 5, `oheng card count ${result.ohengCards.length}`);
   assert(result.ohengCards[1].includes('(0개)') && result.ohengCards[1].includes('0%'), `zero fire must display 0%: ${result.ohengCards[1]}`);
   assert(result.ohengCards[3].includes('(0개)') && result.ohengCards[3].includes('0%'), `zero metal must display 0%: ${result.ohengCards[3]}`);
-  assert(result.ohengSummaryF.includes('언니가 보기엔') && result.ohengSummaryF.includes('바로 아래 비밀메모에서') && !/\d+%/.test(result.ohengSummaryF) && !result.ohengSummaryF.includes('로아가'), `F oheng secret-note teaser copy missing: ${result.ohengSummaryF}`);
-  assert(result.ohengSummaryT.includes('중요한 건 이 조합이 지금 고민에서 어떤 반복을 만드는지야') && result.ohengSummaryT.includes('바로 아래 비밀메모에서') && !/\d+%/.test(result.ohengSummaryT) && !result.ohengSummaryT.includes('서아가'), `T oheng secret-note teaser copy missing: ${result.ohengSummaryT}`);
+  assert(result.ohengSummaryF.includes('이 제일 강해') && result.ohengSummaryF.includes('같은 장면이 반복되는 부분이 보여') && result.ohengSummaryF.includes('바로 아래 비밀 메모') && !/\d+%/.test(result.ohengSummaryF) && !result.ohengSummaryF.includes('로아가'), `F oheng secret-note teaser copy missing: ${result.ohengSummaryF}`);
+  assert(result.ohengSummaryT.includes('중요한 건 이 차이가 지금 고민에서 어떤 반복을 만드는지야') && result.ohengSummaryT.includes('바로 아래 비밀 메모') && !/\d+%/.test(result.ohengSummaryT) && !result.ohengSummaryT.includes('서아가'), `T oheng secret-note teaser copy missing: ${result.ohengSummaryT}`);
   assert(!/(이 공백|누수)/.test(result.ohengSummaryF + result.ohengSummaryT), 'stiff oheng copy leaked');
   assert(result.exactProfile.fingerprint !== result.otherFingerprint, 'different charts share integrated fingerprint');
   assert(result.exactProfile.audit.missing.length === 0, `semantic layer coverage missing: ${result.exactProfile.audit.missing.join(',')}`);
