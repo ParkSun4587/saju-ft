@@ -10,7 +10,7 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.0.0' &&
+        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '2.1.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.1' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
@@ -97,7 +97,7 @@ async function inspect(page, mode) {
       },
     };
   },mode);
-  assert(r.noteV2Audit?.version==='2.0.0'&&r.noteV2Audit?.fingerprint,mode+' NOTE v2 audit missing');
+  assert(r.noteV2Audit?.version==='2.1.0'&&r.noteV2Audit?.fingerprint,mode+' NOTE v2 audit missing');
   assert(r.noteV2Audit?.primary?.cluster&&r.noteV2Audit?.secondary?.cluster,mode+' NOTE v2 diagnosis clusters missing');
   assert(r.n1.length>=90&&r.n1.length<=560,mode+' NOTE1 should be concise/specific '+r.n1.length);
   assert(r.n2.length>=100&&r.n2.length<=620,mode+' NOTE2 should be concise/specific '+r.n2.length);
