@@ -6,15 +6,15 @@ const sleep = (ms) => new Promise(r => setTimeout(r,ms));
 async function deployed(page) {
   for (let i=0;i<36;i++) {
     try {
-      await page.goto(BASE + '?smoke=v17-' + i, {waitUntil:'domcontentloaded',timeout:30000});
+      await page.goto(BASE + '?smoke=v18-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
-        globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.4.0' &&
-        globalThis.__UNNI_PRODUCTS_V1__?.version === '1.6.0' &&
+        globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
+        globalThis.__UNNI_PRODUCTS_V1__?.version === '1.7.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach paid 1.4.0 / products 1.6.0');
+  throw new Error('production did not reach paid 1.5.0 / products 1.7.0');
 }
 
 async function enter(page, mode, concern, situation) {
@@ -29,11 +29,14 @@ async function enter(page, mode, concern, situation) {
     oldManseCopy:document.body.innerText.includes('정확한 만세력 조회를 위해 적어줘'),
     oldTimeHint:document.body.innerText.includes('출생기록에 적힌 시각을 입력하면 더 정확해'),
     timeHintExists:!!document.getElementById('birthTimeHint'),
+    sisterText:document.getElementById('welcomeSisterText')?.innerText||'',
   }));
   assert(firstState.concern==='' && firstState.selected===0 && firstState.details==='none' && firstState.summary==='none' && firstState.submitDisabled,
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
+  if (mode==='F') assert(firstState.sisterText.includes('편하게 말해줘')&&firstState.sisterText.includes('차근차근 풀어줄게')&&!firstState.sisterText.includes('아이고'),'F input is not careful sister counseling '+firstState.sisterText);
+  if (mode==='T') assert(firstState.sisterText.includes('대충 보진 않아')&&firstState.sisterText.includes('하나씩 정리해줄게')&&!firstState.sisterText.includes('시간 낭비'),'T input is not direct-but-caring sister counseling '+firstState.sisterText);
   await page.fill('#nameInput','테스트');
   const label = concern === 'love' ? '연애 · 썸' : '마음 · 스트레스';
   await page.locator('#concernGrid .concern-chip').filter({hasText:label}).click();
@@ -60,6 +63,7 @@ async function inspect(page, mode) {
     const products=[...document.querySelectorAll('#unniProductLadder [data-unni-product]')];
     return {
       n1:plain(notes[0]?.desc), n2:plain(notes[1]?.desc),
+      n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc),
       oheng:document.getElementById('ohengSummaryTxt')?.innerText||'',
       count:products.length,
       visible:products.filter(x=>getComputedStyle(x).display!=='none').length,
@@ -78,9 +82,12 @@ async function inspect(page, mode) {
   },mode);
   assert(r.n1.length>=210,mode+' NOTE1 too short '+r.n1.length);
   assert(r.n2.length>=210,mode+' NOTE2 too short '+r.n2.length);
+  assert(r.n4.length>=300,mode+' paid NOTE4 too short '+r.n4.length);
+  assert(r.n5.length>=330,mode+' paid NOTE5 too short '+r.n5.length);
   assert(r.n1.includes('사주 전체'),mode+' NOTE1 personalization missing');
   assert(/반복|패턴|같은 데서/.test(r.n2),mode+' NOTE2 pattern missing');
-  assert(r.oheng.includes('언니가')&&!r.oheng.includes('로아가')&&!r.oheng.includes('서아가'),mode+' oheng voice '+r.oheng);
+  if (mode==='F') assert(r.oheng.includes('언니가 보니까')&&r.oheng.includes('잘하는 힘과 놓치기 쉬운 힘')&&!r.oheng.includes('로아가'),'F oheng counseling copy '+r.oheng);
+  if (mode==='T') assert(r.oheng.includes('여기서 재밌는 건')&&r.oheng.includes('반복 패턴의 힌트')&&!r.oheng.includes('서아가'),'T oheng counseling copy '+r.oheng);
   assert(r.count===4&&r.visible===4,'premium products hidden '+JSON.stringify(r));
   assert(r.catalog.includes('다른 리포트도 있어')&&!r.catalog.includes('다른 리포트 3개 보기'),'old product disclosure remains');
   assert(r.catalog.includes('내 사주 완전판')&&!r.catalog.includes('어떤언니 올인원'),'all-in-one product name did not update');
@@ -90,8 +97,8 @@ async function inspect(page, mode) {
   assert(!r.badges.some(x=>x.includes('·')||x.includes('핵심')||x.includes('사람 필터')||x.includes('7일 처방')),
     'old NOTE badge wording remains '+JSON.stringify(r.badges));
   assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
-  if (mode==='F') assert(r.resultGreeting.includes('얘기부터 같이 볼게')&&r.resultGreeting.length<=58,'F result intro is too long '+r.resultGreeting);
-  if (mode==='T') assert(r.resultGreeting.includes('핵심만 바로 짚자')&&r.resultGreeting.length<=58,'T result intro is too long '+r.resultGreeting);
+  if (mode==='F') assert(r.resultGreeting.includes('사주를 같이 봤어')&&r.resultGreeting.includes('천천히 풀어줄게')&&r.resultGreeting.length<=105,'F result counseling intro drift '+r.resultGreeting);
+  if (mode==='T') assert(r.resultGreeting.includes('기준으로 다 봤어')&&r.resultGreeting.includes('하나씩 정리해줄게')&&r.resultGreeting.length<=100,'T result counseling intro drift '+r.resultGreeting);
   return r;
 }
 
@@ -119,7 +126,7 @@ async function inspect(page, mode) {
   assert(captureOpen.parent==='storyCaptureCardSlot'&&captureOpen.topInside&&captureOpen.layerZ>captureOpen.shareZ,
     'live capture mode does not isolate the original card '+JSON.stringify(captureOpen));
   const guideText=await page.locator('#storyCaptureChrome').innerText();
-  assert(guideText.includes('스티커 → 링크 → sajuft.com')&&guideText.includes('친구 태그'),'live capture prep should explain Instagram link/tag steps');
+  assert(guideText.includes('인스타 스토리에 올려봐')&&guideText.includes('7초 뒤 결과로 자동으로 돌아갈게'),'live F capture prep should be short and sister-like');
   const liveCardBox=await page.locator('#storyCard').boundingBox();
   assert(liveCardBox&&liveCardBox.width>=350&&liveCardBox.width<=390&&Math.abs(liveCardBox.height/liveCardBox.width-16/9)<0.03,
     'live capture card is not viewport-sized '+JSON.stringify(liveCardBox));
@@ -134,10 +141,9 @@ async function inspect(page, mode) {
   await page.locator('#storyCaptureReady').click();
   await page.waitForFunction(()=>getComputedStyle(document.getElementById('storyCaptureChrome')).display==='none',null,{timeout:5000});
   assert(await page.locator('#unniKakaoCardQualityGuide').count()===0,'old rendered-card quality warning exists');
-  await page.locator('#storyCaptureMode').click({position:{x:4,y:4}});
-  await page.waitForFunction(()=>getComputedStyle(document.getElementById('storyCaptureChrome')).display!=='none',null,{timeout:5000});
-  await page.locator('#storyCaptureClose').click();
-  assert(await page.locator('#shareModal').isHidden(),'capture close should return directly to result');
+  await page.waitForFunction(()=>getComputedStyle(document.getElementById('storyCaptureMode')).display==='none',null,{timeout:10000});
+  assert(await page.locator('#shareModal').isHidden(),'timed capture return should go directly to result');
+  assert(await page.locator('#resultSection').isVisible(),'timed capture return lost the result view');
 
   await page.locator('#unniProductLadder [data-unni-product="full_saju"]').click();
   await page.waitForSelector('#unniProductModal',{state:'visible'});
@@ -145,20 +151,8 @@ async function inspect(page, mode) {
   await page.locator('#unniProductAction').click();
   await page.waitForFunction(()=>document.querySelectorAll('#unniProductBody section').length===12,null,{timeout:10000});
   assert(await page.locator('#unniProductStickyHead').evaluate(el=>getComputedStyle(el).position)==='sticky','sticky header broken');
-  await page.evaluate(()=>{window.__oldPrint=window.print;window.__printCalls=0;window.print=()=>window.__printCalls++;});
-  await page.locator('#unniProductSavePdf').click();
-  await page.waitForFunction(()=>window.__printCalls===1,null,{timeout:5000});
-  const pdf=await page.evaluate(()=>({
-    calls:window.__printCalls,
-    sections:document.querySelectorAll('#unniPaidPrintHost section').length,
-    host:document.getElementById('unniPaidPrintHost')?.innerText||'',
-    style:!!document.getElementById('unniPaidPrintStyle')
-  }));
-  assert(pdf.calls===1&&pdf.sections===12&&pdf.style&&pdf.host.includes('내 전체 사주판'),'PDF print path '+JSON.stringify(pdf));
-  await page.emulateMedia({media:'print'});
-  assert(await page.locator('#unniPaidPrintHost').evaluate(el=>getComputedStyle(el).display)==='block','print host hidden');
-  await page.emulateMedia({media:'screen'});
-  await page.evaluate(()=>{window.print=window.__oldPrint;document.getElementById('unniPaidPrintHost')?.remove();document.getElementById('unniPaidPrintStyle')?.remove();});
+  assert(await page.locator('#unniProductSavePdf').count()===0,'PDF save UI must be removed');
+  assert(!(await page.locator('#unniProductModal').innerText()).includes('다른 브라우저'),'paid save should not tell users to switch browsers');
   await page.waitForFunction(()=>document.getElementById('unniProductSaveHint')?.innerText.includes('저장 준비 완료'),null,{timeout:45000});
   assert(await page.locator('#unniProductSaveAll').isEnabled(),'photo export prewarm not ready');
 
@@ -171,6 +165,6 @@ async function inspect(page, mode) {
   const tr=await inspect(t,'T');
   assert(errors.length===0,'F browser errors '+errors.join(' | '));
   assert(terr.length===0,'T browser errors '+terr.join(' | '));
-  console.log('PRODUCTION_MOBILE_SMOKE_PASS',JSON.stringify({f:[f.n1.length,f.n2.length],t:[tr.n1.length,tr.n2.length],pdf}));
+  console.log('PRODUCTION_MOBILE_SMOKE_PASS',JSON.stringify({f:[f.n1.length,f.n2.length,f.n4.length,f.n5.length],t:[tr.n1.length,tr.n2.length,tr.n4.length,tr.n5.length],pdfRemoved:true}));
   await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});
