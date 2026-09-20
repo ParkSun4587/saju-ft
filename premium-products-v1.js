@@ -1318,7 +1318,7 @@
     root = document.createElement("div");
     root.id = "unniProductModal";
     root.style.cssText = "display:none;position:fixed;inset:0;z-index:99999;background:rgba(24,21,25,.36);padding:10px;overflow:auto;-webkit-overflow-scrolling:touch;backdrop-filter:blur(5px)";
-    root.innerHTML = `<div data-premium-modal-card="1" style="max-width:520px;margin:max(8px,env(safe-area-inset-top)) auto max(14px,env(safe-area-inset-bottom));background:#fffdfa;border:1px solid #e8e2dc;border-radius:25px;padding:0 16px 20px;box-shadow:0 22px 58px rgba(38,30,28,.14);overflow:visible"><div id="unniProductStickyHead" style="position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin:0 -16px;padding:16px 16px 13px;background:rgba(255,253,250,.97);backdrop-filter:blur(14px);border-radius:25px 25px 15px 15px;border-bottom:1px solid #e8e2dc"><div style="min-width:0;flex:1"><div id="unniProductBadge" style="font-size:9.5px;font-weight:800;color:#c9365b"></div><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:5px"><h2 id="unniProductTitle" style="min-width:0;font-size:21px;line-height:1.28;font-weight:850;letter-spacing:-.025em;margin:0;color:#172033"></h2><div id="unniProductPrice" style="flex:none;border-radius:999px;background:#fff4f6;border:1px solid #f1d7dd;padding:6px 9px;font-size:11px;font-weight:820;color:#c9365b;white-space:nowrap"></div></div></div><button id="unniProductClose" style="flex:none;border:1px solid #e8e2dc;background:#f8f6f3;border-radius:999px;width:38px;height:38px;font-size:18px;color:#697181;cursor:pointer">×</button></div><div id="unniProductBody" style="margin-top:14px"></div><div id="unniProductSetup" style="margin-top:14px"></div><div id="unniProductPayment" style="display:none;margin-top:14px;padding:13px;border-radius:17px;background:#faf7f4;border:1px solid #e8e2dc"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px"><div><div id="unniProductPaymentTitle" style="font-size:12px;font-weight:820;color:#354052">결제수단 선택</div><div id="unniProductPaymentSub" style="margin-top:2px;font-size:10px;font-weight:600;color:#8a9099">원하는 수단을 고른 뒤 아래에서 이어봐</div></div><div id="unniProductPaymentAmount" style="font-size:11px;font-weight:820;color:#c9365b"></div></div><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:13px;font-weight:820;cursor:pointer;box-shadow:0 8px 20px rgba(205,68,101,.13)">이 결과 사진으로 남기기</button><div id="unniProductSaveHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">결과 읽는 동안 저장용 사진을 미리 준비해둘게.</div><button id="unniProductAction" style="width:100%;margin-top:14px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:14px;font-weight:830;cursor:pointer;box-shadow:0 9px 22px rgba(205,68,101,.15)"></button><div id="unniProductActionHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">선택한 결제수단으로 결제됩니다</div><div id="unniProductAccessNote" style="display:none;margin-top:8px;text-align:center;font-size:10.5px;font-weight:650;line-height:1.6;color:#7d8490">한 번 결제하면 이 브라우저에서 추가 결제 없이 다시 볼 수 있어요.</div></div>`;
+    root.innerHTML = `<div data-premium-modal-card="1" style="max-width:520px;margin:max(8px,env(safe-area-inset-top)) auto max(14px,env(safe-area-inset-bottom));background:#fffdfa;border:1px solid #e8e2dc;border-radius:25px;padding:0 16px 20px;box-shadow:0 22px 58px rgba(38,30,28,.14);overflow:visible"><div id="unniProductStickyHead" style="position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin:0 -16px;padding:16px 16px 13px;background:rgba(255,253,250,.97);backdrop-filter:blur(14px);border-radius:25px 25px 15px 15px;border-bottom:1px solid #e8e2dc"><div style="min-width:0;flex:1"><div id="unniProductBadge" style="font-size:9.5px;font-weight:800;color:#c9365b"></div><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:5px"><h2 id="unniProductTitle" style="min-width:0;font-size:21px;line-height:1.28;font-weight:850;letter-spacing:-.025em;margin:0;color:#172033"></h2><div id="unniProductPrice" style="flex:none;padding:2px 0;font-size:11px;font-weight:820;color:#b83e5c;white-space:nowrap"></div></div></div><button id="unniProductClose" style="flex:none;border:1px solid #e8e2dc;background:#f8f6f3;border-radius:999px;width:38px;height:38px;font-size:18px;color:#697181;cursor:pointer">×</button></div><div id="unniProductBody" style="margin-top:14px"></div><div id="unniProductSetup" style="margin-top:14px"></div><div id="unniProductPayment" style="display:none;margin-top:14px;padding:13px 0 0;border-radius:0;background:transparent;border:0;border-top:1px solid #e8e2dc"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px"><div><div id="unniProductPaymentTitle" style="font-size:12px;font-weight:820;color:#354052">결제수단 선택</div><div id="unniProductPaymentSub" style="margin-top:2px;font-size:10px;font-weight:600;color:#8a9099">원하는 수단을 고른 뒤 아래에서 이어봐</div></div><div id="unniProductPaymentAmount" style="font-size:11px;font-weight:820;color:#c9365b"></div></div><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:13px;font-weight:820;cursor:pointer;box-shadow:0 8px 20px rgba(205,68,101,.13)">이 결과 사진으로 남기기</button><div id="unniProductSaveHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">결과 읽는 동안 저장용 사진을 미리 준비해둘게.</div><button id="unniProductAction" style="width:100%;margin-top:14px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:14px;font-weight:830;cursor:pointer;box-shadow:0 9px 22px rgba(205,68,101,.15)"></button><div id="unniProductActionHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">선택한 결제수단으로 결제됩니다</div><div id="unniProductAccessNote" style="display:none;margin-top:8px;text-align:center;font-size:10.5px;font-weight:650;line-height:1.6;color:#7d8490">한 번 결제하면 이 브라우저에서 추가 결제 없이 다시 볼 수 있어요.</div></div>`;
     document.body.appendChild(root);
     root.querySelector("#unniProductClose").onclick = () => { root.style.display = "none"; document.body.style.overflow = ""; };
     root.addEventListener("click", (e) => { if (e.target === root) root.querySelector("#unniProductClose").click(); });
@@ -1635,10 +1635,10 @@
     const valueCopy = productValueCopy(productId);
     const body = root.querySelector("#unniProductBody");
     const unlockRows = String(valueCopy?.unlocks || "").split("·").map((x)=>x.trim()).filter(Boolean);
-    body.innerHTML = `<div data-product-voice-intro="1" style="margin-bottom:9px;font-size:11px;line-height:1.65;color:#64748b">${productVoice(data, {
-      F: "지금 보던 얘기에서 이어서, 여기서 새로 볼 수 있는 것만 같이 볼게.",
-      T: "지금 결과와 겹치는 건 빼고, 여기서 새로 열리는 정보부터 볼게.",
-    })}</div><div data-product-value-intro="${esc(productId)}" style="padding:13px 14px;border-radius:17px;background:linear-gradient(145deg,#fff1f2,#fff);border:1px solid #ffe4e6"><div style="font-size:12.5px;font-weight:950;line-height:1.5;color:#9f1239">${esc(ux.value)}</div><p style="margin:6px 0 0;font-size:11.5px;line-height:1.65;color:#64748b">${esc(ux.difference)}</p></div>${unlockRows.length ? `<div style="margin-top:10px;padding:11px 12px;border-radius:15px;background:#f8fafc;border:1px solid #e2e8f0"><div style="font-size:10.5px;font-weight:950;color:#475569;margin-bottom:7px">구매하면 새로 열리는 내용</div><div style="display:flex;flex-wrap:wrap;gap:6px">${unlockRows.map((row)=>`<span style="display:inline-flex;padding:5px 8px;border-radius:999px;background:#fff;border:1px solid #e2e8f0;font-size:9.5px;font-weight:850;color:#64748b">${esc(row)}</span>`).join("")}</div></div>` : ""}`;
+    body.innerHTML = `<div data-product-voice-intro="1" style="margin-bottom:10px;font-size:11px;line-height:1.65;color:#64748b">${productVoice(data, {
+      F: "아까 보던 상담에서 이어서, 여기서는 새로 볼 수 있는 것만 보여줄게.",
+      T: "앞에서 본 내용은 반복하지 않을게. 여기서 새로 확인할 정보만 정리해.",
+    })}</div><div data-product-value-intro="${esc(productId)}" style="padding:10px 0 10px 11px;border-left:2px solid #dfb0bb"><div style="font-size:12.5px;font-weight:950;line-height:1.5;color:#8f334a">${esc(ux.value)}</div><p style="margin:5px 0 0;font-size:11.5px;line-height:1.65;color:#64748b">${esc(ux.difference)}</p></div>${unlockRows.length ? `<div style="margin-top:10px;padding:10px 0 0;border-top:1px solid #ebe5df"><div style="font-size:10.5px;font-weight:900;color:#59616c;margin-bottom:6px">여기서 새로 보게 되는 것</div><div style="display:grid;gap:4px">${unlockRows.map((row)=>`<div style="font-size:10.5px;line-height:1.55;font-weight:700;color:#707985">· ${esc(row)}</div>`).join("")}</div></div>` : ""}`;
     const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
     const accessNote = root.querySelector("#unniProductAccessNote");
     if (accessNote) accessNote.style.display = isFreeLaunch ? "none" : "block";
@@ -1883,24 +1883,23 @@
   function productButtonHtml(p, { recommended = false, secondary = false, reason = "", state = null } = {}) {
     const resolvedState = state || { kind:"unpurchased", amount:p.price, label:`${won(p.price)}에 열기` };
     const ux = productUx(p.id);
-    const representative = p.id === "full_saju" && !recommended;
-    const border = recommended ? "#e9a7b7" : representative ? "#e8c8cf" : "#e7e2dd";
-    const bg = recommended ? "linear-gradient(150deg,#fff8f9 0%,#fffdfa 82%)" : representative ? "#fffaf8" : "#fffdfa";
-    const pad = recommended ? "16px" : "14px";
+    const border = recommended ? "#e8d7dc" : "#ebe5df";
+    const bg = recommended ? "#fffaf9" : "transparent";
+    const pad = recommended ? "14px 12px" : "12px 2px";
     const priceLabel = resolvedState.kind === "purchased" ? "구매 완료"
       : resolvedState.kind === "included" ? "완전판 포함"
         : resolvedState.kind === "upgrade" ? `+${won(resolvedState.amount)}`
           : won(p.price);
     const stateCopy = resolvedState.kind === "purchased"
-      ? "구매 완료 · 바로 다시 보기"
-      : resolvedState.kind === "included" ? "완전판에 포함 · 추가 결제 없음"
+      ? "구매한 내용 다시 이어보기"
+      : resolvedState.kind === "included" ? "완전판에 포함 · 바로 이어보기"
         : resolvedState.kind === "upgrade" ? `완전판으로 이어보기 · +${won(resolvedState.amount)}`
-          : "상품 내용 보기 →";
-    const topLabel = recommended ? "지금 이 고민 다음 추천" : ux.eyebrow;
+          : "이어서 보기 →";
+    const topLabel = recommended ? "다음으로 이어볼 것" : ux.eyebrow;
     const description = recommended ? ux.difference : productShort(p.id);
     const stateColor = ["purchased","included"].includes(resolvedState.kind) ? "#047857" : resolvedState.kind === "upgrade" ? "#b83e5c" : "#657080";
     const stateBg = ["purchased","included"].includes(resolvedState.kind) ? "#ecfdf5" : resolvedState.kind === "upgrade" ? "#fff2f5" : "#f7f5f2";
-    return `<button data-unni-product="${p.id}" data-product-state="${resolvedState.kind}" ${secondary ? 'data-secondary-product="1"' : ""} style="text-align:left;width:100%;padding:${pad};border:1px solid ${border};border-radius:18px;background:${bg};cursor:pointer;box-shadow:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="min-width:0"><div style="font-size:9.5px;font-weight:800;color:${recommended || representative ? "#c9365b" : "#969ba4"};margin-bottom:5px">${topLabel}</div><div style="font-size:${recommended ? "17px" : "14.5px"};line-height:1.3;font-weight:850;letter-spacing:-.02em;color:#172033">${p.name}</div></div><div style="flex:none;border-radius:999px;background:${recommended || representative ? "#fff4f6" : "#f7f5f2"};border:1px solid ${recommended || representative ? "#f0d8de" : "#ece7e2"};padding:5px 8px;font-size:11px;font-weight:820;color:${recommended || representative ? "#c9365b" : "#536071"};white-space:nowrap">${priceLabel}</div></div><div style="margin-top:9px;font-size:${recommended ? "12.5px" : "11.8px"};line-height:1.5;font-weight:760;color:#354052">${ux.value}</div><div style="font-size:${recommended ? "11.5px" : "11px"};line-height:1.65;color:#76808d;margin-top:5px">${description}</div><div style="display:inline-flex;margin-top:9px;padding:5px 8px;border-radius:999px;background:${stateBg};font-size:10px;font-weight:780;color:${stateColor}">${stateCopy}</div>${recommended && reason ? `<div style="margin-top:10px;padding:10px 11px;border-radius:13px;background:#faf7f4;border:1px solid #eee5df;font-size:10.8px;line-height:1.62;font-weight:600;color:#675b60"><span style="font-weight:820;color:#b83e5c">왜 추천했냐면</span> · ${reason}</div>` : ""}</button>`;
+    return `<button data-unni-product="${p.id}" data-product-state="${resolvedState.kind}" ${secondary ? 'data-secondary-product="1"' : ""} style="text-align:left;width:100%;padding:${pad};border:${recommended ? `1px solid ${border}` : "0"};border-top:${recommended ? "none" : `1px solid ${border}`};border-radius:${recommended ? "16px" : "0"};background:${bg};cursor:pointer;box-shadow:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="min-width:0"><div style="font-size:9.5px;font-weight:800;color:${recommended ? "#b83e5c" : "#969ba4"};margin-bottom:5px">${topLabel}</div><div style="font-size:${recommended ? "16px" : "14px"};line-height:1.35;font-weight:850;letter-spacing:-.02em;color:#172033">${p.name}</div></div><div style="flex:none;padding:2px 0;font-size:11px;font-weight:820;color:${recommended ? "#b83e5c" : "#66707d"};white-space:nowrap">${priceLabel}</div></div><div style="margin-top:8px;font-size:${recommended ? "12px" : "11.5px"};line-height:1.55;font-weight:740;color:#354052">${ux.value}</div><div style="font-size:11px;line-height:1.65;color:#76808d;margin-top:4px">${description}</div><div style="display:inline-flex;margin-top:8px;font-size:10px;font-weight:780;color:${stateColor}">${stateCopy}</div>${recommended && reason ? `<div style="margin-top:10px;padding:9px 0 0;border-top:1px dashed #e7ded8;font-size:10.8px;line-height:1.62;font-weight:600;color:#675b60"><span style="font-weight:820;color:#b83e5c">왜 이걸 먼저 보냐면</span> · ${reason}</div>` : ""}</button>`;
   }
 
   function foldedProductGroups(products, states) {
@@ -1915,10 +1914,10 @@
 
   function renderCatalog() {
     const data = getData();
-    const notes = document.getElementById("notesListContainer");
+    const slot = document.getElementById("postConsultationProductsSlot");
     const existing = document.getElementById("unniProductLadder");
     const unlocked = typeof isUnlocked === "undefined" ? true : !!isUnlocked;
-    if (!data || !notes) {
+    if (!data || !slot) {
       existing?.remove();
       return;
     }
@@ -1949,12 +1948,12 @@
       }
       const wrap = document.createElement("section");
       wrap.id = "unniProductLadder";
-      wrap.style.cssText = "margin-top:24px;padding:17px 14px;border-radius:22px;background:#fffdfa;border:1px solid #e8e2dc";
+      wrap.style.cssText = "margin-top:20px;padding:15px 2px 0;border-top:1px solid #e8e1db;background:transparent";
       wrap.innerHTML = `<div data-entitlement-status style="font-size:11.5px;line-height:1.6;color:#64748b">${productVoice(data, {
         F: "기존 구매 내역부터 확인하고 있어. 잠깐만 같이 보자.",
         T: "기존 구매 내역 확인 중…",
       })}</div>`;
-      notes.insertAdjacentElement("afterend",wrap);
+      slot.replaceChildren(wrap);
       return;
     }
 
@@ -1973,24 +1972,30 @@
     const wrap = document.createElement("section");
     wrap.id = "unniProductLadder";
     wrap.dataset.verifiedPremium = isFreeLaunch ? "free-launch" : "server";
-    wrap.style.cssText = "margin-top:24px;padding:18px 14px;border-radius:22px;background:#fffdfa;border:1px solid #e8e2dc;box-shadow:none";
-    const eyebrow = allOwned ? "나에 대한 완전판은 이미 열려 있어" : (isT ? "이 고민은 여기까지 정리했어" : "이 고민은 여기까지 같이 봤어");
-    const headline = allOwned ? "이제 별도인 둘 사이 풀이만 남아 있어" : (isT ? "다음으로 볼 건 이게 제일 맞아" : "다음엔 이걸 먼저 보는 게 좋아");
+    wrap.style.cssText = "margin-top:20px;padding:16px 2px 0;border-top:1px solid #e8e1db;background:transparent;box-shadow:none";
+    const eyebrow = allOwned
+      ? (isT ? "나에 대한 정리는 이미 전부 열려 있어" : "너에 대한 건 이미 전부 열어뒀어")
+      : (isT ? "더 볼 거면, 다음 정보는 여기야" : "더 궁금한 게 남았다면");
+    const headline = allOwned
+      ? "이제 둘 사이를 따로 볼 수 있어"
+      : (isT ? "다음으로 볼 가치는 이게 제일 커" : "언니라면 이걸 먼저 이어서 볼 것 같아");
     const sub = allOwned
-      ? "완전판에 포함된 1인 상품은 다시 팔지 않을게. 궁합만 두 번째 사람의 사주가 필요한 별도 계산이야."
-      : "방금 본 내용과 겹치지 않고, 여기서부터 새로 열리는 정보가 가장 많은 걸 맨 위에 뒀어.";
+      ? "완전판에 포함된 1인 내용은 다시 권하지 않을게. 궁합만 상대 사주가 필요한 별도 계산이야."
+      : (isT
+          ? "방금 본 내용과 겹치는 건 빼고, 새로 확인할 정보가 가장 많은 걸 먼저 뒀어."
+          : "방금 같이 본 얘기는 반복하지 않고, 여기서 새로 알 수 있는 게 가장 많은 걸 먼저 뒀어.");
     const toggleHtml = others.length
-      ? `<button id="unniShowOtherProducts" type="button" aria-expanded="false" style="width:100%;border:1px solid #e2ddd8;background:#faf8f5;border-radius:14px;padding:11px 12px;font-size:11px;font-weight:760;color:#687181;cursor:pointer">목적이 다르면 다른 ${others.length}개 보기</button><div id="unniOtherProducts" style="display:none;gap:14px">${foldedProductGroups(others,states)}</div>`
+      ? `<button id="unniShowOtherProducts" type="button" aria-expanded="false" style="width:100%;border:0;border-top:1px solid #e8e1db;background:transparent;padding:12px 2px 9px;font-size:10.8px;font-weight:760;color:#7d858f;cursor:pointer;text-align:left">다른 방향 ${others.length}개도 보기 <span style="float:right">＋</span></button><div id="unniOtherProducts" style="display:none;gap:8px">${foldedProductGroups(others,states)}</div>`
       : "";
-    wrap.innerHTML = `<div style="font-size:10.5px;font-weight:800;color:#c9365b">${eyebrow}</div><h3 style="font-size:20px;line-height:1.35;font-weight:850;letter-spacing:-.025em;color:#172033;margin:5px 0 6px">${headline}</h3><p style="font-size:12px;line-height:1.65;color:#76808d;margin:0 0 13px">${sub}</p><div style="display:grid;gap:9px">${productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})}${toggleHtml}</div>`;
-    notes.insertAdjacentElement("afterend",wrap);
+    wrap.innerHTML = `<div style="font-size:10px;font-weight:800;color:${isT ? "#4c879f" : "#b84a64"}">${eyebrow}</div><h3 style="font-size:17px;line-height:1.4;font-weight:850;letter-spacing:-.025em;color:#172033;margin:5px 0 5px">${headline}</h3><p style="font-size:11.5px;line-height:1.65;color:#7c8490;margin:0 0 12px">${sub}</p><div style="display:grid;gap:8px">${productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})}${toggleHtml}</div>`;
+    slot.replaceChildren(wrap);
 
     const toggle = wrap.querySelector("#unniShowOtherProducts");
     const otherWrap = wrap.querySelector("#unniOtherProducts");
     toggle?.addEventListener("click",() => {
       const open = toggle.getAttribute("aria-expanded") !== "true";
       toggle.setAttribute("aria-expanded",open ? "true" : "false");
-      toggle.textContent = open ? "다른 상품 접기" : `목적이 다르면 다른 ${others.length}개 보기`;
+      toggle.innerHTML = open ? '다른 방향 접기 <span style="float:right">－</span>' : `다른 방향 ${others.length}개도 보기 <span style="float:right">＋</span>`;
       if (otherWrap) {
         otherWrap.style.display = open ? "grid" : "none";
         otherWrap.style.gap = "14px";
