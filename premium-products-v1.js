@@ -1533,14 +1533,30 @@
 
     if (state.kind === "purchased") {
       root.querySelector("#unniProductPrice").textContent = "구매 완료";
-      action.textContent = productId === "full_saju" ? "구매한 전체판 다시 보기" : "구매한 상품 다시 보기";
-      action.onclick = () => {
-        if (!directGrant) {
-          if (typeof showToast === "function") showToast("구매 토큰을 다시 불러오지 못했어. 저장된 구매 내역을 확인해줘.");
-          return;
+      action.textContent = productId === "full_saju" ? "구매한 전체판 다시 보기" : productId === "all_in_one" ? "구매한 완전판 다시 보기" : "구매한 상품 다시 보기";
+      if (productId === "all_in_one") {
+        const savedSituations = directGrant?.extra?.situations || {};
+        for (const key of Object.keys(CONCERNS)) {
+          const select = root.querySelector(`[data-all-situation="${key}"]`);
+          if (select && situationRows(key).some(([value]) => value === savedSituations[key])) select.value = savedSituations[key];
         }
-        showReport(productId,data,directGrant.extra || {});
-      };
+        action.onclick = () => {
+          try {
+            const extra = collectExtra(productId,data,root);
+            showReport(productId,data,extra);
+          } catch (e) {
+            if (typeof showToast === "function") showToast(e?.message || "6개 고민의 지금 상황을 확인해줘.");
+          }
+        };
+      } else {
+        action.onclick = () => {
+          if (!directGrant) {
+            if (typeof showToast === "function") showToast("구매 토큰을 다시 불러오지 못했어. 저장된 구매 내역을 확인해줘.");
+            return;
+          }
+          showReport(productId,data,directGrant.extra || {});
+        };
+      }
       return;
     }
 
