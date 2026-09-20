@@ -1496,38 +1496,94 @@
     if (saveAll) { saveAll.style.display = "none"; saveAll.onclick = null; }
     if (saveHint) saveHint.style.display = "none";
     const valueCopy = productValueCopy(productId);
-    root.querySelector("#unniProductBody").innerHTML = `<p style="font-size:13px;line-height:1.75;color:#64748b">${esc(product.desc)}</p>${valueCopy?.unlocks ? `<div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;font-size:11px;line-height:1.65;color:#475569"><b>이 상품에서 새로 열리는 정보</b><br>${esc(valueCopy.unlocks)}</div>` : ""}`;
+    const body = root.querySelector("#unniProductBody");
+    body.innerHTML = `<p style="font-size:13px;line-height:1.75;color:#64748b">${esc(product.desc)}</p>${valueCopy?.unlocks ? `<div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;font-size:11px;line-height:1.65;color:#475569"><b>이 상품에서 새로 열리는 정보</b><br>${esc(valueCopy.unlocks)}</div>` : ""}`;
     const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
     const accessNote = root.querySelector("#unniProductAccessNote");
     if (accessNote) accessNote.style.display = isFreeLaunch ? "none" : "block";
     const action = root.querySelector("#unniProductAction");
-    action.disabled = false;
-    const grant = readGrant(data, productId);
-    if (grant?.token && grant?.userKey && typeof verifyAccessToken === "function") {
-      action.textContent = "구매한 리포트 다시 열기";
-      action.onclick = async () => {
-        action.disabled = true;
-        try {
-          const state = await verifyAccessToken(grant.userKey, grant.token);
-          if (state === "valid") return showReport(productId, data, grant.extra || {});
-          throw new Error("구매 확인이 필요해. 결제 내역을 다시 확인해줘.");
-        } catch (e) { if (typeof showToast === "function") showToast(e?.message || "구매 확인에 실패했어."); }
-        finally { action.disabled = false; }
-      };
-    } else {
-      action.textContent = isFreeLaunch ? "무료 이벤트로 미리보기" : `${won(product.price)}에 열기`;
-      action.onclick = async () => {
-        action.disabled = true;
-        try {
-          const extra = collectExtra(productId, data, root);
-          if (typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE) return showReport(productId, data, extra);
-          await beginPaidCheckout(productId, data, extra, root);
-        } catch (e) { if (typeof showToast === "function") showToast(e?.message || "상품을 열지 못했어."); }
-        finally { action.disabled = false; }
-      };
-    }
+    action.disabled = true;
+    action.textContent = isFreeLaunch ? "무료 이벤트로 미리보기" : "구매 상태 확인 중…";
     root.style.display = "block";
     document.body.style.overflow = "hidden";
+
+    let verifiedState = null;
+    try {
+      verifiedState = await resolveVerifiedEntitlements(data);
+    } catch (error) {
+      if (!isFreeLaunch) {
+        action.disabled = false;
+        action.textContent = "구매 내역 다시 확인";
+        action.onclick = async () => {
+          invalidateEntitlementCache();
+          root.querySelector("#unniProductClose")?.click();
+          await openProduct(productId);
+        };
+        body.insertAdjacentHTML("beforeend", `<div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;font-size:11px;line-height:1.6;color:#9a3412">기존 구매 확인이 지연되고 있어. 중복 결제를 막기 위해 지금은 새 결제를 열지 않을게.</div>`);
+        return;
+      }
+      verifiedState = { verifiedPurchases:[], effectiveEntitlements:[], allInOneQuote:null };
+    }
+
+    const state = productStateFor(productId, verifiedState);
+    const directGrant = verifiedGrantFor(verifiedState, productId);
+    action.disabled = false;
+
+    if (state.kind === "purchased") {
+      root.querySelector("#unniProductPrice").textContent = "구매 완료";
+      action.textContent = productId === "full_saju" ? "구매한 전체판 다시 보기" : "구매한 상품 다시 보기";
+      action.onclick = () => {
+        if (!directGrant) {
+          if (typeof showToast === "function") showToast("구매 토큰을 다시 불러오지 못했어. 저장된 구매 내역을 확인해줘.");
+          return;
+        }
+        showReport(productId,data,directGrant.extra || {});
+      };
+      return;
+    }
+
+    if (state.kind === "included") {
+      root.querySelector("#unniProductPrice").textContent = "완전판에 포함";
+      action.textContent = "완전판에 포함됨 · 바로 보기";
+      action.onclick = () => {
+        try {
+          const extra = productId === "concern_bundle3" ? collectExtra(productId,data,root) : {};
+          showReport(productId,data,extra);
+        } catch (e) {
+          if (typeof showToast === "function") showToast(e?.message || "선택값을 확인해줘.");
+        }
+      };
+      return;
+    }
+
+    if (state.kind === "upgrade") {
+      root.querySelector("#unniProductPrice").textContent = `${won(product.price)} → ${won(state.amount)}`;
+      body.insertAdjacentHTML("beforeend", `<div data-upgrade-quote="all_in_one" style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff1f2;border:1px solid #fecdd3;font-size:11px;line-height:1.65;color:#9f1239"><b>이미 산 1인 상품 금액을 빼고 계산했어.</b><br>${esc((state.quote?.creditedProducts || []).map((id)=>PRODUCTS[id]?.name || id).join(" + "))} 구매가 서버에서 확인돼서 <b>${won(state.amount)}</b>만 결제하면 완전판으로 올라가.</div>`);
+      action.textContent = state.label;
+      action.onclick = async () => {
+        action.disabled = true;
+        try {
+          const extra = collectExtra(productId,data,root);
+          if (isFreeLaunch) return showReport(productId,data,extra);
+          await beginPaidCheckout(productId,data,extra,root,verifiedState);
+        } catch (e) {
+          if (typeof showToast === "function") showToast(e?.message || "업그레이드를 열지 못했어.");
+        } finally { action.disabled = false; }
+      };
+      return;
+    }
+
+    action.textContent = isFreeLaunch ? "무료 이벤트로 미리보기" : state.label;
+    action.onclick = async () => {
+      action.disabled = true;
+      try {
+        const extra = collectExtra(productId,data,root);
+        if (isFreeLaunch) return showReport(productId,data,extra);
+        await beginPaidCheckout(productId,data,extra,root,verifiedState);
+      } catch (e) {
+        if (typeof showToast === "function") showToast(e?.message || "상품을 열지 못했어.");
+      } finally { action.disabled = false; }
+    };
   }
 
   function recommendedProductId(data) {
