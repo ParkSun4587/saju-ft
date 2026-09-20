@@ -5913,12 +5913,16 @@ currentResultData = {
               const num = String(item.themeNum).padStart(2,"0");
               const meta = noteRoleMeta[num] || { label:item.badge || "", className:"" };
               const accent = isT ? "note-tone-t" : "note-tone-f";
+              const badgeText = String(item.badge || "");
+              const badgeHtml = badgeText && badgeText !== meta.label
+                ? `<span class="note-badge">${badgeText}</span>`
+                : "";
               return `
                     <article class="note-editorial ${meta.className} ${accent}" data-note-role="${num}">
                         <div class="note-editorial-head">
                           <span class="note-number">NOTE ${item.themeNum}</span>
                           <span class="note-role-label">${meta.label}</span>
-                          <span class="note-badge">${item.badge}</span>
+                          ${badgeHtml}
                         </div>
                         <h4 class="note-editorial-title">${item.title}</h4>
                         ${renderNoteBody(item)}
@@ -5974,7 +5978,7 @@ currentResultData = {
                               NOTE ${nextNote.themeNum}
                           </span>
                           <span class="note-role-label">반복 패턴</span>
-                          <span class="note-badge">${nextNote.badge}</span>
+                          ${String(nextNote.badge || "") !== "반복 패턴" ? `<span class="note-badge">${nextNote.badge}</span>` : ""}
                       </div>
                       <h4 class="note-editorial-title">
                           ${nextNote.title}
