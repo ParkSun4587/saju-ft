@@ -304,8 +304,11 @@ function norm(v) {
       previewAfterUnlock,
       catalog:!!catalog,
       buttons:catalog ? catalog.querySelectorAll('[data-unni-product]').length : 0,
-      visibleProducts:catalog ? [...catalog.querySelectorAll('[data-unni-product]')].filter((el) => getComputedStyle(el).display !== 'none').length : 0,
+      visibleProducts:catalog ? [...catalog.querySelectorAll('[data-unni-product]')].filter((el) => el.offsetParent !== null).length : 0,
       secondaryProducts:catalog ? catalog.querySelectorAll('[data-secondary-product="1"]').length : 0,
+      otherToggle:!!catalog?.querySelector('#unniShowOtherProducts'),
+      otherExpanded:catalog?.querySelector('#unniShowOtherProducts')?.getAttribute('aria-expanded') || '',
+      otherVisible:catalog?.querySelector('#unniOtherProducts') ? getComputedStyle(catalog.querySelector('#unniOtherProducts')).display !== 'none' : false,
       mbtiInfo,
       fChem,
       tChem,
@@ -339,11 +342,11 @@ function norm(v) {
   assert(ui.unlockedNoteCards === 6 && !ui.previewAfterUnlock, `unlock must replace teaser with all six full notes: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
-  assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3, `premium catalog should keep one recommendation prominent while all alternatives stay discoverable after NOTE6: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts})}`);
+  assert(ui.visibleProducts === 1 && ui.secondaryProducts === 3 && ui.otherToggle && ui.otherExpanded === 'false' && !ui.otherVisible, `premium catalog should show one recommendation first and keep three alternatives folded but discoverable: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherExpanded:ui.otherExpanded,otherVisible:ui.otherVisible})}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
   assert(ui.fGreeting.includes('다 봤어!') && ui.fGreeting.includes('네 얘기부터 차근차근 같이 풀어볼게') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 105, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
   assert(ui.tGreeting.includes('뭐가 진짜 문제고') && ui.tGreeting.includes('좋은 건 좋다, 아닌 건 아니다') && ui.tGreeting.length <= 105, `T result intro should feel dry but caring: ${ui.tGreeting}`);
-  assert(ui.catalogText.includes('이 고민 끝까지 같이 봤으니까') && ui.catalogText.includes('언니가 너한테 다음 하나만 골라봤어') && ui.catalogText.includes('왜 이걸 먼저 추천하냐면') && ui.catalogText.includes('다른 게 더 궁금하다면') && !ui.catalogText.includes('다른 리포트 3개 보기'), 'post-NOTE6 premium recommendation/discoverability handoff missing');
+  assert(ui.catalogText.includes('이 고민 끝까지 같이 봤으니까') && ui.catalogText.includes('언니가 너한테 다음 하나만 골라봤어') && ui.catalogText.includes('왜 이걸 먼저 추천하냐면') && ui.catalogText.includes('목적이 다르면 다른 3개 보기') && ui.catalogText.includes('새로 열리는 것'), 'post-NOTE6 recommended-first disclosure handoff missing');
   assert(ui.mbtiInfo.gradeText.includes('재미로 보는 사주 MBTI 번역') && ui.mbtiInfo.gradeText.includes('실제 검사 MBTI와 다를 수 있어'), `MBTI risk framing missing: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.mbtiInfo.fontSize <= 38 && ui.mbtiInfo.oneLineBeforeThreeLine && ui.mbtiInfo.threeLineBeforeMbti && ui.mbtiInfo.mbtiBeforeChem, `result hierarchy must be one-line → 3-line → MBTI → chemistry: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.fChem.best.includes('rose') && ui.fChem.worst.includes('violet') && ui.fChem.bestTitle === '환상의 찰떡 깐부' && ui.fChem.worstTitle === '기 빨리는 상극', `F chemistry theme drift: ${JSON.stringify(ui.fChem)}`);
