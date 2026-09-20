@@ -1597,10 +1597,17 @@
         });
       } catch (e) {
         action.disabled = false;
-        productToast(data, e?.message || {
-          F: "결제창을 열지 못했어. 지금 결과는 그대로니까 한 번만 다시 눌러줘.",
-          T: "결제창을 열지 못했어. 결과는 유지됐어. 다시 눌러줘.",
-        });
+        productToast(data,
+          e?.code === "USER_CANCEL"
+            ? {
+                F: "결제가 취소됐어. 지금 보던 결과는 그대로 있어.",
+                T: "결제가 취소됐어. 현재 결과는 그대로 유지돼.",
+              }
+            : {
+                F: "결제창을 열지 못했어. 지금 결과는 그대로니까 한 번만 다시 눌러줘.",
+                T: "결제창을 열지 못했어. 결과는 유지됐어. 다시 눌러줘.",
+              },
+        );
       }
     };
   }
@@ -1994,7 +2001,7 @@
     const product = PRODUCTS[productId];
     if (!product) return false;
     if (params.get("payment") === "fail") {
-      productToast(restored, params.get("message") || {
+      productToast(restored, {
         F: "결제가 취소됐거나 완료되지 않았어. 지금 결과는 그대로 있어.",
         T: "결제가 취소됐거나 완료되지 않았어. 현재 결과는 그대로 유지돼.",
       });
