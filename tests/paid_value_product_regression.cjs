@@ -801,6 +801,16 @@ function norm(v) {
   for (const staleIntro of ['응, 내 얘기부터 천천히 같이 봐줘','좋아. 돌려 말하지 말고 필요한 것만 알려줘','괜히 겁주거나 포장 안 해. 좋은 건 좋다, 아닌 건 아니다 말하고 지금 필요한 것만 정리해줄게.']) {
     assert(!html.includes(staleIntro), `stale first-screen copy remains: ${staleIntro}`);
   }
+  assert(
+    html.includes('사주정보는 그대로 · 새 고민만 골라서 이어서 볼게') &&
+    html.includes('사주정보 유지 · 새 고민만 선택해서 바로 이어보기') &&
+    html.includes('이번엔 다른 사람 사주도 같이 볼까?') &&
+    html.includes('다른 사람 사주 새로 보기') &&
+    html.includes('필요하면 상담 기록을 한 장으로 남겨.') &&
+    !html.includes('추가 처방전 990원 즉시 확인') &&
+    !html.includes('사주도 까보기'),
+    'post-consultation continuation slipped back into sales/report voice'
+  );
   assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 1)') && html.includes('paywallNextTeaser') && html.includes('teaserProbe') && html.includes('로아 언니, 나머지도 같이 봐줘') && html.includes('서아 언니, 답까지 정리해줘'), 'paid teaser must be NOTE1 full + short NOTE2 + actual locked-content teaser + distinct F/T 990 handoff');
   assert(!html.includes('storyCaptureReturnTimer') && !html.includes('7000') && html.includes('storyCaptureCleanTimer'), 'capture should use delayed fullscreen-clean transition, not timed auto-return');
   const finalNotePaymentAt = html.indexOf('id="finalNotePaymentButton"');
