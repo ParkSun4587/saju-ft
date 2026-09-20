@@ -347,36 +347,61 @@
 
   function fullSajuHtml(data, mode) {
     const isT = mode === "T";
+    const reasoning = getReasoning(data);
+    const contract = contentPolicy("full_saju");
     const intro = isT
-      ? "이건 방금 본 고민 하나를 길게 반복하는 리포트가 아니야. 사주 전체에서 반복되는 기질·강점·과부하·판단법·관계·회복·변화 대응을 한 번에 묶은 내 기본 지도야."
-      : "이건 지금 선택한 고민을 또 풀어쓰는 리포트가 아니야. 언니가 네 사주 전체를 펼쳐놓고, 어떤 고민을 만나도 반복해서 나타나는 기질·강점·지치는 방식·사람 보는 법·회복법을 한 장으로 이어주는 ‘내 사용설명서’에 가까워";
+      ? "방금 본 고민 하나를 길게 반복하는 결과가 아니야. 한 사람의 전체 구조, 삶의 여러 영역이 이어지는 이유, 가까운 핵심 시기와 5년 큰 흐름까지 한 장으로 묶어."
+      : "이건 지금 고민 하나를 또 풀어쓰는 결과가 아니야. 언니가 네 사주 전체를 펼쳐놓고, 돈·일·관계·마음이 왜 같은 원판에서 다르게 나타나는지와 앞으로 5년 큰 흐름까지 이어서 보는 전체 지도야.";
     const sections = fullSajuSections(data, mode);
-    return `<div data-export-intro="full" style="padding:14px 15px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;font-size:12.5px;line-height:1.8;color:#7c2d12;margin-bottom:8px"><b>이 리포트에서 보는 것</b><br>${intro}</div>${sections.map((s, index) => `<section data-export-kind="full" data-export-index="${index}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:900;margin:0 0 8px">${s.title}</h4><div style="font-size:13px;line-height:1.85;color:#475569">${s.body}</div></section>`).join("")}`;
+    const fp = reasoning?.structureFingerprint || "";
+    const tfp = reasoning?.timingFingerprint || "";
+    return `<div data-product-contract="full_saju" data-structure-fingerprint="${esc(fp)}" data-timing-fingerprint="${esc(tfp)}" data-export-intro="full" style="padding:14px 15px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;font-size:12.5px;line-height:1.8;color:#7c2d12;margin-bottom:8px"><b>이 전체판에서 새로 열리는 것</b><br>${intro}<br><span style="font-size:10.5px;color:#9a3412">기본 고민 NOTE는 가까운 시기 중심 · 이 전체판은 ${esc(contract?.longTermDetail || "full-five-year")} 범위의 장기 흐름까지 공개</span></div>${sections.map((row,index)=>`<section data-export-kind="full" data-export-index="${index}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:900;margin:0 0 8px">${row.title}</h4><div style="font-size:13px;line-height:1.85;color:#475569">${row.body}</div></section>`).join("")}`;
   }
-
 
   function bundleHtml(data, mode, extra) {
     const keys = Array.isArray(extra?.concerns) ? extra.concerns : [];
-    return keys.map((key) => {
+    const runs = keys.map((key) => {
       const concernSituation = extra?.situations?.[key] || "";
-      const d = { ...data, concernKey: key, concernSituation };
+      const d = { ...data, concernKey:key, concernSituation };
       const notes = typeof global.generateConcernNotes === "function" ? global.generateConcernNotes(d, mode) : [];
+      return { key, concernSituation, data:d, notes, reasoning:d.classicalReasoningV1 || getReasoning(d) };
+    });
+    const firstR = runs[0]?.reasoning;
+    const pressure = firstR?.integrated?.pressureHuman || "여러 조건이 동시에 들어오는 압박";
+    const firstActionEl = firstR?.integrated?.prescription?.sequence?.[0]?.element || "";
+    const firstAction = ELEMENT_WORD[firstActionEl] || "작게 확인하고 다음 행동을 고르는 힘";
+    const sharedFp = firstR?.structureFingerprint || "";
+    const shared = runs.length
+      ? `<div data-product-exclusive="concern_bundle3" data-product-contract="concern_bundle3" data-structure-fingerprint="${esc(sharedFp)}" style="padding:14px 15px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0;margin-bottom:18px;font-size:12.5px;line-height:1.8;color:#475569"><b>세 고민을 같이 보면 보이는 공통축</b><br>세 고민에서 사주 원판 자체는 바뀌지 않아. 공통으로 먼저 걸리는 건 <b>${esc(pressure)}</b>이고, 풀 때는 <b>${esc(firstAction)}</b> 쪽을 먼저 만드는 흐름이 반복돼. 아래에서는 그 같은 구조가 돈·일·관계 같은 서로 다른 고민에서 어떻게 다르게 나타나는지만 각각 깊게 풀어.</div>`
+      : "";
+    const body = runs.map(({key,concernSituation,notes}) => {
       const situLabel = situationLabel(key, concernSituation);
       return `<section data-export-kind="concern" data-concern="${esc(key)}" data-concern-situation="${esc(concernSituation)}" style="margin-bottom:26px"><h3 style="font-size:19px;font-weight:950;margin:0 0 5px">${esc(CONCERNS[key] || key)}</h3>${situLabel ? `<div style="font-size:11px;font-weight:850;color:#f43f5e;margin-bottom:10px">지금 상황 · ${esc(situLabel)}</div>` : ""}${noteCards(notes)}</section>`;
     }).join("");
+    return shared + body;
   }
 
   function allInOneHtml(data, mode, extra) {
-    const all = Object.keys(CONCERNS).map((key) => {
+    const baseReasoning = getReasoning(data);
+    const allRuns = Object.keys(CONCERNS).map((key) => {
       const concernSituation =
         extra?.situations?.[key] ||
         (key === data?.concernKey ? data?.concernSituation || "" : "");
-      const d = { ...data, concernKey: key, concernSituation };
+      const d = { ...data, concernKey:key, concernSituation };
       const notes = typeof global.generateConcernNotes === "function" ? global.generateConcernNotes(d, mode) : [];
+      return { key, concernSituation, notes, reasoning:d.classicalReasoningV1 || getReasoning(d) };
+    });
+    const commonPressure = baseReasoning?.integrated?.pressureHuman || "여러 조건이 동시에 들어오는 압박";
+    const pivots = baseReasoning?.timing?.longTermPivots || [];
+    const pivotText = pivots.length
+      ? pivots.map(x=>`${x.year}년`).join(" · ")
+      : "장기 강한 변곡점은 억지로 만들지 않음";
+    const crossDomain = `<div data-product-exclusive="all_in_one" data-product-contract="all_in_one" data-structure-fingerprint="${esc(baseReasoning?.structureFingerprint || "")}" style="padding:15px;border-radius:18px;background:#fff1f2;border:1px solid #fecdd3;margin:22px 0;font-size:12.5px;line-height:1.85;color:#881337"><b>6개 고민을 가로지르는 공통 구조</b><br>돈·일·연애·진로·사람·마음은 서로 다른 문제처럼 보여도 <b>${esc(commonPressure)}</b>이 커질 때 비슷한 반응이 반복돼. 중요한 장기 변곡점은 ${esc(pivotText)}. 각 고민에서는 같은 시기를 서로 다른 행동으로 적용하고, 마지막에는 어떤 영역이 동시에 흔들리는지 한 사람 기준으로 묶어봐.<br><span style="font-size:10.5px;color:#be123c">이 완전판은 한 사람 전체 분석이야. 두 번째 사람의 사주가 필요한 궁합은 포함하지 않아.</span></div>`;
+    const all = allRuns.map(({key,concernSituation,notes}) => {
       const situLabel = situationLabel(key, concernSituation);
       return `<section data-export-kind="concern" data-concern="${esc(key)}" data-concern-situation="${esc(concernSituation)}" style="margin:26px 0"><h3 style="font-size:19px;font-weight:950;margin:0 0 5px">${esc(CONCERNS[key])}</h3>${situLabel ? `<div style="font-size:11px;font-weight:850;color:#f43f5e;margin-bottom:10px">지금 상황 · ${esc(situLabel)}</div>` : ""}${noteCards(notes)}</section>`;
     }).join("");
-    return `<h3 style="font-size:19px;font-weight:950;margin:0 0 10px">내 전체 사주판</h3>${fullSajuHtml(data, mode)}<div style="height:24px"></div>${all}`;
+    return `<h3 style="font-size:19px;font-weight:950;margin:0 0 10px">내 전체 사주판</h3>${fullSajuHtml(data, mode)}${crossDomain}<div style="height:8px"></div>${all}`;
   }
 
   function parseDate8(v) {
