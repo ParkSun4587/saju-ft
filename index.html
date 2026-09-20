@@ -1596,7 +1596,7 @@
               aria-hidden="true"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-rose-200 text-[11px] font-black text-rose-500 shadow-sm active:scale-95 transition-transform"
             >
-              <span>내 보관함</span><span aria-hidden="true">♡</span>
+              <span>내 보관함</span>
             </button>
           </div>
 
@@ -2357,7 +2357,7 @@
             <div style="position:absolute;width:120px;height:120px;border-radius:999px;left:-66px;bottom:-54px;background:rgba(253,224,71,.15)"></div>
             <div style="position:relative;z-index:1">
               <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:white;border:1px solid #ffe4e6;box-shadow:0 5px 16px rgba(244,63,94,.06);font-size:10px;font-weight:950;color:#f43f5e">
-                어떤언니 · 내 보관함 ♡
+                어떤언니 · 내 보관함
               </div>
               <h2 id="unniVaultTitle" style="margin:14px 0 6px;font-size:22px;line-height:1.35;font-weight:950;letter-spacing:-.045em;color:#111827">
                 이거 잃어버리지 않게<br>언니가 챙겨둘까?
@@ -2418,7 +2418,7 @@
 
             <div style="margin-top:12px;display:grid;gap:8px">
               <div style="padding:14px;border-radius:18px;background:#fff;border:1px solid #ffe4e6">
-                <div style="font-size:10px;font-weight:950;color:#f43f5e">내 사주 ♡</div>
+                <div style="font-size:10px;font-weight:950;color:#f43f5e">내 사주</div>
                 <div id="unniVaultSajuText" style="font-size:12px;line-height:1.65;font-weight:850;color:#334155;margin-top:5px">아직 보관된 사주가 없어.</div>
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -2711,13 +2711,18 @@
       
       function resultFromSnapshot(d) {
         if (!d || !/^\d{8}$/.test(d.b) || !["F", "T"].includes(d.m))
-          throw new Error("저장한 사주정보를 확인하지 못했어요.");
+          throw new Error("저장한 결과 정보를 확인하지 못했어. 다시 결제하지 말고 주문번호로 문의해줘.");
         let y = Number(d.b.slice(0, 4)),
           m = Number(d.b.slice(4, 6)),
           day = Number(d.b.slice(6));
         if (d.c === "lunar") {
           if (typeof koreanLunarToSolar !== "function")
-            throw new Error("한국 음력 모듈 로딩 후 다시 확인해주세요.");
+            throw new Error(
+              voiceText({
+                F: "음력 날짜 확인 기능을 준비하지 못했어. 새로고침한 뒤 다시 확인해보자.",
+                T: "음력 날짜 확인 기능을 불러오지 못했어. 새로고침한 뒤 다시 확인해줘.",
+              }, d.m),
+            );
           const solar = koreanLunarToSolar(y, m, day, !!d.l);
           y = solar.year;
           m = solar.month;
@@ -2731,7 +2736,12 @@
           d.g,
         );
         if (!result || !result.stats)
-          throw new Error("분석 모듈을 불러오지 못했어요. 새로고침해주세요.");
+          throw new Error(
+            voiceText({
+              F: "결과를 다시 계산하는 기능을 불러오지 못했어. 새로고침한 뒤 한 번만 다시 해보자.",
+              T: "결과 계산 기능을 불러오지 못했어. 새로고침한 뒤 다시 실행해줘.",
+            }, d.m),
+          );
         return {
           name: d.n,
           userName: d.n,
@@ -5076,6 +5086,26 @@ function generateConcernNotes(data, mode) {
         showToast(voiceText(copy, mode));
       }
 
+      function analysisErrorText(error, mode = currentVoiceMode()) {
+        const code = error?.code || "";
+        if (code === "MANSE_ENGINE_STALE") {
+          return voiceText({
+            F: "분석 준비가 최신 상태가 아니야. 새로고침한 뒤 입력은 한 번만 다시 확인해줘.",
+            T: "분석 준비 상태가 갱신되지 않았어. 새로고침한 뒤 다시 실행해줘.",
+          }, mode);
+        }
+        if (code === "KOREAN_LUNAR_INVALID") {
+          return voiceText({
+            F: "입력한 음력 날짜를 확인하지 못했어. 날짜만 한 번 다시 봐줘.",
+            T: "입력한 음력 날짜를 확인하지 못했어. 날짜를 다시 확인해줘.",
+          }, mode);
+        }
+        return voiceText({
+          F: "계산이 잠깐 꼬였어. 입력은 그대로 둘게. 생년월일만 한 번 확인하고 다시 해보자.",
+          T: "계산이 잠깐 멈췄어. 입력은 그대로 뒀어. 생년월일을 확인한 뒤 다시 실행해줘.",
+        }, mode);
+      }
+
       window.appTimeouts = []; // 뒤로가기 시 꼬임 방지용 글로벌 타이머 저장소
 
       function runSafeTimeout(fn, delay) {
@@ -5561,13 +5591,7 @@ currentResultData = {
               clearConversationReplies();
               changeViewState("input");
               saveInputDraft();
-              showVoiceToast(
-                calcErr.message || {
-                  F: "계산이 잠깐 꼬였어. 입력은 그대로 둘게. 생년월일만 한 번 확인해줘.",
-                  T: "계산이 잠깐 멈췄어. 입력은 그대로 뒀어. 생년월일만 확인하고 다시 해줘.",
-                },
-                mode,
-              );
+              showToast(analysisErrorText(calcErr, mode));
               if (inputCardBox) inputCardBox.style.display = "block";
             }
           }, 600);
