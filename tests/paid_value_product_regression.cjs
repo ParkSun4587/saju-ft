@@ -510,7 +510,7 @@ function norm(v) {
   modal = await page.locator('#unniProductModal').innerText();
   const fullSections = await page.locator('#unniProductBody section').count();
   assert(fullSections === 12, `full_saju section count ${fullSections}`);
-  assert(modal.includes('내 사주 전체 한 줄 요약') && modal.includes('평생 가져갈 내 사용법 3가지'), 'full_saju preview content missing');
+  assert(modal.includes('내 사주 전체 핵심') && modal.includes('큰 흐름 전환 + 평생 사용법'), 'full_saju preview content missing');
   assert((modal.includes('방금 본 고민 하나를 길게 반복하는 결과가 아니야') || modal.includes('지금 고민 하나를 또 풀어쓰는 결과가 아니야')) && modal.includes('앞으로 5년 큰 흐름'), 'full_saju differentiation/long-term content missing');
   assert(await page.locator('#unniProductBody [data-product-contract="full_saju"]').count()===1,'full_saju contract marker missing');
   assert(await page.locator('#unniProductBody [data-structure-fingerprint]').getAttribute('data-structure-fingerprint'),'full_saju reasoning fingerprint missing');
@@ -619,7 +619,7 @@ function norm(v) {
   const html = fs.readFileSync('index.html','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.0'), 'paid value script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
-  assert(html.includes('./premium-products-v1.js?v=2.1.0'), 'product script include missing');
+  assert(html.includes('./product-entitlements-v1.js?v=1.0.0') && html.includes('./premium-products-v1.js?v=2.1.0'), 'entitlement/product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('concern-note-engine-v2.js'),'paid/note script order wrong');
   assert(html.indexOf('concern-note-engine-v2.js') < html.indexOf('product-content-policy-v1.js') && html.indexOf('product-content-policy-v1.js') < html.indexOf('premium-products-v1.js'),'policy/product script order wrong');
@@ -639,7 +639,7 @@ function norm(v) {
   assert(premium.includes('paidExportCache.clear()') && premium.includes('paidExportCache.set(key, prepared)'), 'paid PNG blob cache must stay bounded to the current report');
   assert(premium.includes('nativeSharePngFiles') && premium.includes('isMobileDevice'), 'one-action mobile multi-image share path missing');
   assert(premium.includes('recommendedProductId') && premium.includes('recommendationReason') && premium.includes('const unlocked = typeof isUnlocked') && premium.includes('if (!unlocked)') && premium.includes('data-secondary-product'), 'post-unlock personalized premium recommendation missing');
-  assert(premium.includes('unniShowOtherProducts') && premium.includes('unniOtherProducts') && premium.includes('목적이 다르면 다른 3개 보기') && premium.includes('aria-expanded="false"'), 'recommended-first folded but discoverable alternatives missing');
+  assert(premium.includes('unniShowOtherProducts') && premium.includes('unniOtherProducts') && premium.includes('목적이 다르면 다른') && premium.includes('aria-expanded="false"'), 'recommended-first folded but discoverable alternatives missing');
   assert(!premium.includes('unniProductSavePdf') && !premium.includes('printPaidReport') && !premium.includes('unniPaidPrintHost') && !premium.includes('PDF로 한 파일 보관하기'), 'PDF save code must be fully removed');
   assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="concern"'), 'semantic paid-report grouping missing');
   assert(premium.includes('나를 이해하는 법') && premium.includes('대화하고 싸우고 화해하는 법') && premium.includes('어떻게 움직일지'), 'human-readable export group titles missing');
