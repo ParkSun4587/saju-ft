@@ -385,4 +385,7 @@ export const __test = Object.freeze({
   isProductAlreadyEntitled,
   validateExtra,
   snapshot,
+  resultKey,
+  signedGrantToken,
+  resolveVerifiedEntitlements,
 });
