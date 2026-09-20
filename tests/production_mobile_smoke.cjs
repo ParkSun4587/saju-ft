@@ -70,8 +70,19 @@ async function enter(page, mode, concern, situation) {
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
-  if (mode==='F') assert(firstState.sisterText.includes('왔구나! 잘 왔어')&&firstState.sisterText.includes('같이 깊게 봐줄게')&&!firstState.sisterText.includes('ㅎㅎ'),'F input is not warm close-sister tone '+firstState.sisterText);
-  if (mode==='T') assert(firstState.sisterText.includes('쓸데없이 겁주는 말')&&firstState.sisterText.includes('좋은 건 좋다, 아닌 건 아니다')&&!firstState.sisterText.includes('왔네'),'T input is not tsundere/direct-care tone '+firstState.sisterText);
+  if (mode==='F') assert(
+    firstState.sisterText.includes('왔구나. 편하게 알려줘.') &&
+    firstState.sisterText.includes('왜 이 고민이 자꾸 마음에 남는지') &&
+    firstState.sisterText.includes('어떻게 움직이면 좋을지') &&
+    !firstState.sisterText.includes('ㅎㅎ'),
+    'F input lost calm close-sister voice '+firstState.sisterText
+  );
+  if (mode==='T') assert(
+    firstState.sisterText.includes('왔어. 핵심부터 잡아볼게.') &&
+    firstState.sisterText.includes('이유랑 다음 행동까지 순서대로 정리해줄게.') &&
+    !firstState.sisterText.includes('ㅎㅎ'),
+    'T input lost concise direct-care voice '+firstState.sisterText
+  );
   await page.fill('#nameInput','테스트');
   const label = concern === 'love' ? '연애 · 썸' : '마음 · 스트레스';
   await page.locator('#concernGrid .concern-chip').filter({hasText:label}).click();
@@ -259,7 +270,9 @@ async function inspect(page, mode) {
 
   await clickCatalogProduct(page,'compatibility');
   await page.waitForSelector('#unniProductModal',{state:'visible'});
+  assert((await page.locator('#unniProductBadge').innerText()).includes('로아 언니'),'F premium modal lost Roa continuity');
   const compatibilitySetup=await page.locator('#unniProductModal').innerText();
+  assert(compatibilitySetup.includes('이번엔 상대 사주도 같이 놓고 볼게.'),'F compatibility setup lost Roa voice');
   assert(compatibilitySetup.includes('양력')&&compatibilitySetup.includes('음력')&&!compatibilitySetup.includes('양력 생일')&&!compatibilitySetup.includes('음력 생일'),'live compatibility calendar labels are not simplified');
   assert(!compatibilitySetup.includes('예: 오후 3시 20분이면'),'live compatibility time helper was not removed');
   assert(!(await page.locator('#partnerLeapWrap').isVisible()),'live leap-month UI must stay hidden for solar');
@@ -293,7 +306,7 @@ async function inspect(page, mode) {
   assert(await page.locator('#unniProductStickyHead').evaluate(el=>getComputedStyle(el).position)==='sticky','sticky header broken');
   assert(await page.locator('#unniProductSavePdf').count()===0,'PDF save UI must be removed');
   assert(!(await page.locator('#unniProductModal').innerText()).includes('다른 브라우저'),'paid save should not tell users to switch browsers');
-  await page.waitForFunction(()=>document.getElementById('unniProductSaveHint')?.innerText.includes('저장 준비 완료'),null,{timeout:45000});
+  await page.waitForFunction(()=>/저장할 사진 준비됐어|저장 준비 완료/.test(document.getElementById('unniProductSaveHint')?.innerText||''),null,{timeout:45000});
   assert(await page.locator('#unniProductSaveAll').isEnabled(),'photo export prewarm not ready');
 
   const t=await ctx.newPage();
@@ -303,6 +316,45 @@ async function inspect(page, mode) {
   await deployed(t);
   await enter(t,'T','mental','burnout');
   const tr=await inspect(t,'T');
+  if(await t.locator('#unniProductLadder').count()===0){
+    await t.evaluate(()=>{
+      FREE_LAUNCH_MODE=true;
+      unlockFullReport(null,true);
+      renderUnniProductCatalog();
+    });
+    await t.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
+  }
+  await clickCatalogProduct(t,'compatibility');
+  await t.waitForSelector('#unniProductModal',{state:'visible'});
+  assert((await t.locator('#unniProductBadge').innerText()).includes('서아 언니'),'T premium modal lost Seoa continuity');
+  const tCompatibilitySetup=await t.locator('#unniProductModal').innerText();
+  assert(tCompatibilitySetup.includes('궁합은 상대 사주가 필요해. 아는 정보부터 입력해줘.'),'T compatibility setup lost Seoa voice');
+  await t.locator('#unniProductClose').click();
+
+  const smallCtx=await browser.newContext({viewport:{width:360,height:800}});
+  for(const mode of ['F','T']){
+    const small=await smallCtx.newPage();
+    await deployed(small);
+    const intro=await small.evaluate(()=>({
+      text:document.getElementById('splitIntroSection')?.innerText||'',
+      overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth,
+      title:document.getElementById('topTitleBox')?.getBoundingClientRect(),
+      roa:document.getElementById('panelRoa')?.getBoundingClientRect(),
+      seoa:document.getElementById('panelSeoa')?.getBoundingClientRect(),
+    }));
+    assert(!intro.overflow,'360px first screen horizontal overflow');
+    for(const box of [intro.title,intro.roa,intro.seoa]) {
+      assert(box && box.left>=-1 && box.right<=361 && box.top>=-1 && box.bottom<=801,'360px first fold clipping '+JSON.stringify(intro));
+    }
+    await small.locator(mode==='F'?'#panelRoa':'#panelSeoa').click();
+    await small.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
+    const voice=await small.locator('#welcomeSisterText').innerText();
+    if(mode==='F') assert(voice.includes('왜 이 고민이 자꾸 마음에 남는지'),'360px F voice drift '+voice);
+    else assert(voice.includes('이유랑 다음 행동까지 순서대로 정리해줄게.'),'360px T voice drift '+voice);
+    await small.close();
+  }
+  await smallCtx.close();
+
   assert(errors.length===0,'F browser errors '+errors.join(' | '));
   assert(terr.length===0,'T browser errors '+terr.join(' | '));
   console.log('PRODUCTION_MOBILE_SMOKE_PASS',JSON.stringify({f:[f.n1.length,f.n2.length,f.n4.length,f.n5.length],t:[tr.n1.length,tr.n2.length,tr.n4.length,tr.n5.length],pdfRemoved:true}));

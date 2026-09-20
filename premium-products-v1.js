@@ -97,6 +97,48 @@
     return data?.currentMode || (typeof selectedSplitMode !== "undefined" && selectedSplitMode) || "F";
   }
 
+  function productVoice(data, copy) {
+    const mode = getMode(data) === "T" ? "T" : "F";
+    if (typeof copy === "string") return copy;
+    return copy?.[mode] || copy?.F || copy?.T || "";
+  }
+
+  function productToast(data, copy) {
+    if (typeof showToast === "function") showToast(productVoice(data, copy));
+  }
+
+  function applyProductModalVoice(root, data) {
+    if (!root) return;
+    const paymentTitle = root.querySelector("#unniProductPaymentTitle");
+    const paymentSub = root.querySelector("#unniProductPaymentSub");
+    const actionHint = root.querySelector("#unniProductActionHint");
+    const accessNote = root.querySelector("#unniProductAccessNote");
+    if (paymentTitle) {
+      paymentTitle.textContent = productVoice(data, {
+        F: "결제수단을 골라줘",
+        T: "결제수단 선택",
+      });
+    }
+    if (paymentSub) {
+      paymentSub.textContent = productVoice(data, {
+        F: "고르면 언니가 확인하고 바로 이어서 열어줄게.",
+        T: "선택하면 확인 후 바로 결과를 열어줄게.",
+      });
+    }
+    if (actionHint) {
+      actionHint.textContent = productVoice(data, {
+        F: "고른 결제수단으로 결제할게.",
+        T: "선택한 결제수단으로 결제돼.",
+      });
+    }
+    if (accessNote) {
+      accessNote.textContent = productVoice(data, {
+        F: "한 번 결제한 내용은 이 브라우저에서 추가 결제 없이 다시 볼 수 있어.",
+        T: "한 번 결제한 내용은 이 브라우저에서 추가 결제 없이 다시 볼 수 있어.",
+      });
+    }
+  }
+
   function getProfile(data) {
     if (!data) return null;
     if (data.integratedSajuProfile) return data.integratedSajuProfile;
@@ -1003,15 +1045,24 @@
     hint.style.display = "block";
     if (ready) {
       button.textContent = "사진으로 한 번에 저장하기";
-      hint.textContent = `저장 준비 완료 · ${total}장`;
+      hint.textContent = productVoice(getData(), {
+        F: `저장할 사진 준비됐어 · ${total}장`,
+        T: `저장 준비 완료 · ${total}장`,
+      });
       return;
     }
     button.textContent = current > 0
       ? `사진으로 한 번에 저장하기 · ${current}/${total}`
       : "사진으로 한 번에 저장하기";
     hint.textContent = total > 0
-      ? `결과 읽는 동안 미리 준비 중 · ${current}/${total}장`
-      : "결과 읽는 동안 저장용 사진을 미리 준비해둘게.";
+      ? productVoice(getData(), {
+          F: `읽는 동안 사진도 같이 준비 중 · ${current}/${total}장`,
+          T: `결과 읽는 동안 미리 준비 중 · ${current}/${total}장`,
+        })
+      : productVoice(getData(), {
+          F: "읽는 동안 저장용 사진도 같이 준비해둘게.",
+          T: "결과 읽는 동안 저장용 사진을 미리 준비해둘게.",
+        });
   }
 
   function waitForExportIdle(key, root, productId) {
@@ -1144,7 +1195,12 @@
           if (freshGesture) setPaidExportButtonReady(root, true);
           if (error?.message !== "EXPORT_IDLE_CANCELLED") {
             const hint = root?.querySelector("#unniProductSaveHint");
-            if (hint) hint.textContent = "미리 준비가 잠깐 꼬였어. 저장을 누르면 다시 준비할게.";
+            if (hint) {
+              hint.textContent = productVoice(getData(), {
+                F: "사진 준비가 잠깐 꼬였어. 저장을 누르면 언니가 다시 준비할게.",
+                T: "사진 준비가 잠깐 실패했어. 저장을 누르면 다시 준비할게.",
+              });
+            }
             console.warn("유료 리포트 저장 미리 준비 실패:", error);
           }
         });
@@ -1161,7 +1217,10 @@
     const product = PRODUCTS[productId];
     const button = root?.querySelector("#unniProductSaveAll");
     if (!exporter || !button) {
-      if (typeof showToast === "function") showToast("이미지 저장 기능을 불러오지 못했어.");
+      productToast(getData(), {
+        F: "사진 저장 기능을 불러오지 못했어. 지금 결과는 그대로 있으니까 한 번만 다시 해보자.",
+        T: "사진 저장 기능을 불러오지 못했어. 결과는 유지됐어. 다시 실행해줘.",
+      });
       return;
     }
 
@@ -1203,7 +1262,10 @@
           blobs.forEach((blob, index) =>
             setTimeout(() => exporter.downloadPngBlob(blob, filenames[index]), index * 120),
           );
-          if (typeof showToast === "function") showToast(`${blobs.length}장 저장을 시작했어.`);
+          productToast(getData(), {
+            F: `${blobs.length}장 저장을 시작했어. 순서대로 들어갈 거야.`,
+            T: `${blobs.length}장 저장을 시작했어.`,
+          });
           return;
         }
       }
@@ -1219,14 +1281,16 @@
       blobs.forEach((blob, index) => {
         setTimeout(() => exporter.downloadPngBlob(blob, filenames[index]), index * 120);
       });
-      if (typeof showToast === "function") {
-        showToast(`주제별로 ${blobs.length}장 저장을 시작했어.`);
-      }
+      productToast(getData(), {
+        F: `주제별로 ${blobs.length}장 저장을 시작했어. 하나씩 이어서 저장될 거야.`,
+        T: `주제별로 ${blobs.length}장 저장을 시작했어.`,
+      });
     } catch (error) {
       console.error("유료 리포트 전체 저장 실패:", error);
-      if (typeof showToast === "function") {
-        showToast("전체 결과 저장이 잠깐 꼬였어. 한 번만 다시 눌러줘.");
-      }
+      productToast(getData(), {
+        F: "전체 결과 저장이 잠깐 꼬였어. 결과는 그대로니까 한 번만 다시 눌러줘.",
+        T: "전체 결과 저장이 잠깐 실패했어. 결과는 유지됐어. 다시 눌러줘.",
+      });
     } finally {
       button.disabled = false;
       button.style.opacity = "1";
@@ -1254,7 +1318,7 @@
     root = document.createElement("div");
     root.id = "unniProductModal";
     root.style.cssText = "display:none;position:fixed;inset:0;z-index:99999;background:rgba(24,21,25,.36);padding:10px;overflow:auto;-webkit-overflow-scrolling:touch;backdrop-filter:blur(5px)";
-    root.innerHTML = `<div data-premium-modal-card="1" style="max-width:520px;margin:max(8px,env(safe-area-inset-top)) auto max(14px,env(safe-area-inset-bottom));background:#fffdfa;border:1px solid #e8e2dc;border-radius:25px;padding:0 16px 20px;box-shadow:0 22px 58px rgba(38,30,28,.14);overflow:visible"><div id="unniProductStickyHead" style="position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin:0 -16px;padding:16px 16px 13px;background:rgba(255,253,250,.97);backdrop-filter:blur(14px);border-radius:25px 25px 15px 15px;border-bottom:1px solid #e8e2dc"><div style="min-width:0;flex:1"><div id="unniProductBadge" style="font-size:9.5px;font-weight:800;color:#c9365b"></div><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:5px"><h2 id="unniProductTitle" style="min-width:0;font-size:21px;line-height:1.28;font-weight:850;letter-spacing:-.025em;margin:0;color:#172033"></h2><div id="unniProductPrice" style="flex:none;border-radius:999px;background:#fff4f6;border:1px solid #f1d7dd;padding:6px 9px;font-size:11px;font-weight:820;color:#c9365b;white-space:nowrap"></div></div></div><button id="unniProductClose" style="flex:none;border:1px solid #e8e2dc;background:#f8f6f3;border-radius:999px;width:38px;height:38px;font-size:18px;color:#697181;cursor:pointer">×</button></div><div id="unniProductBody" style="margin-top:14px"></div><div id="unniProductSetup" style="margin-top:14px"></div><div id="unniProductPayment" style="display:none;margin-top:14px;padding:13px;border-radius:17px;background:#faf7f4;border:1px solid #e8e2dc"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px"><div><div style="font-size:12px;font-weight:820;color:#354052">결제수단 선택</div><div style="margin-top:2px;font-size:10px;font-weight:600;color:#8a9099">원하는 수단을 고른 뒤 아래에서 이어봐</div></div><div id="unniProductPaymentAmount" style="font-size:11px;font-weight:820;color:#c9365b"></div></div><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:13px;font-weight:820;cursor:pointer;box-shadow:0 8px 20px rgba(205,68,101,.13)">이 결과 사진으로 남기기</button><div id="unniProductSaveHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">결과 읽는 동안 저장용 사진을 미리 준비해둘게.</div><button id="unniProductAction" style="width:100%;margin-top:14px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:14px;font-weight:830;cursor:pointer;box-shadow:0 9px 22px rgba(205,68,101,.15)"></button><div id="unniProductActionHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">선택한 결제수단으로 결제됩니다</div><div id="unniProductAccessNote" style="display:none;margin-top:8px;text-align:center;font-size:10.5px;font-weight:650;line-height:1.6;color:#7d8490">한 번 결제하면 이 브라우저에서 추가 결제 없이 다시 볼 수 있어요.</div></div>`;
+    root.innerHTML = `<div data-premium-modal-card="1" style="max-width:520px;margin:max(8px,env(safe-area-inset-top)) auto max(14px,env(safe-area-inset-bottom));background:#fffdfa;border:1px solid #e8e2dc;border-radius:25px;padding:0 16px 20px;box-shadow:0 22px 58px rgba(38,30,28,.14);overflow:visible"><div id="unniProductStickyHead" style="position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin:0 -16px;padding:16px 16px 13px;background:rgba(255,253,250,.97);backdrop-filter:blur(14px);border-radius:25px 25px 15px 15px;border-bottom:1px solid #e8e2dc"><div style="min-width:0;flex:1"><div id="unniProductBadge" style="font-size:9.5px;font-weight:800;color:#c9365b"></div><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:5px"><h2 id="unniProductTitle" style="min-width:0;font-size:21px;line-height:1.28;font-weight:850;letter-spacing:-.025em;margin:0;color:#172033"></h2><div id="unniProductPrice" style="flex:none;border-radius:999px;background:#fff4f6;border:1px solid #f1d7dd;padding:6px 9px;font-size:11px;font-weight:820;color:#c9365b;white-space:nowrap"></div></div></div><button id="unniProductClose" style="flex:none;border:1px solid #e8e2dc;background:#f8f6f3;border-radius:999px;width:38px;height:38px;font-size:18px;color:#697181;cursor:pointer">×</button></div><div id="unniProductBody" style="margin-top:14px"></div><div id="unniProductSetup" style="margin-top:14px"></div><div id="unniProductPayment" style="display:none;margin-top:14px;padding:13px;border-radius:17px;background:#faf7f4;border:1px solid #e8e2dc"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px"><div><div id="unniProductPaymentTitle" style="font-size:12px;font-weight:820;color:#354052">결제수단 선택</div><div id="unniProductPaymentSub" style="margin-top:2px;font-size:10px;font-weight:600;color:#8a9099">원하는 수단을 고른 뒤 아래에서 이어봐</div></div><div id="unniProductPaymentAmount" style="font-size:11px;font-weight:820;color:#c9365b"></div></div><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:13px;font-weight:820;cursor:pointer;box-shadow:0 8px 20px rgba(205,68,101,.13)">이 결과 사진으로 남기기</button><div id="unniProductSaveHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">결과 읽는 동안 저장용 사진을 미리 준비해둘게.</div><button id="unniProductAction" style="width:100%;margin-top:14px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:14px;font-weight:830;cursor:pointer;box-shadow:0 9px 22px rgba(205,68,101,.15)"></button><div id="unniProductActionHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">선택한 결제수단으로 결제됩니다</div><div id="unniProductAccessNote" style="display:none;margin-top:8px;text-align:center;font-size:10.5px;font-weight:650;line-height:1.6;color:#7d8490">한 번 결제하면 이 브라우저에서 추가 결제 없이 다시 볼 수 있어요.</div></div>`;
     document.body.appendChild(root);
     root.querySelector("#unniProductClose").onclick = () => { root.style.display = "none"; document.body.style.overflow = ""; };
     root.addEventListener("click", (e) => { if (e.target === root) root.querySelector("#unniProductClose").click(); });
@@ -1267,12 +1331,13 @@
   }
 
   function setupHtml(productId, data) {
+    const isT = getMode(data) === "T";
     if (productId === "concern_bundle3") {
       const defaults = new Set(defaultBundle(data));
       const keys = Object.keys(CONCERNS).filter((k) => k !== data?.concernKey);
       return `
-        <div style="font-size:12px;font-weight:900;margin-bottom:5px">더 보고 싶은 고민 3개를 골라</div>
-        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">고른 고민마다 지금 상황도 하나씩 맞춰줘. 그래야 결과가 엉뚱한 전제를 안 해.</div>
+        <div style="font-size:12px;font-weight:900;margin-bottom:5px">${isT ? "추가로 볼 고민 3개를 골라줘" : "이번엔 더 마음에 걸리는 고민 3개만 골라줘"}</div>
+        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">${isT ? "각 고민의 지금 상황도 하나씩 골라줘. 그 기준으로 정확히 나눠서 볼게." : "고른 고민마다 지금 상황도 하나씩 알려줘. 그래야 다른 경우 안 섞고 네 얘기로 같이 볼 수 있어."}</div>
         <div id="unniBundleChecks" style="display:grid;gap:8px">
           ${keys.map((k) => `
             <div data-bundle-row="${k}" style="padding:11px;border:1px solid #e2e8f0;border-radius:14px;background:#fff">
@@ -1287,8 +1352,8 @@
     }
     if (productId === "all_in_one") {
       return `
-        <div style="font-size:12px;font-weight:900;margin-bottom:5px">6가지 고민의 지금 상황만 맞춰줘</div>
-        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">각 고민을 네 실제 상황에 맞춰서 봐주기 위한 마지막 설정이야.</div>
+        <div style="font-size:12px;font-weight:900;margin-bottom:5px">${isT ? "6가지 고민의 지금 상황을 맞춰줘" : "6가지 고민의 지금 상황만 하나씩 알려줘"}</div>
+        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">${isT ? "각 고민을 네 실제 상황에 맞춰 나눠 보기 위한 마지막 설정이야." : "각 고민을 네 실제 상황에 맞춰서 이어서 보기 위한 마지막 설정이야."}</div>
         <div id="unniAllInOneSituations" style="display:grid;gap:8px">
           ${Object.keys(CONCERNS).map((k) => {
             const selected = k === data?.concernKey ? data?.concernSituation || "" : "";
@@ -1300,6 +1365,7 @@
       const hourOpts = Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1}시</option>`).join("");
       const minuteOpts = Array.from({ length: 60 }, (_, i) => `<option value="${String(i).padStart(2, "0")}">${String(i).padStart(2, "0")}분</option>`).join("");
       return `<div style="display:grid;gap:10px">
+        <div style="font-size:11px;line-height:1.6;color:#64748b;padding:10px 11px;border-radius:12px;background:#f8fafc">${isT ? "궁합은 상대 사주가 필요해. 아는 정보부터 입력해줘." : "이번엔 상대 사주도 같이 놓고 볼게. 아는 만큼만 편하게 알려줘."}</div>
         <div><div style="font-size:11px;font-weight:900;color:#475569;margin:0 0 5px">상대 이름</div><input id="partnerName" placeholder="이름 또는 별명" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-radius:12px"></div>
         <div><div style="font-size:11px;font-weight:900;color:#475569;margin:0 0 5px">상대 생년월일</div><input id="partnerBirth" inputmode="numeric" maxlength="8" placeholder="예: 1999년 2월 14일 → 19990214" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-radius:12px"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><select id="partnerGender" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="female">여성</option><option value="male">남성</option></select><select id="partnerCalendar" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="solar">양력</option><option value="lunar">음력</option></select></div>
@@ -1341,12 +1407,19 @@
   function collectExtra(productId, data, root) {
     if (productId === "concern_bundle3") {
       const picked = [...root.querySelectorAll('#unniBundleChecks input:checked')].map((x) => x.value);
-      if (picked.length !== 3) throw new Error("고민을 정확히 3개 골라줘.");
+      if (picked.length !== 3)
+        throw new Error(productVoice(data, {
+          F: "더 보고 싶은 고민을 딱 3개만 골라줘. 그 세 개를 같이 이어서 볼게.",
+          T: "추가로 볼 고민을 정확히 3개 골라줘.",
+        }));
       const situations = {};
       for (const key of picked) {
         const value = root.querySelector(`[data-bundle-situation="${key}"]`)?.value || "";
         if (!situationRows(key).some(([s]) => s === value)) {
-          throw new Error(`${CONCERNS[key]}의 지금 상황도 하나 골라줘.`);
+          throw new Error(productVoice(data, {
+            F: `${CONCERNS[key]}의 지금 상황도 하나 알려줘. 그래야 네 경우로 맞춰 볼 수 있어.`,
+            T: `${CONCERNS[key]}의 지금 상황도 하나 골라줘.`,
+          }));
         }
         situations[key] = value;
       }
@@ -1357,7 +1430,10 @@
       for (const key of Object.keys(CONCERNS)) {
         const value = root.querySelector(`[data-all-situation="${key}"]`)?.value || "";
         if (!situationRows(key).some(([s]) => s === value)) {
-          throw new Error(`${CONCERNS[key]}의 지금 상황을 골라줘.`);
+          throw new Error(productVoice(data, {
+            F: `${CONCERNS[key]}의 지금 상황도 하나 알려줘.`,
+            T: `${CONCERNS[key]}의 지금 상황을 골라줘.`,
+          }));
         }
         situations[key] = value;
       }
@@ -1365,14 +1441,22 @@
     }
     if (productId === "compatibility") {
       const b = root.querySelector("#partnerBirth")?.value.replace(/\D/g, "") || "";
-      if (!/^\d{8}$/.test(b)) throw new Error("상대 생년월일을 8자리로 입력해줘.");
+      if (!/^\d{8}$/.test(b))
+        throw new Error(productVoice(data, {
+          F: "상대 생년월일을 8자리로 한 번만 확인해줘.",
+          T: "상대 생년월일을 8자리로 입력해줘.",
+        }));
       const unknown = !!root.querySelector("#partnerTimeUnknown")?.checked;
       let tRaw = "unknown";
       if (!unknown) {
         const ampm = root.querySelector("#partnerAmpm")?.value || "";
         const hour12 = Number(root.querySelector("#partnerHour12")?.value || 0);
         const minute = root.querySelector("#partnerMinute")?.value || "";
-        if (!ampm || !hour12 || minute === "") throw new Error("상대 태어난 시간을 골라줘. 모르면 ‘태어난 시간을 몰라요’를 체크해줘.");
+        if (!ampm || !hour12 || minute === "")
+          throw new Error(productVoice(data, {
+            F: "상대 태어난 시간을 아는 만큼 골라줘. 모르면 ‘태어난 시간을 몰라요’를 체크하면 돼.",
+            T: "상대 태어난 시간을 골라줘. 모르면 ‘태어난 시간을 몰라요’를 체크하면 돼.",
+          }));
         const hour24 = (hour12 % 12) + (ampm === "pm" ? 12 : 0);
         tRaw = `${String(hour24).padStart(2, "0")}:${minute}`;
       }
@@ -1401,7 +1485,11 @@
   function showReport(productId, data, extra) {
     const root = ensureModal();
     const product = PRODUCTS[productId];
-    root.querySelector("#unniProductBadge").textContent = "구매한 리포트";
+    applyProductModalVoice(root, data);
+    root.querySelector("#unniProductBadge").textContent = productVoice(data, {
+      F: "로아 언니가 이어서 본 결과",
+      T: "서아 언니가 정리한 결과",
+    });
     root.querySelector("#unniProductTitle").textContent = product.name;
     root.querySelector("#unniProductPrice").textContent = "";
     root.querySelector("#unniProductSetup").innerHTML = "";
@@ -1421,7 +1509,10 @@
     }
     if (saveHint) {
       saveHint.style.display = "block";
-      saveHint.textContent = "결과 읽는 동안 저장용 사진을 미리 준비해둘게.";
+      saveHint.textContent = productVoice(data, {
+        F: "읽는 동안 저장용 사진도 같이 준비해둘게.",
+        T: "결과 읽는 동안 저장용 사진을 미리 준비해둘게.",
+      });
     }
 
     const action = root.querySelector("#unniProductAction");
@@ -1439,20 +1530,35 @@
   }
 
   async function beginPaidCheckout(productId, data, extra, root, verifiedState) {
-    if (typeof paymentAPI !== "function" || typeof resultSnapshot !== "function") throw new Error("결제 준비 함수를 불러오지 못했어.");
+    applyProductModalVoice(root, data);
+    if (typeof paymentAPI !== "function" || typeof resultSnapshot !== "function")
+      throw new Error(productVoice(data, {
+        F: "결제 준비가 잠깐 안 됐어. 지금 결과는 그대로니까 한 번만 다시 해보자.",
+        T: "결제 준비 기능을 불러오지 못했어. 결과는 유지됐어. 다시 실행해줘.",
+      }));
     const snap = { ...resultSnapshot(data), p:productId, x:extra };
     const entitlementTokens = entitlementTokenRecords();
     const order = await paymentAPI({ action:"prepare", data:snap, entitlementTokens });
     const product = PRODUCTS[productId];
     if (!order?.ok || order.productId !== productId || Number(order.baseAmount || product.price) !== product.price || !(Number(order.amount) > 0)) {
-      throw new Error("상품 주문 정보가 맞지 않아. 다시 시도해줘.");
+      throw new Error(productVoice(data, {
+        F: "상품 주문 정보가 맞지 않아. 다시 결제하지 말고 현재 상품을 한 번만 다시 열어줘.",
+        T: "상품 주문 정보가 일치하지 않아. 재결제하지 말고 상품을 다시 열어 확인해줘.",
+      }));
     }
     const state = productStateFor(productId, verifiedState || cachedEntitlements(data));
     if (productId === "all_in_one" && state.kind === "upgrade" && Number(order.amount) !== Number(state.amount)) {
       // 화면에 표시한 가격과 서버 quote가 달라졌다면 서버 값을 우선하고 사용자가 다시 확인하게 한다.
-      throw new Error("구매 상태가 방금 갱신됐어. 상품을 다시 열어서 최종 업그레이드 금액을 확인해줘.");
+      throw new Error(productVoice(data, {
+        F: "구매 상태가 방금 바뀌었어. 다시 결제하지 말고 상품을 다시 열어서 최종 업그레이드 금액부터 확인해줘.",
+        T: "구매 상태가 갱신됐어. 재결제하지 말고 상품을 다시 열어 최종 업그레이드 금액을 확인해줘.",
+      }));
     }
-    if (typeof PaymentWidget === "undefined") throw new Error("결제창을 불러오지 못했어. 새로고침 후 다시 해줘.");
+    if (typeof PaymentWidget === "undefined")
+      throw new Error(productVoice(data, {
+        F: "결제창을 불러오지 못했어. 지금 내용은 그대로 있으니까 새로고침하고 다시 해보자.",
+        T: "결제창을 불러오지 못했어. 새로고침한 뒤 다시 해줘.",
+      }));
     root.querySelector("#unniProductPrice").textContent = productId === "all_in_one" && Number(order.amount) < product.price
       ? `${won(product.price)} → ${won(order.amount)}`
       : won(order.amount);
@@ -1470,7 +1576,13 @@
       : { kind:"unpurchased", amount:Number(order.amount) };
     action.textContent = productActionLabel(productId,finalState,Number(order.amount));
     const actionHint = root.querySelector("#unniProductActionHint");
-    if (actionHint) { actionHint.style.display = "block"; actionHint.textContent = "선택한 결제수단으로 결제됩니다"; }
+    if (actionHint) {
+      actionHint.style.display = "block";
+      actionHint.textContent = productVoice(data, {
+        F: "고른 결제수단으로 결제할게.",
+        T: "선택한 결제수단으로 결제돼.",
+      });
+    }
     action.onclick = async () => {
       action.disabled = true;
       try {
@@ -1485,7 +1597,17 @@
         });
       } catch (e) {
         action.disabled = false;
-        if (typeof showToast === "function") showToast(e?.message || "결제창을 열지 못했어.");
+        productToast(data,
+          e?.code === "USER_CANCEL"
+            ? {
+                F: "결제가 취소됐어. 지금 보던 결과는 그대로 있어.",
+                T: "결제가 취소됐어. 현재 결과는 그대로 유지돼.",
+              }
+            : {
+                F: "결제창을 열지 못했어. 지금 결과는 그대로니까 한 번만 다시 눌러줘.",
+                T: "결제창을 열지 못했어. 결과는 유지됐어. 다시 눌러줘.",
+              },
+        );
       }
     };
   }
@@ -1496,7 +1618,11 @@
     if (!data || !product) return;
     const root = ensureModal();
     const ux = productUx(productId);
-    root.querySelector("#unniProductBadge").textContent = ux.eyebrow || product.badge;
+    applyProductModalVoice(root, data);
+    root.querySelector("#unniProductBadge").textContent = productVoice(data, {
+      F: `로아 언니 · ${ux.eyebrow || product.badge}`,
+      T: `서아 언니 · ${ux.eyebrow || product.badge}`,
+    });
     root.querySelector("#unniProductTitle").textContent = product.name;
     root.querySelector("#unniProductPrice").textContent = won(product.price);
     root.querySelector("#unniProductSetup").innerHTML = setupHtml(productId, data);
@@ -1509,7 +1635,10 @@
     const valueCopy = productValueCopy(productId);
     const body = root.querySelector("#unniProductBody");
     const unlockRows = String(valueCopy?.unlocks || "").split("·").map((x)=>x.trim()).filter(Boolean);
-    body.innerHTML = `<div data-product-value-intro="${esc(productId)}" style="padding:13px 14px;border-radius:17px;background:linear-gradient(145deg,#fff1f2,#fff);border:1px solid #ffe4e6"><div style="font-size:12.5px;font-weight:950;line-height:1.5;color:#9f1239">${esc(ux.value)}</div><p style="margin:6px 0 0;font-size:11.5px;line-height:1.65;color:#64748b">${esc(ux.difference)}</p></div>${unlockRows.length ? `<div style="margin-top:10px;padding:11px 12px;border-radius:15px;background:#f8fafc;border:1px solid #e2e8f0"><div style="font-size:10.5px;font-weight:950;color:#475569;margin-bottom:7px">구매하면 새로 열리는 내용</div><div style="display:flex;flex-wrap:wrap;gap:6px">${unlockRows.map((row)=>`<span style="display:inline-flex;padding:5px 8px;border-radius:999px;background:#fff;border:1px solid #e2e8f0;font-size:9.5px;font-weight:850;color:#64748b">${esc(row)}</span>`).join("")}</div></div>` : ""}`;
+    body.innerHTML = `<div data-product-voice-intro="1" style="margin-bottom:9px;font-size:11px;line-height:1.65;color:#64748b">${productVoice(data, {
+      F: "지금 보던 얘기에서 이어서, 여기서 새로 볼 수 있는 것만 같이 볼게.",
+      T: "지금 결과와 겹치는 건 빼고, 여기서 새로 열리는 정보부터 볼게.",
+    })}</div><div data-product-value-intro="${esc(productId)}" style="padding:13px 14px;border-radius:17px;background:linear-gradient(145deg,#fff1f2,#fff);border:1px solid #ffe4e6"><div style="font-size:12.5px;font-weight:950;line-height:1.5;color:#9f1239">${esc(ux.value)}</div><p style="margin:6px 0 0;font-size:11.5px;line-height:1.65;color:#64748b">${esc(ux.difference)}</p></div>${unlockRows.length ? `<div style="margin-top:10px;padding:11px 12px;border-radius:15px;background:#f8fafc;border:1px solid #e2e8f0"><div style="font-size:10.5px;font-weight:950;color:#475569;margin-bottom:7px">구매하면 새로 열리는 내용</div><div style="display:flex;flex-wrap:wrap;gap:6px">${unlockRows.map((row)=>`<span style="display:inline-flex;padding:5px 8px;border-radius:999px;background:#fff;border:1px solid #e2e8f0;font-size:9.5px;font-weight:850;color:#64748b">${esc(row)}</span>`).join("")}</div></div>` : ""}`;
     const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
     const accessNote = root.querySelector("#unniProductAccessNote");
     if (accessNote) accessNote.style.display = isFreeLaunch ? "none" : "block";
@@ -1573,13 +1702,19 @@
             const extra = collectExtra(productId,data,root);
             showReport(productId,data,extra);
           } catch (e) {
-            if (typeof showToast === "function") showToast(e?.message || "6개 고민의 지금 상황을 확인해줘.");
+            productToast(data, e?.message || {
+              F: "6개 고민의 지금 상황을 한 번씩만 확인해줘. 빠진 것부터 같이 채우면 돼.",
+              T: "6개 고민의 지금 상황을 확인해줘. 빠진 항목을 채우면 돼.",
+            });
           }
         };
       } else {
         action.onclick = () => {
           if (!directGrant) {
-            if (typeof showToast === "function") showToast("구매 토큰을 다시 불러오지 못했어. 저장된 구매 내역을 확인해줘.");
+            productToast(data, {
+              F: "구매 정보를 다시 불러오지 못했어. 다시 결제하지 말고 저장된 구매 내역부터 확인해보자.",
+              T: "구매 정보를 다시 불러오지 못했어. 재결제하지 말고 저장된 구매 내역을 확인해줘.",
+            });
             return;
           }
           showReport(productId,data,directGrant.extra || {});
@@ -1596,7 +1731,10 @@
           const extra = productId === "concern_bundle3" ? collectExtra(productId,data,root) : {};
           showReport(productId,data,extra);
         } catch (e) {
-          if (typeof showToast === "function") showToast(e?.message || "선택값을 확인해줘.");
+          productToast(data, e?.message || {
+            F: "선택한 내용을 한 번만 확인해줘. 빠진 게 있으면 같이 채우면 돼.",
+            T: "선택값을 확인해줘. 빠진 항목을 채우면 돼.",
+          });
         }
       };
       return;
@@ -1613,7 +1751,10 @@
           if (isFreeLaunch) return showReport(productId,data,extra);
           await beginPaidCheckout(productId,data,extra,root,verifiedState);
         } catch (e) {
-          if (typeof showToast === "function") showToast(e?.message || "업그레이드를 열지 못했어.");
+          productToast(data, e?.message || {
+            F: "업그레이드를 열지 못했어. 지금 구매 내역은 그대로니까 한 번만 다시 해보자.",
+            T: "업그레이드를 열지 못했어. 구매 내역은 유지됐어. 다시 실행해줘.",
+          });
         } finally { action.disabled = false; }
       };
       return;
@@ -1627,7 +1768,10 @@
         if (isFreeLaunch) return showReport(productId,data,extra);
         await beginPaidCheckout(productId,data,extra,root,verifiedState);
       } catch (e) {
-        if (typeof showToast === "function") showToast(e?.message || "상품을 열지 못했어.");
+        productToast(data, e?.message || {
+          F: "상품을 열지 못했어. 지금 결과는 그대로니까 한 번만 다시 눌러줘.",
+          T: "상품을 열지 못했어. 현재 결과는 유지됐어. 다시 눌러줘.",
+        });
       } finally { action.disabled = false; }
     };
   }
@@ -1790,13 +1934,23 @@
           renderCatalog();
         }).catch(() => {
           const pending = document.getElementById("unniProductLadder");
-          if (pending) pending.querySelector("[data-entitlement-status]")?.replaceChildren(document.createTextNode("구매 내역 확인이 지연되고 있어. 중복 결제를 막기 위해 잠시 후 다시 확인해줘."));
+          if (pending) {
+            pending.querySelector("[data-entitlement-status]")?.replaceChildren(
+              document.createTextNode(productVoice(data, {
+                F: "구매 내역 확인이 조금 늦어지고 있어. 중복 결제되지 않게 확인이 끝난 뒤 이어서 볼게.",
+                T: "구매 내역 확인이 지연되고 있어. 중복 결제를 막기 위해 확인이 끝난 뒤 이어갈게.",
+              })),
+            );
+          }
         });
       }
       const wrap = document.createElement("section");
       wrap.id = "unniProductLadder";
       wrap.style.cssText = "margin-top:24px;padding:17px 14px;border-radius:22px;background:#fffdfa;border:1px solid #e8e2dc";
-      wrap.innerHTML = '<div data-entitlement-status style="font-size:11.5px;line-height:1.6;color:#64748b">기존 구매 내역 확인 중…</div>';
+      wrap.innerHTML = `<div data-entitlement-status style="font-size:11.5px;line-height:1.6;color:#64748b">${productVoice(data, {
+        F: "기존 구매 내역부터 확인하고 있어. 잠깐만 같이 보자.",
+        T: "기존 구매 내역 확인 중…",
+      })}</div>`;
       notes.insertAdjacentElement("afterend",wrap);
       return;
     }
@@ -1847,12 +2001,19 @@
     const product = PRODUCTS[productId];
     if (!product) return false;
     if (params.get("payment") === "fail") {
-      if (typeof showToast === "function") showToast(params.get("message") || "결제가 취소됐어.");
+      productToast(restored, {
+        F: "결제가 취소됐거나 완료되지 않았어. 지금 결과는 그대로 있어.",
+        T: "결제가 취소됐거나 완료되지 않았어. 현재 결과는 그대로 유지돼.",
+      });
       return true;
     }
     if (params.get("payment") !== "success") return true;
     const paymentKey = params.get("paymentKey"), orderId = params.get("orderId"), amount = Number(params.get("amount"));
-    if (!paymentKey || orderId !== resume.orderId || amount !== Number(resume.amount)) throw new Error("상품 결제 복귀 정보가 일치하지 않아. 재결제하지 말고 주문번호로 문의해줘.");
+    if (!paymentKey || orderId !== resume.orderId || amount !== Number(resume.amount))
+      throw new Error(productVoice(restored, {
+        F: "상품 결제 복귀 정보가 맞지 않아. 다시 결제하지 말고 주문번호로 문의해줘.",
+        T: "상품 결제 복귀 정보가 일치하지 않아. 재결제하지 말고 주문번호로 문의해줘.",
+      }));
     const token = await confirmPaymentOnServer(paymentKey, orderId, amount, resume.userKey, ticket);
     saveGrant(restored, productId, {
       userKey:resume.userKey,
@@ -1866,7 +2027,10 @@
     invalidateEntitlementCache();
     try { sessionStorage.removeItem("unni_pending_approval"); } catch (_) {}
     showReport(productId, restored, resume.data?.x || {});
-    if (typeof showToast === "function") showToast("결제 확인됐어. 리포트 열어뒀어.");
+    productToast(restored, {
+      F: "결제 확인됐어. 언니가 이어서 본 결과까지 열어뒀어.",
+      T: "결제 확인됐어. 결과를 바로 열어뒀어.",
+    });
     return true;
   };
 

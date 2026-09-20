@@ -558,7 +558,7 @@ function norm(v) {
   assert((await page.locator('#unniProductSaveAll').innerText()).includes('사진으로 한 번에 저장하기'), 'one-action paid save CTA missing');
   assert(await page.locator('#unniProductSavePdf').count() === 0, 'PDF save UI must be removed');
   assert(await page.locator('#unniProductStickyHead').evaluate((el) => getComputedStyle(el).position) === 'sticky', 'paid report header must remain sticky');
-  await page.waitForFunction(() => document.getElementById('unniProductSaveHint')?.innerText.includes('저장 준비 완료'), null, { timeout:30000 });
+  await page.waitForFunction(() => /저장할 사진 준비됐어|저장 준비 완료/.test(document.getElementById('unniProductSaveHint')?.innerText || ''), null, { timeout:30000 });
   assert(await page.locator('#unniProductSaveAll').isEnabled(), 'paid save must be tappable as soon as prewarm is ready');
   const fullReportDownload = await Promise.all([
     page.waitForEvent('download', { timeout: 20000 }),
@@ -705,7 +705,49 @@ function norm(v) {
   assert(!html.includes('font-bold truncate text-right flex-1 min-w-0'), 'NOTE badge still forces ellipsis');
   assert(!html.includes('팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐'), 'old generic harsh T greeting remains');
   for (const harsh of ['아이고 왔어?', '시간 낭비 말고', '똑바로 찍어', '똥고집', '미련 곰탱이', '팩트 꽂힌', '팩폭 모드', '징징대지 말고 와', '살인 충동 느낌', '상대방 사람 취급', '멍청한 질문 3번']) assert(!html.includes(harsh), `harsh/old sister copy remains: ${harsh}`);
-  assert(html.includes('왔구나! 잘 왔어') && html.includes('아 이거였구나.') && html.includes('잠깐만! 언니가 네 사주랑 지금 고민') && html.includes('쓸데없이 겁주는 말부터 할 생각은 없어') && !html.includes('ㅎㅎ'), 'distinct F/T sister copy missing');
+  assert(
+    html.includes('왔구나. 편하게 알려줘.') &&
+    html.includes('아 이거였구나.') &&
+    html.includes('잠깐만. 언니가 네 사주랑 지금 고민을 같이 놓고') &&
+    html.includes('왔어. 핵심부터 잡아볼게.') &&
+    html.includes('이유랑 다음 행동까지 순서대로 정리해줄게.') &&
+    !html.includes('ㅎㅎ'),
+    'distinct F/T sister copy missing'
+  );
+  assert(html.includes('function currentVoiceMode(') && html.includes('function voiceText(') && html.includes('function showVoiceToast('), 'main journey counselor voice router missing');
+  assert(premium.includes('function productVoice(') && premium.includes('function applyProductModalVoice('), 'premium counselor voice router missing');
+  assert(
+    html.includes('가장 마음에 걸리는 고민 하나부터 골라줘. 그거부터 같이 볼게.') &&
+    html.includes('가장 궁금한 고민 하나부터 골라줘. 그 기준으로 바로 볼게.') &&
+    html.includes('이름부터 알려줘. 그다음은 언니가 이어서 볼게.') &&
+    html.includes('이름부터 입력해줘. 그다음 바로 이어갈게.'),
+    'F/T validation voice handoff missing'
+  );
+  assert(
+    html.includes('결제 확인됐어. 언니가 이어서 적어둔 내용까지 전부 열어뒀어.') &&
+    html.includes('결제 확인됐어. 이어지는 내용까지 전부 열어뒀어.') &&
+    html.includes('결제가 잘 확인됐는지 보고 있어.') &&
+    html.includes('결제 완료 여부를 확인 중이야.'),
+    'F/T payment/recovery voice handoff missing'
+  );
+  assert(
+    premium.includes('로아 언니가 이어서 본 결과') &&
+    premium.includes('서아 언니가 정리한 결과') &&
+    premium.includes('지금 보던 얘기에서 이어서, 여기서 새로 볼 수 있는 것만 같이 볼게.') &&
+    premium.includes('지금 결과와 겹치는 건 빼고, 여기서 새로 열리는 정보부터 볼게.'),
+    'premium modal lost counselor continuity'
+  );
+  for (const staleGeneric of [
+    '태어난 시간을 4자리(예: 1430)로 입력하거나 시간 모름을 체크해주세요.',
+    '이름을 입력해주세요.',
+    '생년월일 8자리(예: 19991230)를 정확히 입력해주세요.',
+    '분석 결과를 안전하게 표시하지 못했어요. 다시 분석해주세요.',
+    '이제 언니가 네 결과 챙겨둘게 ♡',
+    '이 사진 저장해서 인스타에서 불러오면 돼 ♡',
+    '사진 길게 눌러 저장하면 돼 ♡'
+  ]) assert(!html.includes(staleGeneric), `generic/system voice remains: ${staleGeneric}`);
+  assert(!html.includes('내 보관함 ♡') && !html.includes('내 사주 ♡'), 'vault copy still uses decorative heart as dialogue text');
+  assert(html.includes('analysisErrorText(') && !html.includes('calcErr.message || {'), 'raw analysis-engine errors can still leak into user copy');
   assert(
     html.includes('똑같은 내 사주, 누구한테 먼저 털어놓을래?') &&
     html.includes('원하는 상담 스타일을 골라봐') &&
