@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "3.2.0";
+  const VERSION = "3.2.1";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   const SITUATIONS = {
@@ -358,9 +358,18 @@
 
   function timingNote(reasoning, situation, isT) {
     const timing = reasoning?.timing || {};
-    const near = timing.concernNearTerm || {};
-    const nearMonths = Array.isArray(near.months) ? near.months : (Array.isArray(timing.nearMonths) ? timing.nearMonths : []);
-    const longTermPivots = Array.isArray(timing.longTermPivots) ? timing.longTermPivots.slice(0,2) : [];
+    const policy = global.__UNNI_PRODUCT_CONTENT_POLICY_V1__;
+    const disclosed = policy?.filterTimingForProduct
+      ? policy.filterTimingForProduct("basic_concern", timing)
+      : {
+          concernNearTerm: timing.concernNearTerm || null,
+          longTermPivots: Array.isArray(timing.longTermPivots) ? timing.longTermPivots.slice(0,2) : [],
+          fullSajuTimeline: null,
+        };
+    const near = disclosed.concernNearTerm || {};
+    const nearMonths = Array.isArray(near.months) ? near.months : [];
+    const longTermPivots = Array.isArray(disclosed.longTermPivots) ? disclosed.longTermPivots.slice(0,2) : [];
+    const fullFiveYearAllowed = policy?.canRenderFeature?.("basic_concern", "full-five-year") === true;
 
     if (!nearMonths.length) {
       return {
@@ -368,7 +377,7 @@
         meta:{
           firstDate:null,secondDate:null,firstBody:"",secondBody:"",concernSituation:situation.key,
           structureFingerprint:reasoning?.structureFingerprint||"",timingFingerprint:reasoning?.timingFingerprint||"",
-          method:timing.method||"",disclosureContract:"basic_concern",longTermPivotYears:[],
+          method:timing.method||"",disclosureContract:"basic_concern",longTermPivotYears:[],fullFiveYearAllowed,
         },
       };
     }
@@ -480,6 +489,7 @@
         nearMonthCount:nearMonths.length,
         longTermPivotYears:longTermPivots.map(x=>x.year),
         disclosureContract:"basic_concern",
+        fullFiveYearAllowed,
       },
     };
   }
