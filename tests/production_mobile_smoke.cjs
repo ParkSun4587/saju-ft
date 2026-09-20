@@ -19,6 +19,17 @@ async function deployed(page) {
   throw new Error('production did not reach NOTE v3 / paid 1.5.0 / products 2.0.0');
 }
 
+async function clickCatalogProduct(page, productId) {
+  const target=page.locator(`#unniProductLadder [data-unni-product="${productId}"]`);
+  if(!(await target.isVisible())){
+    const toggle=page.locator('#unniShowOtherProducts');
+    assert(await toggle.isVisible(),'catalog alternative toggle missing before '+productId);
+    if((await toggle.getAttribute('aria-expanded'))!=='true') await toggle.click();
+    await page.waitForSelector('#unniOtherProducts',{state:'visible',timeout:5000});
+  }
+  await target.click();
+}
+
 async function enter(page, mode, concern, situation) {
   const intro = await page.evaluate(() => {
     const title=document.getElementById('topTitleBox');
@@ -243,14 +254,14 @@ async function inspect(page, mode) {
   }));
   assert(postUnlock.cards===6&&!postUnlock.preview&&postUnlock.catalogAfterNotes,'990 unlock must reveal NOTE2-6 before post-report upsells '+JSON.stringify(postUnlock));
 
-  await page.locator('#unniProductLadder [data-unni-product="compatibility"]').click();
+  await clickCatalogProduct(page,'compatibility');
   await page.waitForSelector('#unniProductModal',{state:'visible'});
   const compatibilitySetup=await page.locator('#unniProductModal').innerText();
   assert(compatibilitySetup.includes('양력')&&compatibilitySetup.includes('음력')&&!compatibilitySetup.includes('양력 생일')&&!compatibilitySetup.includes('음력 생일'),'live compatibility calendar labels are not simplified');
   assert(!compatibilitySetup.includes('예: 오후 3시 20분이면'),'live compatibility time helper was not removed');
   await page.locator('#unniProductClose').click();
 
-  await page.locator('#unniProductLadder [data-unni-product="full_saju"]').click();
+  await clickCatalogProduct(page,'full_saju');
   await page.waitForSelector('#unniProductModal',{state:'visible'});
   const sourceFreeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
   const productActionText=await page.locator('#unniProductAction').innerText();
@@ -265,7 +276,7 @@ async function inspect(page, mode) {
   if(!sourceFreeLaunch){
     await page.evaluate(()=>{FREE_LAUNCH_MODE=true;});
     await page.locator('#unniProductClose').click();
-    await page.locator('#unniProductLadder [data-unni-product="full_saju"]').click();
+    await clickCatalogProduct(page,'full_saju');
     await page.waitForSelector('#unniProductModal',{state:'visible'});
   }
   await page.locator('#unniProductAction').click();
