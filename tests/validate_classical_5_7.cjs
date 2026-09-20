@@ -3,7 +3,7 @@ require(path.resolve('classical-engine-v2.js'));
 
 function assert(cond, msg) { if (!cond) throw new Error(msg); }
 const E = global.__CLASSICAL_ENGINE_V2__;
-assert(E && E.version === '2.1.0', 'classical engine v2.1 not loaded');
+assert(E && E.version === '2.2.0', 'classical engine v2.2 not loaded');
 
 function P(year, month, day, hour) { return { year, month, day, ...(hour ? {hour} : {}) }; }
 
