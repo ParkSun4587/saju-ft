@@ -115,14 +115,14 @@
     const accessNote = root.querySelector("#unniProductAccessNote");
     if (paymentTitle) {
       paymentTitle.textContent = productVoice(data, {
-        F: "결제수단을 골라줘",
-        T: "결제수단 선택",
+        F: "좋아, 여기서부터 이어서 볼게",
+        T: "결제수단만 선택해",
       });
     }
     if (paymentSub) {
       paymentSub.textContent = productVoice(data, {
-        F: "고르면 언니가 확인하고 바로 이어서 열어줄게.",
-        T: "선택하면 확인 후 바로 결과를 열어줄게.",
+        F: "결제수단만 골라주면 방금 보던 상담에서 그대로 이어갈게.",
+        T: "확인되면 방금 보던 데서 바로 이어서 정리할게.",
       });
     }
     if (actionHint) {
@@ -979,7 +979,7 @@
     page.innerHTML = `
       <div style="padding-bottom:16px;margin-bottom:12px;border-bottom:1px solid #e2e8f0">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-          <div style="font-size:12px;font-weight:950;color:#f43f5e">어떤언니 · ${esc(product?.name || "내 리포트")}</div>
+          <div style="font-size:12px;font-weight:950;color:#f43f5e">어떤언니 · ${esc(product?.name || "내 상담 기록")}</div>
           <div style="font-size:10px;font-weight:900;color:#94a3b8">${index + 1} / ${total}</div>
         </div>
         <div style="font-size:23px;line-height:1.28;font-weight:950;letter-spacing:-.04em;color:#0f172a;margin-top:8px">${esc(group.title)}</div>
@@ -1144,7 +1144,7 @@
           }
           blobs.push(blob);
           filenames.push(
-            `어떤언니_${safeFilePart(product?.name || "리포트")}_${safeFilePart(group.slug || group.title)}.png`,
+            `어떤언니_${safeFilePart(product?.name || "상담기록")}_${safeFilePart(group.slug || group.title)}.png`,
           );
           page.remove();
           pages.pop();
@@ -1236,7 +1236,7 @@
         if (exporter.isKakaoInApp?.()) {
           await exporter.showImageSaveFallback(blob, "save");
         } else if (exporter.isMobileDevice?.()) {
-          const shared = await exporter.nativeSharePng(blob, filenames[0], product?.name || "어떤언니 리포트");
+          const shared = await exporter.nativeSharePng(blob, filenames[0], product?.name || "어떤언니 상담 기록");
           if (!shared) exporter.downloadPngBlob(blob, filenames[0]);
         } else {
           exporter.downloadPngBlob(blob, filenames[0]);
@@ -1273,7 +1273,7 @@
       if (exporter.isKakaoInApp?.() || exporter.isIOSDevice?.()) {
         await exporter.showImagePagesFallback(
           blobs,
-          `${product?.name || "내 리포트"} · ${blobs.length}장`,
+          `${product?.name || "내 상담 기록"} · ${blobs.length}장`,
         );
         return;
       }
@@ -1487,8 +1487,8 @@
     const product = PRODUCTS[productId];
     applyProductModalVoice(root, data);
     root.querySelector("#unniProductBadge").textContent = productVoice(data, {
-      F: "로아 언니가 이어서 본 결과",
-      T: "서아 언니가 정리한 결과",
+      F: "로아 언니가 이어서 정리한 상담 기록",
+      T: "서아 언니가 이어서 정리한 상담 기록",
     });
     root.querySelector("#unniProductTitle").textContent = product.name;
     root.querySelector("#unniProductPrice").textContent = "";
@@ -1525,7 +1525,7 @@
     root.scrollTop = 0;
     document.body.style.overflow = "hidden";
 
-    // 사용자가 리포트를 읽는 동안 뒤에서 천천히 준비해 저장 버튼 대기를 줄인다.
+    // 사용자가 상담 기록을 읽는 동안 뒤에서 천천히 준비해 저장 버튼 대기를 줄인다.
     prewarmPaidExport(root, productId);
   }
 
@@ -2036,8 +2036,8 @@
     try { sessionStorage.removeItem("unni_pending_approval"); } catch (_) {}
     showReport(productId, restored, resume.data?.x || {});
     productToast(restored, {
-      F: "결제 확인됐어. 언니가 이어서 본 결과까지 열어뒀어.",
-      T: "결제 확인됐어. 결과를 바로 열어뒀어.",
+      F: "결제 확인됐어. 아까 보던 상담에서 그대로 이어갈게.",
+      T: "결제 확인됐어. 바로 이어서 정리할게.",
     });
     return true;
   };
