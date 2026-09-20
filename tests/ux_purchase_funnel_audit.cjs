@@ -54,7 +54,7 @@ async function enter(page){
     FREE_LAUNCH_MODE=false;
     paymentAPI=async(body)=>{
       if(body?.action==='entitlements')return {ok:true,verifiedPurchases:[],effectiveEntitlements:[],allInOneQuote:{targetProduct:'all_in_one',baseAmount:9900,creditAmount:0,amount:9900,alreadyOwned:false,creditedProducts:[]}};
-      if(body?.action==='prepare')return {ok:true,orderId:'audit-order',ticket:'audit-ticket',userKey:getUserUniqueKey(currentResultData),amount:4900,baseAmount:4900};
+      if(body?.action==='prepare')return {ok:true,productId:body?.data?.p,orderId:'audit-order',ticket:'audit-ticket',userKey:getUserUniqueKey(currentResultData),amount:4900,baseAmount:4900};
       return {ok:true};
     };
     PaymentWidget=()=>({
