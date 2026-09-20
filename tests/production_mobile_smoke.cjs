@@ -46,9 +46,12 @@ async function enter(page, mode, concern, situation) {
       hintVisible:!!hint && getComputedStyle(hint).opacity!=='0',
     };
   });
-  assert(intro.visible && intro.inViewport && intro.titleHeight<=82 && intro.hintVisible,'first counselor-choice viewport layout broken '+JSON.stringify(intro));
-  for(const copy of ['똑같은 내 사주, 누구한테 먼저 털어놓을래?','원하는 상담 스타일을 골라봐','감정 공감형','핵심 정리형','선택한 언니의 말투로 결과 끝까지 이어져','응, 언니랑 천천히 풀어볼래','좋아, 핵심만 바로 알려줘']) {
+  assert(intro.visible && intro.inViewport && intro.titleHeight<=82 && !intro.hintVisible,'first counselor-choice viewport layout broken '+JSON.stringify(intro));
+  for(const copy of ['똑같은 내 사주, 누구한테 먼저 털어놓을래?','원하는 상담 스타일을 골라봐','감정 공감형','핵심 정리형','왜 자꾸 마음이 쓰이는지부터 같이 풀어볼게.','돌려 말 안 할게. 뭐가 핵심인지부터 딱 정리해줄게.','응, 내 얘기 좀 들어줘','좋아, 핵심부터 알려줘']) {
     assert(intro.bodyText.includes(copy),'first counselor-choice copy missing '+copy);
+  }
+  for(const removedCopy of ['선택한 언니의 말투로 결과 끝까지 이어져','응, 언니랑 천천히 풀어볼래','좋아, 핵심만 바로 알려줘']) {
+    assert(!intro.bodyText.includes(removedCopy),'removed first counselor-choice copy remains '+removedCopy);
   }
   await page.locator(mode === 'F' ? '#panelRoa' : '#panelSeoa').click();
   await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
