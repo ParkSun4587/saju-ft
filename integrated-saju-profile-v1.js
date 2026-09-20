@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "2.0.0";
+  const VERSION = "2.1.0";
   const ELEMENTS = ["mok", "hwa", "to", "geum", "su"];
 
   function safeNum(v, fallback) {
@@ -103,6 +103,9 @@
         drainForce: safeNum(strength.drainForce, null),
         roots: Array.isArray(strength.roots) ? strength.roots : [],
         monthCommand: strength.monthCommand || null,
+        deukryeong: strength.deukryeong || null,
+        deukji: strength.deukji || null,
+        deukse: strength.deukse || null,
         components: Array.isArray(strength.components) ? strength.components : [],
         evidence: Array.isArray(strength.evidence) ? strength.evidence : [],
         method: strength.method || "",
@@ -197,6 +200,9 @@
       profile.structure.sangsin,
       profile.structure.gisin,
       profile.structure.touchul ? "out" : "in",
+      profile.strength.deukryeong?.active ? "deukryeong" : "not-deukryeong",
+      profile.strength.deukji?.quality || "",
+      profile.strength.deukse?.active ? "deukse" : "not-deukse",
       profile.balance.primary,
       profile.balance.secondary,
       profile.balance.avoid,
