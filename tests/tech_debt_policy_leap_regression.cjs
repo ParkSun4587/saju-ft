@@ -185,8 +185,46 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     generateConcernNotes(d,'F');
     currentResultData=d;
     selectedSplitMode='F';
+
+    const originalPaymentAPI=paymentAPI;
+    globalThis.__techDebtPreparePayload=null;
+    paymentAPI=async(body)=>{
+      if(body?.action==='entitlements'){
+        return {
+          ok:true,
+          verifiedPurchases:[],
+          effectiveEntitlements:[],
+          allInOneQuote:{
+            targetProduct:'all_in_one',baseAmount:9900,creditAmount:0,amount:9900,
+            alreadyOwned:false,creditedProducts:[],
+          },
+        };
+      }
+      if(body?.action==='prepare'){
+        globalThis.__techDebtPreparePayload=body;
+        return {
+          ok:true,
+          productId:body?.data?.p,
+          orderId:'tech-debt-compat-order',
+          ticket:'tech-debt-compat-ticket',
+          userKey:getUserUniqueKey(currentResultData),
+          amount:5900,
+          baseAmount:5900,
+        };
+      }
+      return originalPaymentAPI(body);
+    };
+    const fakePaymentWidget=()=>({
+      renderPaymentMethods(){ return {}; },
+      renderAgreement(){ return { getAgreementStatus:()=>({agreedRequiredTerms:true}) }; },
+      requestPayment:async()=>{},
+    });
+    fakePaymentWidget.ANONYMOUS='ANONYMOUS';
+    globalThis.PaymentWidget=fakePaymentWidget;
   });
+
   await page.evaluate(()=>openUnniProduct('compatibility'));
+  await page.waitForFunction(()=>document.querySelector('#unniProductAction')?.textContent?.includes('우리 둘 궁합 보기'),null,{timeout:10000});
   const leapWrap=page.locator('#partnerLeapWrap');
   assert(!(await leapWrap.isVisible()),'leap UI visible for solar calendar');
   await page.selectOption('#partnerCalendar','lunar');
@@ -200,20 +238,38 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.fill('#partnerBirth','20200401');
   await page.check('#partnerTimeUnknown');
   await page.click('#unniProductAction');
-  await page.waitForSelector('#unniProductBody [data-export-intro="compat"]',{timeout:10000});
-  const uiLeapFp=await page.locator('#unniProductBody [data-export-intro="compat"]').getAttribute('data-person-b-fingerprint');
-  assert(uiLeapFp===lunar.leapUnknown.bFp,'FREE_LAUNCH collectExtra did not preserve lunar leap selection');
+  await page.waitForSelector('#unniProductPayment',{state:'visible',timeout:10000});
+  const uiLeap=await page.evaluate(()=>{
+    const extra=globalThis.__techDebtPreparePayload?.data?.x;
+    const html=globalThis.__UNNI_PRODUCTS_V1__.buildProductBody('compatibility',currentResultData,extra);
+    const root=document.createElement('div');root.innerHTML=html;
+    return {
+      leap:extra?.partner?.l,
+      bFp:root.querySelector('[data-export-intro="compat"]')?.getAttribute('data-person-b-fingerprint')||'',
+    };
+  });
+  assert(uiLeap.leap===true&&uiLeap.bFp===lunar.leapUnknown.bFp,'paid-mode collectExtra did not preserve lunar leap selection '+JSON.stringify(uiLeap));
   await page.click('#unniProductClose');
 
-  await page.evaluate(()=>openUnniProduct('compatibility'));
+  await page.evaluate(()=>{ globalThis.__techDebtPreparePayload=null; openUnniProduct('compatibility'); });
+  await page.waitForFunction(()=>document.querySelector('#unniProductAction')?.textContent?.includes('우리 둘 궁합 보기'),null,{timeout:10000});
   await page.fill('#partnerBirth','19990511');
   await page.selectOption('#partnerCalendar','solar');
   await page.selectOption('#partnerAmpm','pm');
   await page.selectOption('#partnerHour12','3');
   await page.selectOption('#partnerMinute','20');
   await page.click('#unniProductAction');
-  await page.waitForSelector('#unniProductBody [data-export-intro="compat"]',{timeout:10000});
-  assert(await page.locator('#unniProductBody [data-export-kind="compat"]').count()===16,'timed solar partner failed through UI');
+  await page.waitForSelector('#unniProductPayment',{state:'visible',timeout:10000});
+  const uiTimed=await page.evaluate(()=>{
+    const extra=globalThis.__techDebtPreparePayload?.data?.x;
+    const html=globalThis.__UNNI_PRODUCTS_V1__.buildProductBody('compatibility',currentResultData,extra);
+    const root=document.createElement('div');root.innerHTML=html;
+    return {
+      partner:extra?.partner||null,
+      sections:root.querySelectorAll('[data-export-kind="compat"]').length,
+    };
+  });
+  assert(uiTimed.partner?.t==='15:20'&&uiTimed.sections===16,'timed solar partner failed through paid-mode UI '+JSON.stringify(uiTimed));
   await page.click('#unniProductClose');
 
   const grant=await page.evaluate(async()=>{
