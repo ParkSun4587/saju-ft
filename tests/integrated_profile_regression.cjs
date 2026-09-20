@@ -17,9 +17,9 @@ function norm(v) {
 
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil:'load' });
   await page.waitForFunction(() =>
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.1.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.2.0' &&
     globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version === '2.1.0' &&
-    globalThis.__CLASSICAL_REASONING_V1__?.version === '1.1.0' &&
+    globalThis.__CLASSICAL_REASONING_V1__?.version === '1.2.0' &&
     typeof buildIntegratedSajuProfile === 'function' &&
     typeof buildConcernDiagnosisV2 === 'function' &&
     typeof buildClassicalReasoningV1 === 'function' &&
@@ -99,9 +99,9 @@ function norm(v) {
     };
   });
 
-  assert(result.engine?.version === '3.1.0', 'NOTE v3 engine missing');
+  assert(result.engine?.version === '3.2.0', 'NOTE v3 engine missing');
   assert(result.integrated?.version === '2.1.0', 'integrated profile v2 missing');
-  assert(result.reasoning?.version === '1.1.0', 'classical reasoning engine missing');
+  assert(result.reasoning?.version === '1.2.0', 'classical reasoning engine missing');
   assert(result.wrapper, 'classical-causal NOTE wrapper missing');
   assert(result.exactPillars.join(',') === '戊寅,甲寅,己亥,乙丑', 'canonical pillars drift: '+result.exactPillars.join(','));
   assert(JSON.stringify(result.exactRaw) === JSON.stringify({mok:4,hwa:0,to:3,geum:0,su:1}), 'canonical raw elements drift');
@@ -120,7 +120,7 @@ function norm(v) {
 
     for (const [mode,notes,audit] of [['F',row.notesF,row.auditF],['T',row.notesT,row.auditT]]) {
       assert(notes.length === 6, row.concern+'/'+row.situation+'/'+mode+': expected six notes');
-      assert(audit?.version === '3.1.0' && audit?.engine === 'classical-causal', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
+      assert(audit?.version === '3.2.0' && audit?.engine === 'classical-causal', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
       assert(audit.genericClusterDependency === false, row.concern+'/'+row.situation+'/'+mode+': generic cluster dependency returned');
       assert(audit.structureFingerprint && audit.timingFingerprint, row.concern+'/'+row.situation+'/'+mode+': fingerprints missing');
       assert(Array.isArray(audit.claims) && audit.claims.length === 6, row.concern+'/'+row.situation+'/'+mode+': six auditable claims missing');
@@ -131,9 +131,9 @@ function norm(v) {
           row.concern+'/'+row.situation+'/'+mode+': claim rule ids missing');
         assert(claim.conclusion && claim.noteSentence, row.concern+'/'+row.situation+'/'+mode+': claim conclusion/sentence missing');
       }
-      assert(audit.sourceLayers?.ditian === '1.1.0' && audit.sourceLayers?.ziping === '1.1.0',
+      assert(audit.sourceLayers?.ditian === '1.2.0' && audit.sourceLayers?.ziping === '1.2.0',
         row.concern+'/'+row.situation+'/'+mode+': source layer versions missing');
-      assert(audit.ruleLayers?.ditian === '1.1.0' && audit.ruleLayers?.ziping === '1.1.0',
+      assert(audit.ruleLayers?.ditian === '1.2.0' && audit.ruleLayers?.ziping === '1.2.0',
         row.concern+'/'+row.situation+'/'+mode+': rule layer versions missing');
       const all=notes.map(n=>plain((n.title||'')+' '+(n.desc||'')+' '+(n.checklist||''))).join(' ');
       assert(!jargon.test(all), row.concern+'/'+row.situation+'/'+mode+': internal saju jargon leaked: '+all);
