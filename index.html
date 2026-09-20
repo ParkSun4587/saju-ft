@@ -5918,7 +5918,7 @@ currentResultData = {
                 ? `<span class="note-badge">${badgeText}</span>`
                 : "";
               return `
-                    <article class="note-editorial ${meta.className} ${accent}" data-note-role="${num}">
+                    <div class="note-editorial ${meta.className} ${accent}" data-note-role="${num}">
                         <div class="note-editorial-head">
                           <span class="note-number">NOTE ${item.themeNum}</span>
                           <span class="note-role-label">${meta.label}</span>
@@ -5930,7 +5930,7 @@ currentResultData = {
                           <span class="note-check-mark">✓</span>
                           <div><span class="note-check-label">${isT ? "실전 룰" : "언니랑 약속"}</span><span> ${item.checklist}</span></div>
                         </div>
-                    </article>`;
+                    </div>`;
             })
             .join("");
         };
