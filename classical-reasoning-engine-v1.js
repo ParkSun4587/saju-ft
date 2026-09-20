@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION="1.1.0";
+  const VERSION="1.2.0";
   const ELEMENTS=["mok","hwa","to","geum","su"];
   const GAN_ELEMENT={甲:"mok",乙:"mok",丙:"hwa",丁:"hwa",戊:"to",己:"to",庚:"geum",辛:"geum",壬:"su",癸:"su"};
   const ELEMENT_KR={mok:"목",hwa:"화",to:"토",geum:"금",su:"수"};
@@ -523,15 +523,57 @@
     return w?.startYmd||"";
   }
 
+  function selectSalientMonths(rows){
+    const support=[...(rows||[])].filter(x=>["supportive","mild-support"].includes(x.class)).sort(opportunityComparator);
+    const caution=[...(rows||[])].filter(x=>["caution","mild-caution"].includes(x.class)).sort(cautionComparator);
+    const picked=[];
+    for(const row of [support[0],support[1],caution[0],caution[1]]){
+      if(row&&!picked.some(x=>x.startYmd===row.startYmd))picked.push(row);
+      if(picked.length>=4)break;
+    }
+    return picked.sort((a,b)=>String(a.startYmd).localeCompare(String(b.startYmd)));
+  }
+
+  function groupDaeunPeriods(years){
+    const periods=[];
+    for(const row of years||[]){
+      if(!row?.daeunGanZhi)continue;
+      const last=periods.at(-1);
+      if(last&&last.ganZhi===row.daeunGanZhi){
+        last.endYear=row.year;
+        last.years.push(row.year);
+      }else{
+        periods.push({
+          ganZhi:row.daeunGanZhi,
+          god:row.daeunGod||"",
+          startYear:row.year,
+          endYear:row.year,
+          years:[row.year],
+          classSamples:[row.class],
+        });
+      }
+    }
+    for(const p of periods){
+      p.classSamples=(years||[]).filter(y=>y.daeunGanZhi===p.ganZhi).map(y=>y.class);
+    }
+    return periods;
+  }
+
   function buildTiming(ctx,cross){
     const raw=ctx.data?.realYeonun||ctx.profile?.timing?.raw||{};
     const today=ctx.data?.__testNowYmd||seoulYmd(new Date());
-    const detailEnd=addMonthsYmd(today,18),horizonEnd=addYearsYmd(today,5);
+    const detailEnd=addMonthsYmd(today,18);
+    const horizonEnd=addYearsYmd(today,5);
+    const internalHorizonEnd=addYearsYmd(today,10);
+    const publicEndYear=Number(horizonEnd.slice(0,4));
+    const internalEndYear=Number(internalHorizonEnd.slice(0,4));
+    const detailEndYear=Number(detailEnd.slice(0,4));
     const yearKeys=Object.keys(raw).filter(k=>/^y\d{4}$/.test(k)).sort((a,b)=>Number(a.slice(1))-Number(b.slice(1)));
     const years=[],nearMonths=[];
+
     for(const key of yearKeys){
       const entry=raw[key],year=Number(key.slice(1));
-      if(!entry||String(year)>horizonEnd.slice(0,4))continue;
+      if(!entry||year>internalEndYear)continue;
       const daeunGanZhi=entry.daeunGanZhi||"",seyunGanZhi=entry.seyunGanZhi||"";
       const daeunGod=tenGod(ctx.dayGan,String(daeunGanZhi).charAt(0));
       const seyunGod=entry.seyunGanSipsin||tenGod(ctx.dayGan,String(seyunGanZhi).charAt(0));
@@ -546,19 +588,42 @@
       });
       const active=monthRows.filter(w=>w.endYmd>=today&&w.startYmd<=detailEnd);
       nearMonths.push(...active);
-      const best=[...monthRows].sort((a,b)=>b.net-a.net||b.support-a.support||String(a.startYmd).localeCompare(String(b.startYmd)))[0]||null;
-      const caution=[...monthRows].sort((a,b)=>a.net-b.net||b.caution-a.caution||String(a.startYmd).localeCompare(String(b.startYmd)))[0]||null;
+
+      const best=[...monthRows].filter(x=>["supportive","mild-support"].includes(x.class)).sort(opportunityComparator)[0]||null;
+      const caution=[...monthRows].filter(x=>["caution","mild-caution"].includes(x.class)).sort(cautionComparator)[0]||null;
       years.push({
         year,status:"ok",daeunGanZhi,daeunGod,seyunGanZhi,seyunGod,
         class:yearCombined.class,evidence:yearCombined.evidence,
         supportSignals:yearCombined.supportSignals,cautionSignals:yearCombined.cautionSignals,neutralSignals:yearCombined.neutralSignals,
         bestMonth:best,cautionMonth:caution&&best&&caution.startYmd!==best.startYmd?caution:null,
+        months:monthRows,
       });
     }
+
     nearMonths.sort((a,b)=>String(a.startYmd).localeCompare(String(b.startYmd)));
+    const publicYears=years.filter(y=>y.year<=publicEndYear);
+    const nearHighlights=selectSalientMonths(nearMonths);
+
+    const longTermCandidates=publicYears
+      .filter(y=>y.year>=detailEndYear)
+      .map(y=>({
+        scope:"year",date:`${y.year}-01-01`,year:y.year,label:String(y.year),
+        evidence:y.evidence,class:y.class,supportSignals:y.supportSignals,cautionSignals:y.cautionSignals,
+      }))
+      .filter(x=>["supportive","caution"].includes(x.class));
+
+    const longSupport=longTermCandidates.filter(x=>x.class==="supportive").sort(opportunityComparator);
+    const longCaution=longTermCandidates.filter(x=>x.class==="caution").sort(cautionComparator);
+    const longTermPivots=[];
+    for(const row of [longSupport[0],longCaution[0],longSupport[1],longCaution[1]]){
+      if(row&&!longTermPivots.some(x=>x.year===row.year))longTermPivots.push(row);
+      if(longTermPivots.length>=2)break;
+    }
+    longTermPivots.sort((a,b)=>a.year-b.year);
+
     const pointPool=[
       ...nearMonths.map(m=>({scope:"month",date:m.startYmd,label:m.ganZhi,evidence:m.evidence,class:m.class,supportSignals:m.supportSignals,cautionSignals:m.cautionSignals})),
-      ...years.filter(y=>String(y.year)>detailEnd.slice(0,4)).map(y=>({scope:"year",date:`${y.year}-01-01`,label:String(y.year),evidence:y.evidence,class:y.class,supportSignals:y.supportSignals,cautionSignals:y.cautionSignals})),
+      ...publicYears.filter(y=>y.year>=detailEndYear).map(y=>({scope:"year",date:`${y.year}-01-01`,label:String(y.year),evidence:y.evidence,class:y.class,supportSignals:y.supportSignals,cautionSignals:y.cautionSignals})),
     ];
     const opportunities=[...pointPool]
       .filter(x=>["supportive","mild-support"].includes(x.class))
@@ -568,13 +633,154 @@
       .filter(x=>["caution","mild-caution"].includes(x.class))
       .sort(cautionComparator)
       .slice(0,2);
+
+    const daeunPeriods=groupDaeunPeriods(years);
     const timing={
-      today,detailEnd,horizonEnd,nearMonths,years,turningPoints:{opportunities,cautions},
-      coverage:{availableYears:years.map(y=>y.year),nearMonthCount:nearMonths.length},
-      method:"원국 강약·뿌리·통관 + 자평진전 격의 도움/방해/구응 + 대운·세운·월운 천간·지지 + 원국과의 합·충·형·파·해를 신호별로 분리 비교. 합화와 특수격 변화는 확정하지 않음.",
+      today,detailEnd,horizonEnd,internalHorizonEnd,
+      nearMonths,
+      years:publicYears,
+      turningPoints:{opportunities,cautions},
+      fullHorizon:{
+        start:today,
+        end:internalHorizonEnd,
+        years,
+      },
+      concernNearTerm:{
+        start:today,
+        end:detailEnd,
+        months:nearMonths,
+        highlights:nearHighlights,
+      },
+      longTermPivots,
+      fullSajuTimeline:{
+        start:today,
+        end:horizonEnd,
+        nearHighlights,
+        years:publicYears,
+        daeunPeriods,
+      },
+      compatibilityTimeline:null,
+      coverage:{
+        availableYears:years.map(y=>y.year),
+        publicYears:publicYears.map(y=>y.year),
+        nearMonthCount:nearMonths.length,
+        internalYearCount:years.length,
+      },
+      method:"원국 강약·뿌리·통관 후보 + 자평진전 격의 도움/방해/구응 + 대운·세운·월운 천간·지지 + 원국과의 합·충·형·파·해를 신호별로 분리 비교. 합화와 특수격 변화는 확정하지 않음.",
     };
-    timing.fingerprint=stableHash({today:timing.today,detailEnd:timing.detailEnd,horizonEnd:timing.horizonEnd,nearMonths:timing.nearMonths.map(x=>({start:x.startYmd,ganZhi:x.ganZhi,class:x.class,evidence:x.evidence,s:x.supportSignals.map(v=>v.code),c:x.cautionSignals.map(v=>v.code)})),years:timing.years.map(y=>({year:y.year,daeun:y.daeunGanZhi,seyun:y.seyunGanZhi,class:y.class,evidence:y.evidence,s:y.supportSignals.map(v=>v.code),c:y.cautionSignals.map(v=>v.code)}))});
+    timing.fingerprint=stableHash({
+      today:timing.today,detailEnd:timing.detailEnd,horizonEnd:timing.horizonEnd,internalHorizonEnd:timing.internalHorizonEnd,
+      nearMonths:timing.nearMonths.map(x=>({start:x.startYmd,ganZhi:x.ganZhi,class:x.class,evidence:x.evidence,s:x.supportSignals.map(v=>v.code),c:x.cautionSignals.map(v=>v.code)})),
+      years:years.map(y=>({year:y.year,daeun:y.daeunGanZhi,seyun:y.seyunGanZhi,class:y.class,evidence:y.evidence,s:y.supportSignals.map(v=>v.code),c:y.cautionSignals.map(v=>v.code)})),
+      longTermPivots:timing.longTermPivots.map(x=>({year:x.year,class:x.class,evidence:x.evidence})),
+    });
     return timing;
+  }
+
+  function crossChartRelations(aPillars,bPillars){
+    const rows=[];
+    for(const aPos of POSITIONS){
+      const a=aPillars?.[aPos];if(!a)continue;
+      for(const bPos of POSITIONS){
+        const b=bPillars?.[bPos];if(!b)continue;
+        const stemTarget=STEM_COMBINE[String(a.gan||"")+String(b.gan||"")];
+        if(stemTarget)rows.push({type:"stem-combine",aPos,bPos,aGan:a.gan,bGan:b.gan,targetElement:stemTarget,transformationStatus:"not-evaluated"});
+        const key=String(a.zhi||"")+String(b.zhi||"");
+        if(CLASH.has(key))rows.push({type:"clash",aPos,bPos,aZhi:a.zhi,bZhi:b.zhi});
+        if(BRANCH_COMBINE.has(key))rows.push({type:"combine",aPos,bPos,aZhi:a.zhi,bZhi:b.zhi,transformationStatus:"not-evaluated"});
+        if(HARM.has(key))rows.push({type:"harm",aPos,bPos,aZhi:a.zhi,bZhi:b.zhi});
+        if(BREAK.has(key))rows.push({type:"break",aPos,bPos,aZhi:a.zhi,bZhi:b.zhi});
+        if(PUNISH.has(key))rows.push({type:"punishment",aPos,bPos,aZhi:a.zhi,bZhi:b.zhi});
+      }
+    }
+    return rows;
+  }
+
+  function dayElementRelation(a,b){
+    if(!a||!b)return "unknown";
+    if(a===b)return "same";
+    if(nextElement(a)===b)return "a-generates-b";
+    if(nextElement(b)===a)return "b-generates-a";
+    if(controls(a)===b)return "a-controls-b";
+    if(controls(b)===a)return "b-controls-a";
+    return "different";
+  }
+
+  function combinePairTiming(aTiming,bTiming){
+    const yearB=new Map((bTiming?.fullSajuTimeline?.years||[]).map(x=>[x.year,x]));
+    const years=(aTiming?.fullSajuTimeline?.years||[]).map(a=>{
+      const b=yearB.get(a.year);if(!b)return null;
+      const aSupport=["supportive","mild-support"].includes(a.class),bSupport=["supportive","mild-support"].includes(b.class);
+      const aCaution=["caution","mild-caution"].includes(a.class),bCaution=["caution","mild-caution"].includes(b.class);
+      let pairClass="neutral";
+      if(aSupport&&bSupport)pairClass="aligned-support";
+      else if(aCaution&&bCaution)pairClass="shared-caution";
+      else if((aSupport&&bCaution)||(aCaution&&bSupport))pairClass="asymmetric";
+      else if(aSupport||bSupport)pairClass="one-side-support";
+      else if(aCaution||bCaution)pairClass="one-side-caution";
+      else if(a.class==="mixed"||b.class==="mixed")pairClass="mixed";
+      return {year:a.year,pairClass,aClass:a.class,bClass:b.class,aEvidence:a.evidence,bEvidence:b.evidence};
+    }).filter(Boolean);
+
+    const bMonths=new Map((bTiming?.concernNearTerm?.months||[]).map(x=>[x.startYmd,x]));
+    const nearMonths=(aTiming?.concernNearTerm?.months||[]).map(a=>{
+      const b=bMonths.get(a.startYmd);if(!b)return null;
+      const aSupport=["supportive","mild-support"].includes(a.class),bSupport=["supportive","mild-support"].includes(b.class);
+      const aCaution=["caution","mild-caution"].includes(a.class),bCaution=["caution","mild-caution"].includes(b.class);
+      let pairClass="neutral";
+      if(aSupport&&bSupport)pairClass="aligned-support";
+      else if(aCaution&&bCaution)pairClass="shared-caution";
+      else if((aSupport&&bCaution)||(aCaution&&bSupport))pairClass="asymmetric";
+      else if(aSupport||bSupport)pairClass="one-side-support";
+      else if(aCaution||bCaution)pairClass="one-side-caution";
+      else if(a.class==="mixed"||b.class==="mixed")pairClass="mixed";
+      return {startYmd:a.startYmd,endYmd:a.endYmd,pairClass,aClass:a.class,bClass:b.class,aGanZhi:a.ganZhi,bGanZhi:b.ganZhi};
+    }).filter(Boolean);
+    return {years,nearMonths};
+  }
+
+  function buildCompatibilityOverlayV1(dataA,dataB){
+    if(!dataA||!dataB)return null;
+    const a=dataA.classicalReasoningV1||buildClassicalReasoningV1(dataA);
+    const b=dataB.classicalReasoningV1||buildClassicalReasoningV1(dataB);
+    if(!a||!b)return null;
+    const crossRelations=crossChartRelations(a.profile?.pillars||{},b.profile?.pillars||{});
+    const dayA=a.context?.dayElement||null,dayB=b.context?.dayElement||null;
+    const dayBranchRelations=crossRelations.filter(x=>x.aPos==="day"&&x.bPos==="day");
+    const aStrong=a.context?.elementRanking?.[0]?.element||null,bStrong=b.context?.elementRanking?.[0]?.element||null;
+    const aNeeds=a.integrated?.prescription?.sequence?.map(x=>x.element).filter(Boolean)||[];
+    const bNeeds=b.integrated?.prescription?.sequence?.map(x=>x.element).filter(Boolean)||[];
+    const complement={
+      aStrongSupportsB:bStrong?bNeeds.includes(aStrong):false,
+      bStrongSupportsA:aStrong?aNeeds.includes(bStrong):false,
+      aStrongElement:aStrong,
+      bStrongElement:bStrong,
+      aNeededElements:aNeeds,
+      bNeededElements:bNeeds,
+    };
+    const compatibilityTimeline=combinePairTiming(a.timing,b.timing);
+    const overlay={
+      version:"1.0.0",
+      secondPersonRequired:true,
+      personAFingerprint:a.structureFingerprint,
+      personBFingerprint:b.structureFingerprint,
+      dayElementRelation:dayElementRelation(dayA,dayB),
+      dayBranchRelations,
+      crossRelations,
+      complement,
+      compatibilityTimeline,
+      unsupported:[
+        "천간합의 합화 여부는 확정하지 않음",
+        "지지 합·회로 실제 기세가 전환됐다고 자동 확정하지 않음",
+        "두 사람 관계에서 종격·가종·전왕 변화는 판정하지 않음",
+      ],
+    };
+    overlay.fingerprint=stableHash({
+      a:overlay.personAFingerprint,b:overlay.personBFingerprint,
+      dayElementRelation:overlay.dayElementRelation,dayBranchRelations:overlay.dayBranchRelations,
+      crossRelations:overlay.crossRelations,complement:overlay.complement,compatibilityTimeline:overlay.compatibilityTimeline,
+    });
+    return overlay;
   }
 
   function buildClassicalReasoningV1(data){
@@ -612,5 +818,6 @@
   }
 
   global.buildClassicalReasoningV1=buildClassicalReasoningV1;
-  global.__CLASSICAL_REASONING_V1__={version:VERSION};
+  global.buildCompatibilityOverlayV1=buildCompatibilityOverlayV1;
+  global.__CLASSICAL_REASONING_V1__={version:VERSION,buildCompatibilityOverlayV1};
 })(globalThis);
