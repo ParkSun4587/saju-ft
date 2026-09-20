@@ -16,11 +16,28 @@
   function rooted(ctx,god){
     return (ctx.hiddenGodOccurrences||[]).some(x=>x.god===god);
   }
-  function damagingMonthRelations(ctx){
-    return (ctx.monthRelations||[]).filter(x=>["clash","punishment","break","harm"].includes(x.type));
+  function monthRelationAssessment(ctx){
+    const rows=ctx.monthRelations||[];
+    return {
+      severe:rows.filter(x=>x.type==="clash"),
+      conditional:rows.filter(x=>["punishment","break","harm"].includes(x.type)),
+    };
   }
   function finding(id,sourceIds,ctx,payload){
-    return {id,sourceIds,kind:"gyeok",gyeokName:ctx.structure?.gyeokName||"평격",...payload};
+    const steps=payload?.causalSteps||[];
+    const hasDamage=steps.some(x=>x.step==="damage");
+    const hasRescue=steps.some(x=>x.step==="rescue");
+    const hasSupport=steps.some(x=>x.step==="support");
+    const sequenceStatus=hasDamage&&hasRescue
+      ?"패중유성·구응"
+      :hasDamage&&hasSupport
+        ?"성중유패"
+        :hasDamage
+          ?"파격"
+          :hasSupport
+            ?"성격"
+            :"미정";
+    return {id,sourceIds,kind:"gyeok",gyeokName:ctx.structure?.gyeokName||"평격",sequenceStatus,...payload};
   }
   function chain(ctx,label,supportGods,harmGods,rescueGods,extraDamage){
     const sLoc=locs(ctx,supportGods,true),hLoc=locs(ctx,harmGods,true),rLoc=locs(ctx,rescueGods,true);
@@ -65,13 +82,20 @@
         const v=ctx.visibleGods;
         const supportGods=list(v,"정재","편재","정인","편인");
         const harmGods=list(v,"상관");
-        const relDamage=damagingMonthRelations(ctx);
+        const relationAssessment=monthRelationAssessment(ctx);
+        const relDamage=relationAssessment.severe;
+        const conditionalRelations=relationAssessment.conditional;
         const rescueGods=(harmGods.length&&has(v,"정인","편인"))?list(v,"정인","편인"):[];
         let state="undetermined";
         if(supportGods.length&&!harmGods.length&&!relDamage.length)state="supported";
         else if((harmGods.length||relDamage.length)&&rescueGods.length)state="rescued";
         else if(harmGods.length||relDamage.length)state="damaged";
         const causalSteps=chain(ctx,"정관격",supportGods,harmGods,rescueGods,relDamage);
+        if(conditionalRelations.length) causalSteps.push({
+          step:"conditional-relation",
+          text:"월령에 형·파·해가 있으나 단독 파격으로 확정하지 않고 경중 판단 근거로 보존",
+          facts:{relations:conditionalRelations},
+        });
         return finding(this.id,this.sourceIds,ctx,{
           conclusion:state==="supported"
             ?"정관의 기준·책임을 재성이나 인성이 이어주고 월령을 흔드는 관계가 두드러지지 않아 구조가 비교적 곧게 작동한다."
@@ -81,11 +105,14 @@
                 ?"상관 또는 월령의 형·충·파·해가 정관의 중심을 흔드는데 현재 확인된 구응이 충분하지 않다."
                 :"정관격은 확인되지만 성패를 결정할 투출 배합이 선명하지 않다.",
           facts:{
-            supportGods,harmGods,rescueGods,state,monthRelationDamage:relDamage,
+            supportGods,harmGods,rescueGods,state,monthRelationDamage:relDamage,conditionalMonthRelations:conditionalRelations,
             supportLocations:locs(ctx,supportGods,true),harmLocations:locs(ctx,harmGods,true),rescueLocations:locs(ctx,rescueGods,true),
           },
-          conditions:["정관격","재·인·상관의 천간 위치와 월령 형·충·파·해를 순서대로 확인"],
-          exceptions:relDamage.length?["회합이 실제로 형충파해를 해소하는지는 합화·회국 규칙 미구현으로 확정하지 않음"]:[],
+          conditions:["정관격","재·인·상관의 천간 위치를 확인","월령 충은 직접 손상 조건으로 보고 형·파·해는 경중 판단용으로 분리"],
+          exceptions:[
+            ...(conditionalRelations.length?["형·파·해는 단독으로 모두 파격 처리하지 않고 다른 배합과 함께 판단"]:[]),
+            ...(relDamage.length?["회합이 실제로 충을 해소하는지는 합화·회국 규칙 미구현으로 확정하지 않음"]:[]),
+          ],
           supportGods,harmGods,rescueGods,state,causalSteps,tags:["officer","structure-state"],
         });
       },
