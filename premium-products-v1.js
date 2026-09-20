@@ -439,7 +439,7 @@
     const isT = mode === "T";
     let partner;
     try { partner = partnerChart(extra); } catch (e) { partner = null; }
-    if (!partner) return `<p style="font-size:13px;line-height:1.8;color:#475569">상대 생년월일 정보를 다시 확인해줘. 정확한 사주가 계산돼야 궁합을 열 수 있어.</p>`;
+    if (!partner) return `<p data-content-blocked="compatibility" style="font-size:13px;line-height:1.8;color:#475569">상대 생년월일 정보를 다시 확인해줘. 두 번째 사람의 정확한 사주가 계산돼야 둘 사이 궁합을 만들 수 있어.</p>`;
 
     const pName = extra?.partner?.n || "상대";
     const safeName = esc(pName);
