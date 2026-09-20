@@ -152,11 +152,11 @@ async function inspect(page, mode) {
     if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서부터 같이 보자')&&r.paywall.includes('진짜 중요한 건 이제부터야')&&r.paywall.includes('로아 언니, 나머지도 같이 봐줘'),'live F conversion paywall drift '+r.paywall);
     if(mode==='T') assert(r.paywall.includes('서아 언니 · 여기서부터 정리할게')&&r.paywall.includes('원인하고 끊을 지점')&&r.paywall.includes('서아 언니, 답까지 정리해줘'),'live T conversion paywall drift '+r.paywall);
     assert(r.paywall.includes('990원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
-    assert(!/NOTE 0?2 이어서|NOTE 0?6|오픈 체험가/.test(r.paywall),'internal NOTE labels or stale generic sale copy remains '+r.paywall);
+    assert(r.paywall.includes('NOTE2 다음부터 NOTE6까지')&&!/오픈 체험가/.test(r.paywall),'990 won unlock scope or stale sale copy drift '+r.paywall);
   }
   if(r.catalog){
-    assert(r.catalog.includes('왜 이걸 먼저 추천하냐면')&&r.catalog.includes('목적이 다르면 다른 3개 보기'),'recommended-first product disclosure missing');
-    assert(r.catalog.includes('새로 열리는 것'),'premium catalog does not explain new information boundary');
+    assert(r.catalog.includes('왜 추천했냐면')&&r.catalog.includes('목적이 다르면 다른 3개 보기'),'recommended-first product disclosure missing');
+    assert(r.catalog.includes('상대 사주까지 겹쳐야 나오는')||r.catalog.includes('나 전체 구조 · 영역 연결 · 5년 흐름'),'premium catalog does not explain product value boundary');
     assert(!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
   }
   assert(r.switchCount===0,'bottom F/T CTA remains');
@@ -274,7 +274,7 @@ async function inspect(page, mode) {
   assert(
     sourceFreeLaunch
       ? productActionText.includes('무료 이벤트')
-      : productActionText.includes('4,900원에 열기'),
+      : productActionText.includes('내 전체 사주판 열기 · 4,900원'),
     'live free/paid product toggle mismatch: '+JSON.stringify({sourceFreeLaunch,productActionText})
   );
 
