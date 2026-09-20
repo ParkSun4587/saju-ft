@@ -1251,7 +1251,7 @@
           shared = await exporter.nativeSharePngFiles(
             blobs,
             filenames,
-            product?.name || "어떤언니 리포트",
+            product?.name || "어떤언니 상담 기록",
           );
         } catch (error) {
           if (error?.name !== "AbortError") console.warn("다중 이미지 공유 실패:", error);
