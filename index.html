@@ -625,7 +625,170 @@
           forwards;
       }
     </style>
-  </head>
+  <style id="finalUiUx20260920">
+  :root{
+    --unni-bg:#f7f3ee;
+    --unni-paper:#fffdfa;
+    --unni-surface:#ffffff;
+    --unni-ink:#172033;
+    --unni-body:#4b5565;
+    --unni-muted:#89909c;
+    --unni-line:#e8e2dc;
+    --unni-line-strong:#ddd5ce;
+    --unni-rose:#e94f72;
+    --unni-rose-deep:#c9365b;
+    --unni-rose-soft:#fff3f5;
+    --unni-sky:#2f8fb8;
+    --unni-sky-soft:#f0f8fb;
+    --unni-radius-lg:24px;
+    --unni-radius-md:16px;
+    --unni-shadow:0 10px 30px rgba(41,32,28,.055);
+  }
+  body{background:var(--unni-bg)!important;color:var(--unni-ink);font-family:Inter,Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+  button,input,select,textarea{font:inherit}
+  button{touch-action:manipulation}
+
+  /* first choice */
+  #splitIntroSection{background:#17161b!important}
+  #splitIntroSection>div{background:#17161b!important;box-shadow:none!important}
+  #topTitleBox{width:calc(100% - 28px)!important;max-width:390px!important;padding:12px 16px 11px!important;border-radius:20px!important;background:rgba(255,253,250,.94)!important;border:1px solid rgba(255,255,255,.8)!important;box-shadow:0 10px 28px rgba(15,23,42,.10)!important}
+  #topTitleBox p:first-child{font-size:20px!important;line-height:1.18!important;font-weight:850!important;letter-spacing:-.045em!important;max-width:330px}
+  #topTitleBox p:nth-child(2){font-size:11px!important;margin-top:5px!important;color:#677080!important}
+  #splitContinuityHint{font-size:10px!important;margin-top:2px!important;color:#9aa0aa!important}
+  #centerDivider{background:rgba(255,255,255,.2)!important;box-shadow:none!important}
+  #imgRoa{filter:saturate(.87) brightness(.99)}
+  #imgSeoa{filter:saturate(.82) brightness(.92)}
+  .split-choice-bubble{border-width:1px!important;box-shadow:0 8px 22px rgba(15,23,42,.10)!important;padding:11px 13px!important;border-radius:17px!important}
+  .split-choice-bubble p{font-size:12.5px!important;line-height:1.48!important;font-weight:650!important;letter-spacing:-.015em!important}
+  .split-choice-cta{border-width:1px!important;box-shadow:0 7px 18px rgba(15,23,42,.10)!important;padding:9px 13px!important;border-radius:15px!important}
+  .split-choice-cta span:first-child{font-size:11.5px!important;font-weight:800!important}
+
+  /* consultation input */
+  #landingSection,#loadingSection,#resultSection{background:var(--unni-bg)!important}
+  #landingFrame,#loadingFrame{background:var(--unni-bg)!important;box-shadow:none!important}
+  #landingFrame>header,#loadingFrame>header{background:rgba(255,253,250,.94)!important;border-color:var(--unni-line)!important;backdrop-filter:blur(16px)!important;padding-left:16px!important;padding-right:16px!important}
+  #chatStreamArea,#loadingChatStream{background:var(--unni-bg)!important;padding-left:14px!important;padding-right:14px!important}
+  #welcomeSisterBubble{background:var(--unni-surface)!important;border:1px solid var(--unni-line)!important;box-shadow:none!important;padding:11px 13px!important;border-radius:17px!important}
+  #welcomeSisterText{font-size:13px!important;line-height:1.62!important;color:#364152!important;font-weight:520!important}
+  #sajuInputCardBox{background:var(--unni-paper)!important;border:1px solid var(--unni-line)!important;border-radius:22px!important;box-shadow:var(--unni-shadow)!important;padding:15px!important;margin-top:4px!important}
+  #sajuForm{display:grid!important;gap:12px!important}
+  #sajuForm>*+*{margin-top:0!important}
+  #sajuInputCardBox label{font-size:11px!important;line-height:1.3!important;font-weight:700!important;color:#727985!important;margin-bottom:5px!important}
+  #sajuInputCardBox input[type="text"],#sajuInputCardBox input[type="tel"],#sajuInputCardBox select{min-height:42px!important;height:42px!important;font-size:16px!important;line-height:1!important;border-radius:13px!important;background:#fbfaf8!important;border:1px solid var(--unni-line-strong)!important;color:#253044!important;box-shadow:none!important}
+  #sajuInputCardBox input::placeholder{font-size:13px!important;color:#b0b4bc!important}
+  #sajuInputCardBox .concern-chip{min-height:42px!important;border-radius:13px!important;background:#fff!important;border:1px solid var(--unni-line-strong)!important;font-size:12px!important;font-weight:720!important;box-shadow:none!important}
+  #concernSituationBox{background:#faf7f4!important;border:1px solid var(--unni-line)!important;border-radius:17px!important;padding:12px!important}
+  #concernSituationPrompt{font-size:12.5px!important;font-weight:800!important;line-height:1.45!important}
+  .concern-situation-chip{min-height:58px!important;border-radius:14px!important;border-color:var(--unni-line)!important;padding:10px 11px!important}
+  .concern-situation-chip>div:first-child{font-size:12px!important;line-height:1.35!important;font-weight:780!important}
+  .concern-situation-chip>div:last-child{font-size:10px!important;line-height:1.35!important;font-weight:550!important;color:#9298a2!important}
+  #concernSituationSummary{border-radius:14px!important;border-color:var(--unni-line)!important;box-shadow:none!important;padding:10px 11px!important}
+  #analysisSubmitButton{min-height:48px!important;box-shadow:none!important;font-size:13.5px!important;letter-spacing:-.015em!important}
+  #analysisSubmitButton[data-consult-mode="F"]{background:linear-gradient(90deg,#e94f72,#ed6a87)!important}
+  #analysisSubmitButton[data-consult-mode="T"]{background:linear-gradient(90deg,#334155,#2f8fb8)!important}
+
+  /* loading */
+  #loadingFrame>header{padding-top:calc(env(safe-area-inset-top,0px) + 12px)!important;padding-bottom:12px!important}
+  #loadingFrame .animate-ping,#loadingFrame .animate-pulse{animation:none!important;opacity:.8}
+  #loadingChatStream .typing-indicator{box-shadow:none!important;border:1px solid var(--unni-line)!important;background:#fff!important}
+  #loadingChatStream [class*="bg-white"]{box-shadow:none!important;border-color:var(--unni-line)!important}
+  #loadingSisterName{font-size:12px!important;font-weight:800!important}
+  #loadingChatStream{padding-top:18px!important;gap:12px!important}
+
+  /* result editorial hierarchy */
+  #resultSection>div{padding:18px 12px 34px!important;max-width:430px!important}
+  #resultSection .card-box{background:var(--unni-paper)!important;border:1px solid var(--unni-line)!important;box-shadow:none!important;border-radius:24px!important}
+  #resultSisterGreeting{font-size:13px!important;line-height:1.58!important;color:#536071!important;font-weight:520!important}
+  #resultSisterName{font-size:12px!important;font-weight:800!important}
+  #resultCoreCard{padding:20px 16px!important;text-align:left!important;background:linear-gradient(180deg,#fffdfa 0%,#fff 100%)!important}
+  #sazuCharacterTitle{font-size:23px!important;line-height:1.32!important;font-weight:850!important;letter-spacing:-.045em!important;text-align:left!important;padding:0!important;margin:0 0 7px!important}
+  #characterHashTags{justify-content:flex-start!important;font-size:10px!important;color:#9a5a69!important}
+  #coreThreeLineSummary{background:#faf8f5!important;border:0!important;border-left:3px solid #e8b7c3!important;border-radius:14px!important;box-shadow:none!important;padding:13px 14px!important;margin-top:12px!important}
+  #coreThreeLineSummary>div:first-child{border-bottom:0!important;padding-bottom:3px!important;margin-bottom:4px!important}
+  #coreThreeLineSummary>div:first-child span:first-child{font-size:11px!important;font-weight:800!important}
+  #manualBulletList{font-size:13px!important;line-height:1.65!important;color:#455164!important;font-weight:520!important}
+  #gradeSection{align-items:flex-start!important;padding-top:12px!important}
+  #gradeSection>div{border-color:var(--unni-line)!important;text-align:left!important}
+  #gradeSection .inline-flex{font-size:9.5px!important;border-color:var(--unni-line)!important;background:#faf8f5!important;color:#8a9099!important}
+  #resultBigMbti{font-size:28px!important;letter-spacing:.12em!important;filter:saturate(.75);padding-top:9px!important;text-shadow:none!important}
+  #chemBestCard,#chemWorstCard{border-width:1px!important;box-shadow:none!important;border-color:var(--unni-line)!important;background:#fff!important;padding:12px!important}
+  #chemBestHeader,#chemWorstHeader{font-size:10px!important;color:#7a8089!important}
+  #chemBestMbti,#chemWorstMbti{font-size:18px!important}
+  #chemBestTag,#chemWorstTag{font-size:9.5px!important;background:#f7f5f2!important;color:#687181!important}
+
+  #resultPillarCard{padding:13px 14px!important;background:#faf8f5!important}
+  #resultPillarCard>div:first-child{border:0!important}
+  #resultPillarCard .grid>div{background:#fff!important;border-color:var(--unni-line)!important}
+  #resultOhengCard{padding:16px!important}
+  #ohengSummaryTxt{font-size:13px!important;line-height:1.65!important;color:#536071!important;padding:5px 1px 8px!important}
+  #ohengBarContainer{gap:7px!important}
+  #ohengBarContainer>div{border-color:var(--unni-line)!important;background:#faf9f7!important;border-radius:14px!important}
+  #mainShareBtn{background:#fff!important;border:1px solid var(--unni-line-strong)!important;color:#475569!important;box-shadow:none!important;border-radius:15px!important;min-height:46px!important;font-size:12px!important;font-weight:760!important}
+
+  /* consultation notes */
+  #consultationNotesShell{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+  #consultationNotesPaper{padding:0!important;background:transparent!important}
+  #consultationNotesHeader{background:transparent!important;border:0!important;box-shadow:none!important;padding:14px 0 0!important;border-radius:0!important}
+  #consultationNotesHeader>div:first-child{border-color:var(--unni-line)!important;color:#9196a0!important}
+  #vipSectionMainTitle{font-size:18px!important;font-weight:850!important;letter-spacing:-.025em!important}
+  #vipSectionSubTitle{font-size:12px!important;line-height:1.55!important;padding-left:0!important;color:#7b828e!important}
+  #notesListContainer{display:grid!important;gap:14px!important;padding-top:2px!important}
+  .note-editorial{position:relative;background:#fff;border:1px solid var(--unni-line);border-radius:20px;padding:17px 16px;box-shadow:none;text-align:left;overflow:hidden}
+  .note-editorial::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#e9c7cf}
+  .note-tone-t::before{background:#b8d7e4}
+  .note-editorial-head{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:7px;margin-bottom:12px}
+  .note-number{font-size:9px;line-height:1;font-weight:850;letter-spacing:.07em;color:#bd526b;background:#fff4f6;border:1px solid #f5d7de;padding:6px 7px;border-radius:999px;white-space:nowrap}
+  .note-tone-t .note-number{color:#347b9c;background:#f1f8fb;border-color:#d3e8f1}
+  .note-role-label{font-size:10px;font-weight:800;color:#424b59;white-space:nowrap}
+  .note-badge{font-size:10px;font-weight:650;color:#9a9fa8;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .note-editorial-title{font-size:18px;line-height:1.42;font-weight:830;color:#1f2937;letter-spacing:-.025em;text-wrap:balance;margin:0 0 12px}
+  .note-body{font-size:14px;line-height:1.78;color:#4d596a;font-weight:450;word-break:keep-all}
+  .note-body p{margin:0 0 12px}
+  .note-body p:last-child{margin-bottom:0}
+  .note-role-diagnosis .note-body>p:first-child{font-size:15px;line-height:1.7;color:#303b4c;font-weight:620}
+  .note-body-flow{display:grid;gap:0}
+  .note-flow-row{display:grid;grid-template-columns:14px 1fr;gap:9px;position:relative;padding-bottom:14px}
+  .note-flow-row:last-child{padding-bottom:0}
+  .note-flow-line{width:7px;height:7px;margin-top:8px;border-radius:50%;background:#e3a9b7;box-shadow:0 12px 0 -3px #ead9de}
+  .note-tone-t .note-flow-line{background:#9bc7d9}
+  .note-body-steps{display:grid;gap:9px}
+  .note-step{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:11px 12px;border-radius:14px;background:#faf8f5;border:1px solid #eee8e2}
+  .note-step-num{width:24px;height:24px;border-radius:999px;display:grid;place-items:center;background:#fff;color:#b74c65;border:1px solid #f0ccd4;font-size:10px;font-weight:850}
+  .note-tone-t .note-step-num{color:#347b9c;border-color:#cce2eb}
+  .note-body-timeline{position:relative;padding-left:3px}
+  .note-time-row{display:grid;grid-template-columns:16px 1fr;gap:9px;position:relative;padding-bottom:15px}
+  .note-time-row:not(:last-child)::after{content:"";position:absolute;left:5px;top:15px;bottom:0;width:1px;background:#e7ddd8}
+  .note-time-row:last-child{padding-bottom:0}
+  .note-time-dot{width:11px;height:11px;border-radius:50%;margin-top:7px;background:#fff;border:3px solid #df8fa3;z-index:1}
+  .note-tone-t .note-time-dot{border-color:#73acc4}
+  .note-check{display:grid;grid-template-columns:18px 1fr;gap:8px;margin-top:15px;padding:11px 12px;border-top:1px solid #eee8e2;background:#fbfaf8;border-radius:0 0 13px 13px;font-size:12px;line-height:1.62;color:#4a5565}
+  .note-check-mark{font-weight:900;color:#d14f6d}
+  .note-tone-t .note-check-mark{color:#3f87a7}
+  .note-check-label{font-weight:820;color:#354052}
+  .note-preview-continuation{margin-top:13px;padding:11px 12px;border-radius:13px;background:#faf7f4;border:1px dashed #e6d8d1;text-align:center}
+  .note-preview-continuation p{font-size:11.5px;line-height:1.55;font-weight:720;color:#7b6b65;margin:0}
+
+  /* paywall continuation */
+  #lockedOverlay{padding-top:14px!important}
+  #paywallCard{border:1px solid #efd9df!important;background:linear-gradient(180deg,#fff8fa 0%,#fffdfa 54%,#fff 100%)!important;border-radius:22px!important;padding:16px!important;box-shadow:0 12px 30px rgba(114,62,76,.06)!important}
+  #payBoxHookMsg{font-size:18px!important;line-height:1.45!important;font-weight:830!important;letter-spacing:-.025em!important}
+  #payBoxSubMsg{font-size:12.5px!important;line-height:1.62!important;color:#747b87!important}
+  #paywallNextTeaserBox{box-shadow:none!important;border-color:#eee2e5!important}
+  #directPaymentOpenButton,#finalNotePaymentButton{background:linear-gradient(90deg,#e94f72,#ed6a87)!important;box-shadow:0 9px 22px rgba(205,68,101,.16)!important;border-radius:15px!important;min-height:50px!important}
+  #paymentWidgetArea{background:#faf7f6!important;border-color:#eee1e1!important;border-radius:17px!important}
+
+  @media(max-width:370px){
+    #topTitleBox p:first-child{font-size:18px!important}
+    #sajuInputCardBox{padding:13px!important}
+    #sajuForm{gap:10px!important}
+    #sajuInputCardBox input[type="text"],#sajuInputCardBox input[type="tel"],#sajuInputCardBox select{min-height:40px!important;height:40px!important}
+    #sazuCharacterTitle{font-size:21px!important}
+    .note-editorial{padding:15px 14px}
+    .note-editorial-title{font-size:17px}
+    .note-body{font-size:13.5px}
+  }
+</style>
+</head>
   <body
     class="min-h-[100dvh] flex flex-col justify-start items-center px-2.5 sm:px-4 relative"
     style="
@@ -1372,7 +1535,7 @@
                 <span
                   class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"
                 ></span>
-                입력 중...
+                사주를 보고 있어
               </span>
             </div>
           </div>
@@ -1383,7 +1546,7 @@
             <span
               class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
             ></span>
-            <span>실시간 상담</span>
+            <span>상담 준비 중</span>
           </div>
         </header>
 
@@ -1461,6 +1624,7 @@
 
         <!-- 카드 1: 핵심 요약 → 3줄 설명 → MBTI → 궁합 -->
         <div
+          id="resultCoreCard"
           class="card-box p-4 sm:p-6 rounded-3xl space-y-2 relative overflow-hidden text-center"
         >
           <!-- B안 1순위: 첫눈에 꽂히는 한 줄 요약 -->
@@ -1582,7 +1746,7 @@
           </div>
         </div>
         <!-- [내 사주 4주 카드] -->
-        <div class="card-box p-4 rounded-3xl text-left space-y-2.5">
+        <div id="resultPillarCard" class="card-box p-4 rounded-3xl text-left space-y-2.5">
           <div class="flex items-center justify-between pb-1 border-b border-slate-100">
             <span class="text-xs font-black text-slate-800 tracking-wider">내 사주</span>
           </div>
@@ -1606,7 +1770,7 @@
           </div>
         </div>
         <!-- [내 사주 5대 오행 분포 카드] -->
-        <div class="card-box p-4 rounded-3xl text-left space-y-2.5">
+        <div id="resultOhengCard" class="card-box p-4 rounded-3xl text-left space-y-2.5">
           <div
             class="flex items-center justify-between pb-1 border-b border-slate-100"
           >
@@ -1618,18 +1782,18 @@
               class="text-[11px] font-extrabold text-slate-600"
             ></span>
           </div>
-          <div
-            class="grid grid-cols-5 gap-1.5 text-center text-[10px] font-bold pt-1"
-            id="ohengBarContainer"
-          ></div>
           <p
             id="ohengSummaryTxt"
             class="text-[11px] text-slate-600 leading-relaxed break-keep pt-1"
           ></p>
+          <div
+            class="grid grid-cols-5 gap-1.5 text-center text-[10px] font-bold pt-1"
+            id="ohengBarContainer"
+          ></div>
         </div>
 
         <!-- [무료 바이럴 & 몰입 유지] 내 사주에 집중시키는 공유 버튼 배치 -->
-        <div class="space-y-2 pt-1 pb-1">
+        <div id="resultShareActions" class="space-y-2 pt-1 pb-1">
           <button
             type="button"
             id="mainShareBtn"
@@ -1641,11 +1805,13 @@
         </div>
         <!-- 카드 3: 핵심 심층 솔루션 (결제 유도 및 잠금 마스크 적용) -->
         <div
+          id="consultationNotesShell"
           class="card-box p-1 sm:p-1.5 rounded-3xl relative overflow-hidden bg-gradient-to-b from-amber-100 to-white shadow-[0_0_40px_rgba(245,158,11,0.2)] border border-amber-500/30"
         >
-          <div class="bg-white p-3 sm:p-5 rounded-[22px] h-full relative">
-            <!-- [아이폰 비밀 메모장 헤더 바] -->
+          <div id="consultationNotesPaper" class="bg-white p-3 sm:p-5 rounded-[22px] h-full relative">
+            <!-- [상담 노트 헤더] -->
             <div
+              id="consultationNotesHeader"
               class="bg-[#fefdfa] border border-amber-200/70 rounded-3xl p-4 sm:p-5 shadow-sm space-y-4 text-left"
             >
               <div
@@ -3303,8 +3469,8 @@
           if (nextButtonContainer) {
             nextButtonContainer.style.display = "block";
             nextButtonContainer.innerHTML = `
-                        <button id="analysisSubmitButton" type="button" disabled aria-disabled="true" onclick="startAnalysis('${mode}')" style="opacity:.48;cursor:default" class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e] font-black text-xs sm:text-[13px] rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
-                            <span>${mode === "F" ? "로아 언니한테 사주 정보 보내기" : "서아 언니한테 사주 정보 보내기"}</span>
+                        <button id="analysisSubmitButton" data-consult-mode="${mode}" type="button" disabled aria-disabled="true" onclick="startAnalysis('${mode}')" style="opacity:.48;cursor:default" class="w-full py-3.5 active:scale-[0.98] text-white font-extrabold text-[13px] rounded-2xl transition-all flex items-center justify-center gap-1.5">
+                            <span>${mode === "F" ? "로아 언니, 이걸로 같이 봐줘" : "서아 언니, 이걸로 정리해줘"}</span>
                         </button>
                     `;
           }
@@ -5706,43 +5872,61 @@ currentResultData = {
         // [아이폰 비밀 메모장 렌더링] 무료 미리보기 / 구매 확인 후 전체 공개
         const notesData = generateConcernNotes(data, mode);
 
+        const noteRoleMeta = {
+          "01": { label:"핵심 진단", className:"note-role-diagnosis" },
+          "02": { label:"반복 패턴", className:"note-role-pattern" },
+          "03": { label:"왜 그런지", className:"note-role-cause" },
+          "04": { label:"바꿀 순서", className:"note-role-action" },
+          "05": { label:"맞는 조건", className:"note-role-fit" },
+          "06": { label:"시간 흐름", className:"note-role-timing" },
+        };
+
+        const splitNoteParagraphs = (html) =>
+          String(html || "")
+            .split(/<br\s*\/?>\s*<br\s*\/?>/i)
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+        const renderNoteBody = (item) => {
+          const parts = splitNoteParagraphs(item.desc);
+          if (String(item.themeNum) === "04") {
+            return `<div class="note-body note-body-steps">${parts
+              .map((part,index)=>`<div class="note-step"><span class="note-step-num">${index + 1}</span><div>${part}</div></div>`)
+              .join("")}</div>`;
+          }
+          if (String(item.themeNum) === "06") {
+            return `<div class="note-body note-body-timeline">${parts
+              .map((part)=>`<div class="note-time-row"><span class="note-time-dot"></span><div>${part}</div></div>`)
+              .join("")}</div>`;
+          }
+          if (["02","03"].includes(String(item.themeNum))) {
+            return `<div class="note-body note-body-flow">${parts
+              .map((part)=>`<div class="note-flow-row"><span class="note-flow-line"></span><div>${part}</div></div>`)
+              .join("")}</div>`;
+          }
+          return `<div class="note-body">${parts.map((part)=>`<p>${part}</p>`).join("")}</div>`;
+        };
+
         const buildNotesHTML = (items) => {
           return items
             .map((item) => {
-              const numColor = isT
-                ? "text-sky-600 bg-sky-50 border-sky-200"
-                : "text-rose-600 bg-rose-50 border-rose-200";
-              const checkColor = isT ? "text-sky-600" : "text-rose-500";
+              const num = String(item.themeNum).padStart(2,"0");
+              const meta = noteRoleMeta[num] || { label:item.badge || "", className:"" };
+              const accent = isT ? "note-tone-t" : "note-tone-f";
               return `
-                    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-amber-200/60 shadow-sm space-y-3 font-sans transition-all">
-                        <!-- 메모 상단 태그 & 번호 -->
-                        <div class="flex flex-nowrap justify-between items-center gap-2 pb-2 border-b border-slate-100">
-                            <span class="text-[10px] font-mono font-black px-2 py-0.5 rounded-md border ${numColor} shrink-0">
-                                NOTE ${item.themeNum}
-                            </span>
-                            <span class="text-[10px] text-slate-500 font-bold text-right whitespace-nowrap shrink-0">
-                                ${item.badge}
-                            </span>
+                    <article class="note-editorial ${meta.className} ${accent}" data-note-role="${num}">
+                        <div class="note-editorial-head">
+                          <span class="note-number">NOTE ${item.themeNum}</span>
+                          <span class="note-role-label">${meta.label}</span>
+                          <span class="note-badge">${item.badge}</span>
                         </div>
-
-                        <!-- 메모 타이틀 (외톨이 단어 방지 균형 줄바꿈) -->
-                        <h4 class="text-[14px] sm:text-[15px] font-black text-slate-900 leading-snug break-keep" style="text-wrap: balance;">
-                            ${item.title}
-                        </h4>
-
-                        <!-- 메모 본문 -->
-                        <div class="text-[12px] sm:text-[13px] text-slate-700 leading-relaxed break-keep font-normal space-y-2">
-                            ${item.desc}
+                        <h4 class="note-editorial-title">${item.title}</h4>
+                        ${renderNoteBody(item)}
+                        <div class="note-check">
+                          <span class="note-check-mark">✓</span>
+                          <div><span class="note-check-label">${isT ? "실전 룰" : "언니랑 약속"}</span><span> ${item.checklist}</span></div>
                         </div>
-
-                        <!-- 메모 하단 실전 체크리스트 박스 -->
-                        <div class="mt-2.5 pt-2.5 border-t border-dashed border-amber-200/60 flex items-start gap-2 bg-amber-50/40 p-2.5 rounded-xl text-left">
-                            <span class="${checkColor} font-black text-sm shrink-0 mt-0.5">✔</span>
-                            <div class="text-[11px] font-bold text-slate-800 leading-relaxed break-keep flex-1 min-w-0" style="text-wrap: balance;">
-                                <span class="text-amber-800 font-extrabold">${isT ? "[실전 룰]" : "[언니랑 약속]"}</span> ${item.checklist}
-                            </div>
-                        </div>
-                    </div>`;
+                    </article>`;
             })
             .join("");
         };
@@ -5780,27 +5964,26 @@ currentResultData = {
               notesContainer.insertAdjacentHTML(
                 "beforeend",
                 `
-                  <div id="note2PreviewCard" class="relative overflow-hidden bg-white rounded-2xl p-4 sm:p-5 border border-amber-200/60 shadow-sm text-left">
-                      <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-100">
-                          <span class="text-[10px] font-mono font-black px-2 py-0.5 rounded-md border ${
+                  <div id="note2PreviewCard" class="note-editorial note-role-pattern ${isT ? "note-tone-t" : "note-tone-f"} relative overflow-hidden text-left">
+                      <div class="note-editorial-head">
+                          <span class="note-number ${
                             isT
                               ? "text-sky-600 bg-sky-50 border-sky-200"
                               : "text-rose-600 bg-rose-50 border-rose-200"
                           }">
                               NOTE ${nextNote.themeNum}
                           </span>
-                          <span class="text-[10px] text-slate-500 font-bold text-right whitespace-nowrap shrink-0">
-                              ${nextNote.badge}
-                          </span>
+                          <span class="note-role-label">반복 패턴</span>
+                          <span class="note-badge">${nextNote.badge}</span>
                       </div>
-                      <h4 class="mt-3 text-[14px] sm:text-[15px] font-black text-slate-900 leading-snug break-keep">
+                      <h4 class="note-editorial-title">
                           ${nextNote.title}
                       </h4>
-                      <div id="note2PreviewBody" class="mt-3 text-[12px] sm:text-[13px] text-slate-700 leading-relaxed break-keep">
+                      <div id="note2PreviewBody" class="note-body note-body-flow">
                         ${previewDesc}
                       </div>
-                      <div class="mt-3 rounded-xl border border-dashed border-amber-300 bg-amber-50/80 px-3 py-3 text-center">
-                          <p class="text-[11px] font-bold text-amber-800 leading-relaxed break-keep">
+                      <div class="note-preview-continuation">
+                          <p>
                               ${isT
                                 ? "여기서부터 원인과 끊을 지점이 나온다."
                                 : "응, 여기서부터가 진짜 중요한 부분이야."}
