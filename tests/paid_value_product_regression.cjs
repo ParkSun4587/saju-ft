@@ -353,8 +353,8 @@ function norm(v) {
     assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
     assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-    assert(ui.fPaywallText.includes('로아 언니 · 여기서부터 같이 보자') && ui.fPaywallText.includes('진짜 중요한 건 이제부터야') && ui.fPaywallText.includes('로아 언니, 나머지도 같이 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
-    assert(ui.tPaywallText.includes('서아 언니 · 여기서부터 정리할게') && ui.tPaywallText.includes('원인하고 끊을 지점') && ui.tPaywallText.includes('서아 언니, 답까지 정리해줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
+    assert(ui.fPaywallText.includes('로아 언니 · 여기서부터 같이 보자') && ui.fPaywallText.includes('이제 어떻게 끊을지가 남아 있어') && ui.fPaywallText.includes('로아 언니, 나머지도 같이 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
+    assert(ui.tPaywallText.includes('서아 언니 · 여기서부터 정리할게') && ui.tPaywallText.includes('원인과 끊을 지점') && ui.tPaywallText.includes('서아 언니, 답까지 정리해줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
     assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
     assert(ui.fPaywallText.includes('NOTE2 다음부터 NOTE6까지') && ui.tPaywallText.includes('NOTE2 다음부터 NOTE6까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), '990 won unlock scope or stale sale badge drift');
@@ -364,8 +364,8 @@ function norm(v) {
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(ui.visibleProducts === 1 && ui.secondaryProducts === 3 && ui.otherToggle && ui.otherExpanded === 'false' && !ui.otherVisible, `premium catalog should show one recommendation first and keep three alternatives folded but discoverable: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherExpanded:ui.otherExpanded,otherVisible:ui.otherVisible})}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
-  assert(ui.fGreeting.includes('다 봤어!') && ui.fGreeting.includes('네 얘기부터 차근차근 같이 풀어볼게') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 105, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
-  assert(ui.tGreeting.includes('뭐가 진짜 문제고') && ui.tGreeting.includes('좋은 건 좋다, 아닌 건 아니다') && ui.tGreeting.length <= 105, `T result intro should feel dry but caring: ${ui.tGreeting}`);
+  assert(ui.fGreeting.includes('왜 자꾸 마음이 남는지 보여') && ui.fGreeting.includes('먼저 핵심부터 같이 볼게') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 105, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
+  assert(ui.tGreeting.includes('먼저 볼 핵심이 잡혔어') && ui.tGreeting.includes('중요한 것부터 정리할게') && ui.tGreeting.length <= 105, `T result intro should feel concise but caring: ${ui.tGreeting}`);
   assert(ui.catalogText.includes('이 고민은 여기까지 같이 봤어') && ui.catalogText.includes('다음엔 이걸 먼저 보는 게 좋아') && ui.catalogText.includes('왜 추천했냐면') && ui.catalogText.includes('목적이 다르면 다른 3개 보기') && (ui.catalogText.includes('상대 사주까지 겹쳐야 나오는') || ui.catalogText.includes('나 전체 구조 · 영역 연결 · 5년 흐름')), 'post-NOTE6 recommended-first disclosure handoff missing');
   assert(ui.mbtiInfo.gradeText.includes('재미로 보는 사주 MBTI 번역') && ui.mbtiInfo.gradeText.includes('실제 검사 MBTI와 다를 수 있어'), `MBTI risk framing missing: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.mbtiInfo.fontSize <= 38 && ui.mbtiInfo.oneLineBeforeThreeLine && ui.mbtiInfo.threeLineBeforeMbti && ui.mbtiInfo.mbtiBeforeChem, `result hierarchy must be one-line → 3-line → MBTI → chemistry: ${JSON.stringify(ui.mbtiInfo)}`);
