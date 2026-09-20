@@ -23,6 +23,7 @@ function norm(v) {
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.2.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '2.0.0' &&
+    globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.0.0' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
 
@@ -120,6 +121,8 @@ function norm(v) {
       noteVersion:globalThis.__CONCERN_NOTE_ENGINE_V2__,
       productVersion:globalThis.__UNNI_PRODUCTS_V1__,
       products:globalThis.__UNNI_PRODUCTS_V1__.products,
+      contracts:globalThis.__UNNI_PRODUCTS_V1__.contracts,
+      policyVersion:globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version,
       wrappers:{
         noteV2:!!generateConcernNotes.__noteV2Wrapped,
         causal:!!generateConcernNotes.__classicalCausal,
@@ -135,16 +138,21 @@ function norm(v) {
 
   assert(qa.paidVersion.version === '1.5.0', 'paid value layer missing');
   assert(qa.noteVersion.version === '3.2.0', 'NOTE v3 engine missing');
-  assert(qa.productVersion.version === '2.0.0', 'product layer missing');
+  assert(qa.productVersion.version === '2.0.0' && qa.policyVersion === '1.0.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
   const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
   for (const [id, price] of Object.entries(expectedPrices)) assert(qa.products[id]?.price === price, `${id} price drift`);
-  assert(qa.products.concern_bundle3.badge === '다른 고민도 3개 더' && qa.products.concern_bundle3.desc.includes('원인부터 행동·사람·시기까지'), 'bundle3 young-user value copy missing');
-  assert(qa.products.full_saju.badge === '내 사주 전체 보기' && qa.products.full_saju.desc.includes('하나의 흐름으로 이어서'), 'full-saju plain-language value copy missing');
-  assert(qa.products.compatibility.badge === '우리 둘 깊게 보기' && qa.products.compatibility.desc.includes('연락·싸움·화해'), 'compatibility plain-language value copy missing');
-  assert(qa.products.all_in_one.name === '내 사주 완전판' && qa.products.all_in_one.badge === '내 사주 전부 보기' && qa.products.all_in_one.desc.includes('내 사주와 6가지 고민'), 'all-in-one plain-language copy drift');
+  assert(qa.products.concern_bundle3.badge === '다른 고민 3개 확장' && qa.products.concern_bundle3.desc.includes('공통 구조'), 'bundle3 unique-value copy missing');
+  assert(qa.products.full_saju.badge === '전체 구조 + 5년 흐름' && qa.products.full_saju.desc.includes('향후 5년'), 'full-saju long-horizon value copy missing');
+  assert(qa.products.compatibility.badge === '두 사람 사주 교차' && qa.products.compatibility.desc.includes('상대 사주'), 'compatibility two-person value copy missing');
+  assert(qa.products.all_in_one.name === '내 사주 완전판' && qa.products.all_in_one.badge === '나 한 사람 전체판' && qa.products.all_in_one.desc.includes('두 사람 궁합은 포함하지 않아'), 'all-in-one single-person boundary copy drift');
   for (const p of Object.values(qa.products)) assert(!/챕터|NOTE \d+/.test(`${p.badge} ${p.desc}`), 'technical product-volume wording remains');
+  assert(qa.contracts.basic_concern?.timelineDepth === 'near-term-plus-long-pivot-teaser' && qa.contracts.basic_concern?.longTermDetail === 'teaser-only', 'basic concern disclosure contract missing');
+  assert(qa.contracts.concern_bundle3?.concernCount === 3 && qa.contracts.concern_bundle3?.longTermDetail === 'teaser-only', 'bundle3 contract drift');
+  assert(qa.contracts.full_saju?.longTermDetail === 'full-five-year' && qa.contracts.full_saju?.secondPersonRequired === false, 'full_saju contract drift');
+  assert(qa.contracts.compatibility?.secondPersonRequired === true && qa.contracts.compatibility?.compatibilityAllowed === true, 'compatibility contract drift');
+  assert(qa.contracts.all_in_one?.concernCount === 6 && qa.contracts.all_in_one?.compatibilityAllowed === false, 'all-in-one contract drift');
 
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
