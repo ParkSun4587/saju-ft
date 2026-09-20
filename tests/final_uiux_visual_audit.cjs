@@ -54,7 +54,7 @@ async function prepareResult(page,mode='F'){
   await shot(page,'07-result-first');
   await shot(page,'08-core-insight',page.locator('#coreThreeLineSummary'));
   await shot(page,'09-five-elements',page.locator('#ohengBarContainer').locator('xpath=..'));
-  const note1=page.locator('#notesListContainer > div').first();
+  const note1=page.locator('#notesListContainer > [data-note-role]').first();
   await shot(page,'10-note1',note1);
   await shot(page,'11-note2-preview',page.locator('#note2PreviewCard'));
   await shot(page,'12-paywall',page.locator('#paywallCard'));
@@ -82,7 +82,7 @@ async function prepareResult(page,mode='F'){
     renderUnniProductCatalog();
   });
   await page.waitForSelector('#unniProductLadder [data-unni-product]',{state:'visible',timeout:10000});
-  const cards=page.locator('#notesListContainer > div');
+  const cards=page.locator('#notesListContainer > [data-note-role]');
   const count=await cards.count();
   for(let i=2;i<count;i++){
     await shot(page,`14-note${i+1}`,cards.nth(i));
