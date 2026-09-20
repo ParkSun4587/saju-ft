@@ -1761,7 +1761,16 @@
     const paymentKey = params.get("paymentKey"), orderId = params.get("orderId"), amount = Number(params.get("amount"));
     if (!paymentKey || orderId !== resume.orderId || amount !== Number(resume.amount)) throw new Error("상품 결제 복귀 정보가 일치하지 않아. 재결제하지 말고 주문번호로 문의해줘.");
     const token = await confirmPaymentOnServer(paymentKey, orderId, amount, resume.userKey, ticket);
-    saveGrant(restored, productId, { userKey: resume.userKey, token, extra: resume.data?.x || {}, orderId });
+    saveGrant(restored, productId, {
+      userKey:resume.userKey,
+      token,
+      extra:resume.data?.x || {},
+      orderId,
+      amount:Number(resume.amount),
+      baseAmount:Number(resume.baseAmount || product.price),
+      quote:resume.quote || null,
+    });
+    invalidateEntitlementCache();
     try { sessionStorage.removeItem("unni_pending_approval"); } catch (_) {}
     showReport(productId, restored, resume.data?.x || {});
     if (typeof showToast === "function") showToast("결제 확인됐어. 리포트 열어뒀어.");
@@ -1771,11 +1780,16 @@
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
   global.__UNNI_PRODUCTS_V1__ = {
-    version: "2.0.1",
-    products: PRODUCTS,
-    contracts: global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.contracts || {},
-    buildProductBody: productBody,
+    version:"2.1.0",
+    products:PRODUCTS,
+    contracts:global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.contracts || {},
+    buildProductBody:productBody,
+    buildFullSajuSections:fullSajuSections,
     recommendedProductId,
+    resolveVerifiedEntitlements,
+    productStateFor,
+    collectStoredPremiumGrants,
+    invalidateEntitlementCache,
   };
 
   const observer = new MutationObserver(() => renderCatalog());
