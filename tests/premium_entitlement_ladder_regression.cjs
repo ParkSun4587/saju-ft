@@ -115,6 +115,13 @@ function loadServer(){
   const preparedCompat=await call({action:'prepare',data:allData,entitlementTokens:[compat]});
   assert(preparedCompat.json.amount===9900,'server prepare credited compatibility');
 
+  const blockedFullFromAll=await call({action:'prepare',data:{...base,p:'full_saju',x:{}},entitlementTokens:[all]});
+  assert(blockedFullFromAll.status===409&&!blockedFullFromAll.json.ok,'all_in_one owner can repurchase included full_saju');
+  const blockedBundleFromAll=await call({action:'prepare',data:{...base,p:'concern_bundle3',x:bundleExtra},entitlementTokens:[all]});
+  assert(blockedBundleFromAll.status===409&&!blockedBundleFromAll.json.ok,'all_in_one owner can repurchase included concern bundle');
+  const compatAfterAll=await call({action:'prepare',data:{...base,p:'compatibility',x:{partner:{n:'다른상대',b:'20010101',t:'unknown',g:'male',c:'solar',l:false}}},entitlementTokens:[all]});
+  assert(compatAfterAll.status===200&&compatAfterAll.json.amount===5900,'all_in_one incorrectly entitles or discounts compatibility');
+
   const tampered=await call({action:'confirm',paymentKey:'pay_upgrade_bad',orderId:preparedFull.json.orderId,amount:9900,userKey:preparedFull.json.userKey,ticket:preparedFull.json.ticket});
   assert(tampered.status===400&&!tampered.json.ok,'tampered return amount was accepted');
 
