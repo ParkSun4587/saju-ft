@@ -63,13 +63,13 @@
             :"월령 자료가 부족해 격의 중심을 확정하지 않는다.",
           facts:{
             monthBranch:ctx.monthBranch||null,basisGan:s.basisGan||null,basis:s.basis||null,saryeongGan:s.saryeongGan||null,
-            touchul:!!s.touchul,hiddenGans:s.hiddenGans||[],hiddenLayers,visibleHidden:s.visibleHidden||[],candidates:s.candidates||[],
+            flow:s.flow||null,touchul:!!s.touchul,hiddenGans:s.hiddenGans||[],hiddenLayers,visibleHidden:s.visibleHidden||[],candidates:s.candidates||[],
             branchType:s.branchType||null,confidence:s.confidence||null,
           },
           conditions:["월령을 격의 출발점으로 사용","본기·중기·여기와 투출·사령 후보를 구분해 보존"],
           exceptions:s.confidence==="medium"?["절기 내 사령 일수 자료가 없어 격 확정 근거가 중간 신뢰도"]:[],
           supportGods:[],harmGods:[],rescueGods:[],
-          causalSteps:[{step:"establish",text:"월령의 지장간·사령·투출을 비교해 격의 출발점을 정함",facts:{basisGan:s.basisGan||null,basis:s.basis||null}}],
+          causalSteps:[{step:"establish",text:"월령의 지장간·사령·투출을 비교해 격의 출발점을 정하고 순용·역용 방향을 보존",facts:{basisGan:s.basisGan||null,basis:s.basis||null,flow:s.flow||null}}],
           tags:["month-frame"],
         });
       },
