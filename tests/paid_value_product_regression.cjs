@@ -629,6 +629,7 @@ function norm(v) {
   assert(html.indexOf('data-unni-auth="kakao"') < html.indexOf('data-unni-auth="naver"'), 'Naver must follow Kakao in auth order');
   assert(html.includes('completeUnniAuth') && html.includes('__UNNI_AUTH_BRIDGE__'), 'auth bridge scaffolding missing');
   const premium = fs.readFileSync('premium-products-v1.js','utf8');
+  const contentPolicySource = fs.readFileSync('product-content-policy-v1.js','utf8');
   assert(!premium.includes('unniProductKeepsake') && !premium.includes('keepsakeCardHtml') && !premium.includes('renderPaidKeepsake'), 'paid keepsake-card subsystem should be removed');
   assert(premium.includes('saveFullPaidReport') && premium.includes('unniProductSaveAll'), 'full paid-report image save missing');
   assert(!premium.includes('다른 브라우저') && !premium.includes('외부 브라우저'), 'paid image save should not tell users to switch browsers');
@@ -683,7 +684,14 @@ function norm(v) {
   assert(premium.includes('data-bundle-situation') && premium.includes('data-all-situation'), 'premium situation selectors missing');
   assert(premium.includes('<option value="solar">양력</option><option value="lunar">음력</option>') && !premium.includes('양력 생일') && !premium.includes('음력 생일'), 'compatibility calendar labels should be simple');
   assert(!premium.includes('예: 오후 3시 20분이면'), 'compatibility birth-time helper should be removed');
-  assert(premium.includes('우리 둘이 왜 끌리고 어디서 부딪히는지까지') && premium.includes('내 사주와 6가지 고민을 따로 고르지 않고 전부') && premium.includes('왜 이걸 먼저 추천하냐면'), 'young-user outcome-led product copy missing');
+  assert(
+    contentPolicySource.includes('다른 고민 3개도 같은 사주로 각각 깊게 풀어보기') &&
+    contentPolicySource.includes('내 사주 전체 구조와 앞으로 5년의 큰 흐름 보기') &&
+    contentPolicySource.includes('두 사람 사주를 겹쳐 관계의 이유와 시기 보기') &&
+    contentPolicySource.includes('나 한 사람의 전체 사주판과 6개 고민을 한 번에 열기') &&
+    premium.includes('왜 이걸 먼저 추천하냐면'),
+    'young-user outcome-led product copy missing'
+  );
   assert(fs.readFileSync('paid-value-layer-v1.js','utf8').includes('SITUATION_PROFILES'), 'situation-aware paid copy layer missing');
   for (const staleCopy of ['내 본캐 스탯','내 사주 본캐 카드 저장하기','본캐 카드 저장']) assert(!html.includes(staleCopy), `stale share copy remains: ${staleCopy}`);
 
