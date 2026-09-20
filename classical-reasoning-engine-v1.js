@@ -457,14 +457,40 @@
     return {layer,ganZhi,gan,zhi,god:resolvedGod,branchGods,group,ganElement:ganEl,branchHiddenElements:hiddenEls,supportSignals,cautionSignals,neutralSignals,relations:rels,triadCompletions};
   }
 
-  function signalValue(rows){
-    return(rows||[]).reduce((sum,x)=>sum+(x.severity==="major"?2:x.severity==="support"?1:0),0);
-  }
   function combineTransitLayers(layers){
-    const supportSignals=layers.flatMap(x=>x?.supportSignals||[]),cautionSignals=layers.flatMap(x=>x?.cautionSignals||[]),neutralSignals=layers.flatMap(x=>x?.neutralSignals||[]);
-    const support=signalValue(supportSignals),caution=signalValue(cautionSignals),net=support-caution;
-    const cls=net>=3?"supportive":net<=-3?"caution":net>0?"mild-support":net<0?"mild-caution":"neutral";
-    return {supportSignals,cautionSignals,neutralSignals,support,caution,net,class:cls};
+    const supportSignals=layers.flatMap(x=>x?.supportSignals||[]);
+    const cautionSignals=layers.flatMap(x=>x?.cautionSignals||[]);
+    const neutralSignals=layers.flatMap(x=>x?.neutralSignals||[]);
+    const evidence={
+      majorSupport:supportSignals.filter(x=>x.severity==="major").length,
+      support:supportSignals.filter(x=>x.severity==="support").length,
+      majorCaution:cautionSignals.filter(x=>x.severity==="major").length,
+      caution:cautionSignals.filter(x=>x.severity==="support").length,
+    };
+    let cls="neutral";
+    if(evidence.majorSupport&&evidence.majorCaution) cls="mixed";
+    else if(evidence.majorSupport) cls="supportive";
+    else if(evidence.majorCaution) cls="caution";
+    else if(evidence.support&&evidence.caution) cls="mixed";
+    else if(evidence.support) cls="mild-support";
+    else if(evidence.caution) cls="mild-caution";
+    return {supportSignals,cautionSignals,neutralSignals,evidence,class:cls};
+  }
+  function opportunityComparator(a,b){
+    const ae=a.evidence||{},be=b.evidence||{};
+    return (be.majorSupport||0)-(ae.majorSupport||0)
+      ||(be.support||0)-(ae.support||0)
+      ||(ae.majorCaution||0)-(be.majorCaution||0)
+      ||(ae.caution||0)-(be.caution||0)
+      ||String(a.date||a.startYmd||"").localeCompare(String(b.date||b.startYmd||""));
+  }
+  function cautionComparator(a,b){
+    const ae=a.evidence||{},be=b.evidence||{};
+    return (be.majorCaution||0)-(ae.majorCaution||0)
+      ||(be.caution||0)-(ae.caution||0)
+      ||(ae.majorSupport||0)-(be.majorSupport||0)
+      ||(ae.support||0)-(be.support||0)
+      ||String(a.date||a.startYmd||"").localeCompare(String(b.date||b.startYmd||""));
   }
   function parseYmd(v){const m=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?Date.UTC(+m[1],+m[2]-1,+m[3]):null;}
   function ymdFromMs(ms){const d=new Date(ms);return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}`;}
@@ -514,24 +540,30 @@
       const caution=[...monthRows].sort((a,b)=>a.net-b.net||b.caution-a.caution||String(a.startYmd).localeCompare(String(b.startYmd)))[0]||null;
       years.push({
         year,status:"ok",daeunGanZhi,daeunGod,seyunGanZhi,seyunGod,
-        score:yearCombined.net,baseScore:yearCombined.net,class:yearCombined.class,
+        class:yearCombined.class,evidence:yearCombined.evidence,
         supportSignals:yearCombined.supportSignals,cautionSignals:yearCombined.cautionSignals,neutralSignals:yearCombined.neutralSignals,
         bestMonth:best,cautionMonth:caution&&best&&caution.startYmd!==best.startYmd?caution:null,
       });
     }
     nearMonths.sort((a,b)=>String(a.startYmd).localeCompare(String(b.startYmd)));
     const pointPool=[
-      ...nearMonths.map(m=>({scope:"month",date:m.startYmd,label:m.ganZhi,net:m.net,support:m.support,caution:m.caution,class:m.class,supportSignals:m.supportSignals,cautionSignals:m.cautionSignals})),
-      ...years.filter(y=>String(y.year)>detailEnd.slice(0,4)).map(y=>({scope:"year",date:`${y.year}-01-01`,label:String(y.year),net:y.score,support:signalValue(y.supportSignals),caution:signalValue(y.cautionSignals),class:y.class,supportSignals:y.supportSignals,cautionSignals:y.cautionSignals})),
+      ...nearMonths.map(m=>({scope:"month",date:m.startYmd,label:m.ganZhi,evidence:m.evidence,class:m.class,supportSignals:m.supportSignals,cautionSignals:m.cautionSignals})),
+      ...years.filter(y=>String(y.year)>detailEnd.slice(0,4)).map(y=>({scope:"year",date:`${y.year}-01-01`,label:String(y.year),evidence:y.evidence,class:y.class,supportSignals:y.supportSignals,cautionSignals:y.cautionSignals})),
     ];
-    const opportunities=[...pointPool].filter(x=>x.net>0).sort((a,b)=>b.net-a.net||b.support-a.support||String(a.date).localeCompare(String(b.date))).slice(0,3);
-    const cautions=[...pointPool].filter(x=>x.net<0).sort((a,b)=>a.net-b.net||b.caution-a.caution||String(a.date).localeCompare(String(b.date))).slice(0,2);
+    const opportunities=[...pointPool]
+      .filter(x=>["supportive","mild-support"].includes(x.class))
+      .sort(opportunityComparator)
+      .slice(0,3);
+    const cautions=[...pointPool]
+      .filter(x=>["caution","mild-caution"].includes(x.class))
+      .sort(cautionComparator)
+      .slice(0,2);
     const timing={
       today,detailEnd,horizonEnd,nearMonths,years,turningPoints:{opportunities,cautions},
       coverage:{availableYears:years.map(y=>y.year),nearMonthCount:nearMonths.length},
       method:"원국 강약·뿌리·통관 + 자평진전 격의 도움/방해/구응 + 대운·세운·월운 천간·지지 + 원국과의 합·충·형·파·해를 신호별로 분리 비교. 합화와 특수격 변화는 확정하지 않음.",
     };
-    timing.fingerprint=stableHash({today:timing.today,detailEnd:timing.detailEnd,horizonEnd:timing.horizonEnd,nearMonths:timing.nearMonths.map(x=>({start:x.startYmd,ganZhi:x.ganZhi,net:x.net,s:x.supportSignals.map(v=>v.code),c:x.cautionSignals.map(v=>v.code)})),years:timing.years.map(y=>({year:y.year,daeun:y.daeunGanZhi,seyun:y.seyunGanZhi,score:y.score,s:y.supportSignals.map(v=>v.code),c:y.cautionSignals.map(v=>v.code)}))});
+    timing.fingerprint=stableHash({today:timing.today,detailEnd:timing.detailEnd,horizonEnd:timing.horizonEnd,nearMonths:timing.nearMonths.map(x=>({start:x.startYmd,ganZhi:x.ganZhi,class:x.class,evidence:x.evidence,s:x.supportSignals.map(v=>v.code),c:x.cautionSignals.map(v=>v.code)})),years:timing.years.map(y=>({year:y.year,daeun:y.daeunGanZhi,seyun:y.seyunGanZhi,class:y.class,evidence:y.evidence,s:y.supportSignals.map(v=>v.code),c:y.cautionSignals.map(v=>v.code)}))});
     return timing;
   }
 
