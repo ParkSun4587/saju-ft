@@ -4,6 +4,8 @@ on:
     branches:
       - uiux-final-redesign-20260920
     paths:
+      - index.html
+      - premium-products-v1.js
       - tests/final_uiux_visual_audit.cjs
       - .github/workflows/final-uiux-visual-audit.yml
 jobs:
