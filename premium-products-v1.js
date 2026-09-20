@@ -121,6 +121,33 @@
       || null;
   }
 
+  function productPolicyApi() {
+    return global.__UNNI_PRODUCT_CONTENT_POLICY_V1__ || null;
+  }
+
+  function policyGate(productId, features, context) {
+    const api = productPolicyApi();
+    if (!api?.validateProductPayload) {
+      return { ok:false, errors:["policy-unavailable"], deniedFeatures:features || [] };
+    }
+    return api.validateProductPayload(productId, {
+      features: features || [],
+      ...(context || {}),
+    });
+  }
+
+  function policyBlockedHtml(productId, gate) {
+    const reason = (gate?.errors || []).join(",");
+    return `<p data-content-blocked="policy" data-product-contract="${esc(productId)}" data-policy-errors="${esc(reason)}" style="font-size:13px;line-height:1.8;color:#475569">이 상품에서 허용되지 않은 정보 요청이 감지돼서 결과를 열지 않았어.</p>`;
+  }
+
+  function policyTiming(productId, timing) {
+    const api = productPolicyApi();
+    return api?.filterTimingForProduct
+      ? api.filterTimingForProduct(productId, timing || {})
+      : { concernNearTerm:null,longTermPivots:[],fullSajuTimeline:null,compatibilityTimeline:null,fullHorizon:null };
+  }
+
   function productValueCopy(productId) {
     return global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.valueCopy?.[productId] || null;
   }
@@ -169,7 +196,8 @@
     const bridge = r.ditian?.findings?.find(x=>x.id==="DTS_BRIDGE_112");
     const z = reasoningMainZiping(r);
     const prescription = r.integrated?.prescription || {};
-    const timeline = r.timing?.fullSajuTimeline || {};
+    const disclosedTiming = policyTiming("full_saju", r.timing);
+    const timeline = disclosedTiming.fullSajuTimeline || {};
     const years = Array.isArray(timeline.years) ? timeline.years : [];
     const nearHighlights = Array.isArray(timeline.nearHighlights) ? timeline.nearHighlights : [];
     const daeunPeriods = Array.isArray(timeline.daeunPeriods) ? timeline.daeunPeriods : [];
@@ -348,6 +376,8 @@
   }
 
   function fullSajuHtml(data, mode) {
+    const gate = policyGate("full_saju", ["full-five-year","monthly-detail","cross-domain","daewoon-context"], { months:18, concernCount:0 });
+    if (!gate.ok) return policyBlockedHtml("full_saju", gate);
     const isT = mode === "T";
     const reasoning = getReasoning(data);
     const contract = contentPolicy("full_saju");
@@ -362,6 +392,8 @@
 
   function bundleHtml(data, mode, extra) {
     const keys = Array.isArray(extra?.concerns) ? extra.concerns : [];
+    const gate = policyGate("concern_bundle3", ["additional-concerns","monthly-detail"], { months:18, concernCount:keys.length });
+    if (!gate.ok) return policyBlockedHtml("concern_bundle3", gate);
     const runs = keys.map((key) => {
       const concernSituation = extra?.situations?.[key] || "";
       const d = { ...data, concernKey:key, concernSituation };
@@ -384,6 +416,10 @@
   }
 
   function allInOneHtml(data, mode, extra) {
+    const sanitized = productPolicyApi()?.sanitizeProductPayload?.("all_in_one", { extra }) || { extra };
+    extra = sanitized.extra || {};
+    const gate = policyGate("all_in_one", ["all-six-concerns","full-five-year","monthly-detail","cross-domain","daewoon-context"], { months:18, concernCount:Object.keys(CONCERNS).length });
+    if (!gate.ok) return policyBlockedHtml("all_in_one", gate);
     const baseReasoning = getReasoning(data);
     const allRuns = Object.keys(CONCERNS).map((key) => {
       const concernSituation =
@@ -438,6 +474,9 @@
   }
 
   function compatibilityHtml(data, mode, extra) {
+    const secondPersonPresent = !!extra?.partner?.b;
+    const gate = policyGate("compatibility", ["compatibility","second-person","monthly-detail"], { months:18, secondPersonPresent, concernCount:0 });
+    if (!gate.ok) return policyBlockedHtml("compatibility", gate);
     const isT = mode === "T";
     let partner;
     try { partner = partnerChart(extra); } catch (e) { partner = null; }
@@ -1053,10 +1092,12 @@
 
   function productBody(productId, data, extra) {
     const mode = getMode(data);
-    if (productId === "concern_bundle3") return bundleHtml(data, mode, extra);
+    const sanitized = productPolicyApi()?.sanitizeProductPayload?.(productId, { extra }) || { extra };
+    const safeExtra = sanitized.extra || {};
+    if (productId === "concern_bundle3") return bundleHtml(data, mode, safeExtra);
     if (productId === "full_saju") return fullSajuHtml(data, mode);
-    if (productId === "all_in_one") return allInOneHtml(data, mode, extra);
-    if (productId === "compatibility") return compatibilityHtml(data, mode, extra);
+    if (productId === "all_in_one") return allInOneHtml(data, mode, safeExtra);
+    if (productId === "compatibility") return compatibilityHtml(data, mode, safeExtra);
     return "";
   }
 
