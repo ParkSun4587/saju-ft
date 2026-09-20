@@ -1635,7 +1635,7 @@
 
     if (explicitIntent === "everything") return "all_in_one";
     if (explicitIntent === "other-concerns") return "concern_bundle3";
-    if (relationshipIntent) return "compatibility";
+    if (relationshipIntent && !has("compatibility")) return "compatibility";
     return "full_saju";
   }
 
