@@ -97,8 +97,11 @@ async function inspect(page, mode) {
       dayMasterTag:document.getElementById('dayMasterTag')?.innerText||'',
       sourceFreeLaunch:FREE_LAUNCH_MODE,
       count:products.length,
-      visible:products.filter(x=>getComputedStyle(x).display!=='none').length,
+      visible:products.filter(x=>x.offsetParent!==null).length,
       catalog:document.getElementById('unniProductLadder')?.innerText||'',
+      otherToggle:!!document.getElementById('unniShowOtherProducts'),
+      otherExpanded:document.getElementById('unniShowOtherProducts')?.getAttribute('aria-expanded')||'',
+      otherVisible:document.getElementById('unniOtherProducts') ? getComputedStyle(document.getElementById('unniOtherProducts')).display!=='none' : false,
       note2Preview:document.getElementById('note2PreviewCard')?.innerText||'',
       paywall:document.getElementById('lockedOverlay')?.innerText||'',
       paywallNextTeaser:document.getElementById('paywallNextTeaser')?.innerText||'',
@@ -131,7 +134,7 @@ async function inspect(page, mode) {
   if (mode==='T') assert(r.oheng.includes('중요한 건 이 차이가 지금 고민에서 어떤 반복을 만드는지야')&&r.oheng.includes('바로 아래 비밀 메모')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng secret-note teaser '+r.oheng);
   assert(!/[나무불흙쇠물]\)/.test(r.oheng+r.dayMasterTag),'old parenthetical five-element wording remains '+JSON.stringify({oheng:r.oheng,day:r.dayMasterTag}));
   if(r.sourceFreeLaunch){
-    assert(r.count===4&&r.visible===4,'free-launch should expose the post-NOTE6 product catalog '+JSON.stringify(r));
+    assert(r.count===4&&r.visible===1&&r.otherToggle&&r.otherExpanded==='false'&&!r.otherVisible,'free-launch should show one recommended product and keep three discoverable alternatives folded '+JSON.stringify(r));
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
     assert(/NOTE 0?2/.test(r.note2Preview)&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
@@ -141,9 +144,9 @@ async function inspect(page, mode) {
     assert(!/NOTE 0?2 이어서|NOTE 0?6|오픈 체험가/.test(r.paywall),'internal NOTE labels or stale generic sale copy remains '+r.paywall);
   }
   if(r.catalog){
-    assert(r.catalog.includes('왜 이걸 먼저 추천하냐면')&&r.catalog.includes('다른 게 더 궁금하다면')&&!r.catalog.includes('다른 리포트 3개 보기'),'old product disclosure remains');
-    assert(r.catalog.includes('내 사주 완전판')&&!r.catalog.includes('어떤언니 올인원'),'all-in-one product name did not update');
-    assert(r.catalog.includes('우리 둘 깊게 보기')&&r.catalog.includes('내 사주 전부 보기')&&!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
+    assert(r.catalog.includes('왜 이걸 먼저 추천하냐면')&&r.catalog.includes('목적이 다르면 다른 3개 보기'),'recommended-first product disclosure missing');
+    assert(r.catalog.includes('새로 열리는 것'),'premium catalog does not explain new information boundary');
+    assert(!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
   }
   assert(r.switchCount===0,'bottom F/T CTA remains');
   assert(r.hierarchy.oneLineBeforeThreeLine&&r.hierarchy.threeLineBeforeMbti&&r.hierarchy.mbtiBeforeChem&&r.hierarchy.mbtiSize<=38,
