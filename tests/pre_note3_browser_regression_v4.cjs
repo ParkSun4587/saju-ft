@@ -39,7 +39,10 @@ async function load(page) {
     typeof buildNoteThreeBlindSpot === 'function' &&
     typeof buildNoteFourPrescription === 'function' &&
     typeof buildNoteFiveEnvironmentFilter === 'function' &&
-    typeof buildNoteSixTiming === 'function' &&
+    typeof globalThis.buildNoteSixTiming === 'undefined' &&
+    typeof globalThis.getTrueBaziTiming === 'undefined' &&
+    typeof renderConcernNotesV2 === 'function' &&
+    globalThis.generateConcernNotes?.__classicalCausal === true &&
     typeof buildConcernDiagnosisV2 === 'function' &&
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.2.1' &&
     typeof analyzeDayMasterStrengthV2 === 'function' &&
