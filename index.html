@@ -651,17 +651,23 @@
   /* first choice */
   #splitIntroSection{background:#17161b!important}
   #splitIntroSection>div{background:#17161b!important;box-shadow:none!important}
-  #topTitleBox{width:calc(100% - 28px)!important;max-width:390px!important;padding:6px 13px 5px!important;border-radius:18px!important;background:rgba(255,253,250,.94)!important;border:1px solid rgba(255,255,255,.8)!important;box-shadow:0 8px 22px rgba(15,23,42,.09)!important}
-  #topTitleBox p:first-child{font-size:16px!important;line-height:1.14!important;font-weight:850!important;letter-spacing:-.04em!important;max-width:330px}
-  #topTitleBox p:nth-child(2){font-size:9px!important;margin-top:2px!important;color:#677080!important}
-  #splitContinuityHint{font-size:8px!important;margin-top:0!important;color:#9aa0aa!important}
-  #centerDivider{background:rgba(255,255,255,.2)!important;box-shadow:none!important}
+  #topTitleBox{width:max-content!important;max-width:calc(100% - 52px)!important;padding:6px 12px 5px!important;border-radius:15px!important;background:rgba(255,253,250,.91)!important;border:1px solid rgba(255,255,255,.72)!important;box-shadow:0 4px 12px rgba(15,23,42,.055)!important}
+  #topTitleBox p:first-child{font-size:15px!important;line-height:1.18!important;font-weight:830!important;letter-spacing:-.035em!important;max-width:310px}
+  #topTitleBox p:nth-child(2){font-size:8.75px!important;margin-top:2px!important;color:#707784!important;font-weight:700!important}
+  #splitContinuityHint{font-size:7.75px!important;margin-top:0!important;color:#a2a6ae!important;font-weight:600!important}
+  #centerDivider{background:rgba(255,255,255,.09)!important;box-shadow:none!important}
   #imgRoa{filter:saturate(.87) brightness(.99)}
   #imgSeoa{filter:saturate(.82) brightness(.92)}
-  .split-choice-bubble{border-width:1px!important;box-shadow:0 8px 22px rgba(15,23,42,.10)!important;padding:11px 13px!important;border-radius:17px!important}
-  .split-choice-bubble p{font-size:12.5px!important;line-height:1.48!important;font-weight:650!important;letter-spacing:-.015em!important}
-  .split-choice-cta{border-width:1px!important;box-shadow:0 7px 18px rgba(15,23,42,.10)!important;padding:9px 13px!important;border-radius:15px!important}
-  .split-choice-cta span:first-child{font-size:11.5px!important;font-weight:800!important}
+  .split-choice-bubble{max-width:86%!important;border-width:1px!important;box-shadow:0 4px 12px rgba(15,23,42,.07)!important;padding:9px 11px!important;border-radius:15px!important}
+  .split-choice-bubble p{font-size:11.5px!important;line-height:1.43!important;font-weight:590!important;letter-spacing:-.012em!important}
+  .split-choice-cta{border-width:1px!important;box-shadow:0 3px 10px rgba(15,23,42,.075)!important;padding:7px 11px!important;border-radius:14px!important}
+  .split-choice-cta span:first-child{font-size:10.75px!important;font-weight:760!important}
+  #panelRoa .split-choice-cta{background:rgba(255,250,251,.94)!important;color:#9d3853!important;border-color:rgba(225,119,143,.55)!important}
+  #panelRoa .split-choice-cta>span:nth-child(2){color:#c94866!important}
+  #panelRoa .split-choice-cta>span:last-child{background:#fffafb!important;border-color:rgba(225,119,143,.55)!important}
+  #panelSeoa .split-choice-cta{background:rgba(31,73,94,.78)!important;color:#f6fbfd!important;border-color:rgba(131,190,214,.42)!important}
+  #panelSeoa .split-choice-cta>span:nth-child(2){color:#cfeaf5!important}
+  #panelSeoa .split-choice-cta>span:last-child{background:#274f63!important;border-color:rgba(131,190,214,.42)!important}
 
   /* consultation input */
   #landingSection,#loadingSection,#resultSection{background:var(--unni-bg)!important}
@@ -796,7 +802,12 @@
   #paymentWidgetArea{background:#faf7f6!important;border-color:#eee1e1!important;border-radius:17px!important}
 
   @media(max-width:370px){
-    #topTitleBox p:first-child{font-size:15px!important}
+    #topTitleBox{max-width:calc(100% - 42px)!important}
+    #topTitleBox p:first-child{font-size:14.25px!important}
+    .split-choice-bubble{max-width:88%!important;padding:8px 10px!important}
+    .split-choice-bubble p{font-size:11px!important}
+    .split-choice-cta{padding:6.5px 10px!important}
+    .split-choice-cta span:first-child{font-size:10.25px!important}
     #sajuInputCardBox{padding:13px!important}
     #sajuForm{gap:10px!important}
     #sajuInputCardBox input[type="text"],#sajuInputCardBox input[type="tel"],#sajuInputCardBox select{min-height:40px!important;height:40px!important}
