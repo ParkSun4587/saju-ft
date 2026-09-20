@@ -170,7 +170,14 @@ async function inspect(page, mode) {
         oneLineBeforeThreeLine:(document.getElementById('sazuCharacterTitle').compareDocumentPosition(document.getElementById('manualBulletList')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
         threeLineBeforeMbti:(document.getElementById('manualBulletList').compareDocumentPosition(document.getElementById('gradeSection')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
         mbtiBeforeChem:(document.getElementById('gradeSection').compareDocumentPosition(document.getElementById('chemBestCard')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+        ohengBeforeNotes:(document.getElementById('resultOhengCard').compareDocumentPosition(document.getElementById('consultationNotesShell')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+        notesBeforeMbti:(document.getElementById('consultationNotesShell').compareDocumentPosition(document.getElementById('gradeSection')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+        notesBeforeShare:(document.getElementById('consultationNotesShell').compareDocumentPosition(document.getElementById('resultShareActions')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
         mbtiSize:parseFloat(getComputedStyle(document.getElementById('resultBigMbti')).fontSize||'0'),
+        extrasOpen:document.getElementById('resultFunExtras')?.open===true,
+        firstLook:document.getElementById('resultFirstLookLabel')?.innerText||'',
+        concernHandoff:document.getElementById('resultConcernHandoffText')?.innerText||'',
+        shareText:document.getElementById('mainShareBtnText')?.innerText||'',
       },
       memoLayout:(()=>{
         const shell=document.getElementById('consultationNotesShell');
@@ -189,6 +196,7 @@ async function inspect(page, mode) {
           noteRadius:ns?.borderRadius||'',
           noteBackground:ns?.backgroundColor||'',
           metaRightDisplay:metaRight?getComputedStyle(metaRight).display:'',
+          metaRightText:metaRight?.innerText||'',
           overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth,
         };
       })(),
@@ -219,13 +227,34 @@ async function inspect(page, mode) {
     assert(r.paywall.includes('NOTE2 다음부터 NOTE6까지')&&!/오픈 체험가/.test(r.paywall),'990 won unlock scope or stale sale copy drift '+r.paywall);
   }
   if(r.catalog){
-    assert(r.catalog.includes('왜 추천했냐면')&&r.catalog.includes('목적이 다르면 다른 3개 보기'),'recommended-first product disclosure missing');
+    assert(r.catalog.includes('왜 이걸 먼저 보냐면')&&r.catalog.includes('다른 방향 3개도 보기'),'counselor-led next-step disclosure missing');
     assert(r.catalog.includes('상대 사주까지 겹쳐야 나오는')||r.catalog.includes('나 전체 구조 · 영역 연결 · 5년 흐름'),'premium catalog does not explain product value boundary');
     assert(!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
   }
   assert(r.switchCount===0,'bottom F/T CTA remains');
-  assert(r.hierarchy.oneLineBeforeThreeLine&&r.hierarchy.threeLineBeforeMbti&&r.hierarchy.mbtiBeforeChem&&r.hierarchy.mbtiSize<=38,
-    'result hierarchy is wrong '+JSON.stringify(r.hierarchy));
+  assert(
+    r.hierarchy.oneLineBeforeThreeLine &&
+    r.hierarchy.threeLineBeforeMbti &&
+    r.hierarchy.ohengBeforeNotes &&
+    r.hierarchy.notesBeforeMbti &&
+    r.hierarchy.mbtiBeforeChem &&
+    r.hierarchy.notesBeforeShare &&
+    r.hierarchy.mbtiSize<=38 &&
+    !r.hierarchy.extrasOpen,
+    'consultation-first result hierarchy is wrong '+JSON.stringify(r.hierarchy)
+  );
+  if(mode==='F') assert(
+    r.hierarchy.firstLook.includes('로아 언니가 먼저 본 너') &&
+    r.hierarchy.concernHandoff.includes('이제 네가 물어본 고민으로 들어가볼게') &&
+    r.hierarchy.shareText.includes('인스타 스토리'),
+    'F counseling handoff disappeared '+JSON.stringify(r.hierarchy)
+  );
+  if(mode==='T') assert(
+    r.hierarchy.firstLook.includes('서아 언니가 먼저 정리한 너') &&
+    r.hierarchy.concernHandoff.includes('네 고민에 직접 연결되는 부분만 볼게') &&
+    r.hierarchy.shareText.includes('인스타 스토리'),
+    'T counseling handoff disappeared '+JSON.stringify(r.hierarchy)
+  );
   assert(
     r.memoLayout.shell &&
     r.memoLayout.paper &&
@@ -235,7 +264,8 @@ async function inspect(page, mode) {
     r.memoLayout.note.left>=r.memoLayout.paper.left-1 &&
     r.memoLayout.note.right<=r.memoLayout.paper.right+1 &&
     r.memoLayout.noteRadius==='0px' &&
-    r.memoLayout.metaRightDisplay==='none' &&
+    r.memoLayout.metaRightDisplay!=='none' &&
+    r.memoLayout.metaRightText.includes('1:1 맞춤 상담 기록') &&
     !r.memoLayout.overflow,
     'consultation memo containment drift '+JSON.stringify(r.memoLayout)
   );
@@ -268,7 +298,7 @@ async function inspect(page, mode) {
     await page.locator('#unniShowOtherProducts').click();
   }
 
-  assert((await page.locator('#mainShareBtnText').innerText()).includes('인스타 스토리 카드 만들기'),'main CTA should name the story action');
+  assert((await page.locator('#mainShareBtnText').innerText()).includes('인스타 스토리'),'main CTA should keep the story action explicit after counseling');
   assert(await page.evaluate(()=>window.__UNNI_IMAGE_EXPORT_V2__?.version)==='2.8.0','live image export version did not update');
   await page.locator('#mainShareBtn').click();
   await page.waitForSelector('#storyCaptureMode',{state:'visible',timeout:5000});
