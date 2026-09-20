@@ -3305,6 +3305,11 @@
         }
       }
 
+      function recoveryActionButtonStyle(mode = currentVoiceMode()) {
+        const isT = mode === "T";
+        return `width:100%;padding:12px;border:0;border-radius:12px;margin-top:8px;font-weight:800;color:white;background:${isT ? "#3297bd" : "linear-gradient(90deg,#e94f72,#ed6a87)"};box-shadow:0 8px 20px ${isT ? "rgba(50,151,189,.16)" : "rgba(205,68,101,.16)"};`;
+      }
+
       function showAccessRetry(data, version) {
         document.getElementById("payRetryBox")?.remove();
         const box = document.createElement("div");
@@ -3318,8 +3323,7 @@
         }, data.currentMode);
         const button = document.createElement("button");
         button.textContent = "구매 내역 다시 확인";
-        button.style.cssText =
-          "padding:12px;width:100%;background:#fee500;border-radius:10px;margin-top:8px;";
+        button.style.cssText = recoveryActionButtonStyle(data.currentMode);
         button.onclick = async () => {
           button.disabled = true;
           await checkSavedAccess(data, version);
@@ -3410,6 +3414,7 @@
           (params.get("orderId") || "확인 필요");
         const button = document.createElement("button");
         button.textContent = "결과 복원 다시 확인";
+        button.style.cssText = recoveryActionButtonStyle(currentVoiceMode());
         button.onclick = async () => {
           button.disabled = true;
           await handlePaymentReturn(params);
@@ -8133,8 +8138,7 @@ currentResultData = {
         const button = document.createElement("button");
         button.id = "payRetryBtn";
         button.textContent = "같은 주문 다시 확인";
-        button.style.cssText =
-          "width:100%;padding:12px;background:#fee500;border-radius:10px;margin:8px 0;font-weight:bold;";
+        button.style.cssText = recoveryActionButtonStyle(currentVoiceMode());
         button.onclick = () => approveCurrentOrder(context);
         const info = document.createElement("p");
         info.textContent =
