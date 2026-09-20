@@ -119,10 +119,26 @@ function ownerKey(d) {
 }
 function ownerKeyFromLegacyUserKey(userKey) {
   if (typeof userKey !== "string" || !userKey.startsWith("sazu_v2_")) return "";
-  const match = userKey.match(/^sazu_v2_(\[.*\])(?:::[\s\S]*)?$/);
-  if (!match) return "";
+  const raw = userKey.slice("sazu_v2_".length);
+  let depth = 0, inString = false, escaped = false, end = -1;
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') { inString = true; continue; }
+    if (ch === "[") depth++;
+    else if (ch === "]") {
+      depth--;
+      if (depth === 0) { end = i + 1; break; }
+    }
+  }
+  if (end < 0) return "";
   try {
-    const row = JSON.parse(match[1]);
+    const row = JSON.parse(raw.slice(0,end));
     if (!Array.isArray(row) || row.length < 6) return "";
     return "sazu_owner_v1_" + JSON.stringify(row.slice(0,6));
   } catch {
