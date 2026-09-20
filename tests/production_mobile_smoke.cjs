@@ -173,6 +173,9 @@ async function inspect(page, mode) {
         ohengBeforeNotes:(document.getElementById('resultOhengCard').compareDocumentPosition(document.getElementById('consultationNotesShell')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
         notesBeforeMbti:(document.getElementById('consultationNotesShell').compareDocumentPosition(document.getElementById('gradeSection')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
         notesBeforeShare:(document.getElementById('consultationNotesShell').compareDocumentPosition(document.getElementById('resultShareActions')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+        shareBeforeProducts:document.getElementById('unniProductLadder')
+          ? (document.getElementById('resultShareActions').compareDocumentPosition(document.getElementById('unniProductLadder')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0
+          : true,
         mbtiSize:parseFloat(getComputedStyle(document.getElementById('resultBigMbti')).fontSize||'0'),
         extrasOpen:document.getElementById('resultFunExtras')?.open===true,
         firstLook:document.getElementById('resultFirstLookLabel')?.innerText||'',
@@ -239,6 +242,7 @@ async function inspect(page, mode) {
     r.hierarchy.notesBeforeMbti &&
     r.hierarchy.mbtiBeforeChem &&
     r.hierarchy.notesBeforeShare &&
+    r.hierarchy.shareBeforeProducts &&
     r.hierarchy.mbtiSize<=38 &&
     !r.hierarchy.extrasOpen,
     'consultation-first result hierarchy is wrong '+JSON.stringify(r.hierarchy)
