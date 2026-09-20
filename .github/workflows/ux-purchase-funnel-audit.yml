@@ -5,6 +5,10 @@ on:
     branches:
       - ux-mobile-purchase-funnel-20260920
     paths:
+      - index.html
+      - premium-products-v1.js
+      - tests/paid_value_product_regression.cjs
+      - tests/production_mobile_smoke.cjs
       - tests/ux_purchase_funnel_audit.cjs
       - .github/workflows/ux-purchase-funnel-audit.yml
 
