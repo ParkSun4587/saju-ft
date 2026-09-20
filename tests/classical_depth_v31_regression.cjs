@@ -450,7 +450,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert((r.canonicalTiming.turningPoints.opportunities||[]).length<=3&&(r.canonicalTiming.turningPoints.cautions||[]).length<=2,'turning-point caps violated');
   assert((r.canonicalTiming.turningPoints.opportunities||[]).every(x=>['supportive','mild-support'].includes(x.class)),'opportunity turning point was produced by numeric averaging instead of support evidence class');
   assert((r.canonicalTiming.turningPoints.cautions||[]).every(x=>['caution','mild-caution'].includes(x.class)),'caution turning point was produced by numeric averaging instead of caution evidence class');
-  assert(/가까운 시기 상세/.test(r.canonicalTiming.note6)&&/이후 큰 흐름/.test(r.canonicalTiming.note6)&&/핵심 변곡점/.test(r.canonicalTiming.note6),'NOTE6 user hierarchy missing');
+  assert(/가까운 시기 상세/.test(r.canonicalTiming.note6),'NOTE6 near-term hierarchy missing');
+  assert(!/앞으로 5년 큰 흐름|이후 큰 흐름/.test(r.canonicalTiming.note6),'basic NOTE6 leaked full five-year annual disclosure');
   assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관)/.test(r.canonicalTiming.note6),'NOTE6 leaked internal jargon');
 
   assert(r.traces.length>=5,'need at least five runtime trace samples');
