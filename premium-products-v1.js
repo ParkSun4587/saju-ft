@@ -1507,13 +1507,22 @@
     root.style.display = "block";
     document.body.style.overflow = "hidden";
 
+    const directStoredGrant = readGrant(data,productId);
+    let directGrantVerified = false;
+    if (directStoredGrant?.token && directStoredGrant?.userKey && typeof verifyAccessToken === "function") {
+      try { directGrantVerified = (await verifyAccessToken(directStoredGrant.userKey,directStoredGrant.token)) === "valid"; }
+      catch (_) { directGrantVerified = false; }
+    }
+
     let verifiedState = isFreeLaunch
       ? { verifiedPurchases:[], effectiveEntitlements:[], allInOneQuote:null }
       : null;
     try {
       if (!isFreeLaunch) verifiedState = await resolveVerifiedEntitlements(data);
     } catch (error) {
-      if (!isFreeLaunch) {
+      if (directGrantVerified) {
+        verifiedState = { verifiedPurchases:[{ productId, userKey:directStoredGrant.userKey }], effectiveEntitlements:[productId], allInOneQuote:null };
+      } else if (!isFreeLaunch) {
         action.disabled = false;
         action.textContent = "구매 내역 다시 확인";
         action.onclick = async () => {
@@ -1527,8 +1536,10 @@
       verifiedState = { verifiedPurchases:[], effectiveEntitlements:[], allInOneQuote:null };
     }
 
-    const state = productStateFor(productId, verifiedState);
-    const directGrant = verifiedGrantFor(verifiedState, productId);
+    const state = directGrantVerified
+      ? { kind:"purchased", productId, amount:0, label:productId === "full_saju" ? "구매한 전체판 다시 보기" : "구매한 상품 다시 보기" }
+      : productStateFor(productId, verifiedState);
+    const directGrant = directGrantVerified ? directStoredGrant : verifiedGrantFor(verifiedState, productId);
     action.disabled = false;
 
     if (state.kind === "purchased") {
