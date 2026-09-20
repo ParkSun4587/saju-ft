@@ -1,0 +1,27 @@
+name: Final UI UX visual audit
+on:
+  push:
+    branches:
+      - uiux-final-redesign-20260920
+    paths:
+      - tests/final_uiux_visual_audit.cjs
+      - .github/workflows/final-uiux-visual-audit.yml
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+      - run: node tests/final_uiux_visual_audit.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-uiux-visual-audit
+          path: visual-audit/*.png
