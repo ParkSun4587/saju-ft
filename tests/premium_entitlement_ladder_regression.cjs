@@ -132,6 +132,7 @@ function loadServer(){
   ),null,{timeout:60000});
 
   const report=await page.evaluate(()=>{
+    const plain=v=>String(v||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
     const product=globalThis.__UNNI_PRODUCTS_V1__;
     const ent=globalThis.__UNNI_PRODUCT_ENTITLEMENTS_V1__;
     const d=calculateAccurateManse(1998,2,21,'03:10','female');
