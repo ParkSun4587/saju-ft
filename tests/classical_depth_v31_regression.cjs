@@ -200,7 +200,16 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     const rootTiming=timingSet('甲',{seyun:'庚申'});
     const TRANSIT_ROOT=run(mk(transitRootP,{realYeonun:rootTiming}));
 
-    // 16) Real runtime timing: canonical chart gets current-year..+5 data from calculateAccurateManse.
+    // 16) Transit can unblock a missing source-flow element; branch hidden gods also reinforce Ziping signals.
+    const FLOW_TRANSIT=ROOT_DAY;
+    const RESCUE_BRANCH_TRANSIT=rescuePresent;
+
+    // 17) Transit branch can complete a natal three-harmony set, but transformation remains observational.
+    const triadP={year:{gan:'壬',zhi:'亥'},month:{gan:'庚',zhi:'酉'},day:{gan:'甲',zhi:'卯'},hour:{gan:'戊',zhi:'辰'}};
+    const triadTiming=timingSet('甲',{seyun:'丁未'});
+    const TRIAD_TRANSIT=run(mk(triadP,{realYeonun:triadTiming}));
+
+    // 18) Real runtime timing: canonical chart gets current-year..+5 data from calculateAccurateManse.
     const canonical=calculateAccurateManse(1998,2,21,'03:10','female');
     canonical.__testNowYmd='2026-09-20';
     canonical.concernKey='career'; canonical.concernSituation='current';
@@ -294,6 +303,12 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         strength:TRANSIT_ROOT.reasoning.integrated.strength,
         roots:finding(TRANSIT_ROOT,'DTS_ROOT_104')?.facts,
         signals:TRANSIT_ROOT.reasoning.timing.years.flatMap(y=>[...(y.supportSignals||[]),...(y.cautionSignals||[])]),
+      },
+      transitSignals:{
+        flowBlocked:FLOW_TRANSIT.reasoning.integrated.blockedFlowElement,
+        flowSignals:FLOW_TRANSIT.reasoning.timing.years.flatMap(y=>[...(y.supportSignals||[]),...(y.cautionSignals||[]),...(y.neutralSignals||[])]),
+        rescueBranchSignals:RESCUE_BRANCH_TRANSIT.reasoning.timing.years.flatMap(y=>[...(y.supportSignals||[]),...(y.cautionSignals||[]),...(y.neutralSignals||[])]),
+        triadSignals:TRIAD_TRANSIT.reasoning.timing.years.flatMap(y=>[...(y.supportSignals||[]),...(y.cautionSignals||[]),...(y.neutralSignals||[])]),
       },
       canonicalTiming:{
         pillars:[
@@ -394,6 +409,11 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   assert(r.transitRoot.strength==='신약','transit-root fixture must be weak');
   assert(r.transitRoot.signals.some(x=>x.code==='root-clash'),'transit branch clash did not fire traceable root-clash caution');
+  assert(r.transitSignals.flowBlocked==='su','flow fixture must preserve geum -> su missing link');
+  assert(r.transitSignals.flowSignals.some(x=>x.code==='flow-unblock'&&x.facts?.element==='su'),'transit did not traceably unblock missing source-flow element');
+  assert(r.transitSignals.rescueBranchSignals.some(x=>x.code==='ziping-rescue-branch'),'branch hidden ten-god did not reinforce Ziping rescue signal');
+  const triadSignal=r.transitSignals.triadSignals.find(x=>x.code==='branch-triad-completion');
+  assert(triadSignal?.facts?.transformationStatus==='not-evaluated','transit triad completion must stay observational, not transformed');
 
   assert(r.traces[0]?.ziping?.state!=='damaged','canonical 正官 must not be auto-damaged by conditional 破 alone');
   assert((r.traces[0]?.ziping?.causalSteps||[]).some(x=>x.step==='conditional-relation'),'canonical conditional relation should remain observable without automatic damage');
@@ -411,7 +431,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   console.log('CLASSICAL_DEPTH_V31_PASS',JSON.stringify({
     rawMonth:true,rootPosition:true,touchul:true,sangsin:true,gisin:true,rescue:true,bridge:true,combine:true,special:true,
-    daeun:true,seyun:true,wolun:true,concerns:true,provenance:true,legacyIndependence:true,rollingTiming:true
+    daeun:true,seyun:true,wolun:true,flowUnblock:true,branchZiping:true,triadObservation:true,concerns:true,provenance:true,legacyIndependence:true,rollingTiming:true
   }));
   console.log('CLASSICAL_DEPTH_TRACE_SAMPLES',JSON.stringify(r.traces));
   console.log('NOTE6_FIVE_YEAR_SAMPLE',JSON.stringify(r.canonicalTiming));
