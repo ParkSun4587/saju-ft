@@ -337,7 +337,7 @@ function norm(v) {
     assert(ui.tPaywallText.includes('서아 언니 · 여기서부터 정리할게') && ui.tPaywallText.includes('원인하고 끊을 지점') && ui.tPaywallText.includes('서아 언니, 답까지 정리해줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
     assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
-    assert(!/NOTE 0?2 이어서|NOTE 0?6|오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), 'internal NOTE labels or stale sale badge leaked into the conversion card');
+    assert(ui.fPaywallText.includes('NOTE2 다음부터 NOTE6까지') && ui.tPaywallText.includes('NOTE2 다음부터 NOTE6까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), '990 won unlock scope or stale sale badge drift');
   }
   assert(ui.unlockedNoteCards === 6 && !ui.previewAfterUnlock, `unlock must replace teaser with all six full notes: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
@@ -346,7 +346,7 @@ function norm(v) {
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
   assert(ui.fGreeting.includes('다 봤어!') && ui.fGreeting.includes('네 얘기부터 차근차근 같이 풀어볼게') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 105, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
   assert(ui.tGreeting.includes('뭐가 진짜 문제고') && ui.tGreeting.includes('좋은 건 좋다, 아닌 건 아니다') && ui.tGreeting.length <= 105, `T result intro should feel dry but caring: ${ui.tGreeting}`);
-  assert(ui.catalogText.includes('이 고민 끝까지 같이 봤으니까') && ui.catalogText.includes('언니가 너한테 다음 하나만 골라봤어') && ui.catalogText.includes('왜 이걸 먼저 추천하냐면') && ui.catalogText.includes('목적이 다르면 다른 3개 보기') && ui.catalogText.includes('새로 열리는 것'), 'post-NOTE6 recommended-first disclosure handoff missing');
+  assert(ui.catalogText.includes('이 고민은 여기까지 같이 봤어') && ui.catalogText.includes('다음엔 이걸 먼저 보는 게 좋아') && ui.catalogText.includes('왜 추천했냐면') && ui.catalogText.includes('목적이 다르면 다른 3개 보기') && (ui.catalogText.includes('상대 사주까지 겹쳐야 나오는') || ui.catalogText.includes('나 전체 구조 · 영역 연결 · 5년 흐름')), 'post-NOTE6 recommended-first disclosure handoff missing');
   assert(ui.mbtiInfo.gradeText.includes('재미로 보는 사주 MBTI 번역') && ui.mbtiInfo.gradeText.includes('실제 검사 MBTI와 다를 수 있어'), `MBTI risk framing missing: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.mbtiInfo.fontSize <= 38 && ui.mbtiInfo.oneLineBeforeThreeLine && ui.mbtiInfo.threeLineBeforeMbti && ui.mbtiInfo.mbtiBeforeChem, `result hierarchy must be one-line → 3-line → MBTI → chemistry: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.fChem.best.includes('rose') && ui.fChem.worst.includes('violet') && ui.fChem.bestTitle === '환상의 찰떡 깐부' && ui.fChem.worstTitle === '기 빨리는 상극', `F chemistry theme drift: ${JSON.stringify(ui.fChem)}`);
@@ -484,7 +484,7 @@ function norm(v) {
   assert(
     sourceFreeLaunch
       ? initialActionText.includes('무료 이벤트')
-      : initialActionText.includes('4,900원에 열기'),
+      : initialActionText.includes('내 전체 사주판 열기 · 4,900원'),
     `free/paid toggle UI mismatch: sourceFreeLaunch=${sourceFreeLaunch}, action=${initialActionText}`
   );
 
@@ -516,7 +516,7 @@ function norm(v) {
   const oppositeActionText = await page.locator('#unniProductAction').innerText();
   assert(
     sourceFreeLaunch
-      ? oppositeActionText.includes('4,900원에 열기')
+      ? oppositeActionText.includes('내 전체 사주판 열기 · 4,900원')
       : oppositeActionText.includes('무료 이벤트'),
     `opposite free/paid toggle UI mismatch: sourceFreeLaunch=${sourceFreeLaunch}, action=${oppositeActionText}`
   );
@@ -701,6 +701,7 @@ function norm(v) {
   }
   assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 1)') && html.includes('paywallNextTeaser') && html.includes('teaserProbe') && html.includes('로아 언니, 나머지도 같이 봐줘') && html.includes('서아 언니, 답까지 정리해줘'), 'paid teaser must be NOTE1 full + short NOTE2 + actual locked-content teaser + distinct F/T 990 handoff');
   assert(!html.includes('storyCaptureReturnTimer') && !html.includes('7000') && html.includes('storyCaptureCleanTimer'), 'capture should use delayed fullscreen-clean transition, not timed auto-return');
+  assert(html.includes('id="finalNotePaymentButton"') && html.includes('990원 결제하고 이어보기') && html.includes('선택한 결제수단으로 결제돼') && !html.includes('bg-[#fee500]'), '990 won final payment CTA must use brand-primary copy/style instead of Kakao-like yellow');
   assert(premium.includes('data-bundle-situation') && premium.includes('data-all-situation'), 'premium situation selectors missing');
   assert(premium.includes('<option value="solar">양력</option><option value="lunar">음력</option>') && !premium.includes('양력 생일') && !premium.includes('음력 생일'), 'compatibility calendar labels should be simple');
   assert(!premium.includes('예: 오후 3시 20분이면'), 'compatibility birth-time helper should be removed');
@@ -709,7 +710,9 @@ function norm(v) {
     contentPolicySource.includes('내 사주 전체 구조와 앞으로 5년의 큰 흐름 보기') &&
     contentPolicySource.includes('두 사람 사주를 겹쳐 관계의 이유와 시기 보기') &&
     contentPolicySource.includes('나 한 사람의 전체 사주판과 6개 고민을 한 번에 열기') &&
-    premium.includes('왜 이걸 먼저 추천하냐면'),
+    premium.includes('왜 추천했냐면') &&
+    premium.includes('내 전체 사주판 열기') &&
+    premium.includes('완전판으로 이어보기'),
     'young-user outcome-led product copy missing'
   );
   assert(fs.readFileSync('paid-value-layer-v1.js','utf8').includes('SITUATION_PROFILES'), 'situation-aware paid copy layer missing');
