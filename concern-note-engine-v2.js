@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "3.0.0";
+  const VERSION = "3.1.0";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   const SITUATIONS = {
@@ -295,23 +295,30 @@
   }
 
   function changeOrder(reasoning, situation, isT) {
-    const bridge = reasoning?.integrated?.bridgeElement;
-    const balance = reasoning?.profile?.balance || {};
-    const firstElement = bridge || balance.primary || balance.secondary || "";
-    const secondElement = [balance.primary, balance.secondary]
-      .find((element) => element && element !== firstElement) || "";
-    const firstAction = ELEMENT_ACTION[firstElement] || groupText(reasoning?.integrated?.neededGroups?.[0] || "unknown").action;
-    const secondAction = ELEMENT_ACTION[secondElement]
-      || groupText(reasoning?.integrated?.neededGroups?.[1] || reasoning?.integrated?.neededGroups?.[0] || "unknown").action;
-    const harmful = godsHuman(reasoning?.integrated?.harmfulGods);
+    const prescription = reasoning?.integrated?.prescription || {};
+    const sequence = Array.isArray(prescription.sequence) ? prescription.sequence : [];
+    const actions = [...new Set(sequence.map((row) => ELEMENT_ACTION[row?.element]).filter(Boolean))];
+    if (!actions.length) {
+      for (const group of reasoning?.integrated?.neededGroups || []) {
+        const action = groupText(group).action;
+        if (action && !actions.includes(action)) actions.push(action);
+      }
+    }
+    const firstAction = actions[0] || "변수를 하나씩 분리해서 확인하는 것";
+    const secondAction = actions[1] || "첫 변화가 실제로 먹히는지 확인한 뒤 다음 행동을 붙이는 것";
+    const harmful = godsHuman(prescription.harmfulGods || reasoning?.integrated?.harmfulGods);
+    const conflicts = prescription.conflicts || [];
     const special = reasoning?.unsupported || [];
+    const conflictLine = conflicts.length
+      ? "두 방향이 겹치지 않는 부분은 한꺼번에 밀지 않고, 먼저 네가 감당할 힘을 만들고 그다음 결과 쪽으로 쓰는 순서가 중요해."
+      : "";
     const caution = special.length
-      ? "다만 특수한 구조나 서로 묶이는 힘의 실제 변화처럼 아직 확정 규칙이 없는 부분은 억지로 결론내리지 않았어."
+      ? "다만 아직 확정 규칙이 없는 특수한 구조나 묶임은 결과에 억지로 끼워 넣지 않았어."
       : "";
     if (isT) {
-      return `<b>첫 순서</b> — ${firstAction}.<br><br><b>그다음</b> — ${secondAction}.<br><br><b>지금 고민에 적용</b> — ${situation.move}.<br><br><b>7일 검증</b> — ${situation.metric}.<br><br>${harmful.length ? `특히 ${harmful.join("·")}이 과해지는 선택은 줄여.` : "한 번에 변수 여러 개를 바꾸지 마."} ${caution}`;
+      return `<b>첫 순서</b> — ${firstAction}.<br><br><b>그다음</b> — ${secondAction}.<br><br><b>지금 고민에 적용</b> — ${situation.move}.<br><br><b>7일 검증</b> — ${situation.metric}.<br><br>${harmful.length ? `특히 ${harmful.join("·")}이 과해지는 선택은 줄여.` : "한 번에 변수 여러 개를 바꾸지 마."} ${conflictLine} ${caution}`;
     }
-    return `한꺼번에 바꾸기보다 순서가 중요해. <b>먼저 ${firstAction}</b>. 그다음 <b>${secondAction}</b>을 붙여봐.<br><br>지금 고민에서는 ${situation.move}. 그리고 이번 7일은 <b>${situation.metric}</b>만 확인해보자.<br><br>${harmful.length ? `${harmful.join("·")}이 너무 커지는 방식은 오히려 원래 구조를 더 힘들게 만들 수 있어.` : "변수를 여러 개 한꺼번에 바꾸면 뭐가 효과 있었는지 놓치기 쉬워."} ${caution}`;
+    return `한꺼번에 바꾸기보다 순서가 중요해. <b>먼저 ${firstAction}</b>. 그다음 <b>${secondAction}</b>을 붙여봐.<br><br>지금 고민에서는 ${situation.move}. 그리고 이번 7일은 <b>${situation.metric}</b>만 확인해보자.<br><br>${harmful.length ? `${harmful.join("·")}이 너무 커지는 방식은 오히려 원래 구조를 더 힘들게 만들 수 있어.` : "변수를 여러 개 한꺼번에 바꾸면 뭐가 효과 있었는지 놓치기 쉬워."} ${conflictLine} ${caution}`;
   }
 
   function domainFit(reasoning, situation, isT) {
@@ -348,50 +355,91 @@
   }
 
   function timingNote(reasoning, situation, isT) {
-    const years = reasoning?.timing?.years || [];
-    const valid = years.filter((y) => y.status === "ok");
-    const cards = valid.map((y) => {
-      const best = y.bestMonth;
-      const caution = y.cautionMonth;
-      const cls = y.class;
-      const yearLine = cls === "supportive" || cls === "mild-support"
-        ? "큰 흐름이 기본 사주를 비교적 받쳐주는 해"
-        : cls === "caution" || cls === "mild-caution"
-          ? "무리하게 넓히기보다 손실을 줄이는 게 중요한 해"
-          : "큰 흐름이 한쪽으로 강하게 기울지 않는 해";
-      const bestLine = best
-        ? `${formatMonth(best)}가 상대적으로 쓰기 좋은 구간이야. 큰 흐름과 해의 흐름 위에 이 달의 힘까지 겹쳐 봤을 때 네 기본 구조를 더 받쳐주는 쪽이야.`
-        : "앞으로 남은 달의 흐름에서 강한 우세 구간을 따로 잡지 않았어.";
-      const cautionLine = caution && caution.score < (best?.score ?? Infinity)
-        ? `${formatMonth(caution)}는 같은 속도로 밀기보다 한 번 더 확인해.`
-        : "";
-      return {year:y.year,yearLine,bestLine,cautionLine,best};
-    });
-    if (!cards.length) {
+    const timing = reasoning?.timing || {};
+    const nearMonths = Array.isArray(timing.nearMonths) ? timing.nearMonths : [];
+    const years = Array.isArray(timing.years) ? timing.years.filter((y) => y.status === "ok") : [];
+    const turns = timing.turningPoints || { opportunities: [], cautions: [] };
+
+    if (!nearMonths.length && !years.length) {
       return {
         desc:isT ? "현재 저장된 시기 데이터가 부족해서 특정 때를 만들어내지 않을게." : "지금은 시기 자료가 충분하지 않아서 언니가 날짜를 지어내진 않을게.",
-        meta:{firstDate:null,secondDate:null,structureFingerprint:reasoning?.structureFingerprint||"",timingFingerprint:reasoning?.timingFingerprint||""},
+        meta:{firstDate:null,secondDate:null,firstBody:"",secondBody:"",concernSituation:situation.key,structureFingerprint:reasoning?.structureFingerprint||"",timingFingerprint:reasoning?.timingFingerprint||"",method:timing.method||""},
       };
     }
-    const body = cards.map((c) => `<b>${c.year}년</b> — ${c.yearLine}.<br>${c.bestLine}${c.cautionLine ? "<br>"+c.cautionLine : ""}`).join("<br><br>");
-    const action = situation.move;
+
+    const monthCandidates = [...nearMonths]
+      .sort((a,b) => Math.abs(b.net||0)-Math.abs(a.net||0) || String(a.startYmd).localeCompare(String(b.startYmd)));
+    const pickedMonths = [];
+    const bestNear = [...nearMonths].filter(x => (x.net||0) > 0).sort((a,b)=>(b.net||0)-(a.net||0))[0];
+    const cautionNear = [...nearMonths].filter(x => (x.net||0) < 0).sort((a,b)=>(a.net||0)-(b.net||0))[0];
+    for (const row of [bestNear,cautionNear,...monthCandidates]) {
+      if (row && !pickedMonths.some(x=>x.startYmd===row.startYmd)) pickedMonths.push(row);
+      if (pickedMonths.length >= 3) break;
+    }
+    pickedMonths.sort((a,b)=>String(a.startYmd).localeCompare(String(b.startYmd)));
+
+    function monthSentence(row) {
+      const when = formatMonth(row);
+      if ((row.net||0) >= 3) return `<b>${when}</b> — 받쳐주는 조건이 여러 겹 겹치는 구간이라 ${situation.move}처럼 실제 반응을 확인하는 행동을 몰아주기 좋아.`;
+      if ((row.net||0) > 0) return `<b>${when}</b> — 크게 벌리기보다 ${situation.move}를 한 번 시험해보기 좋은 쪽이야.`;
+      if ((row.net||0) <= -3) return `<b>${when}</b> — 밀어붙일수록 소모가 커질 신호가 겹쳐. 새 판을 벌이기보다 손실과 과로를 먼저 줄여.`;
+      if ((row.net||0) < 0) return `<b>${when}</b> — 속도를 줄이고 한 번 더 확인하는 편이 좋아. 같은 힘으로 계속 밀지는 마.`;
+      return `<b>${when}</b> — 한쪽으로 강하게 기울지 않아, 결과보다 준비 상태를 점검하기 좋아.`;
+    }
+
+    const nearBody = pickedMonths.length
+      ? pickedMonths.map(monthSentence).join("<br><br>")
+      : "앞으로 18개월 안에서 한쪽으로 강하게 기울어진 달을 따로 잡지 않았어.";
+
+    const detailEndYear = Number(String(timing.detailEnd||"").slice(0,4)) || 0;
+    const laterYears = years.filter(y => y.year >= detailEndYear).slice(0,4);
+    function yearSentence(y) {
+      if ((y.score||0) >= 3) return `<b>${y.year}년</b> — 큰 흐름과 해의 흐름이 같이 받쳐주는 편이라, 이미 준비한 걸 밖으로 꺼내기 좋은 해야.`;
+      if ((y.score||0) > 0) return `<b>${y.year}년</b> — 무리한 확장보다는 준비한 선택을 실제로 시험해보기 좋은 흐름이야.`;
+      if ((y.score||0) <= -3) return `<b>${y.year}년</b> — 책임이나 소모가 겹치기 쉬워. 판을 넓히기보다 지킬 것과 버릴 것을 나누는 게 중요해.`;
+      if ((y.score||0) < 0) return `<b>${y.year}년</b> — 같은 속도로 계속 밀기보다 조건을 조정하면서 가는 편이 좋아.`;
+      return `<b>${y.year}년</b> — 한쪽으로 강하게 기울지 않아, 앞 단계에서 만든 기반을 이어가는 해로 보는 게 맞아.`;
+    }
+    const laterBody = laterYears.length ? laterYears.map(yearSentence).join("<br><br>") : "18개월 이후에는 별도 연도 데이터가 충분하지 않아 큰 흐름을 억지로 만들지 않았어.";
+
+    function turnLabel(p) {
+      if (!p) return "";
+      if (p.scope === "month") {
+        const parts=String(p.date||"").split("-");
+        return parts.length===3 ? `${Number(parts[1])}월 ${Number(parts[2])}일 무렵` : p.date;
+      }
+      return String(p.label||p.date||"");
+    }
+    const opp=(turns.opportunities||[]).slice(0,3);
+    const caut=(turns.cautions||[]).slice(0,2);
+    const turnLines=[];
+    if (opp.length) turnLines.push(`<b>기회 변곡점</b> — ${opp.map(turnLabel).join(" / ")}`);
+    if (caut.length) turnLines.push(`<b>주의 변곡점</b> — ${caut.map(turnLabel).join(" / ")}`);
+    const turnBody=turnLines.length?turnLines.join("<br>"):"강한 변곡점은 확정해서 잡지 않았어.";
+
     const intro = isT
-      ? "기본 사주는 그대로고, 시기마다 그 구조를 받치는 힘과 흔드는 힘만 달라져. 큰 흐름 → 해의 흐름 → 달의 흐름 순서로 겹쳐 봤어."
-      : "네 기본 사주가 해마다 바뀌는 건 아니야. 언니는 같은 구조 위에 큰 흐름, 해의 흐름, 달의 흐름이 어떻게 겹치는지를 따로 봤어.";
+      ? "기본 사주는 그대로야. 가까운 18개월은 달 단위로 보고, 그 뒤는 5년 안의 큰 흐름만 따로 봤어."
+      : "네 기본 사주가 해마다 바뀌는 건 아니야. 언니는 가까운 18개월은 촘촘하게, 그 뒤는 5년 안에서 큰 흐름만 따로 나눠봤어.";
     const close = isT
-      ? `좋은 구간엔 ${action}. 조심 구간엔 같은 속도로 밀지 마.`
-      : `움직이기 좋은 구간에는 ${action}. 반대로 힘이 덜 받쳐주는 때는 억지로 같은 속도를 내지 않아도 돼.`;
+      ? `좋은 구간엔 ${situation.move}. 조심 구간엔 같은 속도로 밀지 마.`
+      : `움직이기 좋은 구간에는 ${situation.move}. 반대로 힘이 덜 받쳐주는 때는 같은 속도를 억지로 유지하지 않아도 돼.`;
+
+    const first=opp[0]||caut[0]||null,second=opp[1]||caut[1]||null;
     return {
-      desc:`${intro}<br><br>${body}<br><br>${close}`,
+      desc:`${intro}<br><br><b>가까운 시기 상세</b><br>${nearBody}<br><br><b>이후 큰 흐름</b><br>${laterBody}<br><br><b>핵심 변곡점</b><br>${turnBody}<br><br>${close}`,
       meta:{
-        firstDate:cards[0]?.best ? formatMonth(cards[0].best) : null,
-        secondDate:cards[1]?.best ? formatMonth(cards[1].best) : null,
-        firstBody:cards[0] ? String(cards[0].year)+" "+cards[0].yearLine+" "+cards[0].bestLine : "",
-        secondBody:cards[1] ? String(cards[1].year)+" "+cards[1].yearLine+" "+cards[1].bestLine : "",
+        firstDate:first?turnLabel(first):null,
+        secondDate:second?turnLabel(second):null,
+        firstBody:first?`${turnLabel(first)} ${first.class||""}`:"",
+        secondBody:second?`${turnLabel(second)} ${second.class||""}`:"",
         concernSituation:situation.key,
         structureFingerprint:reasoning?.structureFingerprint||"",
         timingFingerprint:reasoning?.timingFingerprint||"",
-        method:reasoning?.timing?.method||"",
+        method:timing.method||"",
+        horizonEnd:timing.horizonEnd||"",
+        detailEnd:timing.detailEnd||"",
+        nearMonthCount:nearMonths.length,
+        yearCount:years.length,
       },
     };
   }
@@ -484,6 +532,11 @@
     notes.forEach((note, idx) => {
       note.themeNum=String(idx+1).padStart(2,"0");
       const claim=r.claims?.[idx];
+      if (claim?.evidenceStatus === "insufficient-evidence") {
+        note.desc += isT
+          ? "<br><br>여기는 근거가 한쪽만 잡혀 있어서 확정해서 말하지 않을게."
+          : "<br><br>여기는 아직 근거가 한쪽만 잡혀 있어서 언니도 단정하지 않을게.";
+      }
       if (claim) claim.noteSentence=stripHtml(note.desc);
     });
 
