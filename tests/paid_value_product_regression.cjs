@@ -729,7 +729,7 @@ function norm(v) {
     !html.includes('class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e]'),
     'other-concern analysis CTA still uses legacy Kakao-yellow styling'
   );
-  assert(/(?:const|let) FREE_LAUNCH_MODE\\s*=\\s*false/.test(html), 'FREE_LAUNCH_MODE must remain false');
+  assert(/(?:const|let) FREE_LAUNCH_MODE\s*=\s*false/.test(html), 'FREE_LAUNCH_MODE must remain false');
   assert(
     html.includes('가장 마음에 걸리는 고민 하나부터 골라줘. 그거부터 같이 볼게.') &&
     html.includes('가장 궁금한 고민 하나부터 골라줘. 그 기준으로 바로 볼게.') &&
