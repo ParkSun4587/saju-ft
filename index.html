@@ -1070,6 +1070,181 @@
     .note-body{font-size:12.15px}
     .note-role-diagnosis .note-body>p:first-child{font-size:12.55px}
   }
+
+  /* unified consultation journey */
+  #resultSection>div{max-width:400px!important;padding-left:11px!important;padding-right:11px!important}
+  #resultSisterHandoff{
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+    padding:4px 3px 8px!important
+  }
+  #resultSisterHandoff #resultSisterProfile{width:34px!important;height:34px!important;box-shadow:none!important}
+  #resultModeBadge{opacity:.78!important}
+  #resultConsultationFlow{
+    width:100%;
+    margin:0 auto;
+    padding:15px 14px 14px;
+    border:1px solid #e7e0da;
+    border-radius:22px;
+    background:#fffdfa;
+    box-shadow:0 7px 22px rgba(53,43,38,.035)
+  }
+  #resultFirstLookLabel{
+    padding:0 1px 10px;
+    margin-bottom:1px;
+    border-bottom:1px solid #eee7e1;
+    font-size:10px;
+    line-height:1.4;
+    font-weight:820;
+    letter-spacing:-.01em;
+    color:#b84a64;
+    text-align:left
+  }
+  #resultSection[data-consult-mode="T"] #resultFirstLookLabel{color:#3f84a2}
+  #resultCoreCard,#resultPillarCard,#resultOhengCard{
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    padding:15px 1px!important;
+    margin:0!important
+  }
+  #resultCoreCard{padding-top:14px!important}
+  #resultPillarCard,#resultOhengCard{border-top:1px solid #eee7e1!important}
+  #coreThreeLineSummary{
+    margin-top:10px!important;
+    padding:11px 0 0!important;
+    background:transparent!important;
+    border:0!important;
+    border-top:1px dashed #e7dfd8!important;
+    border-radius:0!important;
+    box-shadow:none!important
+  }
+  #coreThreeLineSummary>div:first-child{border-bottom:0!important;margin-bottom:5px!important;padding-bottom:0!important}
+  #coreThreeLineSummary>div:first-child>span:last-child{display:none!important}
+  #characterHashTags{opacity:.78}
+  #resultPillarCard>div:first-child,#resultOhengCard>div:first-child{border-bottom:0!important;padding-bottom:0!important}
+  #resultPillarCard .grid>div{background:#faf8f5!important;border-color:#eee7e1!important}
+  #resultConcernHandoff{
+    display:flex;
+    align-items:flex-start;
+    gap:9px;
+    width:calc(100% - 12px);
+    margin:4px auto 10px;
+    padding:7px 2px 8px
+  }
+  #resultConcernHandoffAvatar{width:30px;height:30px;border-radius:999px;object-fit:cover;flex:none;border:1px solid #ebe3dd}
+  #resultConcernHandoffName{font-size:10px;font-weight:850;color:#b84a64;margin-bottom:2px}
+  #resultSection[data-consult-mode="T"] #resultConcernHandoffName{color:#3f84a2}
+  #resultConcernHandoffText{margin:0;font-size:11.25px;line-height:1.58;font-weight:620;color:#5d6673;word-break:keep-all}
+
+  /* restore the memo-book header while keeping the contained single-paper body */
+  #consultationNotesHeader>div:first-child{
+    display:flex!important;
+    justify-content:space-between!important;
+    align-items:center!important;
+    padding:0 1px 8px!important;
+    margin:0 0 10px!important;
+    border-bottom:1px solid #e8dfd7!important;
+    color:#a46e5e!important
+  }
+  #consultationNotesHeader>div:first-child>span:first-child>span:first-child{display:inline!important}
+  #consultationNotesHeader>div:first-child>span:last-child{
+    display:inline!important;
+    font-size:9px!important;
+    font-family:inherit!important;
+    font-weight:720!important;
+    color:#b68c7f!important
+  }
+  #consultationNotesHeader>div:nth-child(2)>div:first-child>span:first-child{display:inline!important;font-size:13px!important}
+  #consultationNotesHeader>div:nth-child(2){margin-bottom:7px!important}
+  #vipSectionMainTitle{font-size:15.5px!important}
+  #vipSectionSubTitle{padding-left:20px!important}
+
+  /* paywall remains inside the same memo instead of becoming a commerce card */
+  #paywallLockedBadge{display:none!important}
+  #paywallNextTeaserBox{padding-top:11px!important}
+  #paywallFeatureTitle{margin-top:2px!important}
+  #paywallPriceTitle{font-size:11.25px!important}
+  #paymentWidgetArea{
+    background:transparent!important;
+    border:0!important;
+    border-top:1px solid #eee4de!important;
+    border-radius:0!important;
+    padding:14px 0 0!important
+  }
+  #resultSection[data-consult-mode="T"] #directPaymentOpenButton,
+  #resultSection[data-consult-mode="T"] #finalNotePaymentButton{
+    background:#3297bd!important;
+    box-shadow:0 9px 22px rgba(50,151,189,.16)!important
+  }
+  #resultSection[data-consult-mode="F"] #directPaymentOpenButton,
+  #resultSection[data-consult-mode="F"] #finalNotePaymentButton{
+    background:linear-gradient(90deg,#e94f72,#ed6a87)!important;
+    box-shadow:0 9px 22px rgba(205,68,101,.16)!important
+  }
+  #consultationCloseout{
+    text-align:left;
+    padding:13px 1px 12px;
+    border-top:1px solid #e8dfd8;
+    border-bottom:1px solid #eee7e1
+  }
+  #consultationCloseoutTitle{font-size:12px;font-weight:850;color:#354052;line-height:1.5}
+  #consultationCloseoutSub{margin-top:3px;font-size:10.5px;font-weight:600;color:#8a9099;line-height:1.55}
+
+  /* fun extras and sharing happen after the counseling body */
+  #postConsultationProductsSlot{width:calc(100% - 12px);max-width:386px;margin:0 auto}
+  #resultFunExtras{
+    width:calc(100% - 12px);
+    max-width:386px;
+    margin:18px auto 0;
+    padding:0;
+    border-top:1px solid #e8e1db;
+    color:#536071
+  }
+  #resultFunExtras>summary{
+    list-style:none;
+    cursor:pointer;
+    padding:13px 2px 10px;
+    font-size:10.75px;
+    font-weight:780;
+    color:#7e858f
+  }
+  #resultFunExtras>summary::-webkit-details-marker{display:none}
+  #resultFunExtras>summary::after{content:"＋";float:right;color:#a4a9b0;font-weight:700}
+  #resultFunExtras[open]>summary::after{content:"－"}
+  #resultFunExtrasBody{padding:0 2px 14px}
+  #resultFunExtrasEyebrow{font-size:9.5px;font-weight:800;color:#9aa0a8}
+  #resultFunExtras #resultBigMbti{font-size:29px!important;opacity:.86}
+  #resultChemistryExtras{opacity:.9}
+  #resultShareActions{
+    width:calc(100% - 12px);
+    max-width:386px;
+    margin:12px auto 0;
+    padding:14px 0 2px;
+    border-top:1px solid #e8e1db
+  }
+  #resultShareLead{font-size:10.5px;line-height:1.55;font-weight:600;color:#969ba4;text-align:center;margin:0 10px 9px;word-break:keep-all}
+  #mainShareBtn{
+    width:100%;
+    padding:11px 12px;
+    background:transparent;
+    border:1px solid #e2ddd8;
+    color:#59616d;
+    border-radius:14px;
+    font-size:11px;
+    font-weight:760;
+    box-shadow:none;
+    cursor:pointer
+  }
+
+  @media(max-width:370px){
+    #resultSection>div{padding-left:8px!important;padding-right:8px!important}
+    #resultConsultationFlow{padding:14px 11px 13px}
+    #resultConcernHandoff,#postConsultationProductsSlot,#resultFunExtras,#resultShareActions{width:calc(100% - 8px)}
+    #resultChemistryExtras{grid-template-columns:1fr!important}
+  }
 </style>
 </head>
   <body
@@ -1888,7 +2063,9 @@
           </div>
         </div>
 
-        <!-- 카드 1: 핵심 요약 → 3줄 설명 → MBTI → 궁합 -->
+        <!-- 언니가 먼저 보여주는 기본 사주 흐름 -->
+        <section id="resultConsultationFlow">
+          <div id="resultFirstLookLabel">로아 언니가 먼저 본 너</div>
         <div
           id="resultCoreCard"
           class="card-box p-4 sm:p-6 rounded-3xl space-y-2 relative overflow-hidden text-center"
@@ -1932,84 +2109,6 @@
             </div>
           </div>
 
-          <!-- B안 3순위: 정답 판정이 아닌 가벼운 MBTI 번역 -->
-          <div
-            id="gradeSection"
-            class="pt-1 pb-0.5 flex flex-col items-center justify-center"
-          >
-            <div class="w-full border-t border-slate-100 mt-0 pt-2">
-              <div
-                class="inline-flex items-center gap-1 rounded-full bg-white border border-slate-200 px-2.5 py-1 text-[9.5px] text-slate-500 font-black"
-              >
-                재미로 보는 사주 MBTI 번역
-              </div>
-              <div
-                id="resultBigMbti"
-                class="text-[32px] sm:text-[38px] font-black tracking-widest font-mono drop-shadow-sm leading-none pt-1.5 pb-0.5"
-              >
-                -
-              </div>
-              <div class="text-[9.5px] text-slate-400 font-semibold break-keep px-4">
-                실제 검사 MBTI와 다를 수 있어 · 사주 성향을 MBTI 느낌으로 번역한 거야
-              </div>
-            </div>
-          </div>
-
-          <!-- B안 4순위: 저장·공유하기 쉬운 찰떡/상극 -->
-          <div class="grid grid-cols-2 gap-2.5 mt-2 text-left">
-            <div
-              id="chemBestCard"
-              class="p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between shadow-sm"
-            >
-              <div>
-                <div
-                  id="chemBestHeader"
-                  class="text-[11px] font-black flex items-center gap-1 mb-1"
-                >
-                  <span>💖</span>
-                  <span id="chemBestTitle">환상의 찰떡 깐부</span>
-                </div>
-                <div
-                  class="text-lg font-black font-mono tracking-wide"
-                  id="chemBestMbti"
-                >
-                  ENFP
-                </div>
-              </div>
-              <div
-                class="text-[10.5px] leading-snug font-bold mt-1.5 px-2 py-1 rounded-md w-fit max-w-full break-keep"
-                id="chemBestTag"
-              >
-                영혼의 단짝
-              </div>
-            </div>
-            <div
-              id="chemWorstCard"
-              class="p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between shadow-sm"
-            >
-              <div>
-                <div
-                  id="chemWorstHeader"
-                  class="text-[11px] font-black flex items-center gap-1 mb-1"
-                >
-                  <span>💣</span>
-                  <span id="chemWorstTitle">숨 막히는 상극</span>
-                </div>
-                <div
-                  class="text-lg font-black font-mono tracking-wide"
-                  id="chemWorstMbti"
-                >
-                  ISTJ
-                </div>
-              </div>
-              <div
-                class="text-[10.5px] leading-snug font-bold mt-1.5 px-2 py-1 rounded-md w-fit max-w-full break-keep"
-                id="chemWorstTag"
-              >
-                거리 두기 시급
-              </div>
-            </div>
-          </div>
         </div>
         <!-- [내 사주 4주 카드] -->
         <div id="resultPillarCard" class="card-box p-4 rounded-3xl text-left space-y-2.5">
@@ -2058,17 +2157,16 @@
           ></div>
         </div>
 
-        <!-- [무료 바이럴 & 몰입 유지] 내 사주에 집중시키는 공유 버튼 배치 -->
-        <div id="resultShareActions" class="space-y-2 pt-1 pb-1">
-          <button
-            type="button"
-            id="mainShareBtn"
-            onclick="openStoryCaptureFromResult()"
-            class="w-full py-3.5 px-3 bg-white border border-slate-200 text-slate-800 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-98 cursor-pointer"
-          >
-            <span id="mainShareBtnText">이거, 한 장으로 예쁘게 뽑아볼까?</span>
-          </button>
+        </section>
+
+        <div id="resultConcernHandoff">
+          <img id="resultConcernHandoffAvatar" src="./로아.png" alt="" />
+          <div class="min-w-0">
+            <div id="resultConcernHandoffName">로아 언니</div>
+            <p id="resultConcernHandoffText">여기까지가 네 기본 구조야. 이제 네가 물어본 고민으로 들어가볼게.</p>
+          </div>
         </div>
+
         <!-- 카드 3: 핵심 심층 솔루션 (결제 유도 및 잠금 마스크 적용) -->
         <div
           id="consultationNotesShell"
@@ -2276,8 +2374,8 @@
                 >
                   <div class="flex items-center justify-between gap-3">
                     <div>
-                      <div class="text-[12px] font-black text-slate-800">결제수단 선택</div>
-                      <div class="mt-0.5 text-[10px] font-bold text-slate-400">원하는 수단을 고른 뒤 아래에서 이어봐</div>
+                      <div id="paymentContinueTitle" class="text-[12px] font-black text-slate-800">좋아, 그럼 여기서부터 이어서 볼게.</div>
+                      <div id="paymentContinueSub" class="mt-0.5 text-[10px] font-bold text-slate-400">결제수단만 고르면 방금 보던 데서 그대로 이어져</div>
                     </div>
                     <div class="shrink-0 text-[12px] font-black text-rose-600">990원</div>
                   </div>
@@ -2324,6 +2422,10 @@
               style="display: none"
               class="pt-5 space-y-2.5 text-center relative z-20"
             >
+              <div id="consultationCloseout">
+                <div id="consultationCloseoutTitle">여기까지가 이번 고민에 대한 언니의 답이야.</div>
+                <div id="consultationCloseoutSub">다른 고민도 이어서 보고 싶으면 사주정보는 그대로 들고 갈게.</div>
+              </div>
               <!-- 1순위 (추가 매출): 다른 고민 풀기 단독 풀너비 버튼 -->
               <button
                 type="button"
@@ -2352,6 +2454,69 @@
               </button>
             </div>
           </div>
+        </div>
+
+
+        <div id="postConsultationProductsSlot"></div>
+
+        <details id="resultFunExtras">
+          <summary id="resultFunExtrasSummary">재미로 덧붙여 보면 · MBTI와 찰떡</summary>
+          <div id="resultFunExtrasBody">
+            <div
+              id="gradeSection"
+              class="pt-1 pb-0.5 flex flex-col items-center justify-center"
+            >
+              <div class="w-full pt-2">
+                <div id="resultFunExtrasEyebrow">재미로 보는 사주 MBTI 번역</div>
+                <div
+                  id="resultBigMbti"
+                  class="text-[32px] sm:text-[38px] font-black tracking-widest font-mono leading-none pt-1.5 pb-0.5"
+                >
+                  -
+                </div>
+                <div class="text-[9.5px] text-slate-400 font-semibold break-keep px-2">
+                  실제 검사 MBTI와 다를 수 있어 · 사주 성향을 MBTI 느낌으로 번역한 거야
+                </div>
+              </div>
+            </div>
+            <div id="resultChemistryExtras" class="grid grid-cols-2 gap-2.5 mt-3 text-left">
+              <div
+                id="chemBestCard"
+                class="p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between shadow-sm"
+              >
+                <div>
+                  <div id="chemBestHeader" class="text-[11px] font-black flex items-center gap-1 mb-1">
+                    <span>💖</span><span id="chemBestTitle">환상의 찰떡 깐부</span>
+                  </div>
+                  <div class="text-lg font-black font-mono tracking-wide" id="chemBestMbti">ENFP</div>
+                </div>
+                <div class="text-[10.5px] leading-snug font-bold mt-1.5 px-2 py-1 rounded-md w-fit max-w-full break-keep" id="chemBestTag">영혼의 단짝</div>
+              </div>
+              <div
+                id="chemWorstCard"
+                class="p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between shadow-sm"
+              >
+                <div>
+                  <div id="chemWorstHeader" class="text-[11px] font-black flex items-center gap-1 mb-1">
+                    <span>💣</span><span id="chemWorstTitle">숨 막히는 상극</span>
+                  </div>
+                  <div class="text-lg font-black font-mono tracking-wide" id="chemWorstMbti">ISTJ</div>
+                </div>
+                <div class="text-[10.5px] leading-snug font-bold mt-1.5 px-2 py-1 rounded-md w-fit max-w-full break-keep" id="chemWorstTag">거리 두기 시급</div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <div id="resultShareActions">
+          <div id="resultShareLead">상담은 여기까지 읽었어. 필요하면 이 기록을 한 장으로 남겨도 돼.</div>
+          <button
+            type="button"
+            id="mainShareBtn"
+            onclick="openStoryCaptureFromResult()"
+          >
+            <span id="mainShareBtnText">이 상담 기록, 인스타 스토리로 간직하기</span>
+          </button>
         </div>
 
         <footer
@@ -5936,6 +6101,9 @@ currentResultData = {
         const paywallNextTeaserBox = document.getElementById("paywallNextTeaserBox");
         const paywallNextLabel = document.getElementById("paywallNextLabel");
         const paywallLockedBadge = document.getElementById("paywallLockedBadge");
+        const paywallPriceTitle = document.getElementById("paywallPriceTitle");
+        const paymentContinueTitle = document.getElementById("paymentContinueTitle");
+        const paymentContinueSub = document.getElementById("paymentContinueSub");
         const vipSectionMainTitle = document.getElementById("vipSectionMainTitle");
         const vipSectionSubTitle = document.getElementById("vipSectionSubTitle");
 
@@ -5973,8 +6141,26 @@ currentResultData = {
         }
         if (paywallFeatureTitle) {
           paywallFeatureTitle.textContent = isT
-            ? "이어보면 바로 정리되는 것"
-            : "이어보면 알게 되는 것";
+            ? "여기부터 내가 정리할 것"
+            : "여기부터 언니랑 같이 볼 것";
+        }
+        if (paywallNextLabel) {
+          paywallNextLabel.textContent = isT ? "다음으로 확인할 부분" : "언니가 다음에 볼 부분";
+        }
+        if (paywallPriceTitle) {
+          paywallPriceTitle.textContent = isT
+            ? "이 고민 답까지 이어서 정리하기"
+            : "언니랑 이 고민 끝까지 이어보기";
+        }
+        if (paymentContinueTitle) {
+          paymentContinueTitle.textContent = isT
+            ? "좋아. 결제 확인되면 바로 이어서 정리할게."
+            : "좋아, 그럼 여기서부터 그대로 이어서 볼게.";
+        }
+        if (paymentContinueSub) {
+          paymentContinueSub.textContent = isT
+            ? "결제수단만 선택하면 방금 보던 다음부터 바로 이어져"
+            : "결제수단만 골라주면 방금 보던 얘기에서 끊지 않고 이어갈게";
         }
         if (paywallCard) {
           paywallCard.className = isT
@@ -6024,7 +6210,9 @@ currentResultData = {
             : "지금 고민의 이유부터 행동·사람·시기까지 언니가 이어서 적어뒀어";
         }
         if (mainShareBtnText) {
-          mainShareBtnText.textContent = "인스타 스토리 카드 만들기";
+          mainShareBtnText.textContent = isT
+            ? "정리한 결과, 인스타 스토리로 저장하기"
+            : "이 상담 기록, 인스타 스토리로 간직하기";
         }
         const data = currentResultData;
         const mKey = data && data.mbtiKey;
@@ -6056,6 +6244,16 @@ currentResultData = {
         const resGreeting = document.getElementById("resultSisterGreeting");
         const resHandoff = document.getElementById("resultSisterHandoff");
         const badge = document.getElementById("resultModeBadge");
+        const resultSection = document.getElementById("resultSection");
+        const resultFirstLookLabel = document.getElementById("resultFirstLookLabel");
+        const resultConcernHandoffAvatar = document.getElementById("resultConcernHandoffAvatar");
+        const resultConcernHandoffName = document.getElementById("resultConcernHandoffName");
+        const resultConcernHandoffText = document.getElementById("resultConcernHandoffText");
+        const resultFunExtrasSummary = document.getElementById("resultFunExtrasSummary");
+        const resultShareLead = document.getElementById("resultShareLead");
+        const consultationCloseoutTitle = document.getElementById("consultationCloseoutTitle");
+        const consultationCloseoutSub = document.getElementById("consultationCloseoutSub");
+        if (resultSection) resultSection.dataset.consultMode = isT ? "T" : "F";
 
         // 성을 제외한 이름만 추출 (예: 박태양 -> 태양, 이지우 -> 지우)
         const rawName = data.name || "";
@@ -6076,6 +6274,14 @@ currentResultData = {
           : displayName;
 
         if (isT) {
+          if (resultFirstLookLabel) resultFirstLookLabel.textContent = "서아 언니가 먼저 정리한 너";
+          if (resultConcernHandoffAvatar) resultConcernHandoffAvatar.src = "./서아.png";
+          if (resultConcernHandoffName) resultConcernHandoffName.textContent = "서아 언니";
+          if (resultConcernHandoffText) resultConcernHandoffText.textContent = "기본 구조는 확인했어. 이제 네 고민에 직접 연결되는 부분만 볼게.";
+          if (resultFunExtrasSummary) resultFunExtrasSummary.textContent = "참고로 가볍게 볼 것 · MBTI와 찰떡";
+          if (resultShareLead) resultShareLead.textContent = "이번 고민 정리는 여기까지야. 필요하면 결과를 한 장으로 남겨.";
+          if (consultationCloseoutTitle) consultationCloseoutTitle.textContent = "여기까지가 이번 고민에 대한 내 정리야.";
+          if (consultationCloseoutSub) consultationCloseoutSub.textContent = "다른 고민도 볼 거면 사주정보는 그대로 두고 바로 이어갈 수 있어.";
           if (resSisterProfile) resSisterProfile.src = "./서아.png";
           if (resSisterName) resSisterName.textContent = "서아 언니 (T)";
           if (badge) {
@@ -6094,6 +6300,14 @@ currentResultData = {
             resGreeting.innerHTML = `<b>${callVoc}</b>, 봤어. ‘${escapeHTML(situationText)}’ 상황에서 먼저 볼 핵심이 잡혔어. 중요한 것부터 정리할게.`;
           }
         } else {
+          if (resultFirstLookLabel) resultFirstLookLabel.textContent = "로아 언니가 먼저 본 너";
+          if (resultConcernHandoffAvatar) resultConcernHandoffAvatar.src = "./로아.png";
+          if (resultConcernHandoffName) resultConcernHandoffName.textContent = "로아 언니";
+          if (resultConcernHandoffText) resultConcernHandoffText.textContent = "여기까지가 네 기본 구조야. 이제 네가 물어본 고민으로 들어가볼게.";
+          if (resultFunExtrasSummary) resultFunExtrasSummary.textContent = "재미로 덧붙여 보면 · MBTI와 찰떡";
+          if (resultShareLead) resultShareLead.textContent = "이번 고민은 여기까지 같이 봤어. 마음에 남으면 이 상담 기록을 한 장으로 간직해도 돼.";
+          if (consultationCloseoutTitle) consultationCloseoutTitle.textContent = "여기까지가 이번 고민에 대한 언니의 답이야.";
+          if (consultationCloseoutSub) consultationCloseoutSub.textContent = "다른 고민도 이어서 보고 싶으면 사주정보는 그대로 들고 갈게.";
           if (resSisterProfile) resSisterProfile.src = "./로아.png";
           if (resSisterName) resSisterName.textContent = "로아 언니 (F)";
           if (badge) {
