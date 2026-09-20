@@ -288,7 +288,7 @@ function norm(v) {
     updateResultContentByMode('F');
     const fGreeting = document.getElementById('resultSisterGreeting')?.innerText || '';
     const mbtiInfo = {
-      gradeText:document.getElementById('gradeSection')?.innerText || '',
+      gradeText:document.getElementById('gradeSection')?.textContent || '',
       fontSize:parseFloat(getComputedStyle(document.getElementById('resultBigMbti')).fontSize || '0'),
       oneLineBeforeThreeLine:(document.getElementById('sazuCharacterTitle').compareDocumentPosition(document.getElementById('manualBulletList')) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
       threeLineBeforeMbti:(document.getElementById('manualBulletList').compareDocumentPosition(document.getElementById('gradeSection')) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
