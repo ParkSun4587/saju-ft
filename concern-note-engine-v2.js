@@ -287,7 +287,9 @@
     const supportLine = helpful.length ? `살리는 쪽은 ${helpful.join("·")}` : "살리는 신호가 한 가지로 단정되진 않아";
     const harmLine = harmful.length ? `반대로 ${harmful.join("·")}이 과해지면 중심 흐름이 깨질 수 있어` : "뚜렷한 방해 신호가 하나로 고정되진 않아";
     const bridgeLine = bridge ? `그리고 서로 부딪히는 힘 사이에서는 <b>${bridge}</b>이 중간 연결 역할을 할 수 있어.` : "";
-    const conflictLine = conflict ? `두 판단이 완전히 같은 방향은 아니라서, ${conflict.priority}` : "";
+    const conflictLine = conflict
+      ? "두 판단이 완전히 같은 방향은 아니라서, 먼저 네가 받아낼 힘이나 연결을 만든 뒤 그다음 결과 쪽으로 써야 해"
+      : "";
     if (isT) {
       return `원인은 단순 성격이 아니야. 태어난 계절에서 잡힌 중심 구조상 <b>${monthLine}</b>이고, 실제 성패를 보면 ${zipingUser(reasoning)}<br><br>${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "강약 판단과 구조 판단이 같은 방향이면 그 조건을 더 강하게 본다."} 그래서 ${situation.object}의 원인을 범용 성향 하나로 줄이면 안 돼.`;
     }
@@ -398,17 +400,17 @@
         : signal.layer === "seyun" ? "해의 흐름"
           : signal.layer === "wolun" ? "달의 흐름" : "이 시기";
       const code = signal.code || "";
-      let effect = positive ? "받쳐주는 힘" : "주의 신호";
-      if (/generate|rescue/.test(code)) effect = "회복·기반을 보태는 힘";
-      else if (/assist|root-add/.test(code)) effect = "내 힘과 버팀목을 보태는 흐름";
-      else if (/bridge|flow-unblock/.test(code)) effect = "막힌 연결을 이어주는 힘";
-      else if (/discharge/.test(code)) effect = "쌓인 힘을 밖으로 빼는 흐름";
-      else if (/control/.test(code)) effect = "힘을 역할과 기준으로 정리하는 흐름";
-      else if (/ziping-support/.test(code)) effect = "중심 구조를 살리는 힘";
-      else if (/root-clash/.test(code)) effect = "버티는 기반을 흔드는 신호";
-      else if (/body-cost/.test(code)) effect = "감당해야 할 부담을 키우는 신호";
-      else if (/ziping-harm/.test(code)) effect = "중심 흐름을 흔드는 신호";
-      else if (/over-support/.test(code)) effect = "이미 많은 힘을 더 쌓는 신호";
+      let effect = positive ? "받쳐주는 힘이" : "주의 신호가";
+      if (/generate|rescue/.test(code)) effect = "회복·기반을 보태는 힘이";
+      else if (/assist|root-add/.test(code)) effect = "내 힘과 버팀목을 보태는 흐름이";
+      else if (/bridge|flow-unblock/.test(code)) effect = "막힌 연결을 이어주는 힘이";
+      else if (/discharge/.test(code)) effect = "쌓인 힘을 밖으로 빼는 흐름이";
+      else if (/control/.test(code)) effect = "힘을 역할과 기준으로 정리하는 흐름이";
+      else if (/ziping-support/.test(code)) effect = "중심 구조를 살리는 힘이";
+      else if (/root-clash/.test(code)) effect = "버티는 기반을 흔드는 신호가";
+      else if (/body-cost/.test(code)) effect = "감당해야 할 부담을 키우는 신호가";
+      else if (/ziping-harm/.test(code)) effect = "중심 흐름을 흔드는 신호가";
+      else if (/over-support/.test(code)) effect = "이미 많은 힘을 더 쌓는 신호가";
       return `${layer}에서 ${effect}`;
     }
 
@@ -416,11 +418,11 @@
       const when = formatMonth(row);
       const supportWhy = timingReasonPhrase(row, true);
       const cautionWhy = timingReasonPhrase(row, false);
-      if (row.class==="supportive") return `<b>${when}</b> — ${supportWhy || "중요한 도움 근거"}가 뚜렷하고 큰 주의 근거가 맞서지 않는 구간이라 ${situation.move}처럼 실제 반응을 확인하는 행동을 몰아주기 좋아.`;
-      if (row.class==="mild-support") return `<b>${when}</b> — ${supportWhy || "보조 도움 근거"}가 잡혀 있어 크게 벌리기보다 ${situation.move}를 한 번 시험해보기 좋은 쪽이야.`;
-      if (row.class==="caution") return `<b>${when}</b> — ${cautionWhy || "중요한 주의 근거"}가 뚜렷해. 새 판을 벌이기보다 손실과 과로를 먼저 줄여.`;
-      if (row.class==="mild-caution") return `<b>${when}</b> — ${cautionWhy || "보조 주의 근거"}가 있어서 속도를 줄이고 한 번 더 확인하는 편이 좋아.`;
-      if (row.class==="mixed") return `<b>${when}</b> — ${supportWhy || "도움 근거"}와 ${cautionWhy || "주의 근거"}가 같이 잡혀 있어, 한 방향으로 단정하기보다 조건을 나눠서 움직여야 해.`;
+      if (row.class==="supportive") return `<b>${when}</b> — ${supportWhy || "중요한 도움 근거가"} 뚜렷하고 큰 주의 근거가 맞서지 않는 구간이라 ${situation.move}처럼 실제 반응을 확인하는 행동을 몰아주기 좋아.`;
+      if (row.class==="mild-support") return `<b>${when}</b> — ${supportWhy || "보조 도움 근거가"} 잡혀 있어 크게 벌리기보다 ${situation.move}를 한 번 시험해보기 좋은 쪽이야.`;
+      if (row.class==="caution") return `<b>${when}</b> — ${cautionWhy || "중요한 주의 근거가"} 뚜렷해. 새 판을 벌이기보다 손실과 과로를 먼저 줄여.`;
+      if (row.class==="mild-caution") return `<b>${when}</b> — ${cautionWhy || "보조 주의 근거가"} 있어서 속도를 줄이고 한 번 더 확인하는 편이 좋아.`;
+      if (row.class==="mixed") return `<b>${when}</b> — ${supportWhy || "도움 근거가"} 있고 ${cautionWhy || "주의 근거가"} 같이 잡혀 있어, 한 방향으로 단정하기보다 조건을 나눠서 움직여야 해.`;
       return `<b>${when}</b> — 한쪽으로 강하게 기울지 않아, 결과보다 준비 상태를 점검하기 좋아.`;
     }
 
@@ -433,11 +435,11 @@
     function yearSentence(y) {
       const supportWhy = timingReasonPhrase(y, true);
       const cautionWhy = timingReasonPhrase(y, false);
-      if (y.class==="supportive") return `<b>${y.year}년</b> — ${supportWhy || "중요한 도움 근거"}가 뚜렷하고 큰 주의 근거가 맞서지 않아, 준비한 걸 밖으로 꺼내기 좋은 해야.`;
+      if (y.class==="supportive") return `<b>${y.year}년</b> — ${supportWhy || "중요한 도움 근거가"} 뚜렷하고 큰 주의 근거가 맞서지 않아, 준비한 걸 밖으로 꺼내기 좋은 해야.`;
       if (y.class==="mild-support") return `<b>${y.year}년</b> — ${supportWhy || "보조 도움 근거"}가 있어 무리한 확장보다는 준비한 선택을 실제로 시험해보기 좋아.`;
-      if (y.class==="caution") return `<b>${y.year}년</b> — ${cautionWhy || "중요한 주의 근거"}가 뚜렷해, 판을 넓히기보다 지킬 것과 버릴 것을 나누는 게 중요해.`;
+      if (y.class==="caution") return `<b>${y.year}년</b> — ${cautionWhy || "중요한 주의 근거가"} 뚜렷해, 판을 넓히기보다 지킬 것과 버릴 것을 나누는 게 중요해.`;
       if (y.class==="mild-caution") return `<b>${y.year}년</b> — ${cautionWhy || "보조 주의 근거"}가 있어 같은 속도로 계속 밀기보다 조건을 조정하면서 가는 편이 좋아.`;
-      if (y.class==="mixed") return `<b>${y.year}년</b> — ${supportWhy || "도움 근거"}와 ${cautionWhy || "주의 근거"}가 같이 잡혀 있어, 잘 되는 부분과 무리되는 부분을 분리해서 써야 하는 해야.`;
+      if (y.class==="mixed") return `<b>${y.year}년</b> — ${supportWhy || "도움 근거가"} 있고 ${cautionWhy || "주의 근거가"} 같이 잡혀 있어, 잘 되는 부분과 무리되는 부분을 분리해서 써야 하는 해야.`;
       return `<b>${y.year}년</b> — 한쪽으로 강하게 기울지 않아, 앞 단계에서 만든 기반을 이어가는 해로 보는 게 맞아.`;
     }
     const laterBody = laterYears.length ? laterYears.map(yearSentence).join("<br><br>") : "18개월 이후에는 별도 연도 데이터가 충분하지 않아 큰 흐름을 억지로 만들지 않았어.";
