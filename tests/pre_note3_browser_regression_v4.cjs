@@ -41,7 +41,7 @@ async function load(page) {
     typeof buildNoteFiveEnvironmentFilter === 'function' &&
     typeof buildNoteSixTiming === 'function' &&
     typeof buildConcernDiagnosisV2 === 'function' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.2.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.2.1' &&
     typeof analyzeDayMasterStrengthV2 === 'function' &&
     globalThis.__MANSE_KOREA_V2__?.version === '2.2.0',
     null, {timeout:60000}
@@ -383,7 +383,7 @@ async function load(page) {
     assert(report.note2Valid, `${c.id}: NOTE2 content missing`);
     assert(report.note3Valid, `${c.id}: NOTE3 content missing`);
     assert(report.note3Integrated, `${c.id}: causal classical diagnosis not integrated into generated notes`);
-    assert(report.noteV2Version === '3.2.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: NOTE v3 rule provenance audit missing`);
+    assert(report.noteV2Version === '3.2.1' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: NOTE v3 rule provenance audit missing`);
     assert(report.note4Valid, `${c.id}: NOTE4 prescription missing`);
     assert(report.note5Valid, `${c.id}: NOTE5 domain-specific fit section missing`);
     assert(report.note6Valid, `${c.id}: NOTE6 timing metadata missing`);
