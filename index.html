@@ -3933,6 +3933,61 @@ function generateConcernNotes(data, mode) {
   return globalThis.renderConcernNotesV2(data || {}, mode || "F");
 }
 
+
+      
+      // 개별 아코디언 열기/닫기 이벤트 핸들러
+      window.toggleAccordion = function (btn) {
+        if (!btn) return;
+        const content = btn.nextElementSibling;
+        const chevron = btn.querySelector(".chevron");
+        if (!content) return;
+
+        const isOpen = content.classList.contains("open");
+
+        // 다른 열린 아코디언 닫기
+        document.querySelectorAll(".accordion-content").forEach((el) => {
+          el.classList.remove("open");
+          const prevBtn = el.previousElementSibling;
+          if (prevBtn) {
+            const ch = prevBtn.querySelector(".chevron");
+            if (ch) ch.classList.remove("open");
+          }
+        });
+
+        if (!isOpen) {
+          content.classList.add("open");
+          if (chevron) chevron.classList.add("open");
+        }
+      };
+
+      // [핵심 4] 만세력 연산 엔진 (일간 오행 추출 기능 추가)
+      // [자평진전 1단계] 월지 기준 격국 판정 엔진
+      // 원칙(자평진전): 격은 오직 월지(月支)로 정하며, 신강/신약이나 사주 전체 기세는 개입시키지 않는다.
+      // 규칙: 월지 지장간(라이브러리 배열 순서 = 정기 우선) 중 연간·월간·시간에 실제로 투출한 것을 격으로 잡는다.
+      //       아무것도 투출하지 않았으면 정기(본기)를 그대로 격으로 삼는다.
+      //       월지가 비견/겁재에 해당하면 정격 대신 건록격/양인격으로 대체한다(자평진전 십정격 규칙).
+      // 지장간·십신 계산 자체는 lunar-javascript 라이브러리의 getMonthHideGan()/getMonthShiShenZhi()를
+      // 그대로 사용한다 — 절기 경계일 계산까지 라이브러리가 이미 검증된 방식으로 처리하므로
+      // 지장간 일수 구간표를 직접 손으로 구현하는 것보다 안전하다.
+      // 주의: lunar-javascript 라이브러리는 간체자(简体字)로 십신을 반환한다 (예: 財 아닌 财, 傷官 아닌 伤官).
+      // 번체자로 매핑하면 조용히 매칭 실패해서 원본 한자가 그대로 노출되므로, 반드시 아래 간체자 키를 써야 한다.
+      const SHI_SHEN_KR = {
+        比肩: "비견",
+        劫财: "겁재",
+        食神: "식신",
+        伤官: "상관",
+        正财: "정재",
+        偏财: "편재",
+        正官: "정관",
+        七杀: "편관",
+        正印: "정인",
+        偏印: "편인",
+        日主: "일간",
+      };
+      
+      // [자평진전 1단계 보강] 4주(년/월/일/시) 천간·지지 십신 계산 — 화면·해설 텍스트에 그대로 쓰기 위한 헬퍼.
+      // 지지 십신은 지장간이 1~3개라 배열로 나오는데, 여기서는 정기(배열의 첫 번째) 기준 대표값만 사용한다.
+
       function getPillarSipsinSet(baZi, hourKnown) {
         const toKr = (raw) => SHI_SHEN_KR[raw] || raw;
         const result = {
