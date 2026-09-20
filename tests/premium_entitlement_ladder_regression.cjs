@@ -234,7 +234,13 @@ function loadServer(){
   assert(browserErrors.length===0,'browser errors '+browserErrors.join(' | '));
 
   const premiumSrc=fs.readFileSync('premium-products-v1.js','utf8');
-  assert(premiumSrc.includes('renderPaymentMethods("#unniProductPaymentMethod", { value:order.amount')&&premiumSrc.includes('amount:expectedAmount'),'checkout/server amount binding missing');
+  const serverSrc=fs.readFileSync('functions/api/confirm-payment.js','utf8');
+  assert(
+    premiumSrc.includes('renderPaymentMethods("#unniProductPaymentMethod", { value:order.amount') &&
+    serverSrc.includes('body:JSON.stringify({ paymentKey:body.paymentKey,orderId:order.orderId,amount:expectedAmount })') &&
+    serverSrc.includes('Number(body.amount) !== expectedAmount'),
+    'checkout/server amount binding missing'
+  );
 
   console.log('PREMIUM_ENTITLEMENT_LADDER_PASS',JSON.stringify({
     quotes:{none:9900,full:5000,bundle:7000,both:2100,compatibility:9900},
