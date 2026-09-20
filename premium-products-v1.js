@@ -138,7 +138,8 @@
 
   function policyBlockedHtml(productId, gate) {
     const reason = (gate?.errors || []).join(",");
-    return `<p data-content-blocked="policy" data-product-contract="${esc(productId)}" data-policy-errors="${esc(reason)}" style="font-size:13px;line-height:1.8;color:#475569">이 상품에서 허용되지 않은 정보 요청이 감지돼서 결과를 열지 않았어.</p>`;
+    const blockedKind = productId === "compatibility" ? "compatibility" : "policy";
+    return `<p data-content-blocked="${blockedKind}" data-policy-blocked="1" data-product-contract="${esc(productId)}" data-policy-errors="${esc(reason)}" style="font-size:13px;line-height:1.8;color:#475569">이 상품에서 허용되지 않은 정보 요청이 감지돼서 결과를 열지 않았어.</p>`;
   }
 
   function policyTiming(productId, timing) {
