@@ -3598,6 +3598,85 @@
       // [자평진전 3단계 완성] concern(고민)별로 실제로 민감하게 반응하는 십신을 정의.
       // 연애(love)는 자평진전 전통에 따라 성별로 배우자성이 다르다 — 여성은 관성(정관·편관)이
       // 배우자를 보는 별, 남성은 재성(정재·편재)이 배우자를 보는 별이라 이 둘을 분리했다.
+
+
+            function getUnniCopyContext(data) {
+  const profile = data?.analysisProfile || {};
+  const strength = profile?.dayMaster?.strength || (data?.isDayMasterStrong ? "신강" : "신약");
+  const dominantRaw = profile?.sipsin?.dominant;
+  const dominant = typeof dominantRaw === "string" ? dominantRaw : (dominantRaw?.name || "");
+  const lowest = data?.stats ? getLowestStatInfo(data.stats) : null;
+  const hasClash = !!profile?.relations?.hasChung;
+  const dominantHuman = ({
+    비견: "내 방식은 내가 지키고 싶은 마음",
+    겁재: "비교에서 밀리기 싫은 마음",
+    식신: "내 페이스를 깨고 싶지 않은 마음",
+    상관: "통제받거나 무시당하기 싫은 마음",
+    정재: "예측 가능한 안정감을 지키고 싶은 마음",
+    편재: "기회나 재미를 놓치기 싫은 마음",
+    정관: "좋은 평가와 신뢰를 잃고 싶지 않은 마음",
+    편관: "약해 보이거나 실패한 사람처럼 보이기 싫은 마음",
+    정인: "충분히 이해받고 안전하다고 느끼고 싶은 마음",
+    편인: "상대 속뜻을 먼저 읽고 대비하려는 마음",
+  })[dominant] || "혼자서라도 상황을 정리하려는 마음";
+  const weakHuman = ({
+    wealth: "돈과 선택을 숫자로 확인하는 습관",
+    mental: "마음이 지치기 전에 멈추는 감각",
+    drive: "생각을 행동으로 옮기는 첫걸음",
+    network: "혼자 해결하지 않고 사람을 쓰는 감각",
+  })[lowest?.type] || "마지막 한 끗을 챙기는 습관";
+  const strengthF = strength === "신강"
+    ? "겉으로는 괜찮아 보여도 혼자 버티는 시간이 길어지는 편이야"
+    : strength === "신약"
+      ? "상황과 사람의 분위기를 빨리 읽는 만큼 네 마음이 뒤로 밀리기 쉬워"
+      : "버틸 때와 내려놓을 때를 꽤 잘 아는데, 애매한 순간엔 오래 재는 편이야";
+  const strengthT = strength === "신강"
+    ? "너는 버티는 힘이 있어서 문제를 늦게 끊는 쪽이야"
+    : strength === "신약"
+      ? "너는 주변 변수에 반응이 빠른 대신 네 기준이 늦게 나오는 쪽이야"
+      : "너는 균형은 괜찮은데 애매하면 결정을 미루는 쪽이야";
+  return { strength, dominantHuman, weakHuman, hasClash, strengthF, strengthT };
+}
+
+function getUnniCopyContext(data) {
+  const profile = data?.analysisProfile || {};
+  const strength = profile?.dayMaster?.strength || (data?.isDayMasterStrong ? "신강" : "신약");
+  const dominantRaw = profile?.sipsin?.dominant;
+  const dominant = typeof dominantRaw === "string" ? dominantRaw : (dominantRaw?.name || "");
+  const lowest = data?.stats ? getLowestStatInfo(data.stats) : null;
+  const hasClash = !!profile?.relations?.hasChung;
+  const dominantHuman = ({
+    비견: "내 방식은 내가 지키고 싶은 마음",
+    겁재: "비교에서 밀리기 싫은 마음",
+    식신: "내 페이스를 깨고 싶지 않은 마음",
+    상관: "통제받거나 무시당하기 싫은 마음",
+    정재: "예측 가능한 안정감을 지키고 싶은 마음",
+    편재: "기회나 재미를 놓치기 싫은 마음",
+    정관: "좋은 평가와 신뢰를 잃고 싶지 않은 마음",
+    편관: "약해 보이거나 실패한 사람처럼 보이기 싫은 마음",
+    정인: "충분히 이해받고 안전하다고 느끼고 싶은 마음",
+    편인: "상대 속뜻을 먼저 읽고 대비하려는 마음",
+  })[dominant] || "혼자서라도 상황을 정리하려는 마음";
+  const weakHuman = ({
+    wealth: "돈과 선택을 숫자로 확인하는 습관",
+    mental: "마음이 지치기 전에 멈추는 감각",
+    drive: "생각을 행동으로 옮기는 첫걸음",
+    network: "혼자 해결하지 않고 사람을 쓰는 감각",
+  })[lowest?.type] || "마지막 한 끗을 챙기는 습관";
+  const strengthF = strength === "신강"
+    ? "겉으로는 괜찮아 보여도 혼자 버티는 시간이 길어지는 편이야"
+    : strength === "신약"
+      ? "상황과 사람의 분위기를 빨리 읽는 만큼 네 마음이 뒤로 밀리기 쉬워"
+      : "버틸 때와 내려놓을 때를 꽤 잘 아는데, 애매한 순간엔 오래 재는 편이야";
+  const strengthT = strength === "신강"
+    ? "너는 버티는 힘이 있어서 문제를 늦게 끊는 쪽이야"
+    : strength === "신약"
+      ? "너는 주변 변수에 반응이 빠른 대신 네 기준이 늦게 나오는 쪽이야"
+      : "너는 균형은 괜찮은데 애매하면 결정을 미루는 쪽이야";
+  return { strength, dominantHuman, weakHuman, hasClash, strengthF, strengthT };
+}
+
+
 function buildNoteOneInsight(data, concernKey, concernLabel, isT) {
   const ctx = getUnniCopyContext(data);
   const copy = {
