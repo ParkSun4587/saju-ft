@@ -196,6 +196,28 @@
     }
     supportForce += rootBonus;
 
+    const weightedSupport = (row) => row.group === "self"
+      ? Number(row.amount || 0)
+      : row.group === "print"
+        ? Number(row.amount || 0) * 0.84
+        : 0;
+    const weightedDrain = (row) => row.group === "output"
+      ? Number(row.amount || 0) * 0.62
+      : row.group === "wealth"
+        ? Number(row.amount || 0) * 0.74
+        : row.group === "officer"
+          ? Number(row.amount || 0) * 0.98
+          : 0;
+    const monthRootWeight = roots.filter(r => r.pos === "month").reduce((a,r) => a + Number(r.weight || 0), 0);
+    const dayRootWeight = roots.filter(r => r.pos === "day").reduce((a,r) => a + Number(r.weight || 0), 0);
+    const otherRootWeight = roots.filter(r => !["month","day"].includes(r.pos)).reduce((a,r) => a + Number(r.weight || 0), 0);
+    const deukseRows = components.filter(row =>
+      !String(row.label || "").startsWith("month지") &&
+      !String(row.label || "").startsWith("day지")
+    );
+    const deukseSupportForce = deukseRows.reduce((a,row) => a + weightedSupport(row), 0);
+    const deukseDrainForce = deukseRows.reduce((a,row) => a + weightedDrain(row), 0);
+
     const total = supportForce + drainForce || 1;
     const supportRatio = supportForce / total;
     let verdict = "중화";
@@ -224,6 +246,26 @@
         mainGan: monthMain,
         relation: monthGroup,
         deukryeong: ["self", "print"].includes(monthGroup),
+      },
+      deukryeong: {
+        active: ["self", "print"].includes(monthGroup),
+        monthZhi,
+        mainGan: monthMain,
+        relation: monthGroup,
+      },
+      deukji: {
+        active: roots.length > 0,
+        monthRootWeight: Math.round(monthRootWeight * 100) / 100,
+        dayRootWeight: Math.round(dayRootWeight * 100) / 100,
+        otherRootWeight: Math.round(otherRootWeight * 100) / 100,
+        totalRootWeight: Math.round((monthRootWeight + dayRootWeight + otherRootWeight) * 100) / 100,
+        quality: monthRootWeight > 0 ? "month-rooted" : dayRootWeight > 0 ? "day-rooted" : roots.length ? "other-rooted" : "rootless",
+      },
+      deukse: {
+        active: deukseSupportForce > deukseDrainForce,
+        supportForce: Math.round(deukseSupportForce * 100) / 100,
+        drainForce: Math.round(deukseDrainForce * 100) / 100,
+        method: "월지·일지의 직접 뿌리를 제외한 천간 및 기타 자리의 부조/설극 비교",
       },
       components,
       evidence,
@@ -488,9 +530,14 @@
   global.selectYongshinV2 = selectYongshinV2;
   global.buildClassicalLayersV2 = buildClassicalLayersV2;
   global.__CLASSICAL_ENGINE_V2__ = {
-    version: "2.1.0",
+    version: "2.2.0",
     elements: ELEMENTS.slice(),
     hidden: HIDDEN,
+    hiddenRatios: HIDDEN_RATIOS,
+    stemWeights: STEM_WEIGHT,
+    branchWeights: BRANCH_WEIGHT,
+    ganElement: GAN_ELEMENT,
+    zhiElement: ZHI_ELEMENT,
     lu: LU,
     yangRen: YANG_REN,
     tenGod,
