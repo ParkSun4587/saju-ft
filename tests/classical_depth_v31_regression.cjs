@@ -349,8 +349,10 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   assert(r.gisin.ruleP?.harmGods?.includes('상관'),'gisin fixture did not fire harm god');
   assert(!(r.gisin.ruleA?.harmGods||[]).includes('상관'),'gisin-absent fixture still has harm god');
+  assert(['파격','성중유패'].includes(r.gisin.ruleP?.sequenceStatus),'gisin damage did not record classical sequence status');
 
   assert(r.rescue.with?.state==='rescued'||r.rescue.with?.rescueGods?.length>0,'damage+rescue fixture did not preserve rescue');
+  assert(/구응/.test(r.rescue.with?.sequenceStatus||''),'damage+rescue did not record 구응 sequence status');
   assert((r.rescue.with?.causalSteps||[]).some(x=>x.step==='damage')&&(r.rescue.with?.causalSteps||[]).some(x=>x.step==='rescue'),'rescue causal sequence missing damage -> rescue');
   assert(!(r.rescue.without?.causalSteps||[]).some(x=>x.step==='rescue'),'rescue-absent fixture invented rescue');
 
@@ -392,6 +394,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   assert(r.transitRoot.strength==='신약','transit-root fixture must be weak');
   assert(r.transitRoot.signals.some(x=>x.code==='root-clash'),'transit branch clash did not fire traceable root-clash caution');
+
+  assert(r.traces[0]?.ziping?.state!=='damaged','canonical 正官 must not be auto-damaged by conditional 破 alone');
+  assert((r.traces[0]?.ziping?.causalSteps||[]).some(x=>x.step==='conditional-relation'),'canonical conditional relation should remain observable without automatic damage');
 
   assert(r.canonicalTiming.pillars.join(',')==='戊寅,甲寅,己亥,乙丑','canonical pillars drift');
   assert(JSON.stringify(r.canonicalTiming.raw)===JSON.stringify({mok:4,hwa:0,to:3,geum:0,su:1}),'canonical raw elements drift');
