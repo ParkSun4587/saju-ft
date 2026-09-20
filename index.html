@@ -4749,8 +4749,11 @@ return [
         }
         return {
           startYmd: startDate.toYmd(),
+          startYear: startDate.getYear(),
           startMonth: startDate.getMonth(),
           startDay: startDate.getDay(),
+          endYmd: endDate.toYmd(),
+          endYear: endDate.getYear(),
           endMonth: endDate.getMonth(),
           endDay: endDate.getDay(),
         };
@@ -4770,18 +4773,37 @@ return [
             ganZhi: gz,
             sipsin: computeSipsin(dayGanChar, gan),
             startYmd: range.startYmd,
+            startYear: range.startYear,
             startMonth: range.startMonth,
             startDay: range.startDay,
+            endYmd: range.endYmd,
+            endYear: range.endYear,
             endMonth: range.endMonth,
             endDay: range.endDay,
           };
         });
       }
+      function getSeoulCurrentYear() {
+        try {
+          return Number(
+            new Intl.DateTimeFormat("en", {
+              timeZone: "Asia/Seoul",
+              year: "numeric",
+            }).format(new Date()),
+          );
+        } catch (_) {
+          return new Date().getFullYear();
+        }
+      }
+      function getRollingTimingYears(baseYear) {
+        const start = Number(baseYear) || getSeoulCurrentYear();
+        return Array.from({ length: 6 }, (_, idx) => start + idx);
+      }
       function getRealYeonunInfo(baZi, dayGanChar, genderCode, targetYears) {
         let daYunList;
         try {
           const yun = baZi.getYun(genderCode, 1);
-          daYunList = yun.getDaYun(10); // 10개 대운 = 최대 100년, 2026/2027 커버에 충분
+          daYunList = yun.getDaYun(10); // 10개 대운 = 최대 100년, rolling 5년 범위 커버에 충분
         } catch (e) {
           console.error("대운 계산 실패:", e);
           return {};
@@ -5092,7 +5114,7 @@ return [
             baZi,
             dGan,
             genderCode,
-            [2026, 2027],
+            getRollingTimingYears(getSeoulCurrentYear()),
           );
           const yongshinDetailV2 = selectYongshinV2({
             pillars: classicalPillarsV2,
