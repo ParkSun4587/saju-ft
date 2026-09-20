@@ -367,11 +367,23 @@
       };
     }
 
+    const supportRank=(row)=>{
+      const e=row?.evidence||{};
+      return [(row?.class==="supportive"?2:row?.class==="mild-support"?1:0),e.majorSupport||0,e.support||0,-(e.majorCaution||0),-(e.caution||0)];
+    };
+    const cautionRank=(row)=>{
+      const e=row?.evidence||{};
+      return [(row?.class==="caution"?2:row?.class==="mild-caution"?1:0),e.majorCaution||0,e.caution||0,-(e.majorSupport||0),-(e.support||0)];
+    };
+    const cmpTuple=(a,b)=>{
+      for(let i=0;i<Math.max(a.length,b.length);i++){const d=(b[i]||0)-(a[i]||0);if(d)return d;}
+      return 0;
+    };
     const monthCandidates = [...nearMonths]
-      .sort((a,b) => Math.abs(b.net||0)-Math.abs(a.net||0) || String(a.startYmd).localeCompare(String(b.startYmd)));
+      .sort((a,b)=>Math.max(...supportRank(b).slice(0,3),...cautionRank(b).slice(0,3))-Math.max(...supportRank(a).slice(0,3),...cautionRank(a).slice(0,3)) || String(a.startYmd).localeCompare(String(b.startYmd)));
     const pickedMonths = [];
-    const bestNear = [...nearMonths].filter(x => (x.net||0) > 0).sort((a,b)=>(b.net||0)-(a.net||0))[0];
-    const cautionNear = [...nearMonths].filter(x => (x.net||0) < 0).sort((a,b)=>(a.net||0)-(b.net||0))[0];
+    const bestNear = [...nearMonths].filter(x => ["supportive","mild-support"].includes(x.class)).sort((a,b)=>cmpTuple(supportRank(a),supportRank(b))||String(a.startYmd).localeCompare(String(b.startYmd)))[0];
+    const cautionNear = [...nearMonths].filter(x => ["caution","mild-caution"].includes(x.class)).sort((a,b)=>cmpTuple(cautionRank(a),cautionRank(b))||String(a.startYmd).localeCompare(String(b.startYmd)))[0];
     for (const row of [bestNear,cautionNear,...monthCandidates]) {
       if (row && !pickedMonths.some(x=>x.startYmd===row.startYmd)) pickedMonths.push(row);
       if (pickedMonths.length >= 3) break;
@@ -380,10 +392,11 @@
 
     function monthSentence(row) {
       const when = formatMonth(row);
-      if ((row.net||0) >= 3) return `<b>${when}</b> — 받쳐주는 조건이 여러 겹 겹치는 구간이라 ${situation.move}처럼 실제 반응을 확인하는 행동을 몰아주기 좋아.`;
-      if ((row.net||0) > 0) return `<b>${when}</b> — 크게 벌리기보다 ${situation.move}를 한 번 시험해보기 좋은 쪽이야.`;
-      if ((row.net||0) <= -3) return `<b>${when}</b> — 밀어붙일수록 소모가 커질 신호가 겹쳐. 새 판을 벌이기보다 손실과 과로를 먼저 줄여.`;
-      if ((row.net||0) < 0) return `<b>${when}</b> — 속도를 줄이고 한 번 더 확인하는 편이 좋아. 같은 힘으로 계속 밀지는 마.`;
+      if (row.class==="supportive") return `<b>${when}</b> — 중요한 도움 근거가 뚜렷하고 큰 주의 근거가 맞서지 않는 구간이라 ${situation.move}처럼 실제 반응을 확인하는 행동을 몰아주기 좋아.`;
+      if (row.class==="mild-support") return `<b>${when}</b> — 보조 도움 근거가 잡혀 있어 크게 벌리기보다 ${situation.move}를 한 번 시험해보기 좋은 쪽이야.`;
+      if (row.class==="caution") return `<b>${when}</b> — 중요한 주의 근거가 뚜렷해. 새 판을 벌이기보다 손실과 과로를 먼저 줄여.`;
+      if (row.class==="mild-caution") return `<b>${when}</b> — 보조 주의 근거가 있어서 속도를 줄이고 한 번 더 확인하는 편이 좋아.`;
+      if (row.class==="mixed") return `<b>${when}</b> — 도움과 주의 근거가 같이 잡혀 있어, 한 방향으로 단정하기보다 조건을 나눠서 움직여야 해.`;
       return `<b>${when}</b> — 한쪽으로 강하게 기울지 않아, 결과보다 준비 상태를 점검하기 좋아.`;
     }
 
@@ -394,10 +407,11 @@
     const detailEndYear = Number(String(timing.detailEnd||"").slice(0,4)) || 0;
     const laterYears = years.filter(y => y.year >= detailEndYear).slice(0,4);
     function yearSentence(y) {
-      if ((y.score||0) >= 3) return `<b>${y.year}년</b> — 큰 흐름과 해의 흐름이 같이 받쳐주는 편이라, 이미 준비한 걸 밖으로 꺼내기 좋은 해야.`;
-      if ((y.score||0) > 0) return `<b>${y.year}년</b> — 무리한 확장보다는 준비한 선택을 실제로 시험해보기 좋은 흐름이야.`;
-      if ((y.score||0) <= -3) return `<b>${y.year}년</b> — 책임이나 소모가 겹치기 쉬워. 판을 넓히기보다 지킬 것과 버릴 것을 나누는 게 중요해.`;
-      if ((y.score||0) < 0) return `<b>${y.year}년</b> — 같은 속도로 계속 밀기보다 조건을 조정하면서 가는 편이 좋아.`;
+      if (y.class==="supportive") return `<b>${y.year}년</b> — 중요한 도움 근거가 뚜렷하고 큰 주의 근거가 맞서지 않아, 준비한 걸 밖으로 꺼내기 좋은 해야.`;
+      if (y.class==="mild-support") return `<b>${y.year}년</b> — 보조 도움 근거가 있어 무리한 확장보다는 준비한 선택을 실제로 시험해보기 좋아.`;
+      if (y.class==="caution") return `<b>${y.year}년</b> — 중요한 주의 근거가 뚜렷해, 판을 넓히기보다 지킬 것과 버릴 것을 나누는 게 중요해.`;
+      if (y.class==="mild-caution") return `<b>${y.year}년</b> — 보조 주의 근거가 있어 같은 속도로 계속 밀기보다 조건을 조정하면서 가는 편이 좋아.`;
+      if (y.class==="mixed") return `<b>${y.year}년</b> — 도움과 주의가 같이 잡혀 있어, 잘 되는 부분과 무리되는 부분을 분리해서 써야 하는 해야.`;
       return `<b>${y.year}년</b> — 한쪽으로 강하게 기울지 않아, 앞 단계에서 만든 기반을 이어가는 해로 보는 게 맞아.`;
     }
     const laterBody = laterYears.length ? laterYears.map(yearSentence).join("<br><br>") : "18개월 이후에는 별도 연도 데이터가 충분하지 않아 큰 흐름을 억지로 만들지 않았어.";
