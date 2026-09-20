@@ -2960,13 +2960,10 @@
           );
         } catch (error) {
           if (visibleResult(context.userKey, version))
-            showToast(
-              error.message ||
-                voiceText({
-                  F: "결제 승인이 조금 늦어지고 있어. 다시 결제하지 말고 같은 주문을 한 번 더 확인해줘.",
-                  T: "결제 승인 확인이 지연되고 있어. 재결제하지 말고 같은 주문을 다시 확인해줘.",
-                }),
-            );
+            showVoiceToast({
+              F: "결제 승인이 조금 늦어지고 있어. 다시 결제하지 말고 같은 주문을 한 번 더 확인해줘.",
+              T: "결제 승인 확인이 지연되고 있어. 재결제하지 말고 같은 주문을 다시 확인해줘.",
+            });
         } finally {
           context.busy = false;
           if (button?.isConnected) {
@@ -6779,13 +6776,17 @@ currentResultData = {
           });
         } catch (error) {
           if (visibleResult(key, version))
-            showToast(
+            showVoiceToast(
               error.code === "USER_CANCEL"
-                ? voiceText({ F: "결제가 취소됐어. 지금 결과는 그대로 있어.", T: "결제가 취소됐어. 현재 결과는 그대로 유지돼." })
-                : error.message || voiceText({
+                ? {
+                    F: "결제가 취소됐어. 지금 결과는 그대로 있어.",
+                    T: "결제가 취소됐어. 현재 결과는 그대로 유지돼.",
+                  }
+                : {
                     F: "결제 요청을 확인하지 못했어. 다시 결제하기 전에 한 번만 다시 눌러줘.",
                     T: "결제 요청을 확인하지 못했어. 재결제 전에 다시 확인해줘.",
-                  }),
+                  },
+              data.currentMode,
             );
         } finally {
           paymentSubmitting = false;
@@ -6820,17 +6821,22 @@ currentResultData = {
           } else {
             try {
               await navigator.clipboard.writeText(target);
-              showToast(
-                "주소를 복사했어. Safari 주소창에 붙여넣어줘. 이 링크는 다른 사람에게 공유하지 마.",
-              );
+              showVoiceToast({
+                F: "주소를 복사해뒀어. Safari 주소창에 붙여넣으면 이어서 볼 수 있어. 이 링크는 다른 사람에게 공유하지 마.",
+                T: "주소를 복사했어. Safari 주소창에 붙여넣어줘. 이 링크는 다른 사람에게 공유하지 마.",
+              });
             } catch {
-              showToast(
-                "카톡 메뉴에서 “다른 브라우저로 열기”를 선택해줘. 정보는 다시 입력해야 할 수 있어.",
-              );
+              showVoiceToast({
+                F: "카톡 메뉴에서 ‘다른 브라우저로 열기’를 골라줘. 경우에 따라 정보는 한 번 더 입력해야 할 수 있어.",
+                T: "카톡 메뉴에서 ‘다른 브라우저로 열기’를 선택해줘. 정보는 다시 입력해야 할 수 있어.",
+              });
             }
           }
         } catch (error) {
-          showToast(error.message);
+          showVoiceToast({
+            F: "외부 브라우저로 이어가는 준비가 잠깐 꼬였어. 지금 결과는 그대로니까 한 번만 다시 눌러줘.",
+            T: "외부 브라우저 연결 준비에 실패했어. 현재 결과는 유지됐어. 다시 눌러줘.",
+          });
         } finally {
           paymentPreparing = false;
         }
@@ -7596,7 +7602,10 @@ currentResultData = {
           await approveCurrentOrder(context);
         } catch (error) {
           if (versionBefore !== viewVersion) return;
-          showToast(error.message);
+          showVoiceToast({
+            F: "결제 결과를 다시 불러오는 중에 문제가 생겼어. 이미 결제했다면 다시 결제하지 말고 같은 주문부터 확인해보자.",
+            T: "결제 결과 복원에 실패했어. 이미 결제했다면 재결제하지 말고 같은 주문부터 확인해줘.",
+          });
           if (!pendingApproval) showReturnRecovery(params);
         }
       }
