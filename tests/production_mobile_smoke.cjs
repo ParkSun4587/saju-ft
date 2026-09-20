@@ -171,6 +171,14 @@ async function inspect(page, mode) {
   await deployed(page);
   await enter(page,'F','love','relationship');
   const f=await inspect(page,'F');
+  if(f.sourceFreeLaunch){
+    await page.locator('#unniShowOtherProducts').click();
+    assert(await page.locator('#unniShowOtherProducts').getAttribute('aria-expanded')==='true','live alternatives toggle did not expand');
+    assert(await page.locator('#unniOtherProducts').isVisible(),'live folded alternatives are not discoverable');
+    const visibleAlternatives=await page.locator('#unniOtherProducts [data-unni-product]').evaluateAll(els=>els.filter(el=>el.offsetParent!==null).length);
+    assert(visibleAlternatives===3,'live alternatives should reveal exactly three products, got '+visibleAlternatives);
+    await page.locator('#unniShowOtherProducts').click();
+  }
 
   assert((await page.locator('#mainShareBtnText').innerText()).includes('인스타 스토리 카드 만들기'),'main CTA should name the story action');
   assert(await page.evaluate(()=>window.__UNNI_IMAGE_EXPORT_V2__?.version)==='2.8.0','live image export version did not update');
