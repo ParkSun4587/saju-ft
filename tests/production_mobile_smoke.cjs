@@ -30,6 +30,29 @@ async function clickCatalogProduct(page, productId) {
   await target.click();
 }
 
+async function checkRestartCta(page, mode) {
+  await page.evaluate(()=>unlockFullReport(null,true));
+  await page.locator('#reAnalyzeMainBtn').waitFor({state:'visible',timeout:5000});
+  await page.locator('#reAnalyzeMainBtn').click();
+  await page.waitForSelector('#analysisSubmitButton',{state:'visible',timeout:5000});
+  const cta=await page.locator('#analysisSubmitButton').evaluate((el)=>({
+    mode:el.dataset.consultMode||'',
+    text:el.innerText||'',
+    className:el.className||'',
+    background:getComputedStyle(el).backgroundImage||'',
+    color:getComputedStyle(el).color||'',
+  }));
+  assert(cta.mode===mode,'other-concern CTA lost F/T design hook '+JSON.stringify(cta));
+  assert(
+    mode==='F'
+      ? cta.text.includes('로아 언니한테 다른 고민 보내기')
+      : cta.text.includes('서아 언니한테 다른 고민 보내기'),
+    'other-concern CTA copy changed '+JSON.stringify(cta)
+  );
+  assert(!cta.className.includes('fee500')&&cta.background.includes('linear-gradient')&&cta.color==='rgb(255, 255, 255)',
+    'other-concern CTA still uses legacy Kakao-yellow styling '+JSON.stringify(cta));
+}
+
 async function enter(page, mode, concern, situation) {
   const intro = await page.evaluate(() => {
     const title=document.getElementById('topTitleBox');
@@ -308,6 +331,8 @@ async function inspect(page, mode) {
   assert(!(await page.locator('#unniProductModal').innerText()).includes('다른 브라우저'),'paid save should not tell users to switch browsers');
   await page.waitForFunction(()=>/저장할 사진 준비됐어|저장 준비 완료/.test(document.getElementById('unniProductSaveHint')?.innerText||''),null,{timeout:45000});
   assert(await page.locator('#unniProductSaveAll').isEnabled(),'photo export prewarm not ready');
+  await page.locator('#unniProductClose').click();
+  await checkRestartCta(page,'F');
 
   const t=await ctx.newPage();
   const terr=[];
@@ -330,6 +355,7 @@ async function inspect(page, mode) {
   const tCompatibilitySetup=await t.locator('#unniProductModal').innerText();
   assert(tCompatibilitySetup.includes('궁합은 상대 사주가 필요해. 아는 정보부터 입력해줘.'),'T compatibility setup lost Seoa voice');
   await t.locator('#unniProductClose').click();
+  await checkRestartCta(t,'T');
 
   const smallCtx=await browser.newContext({viewport:{width:360,height:800}});
   for(const mode of ['F','T']){
