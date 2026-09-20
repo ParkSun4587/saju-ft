@@ -717,6 +717,20 @@ function norm(v) {
   assert(html.includes('function currentVoiceMode(') && html.includes('function voiceText(') && html.includes('function showVoiceToast('), 'main journey counselor voice router missing');
   assert(premium.includes('function productVoice(') && premium.includes('function applyProductModalVoice('), 'premium counselor voice router missing');
   assert(
+    premium.includes('기존 구매 확인이 조금 늦어지고 있어. 구매 내역은 그대로 두고 확인 중이니까 걱정하지 않아도 돼. 중복 결제되지 않게 지금은 새 결제를 열지 않을게.') &&
+    premium.includes('구매 확인이 지연 중이야. 중복 결제 방지를 위해 새 결제는 열지 않을게.') &&
+    !premium.includes('기존 구매 확인이 지연되고 있어. 중복 결제를 막기 위해 지금은 새 결제를 열지 않을게.'),
+    'premium purchase-history failure copy is not split by F/T voice'
+  );
+  assert(
+    html.includes('data-consult-mode="${targetMode}"') &&
+    html.includes('#analysisSubmitButton[data-consult-mode="F"]') &&
+    html.includes('#analysisSubmitButton[data-consult-mode="T"]') &&
+    !html.includes('class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e]'),
+    'other-concern analysis CTA still uses legacy Kakao-yellow styling'
+  );
+  assert(/(?:const|let) FREE_LAUNCH_MODE\\s*=\\s*false/.test(html), 'FREE_LAUNCH_MODE must remain false');
+  assert(
     html.includes('가장 마음에 걸리는 고민 하나부터 골라줘. 그거부터 같이 볼게.') &&
     html.includes('가장 궁금한 고민 하나부터 골라줘. 그 기준으로 바로 볼게.') &&
     html.includes('이름부터 알려줘. 그다음은 언니가 이어서 볼게.') &&
