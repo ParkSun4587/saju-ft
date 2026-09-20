@@ -699,6 +699,9 @@
 
     if (productId === "concern_bundle3" || productId === "all_in_one") {
       const concernSections = [...body.querySelectorAll('[data-export-kind="concern"]')];
+      const synthesis = productId === "concern_bundle3"
+        ? body.querySelector('[data-product-exclusive="concern_bundle3"]')
+        : body.querySelector('[data-product-exclusive="all_in_one"]');
       concernSections.forEach((section, concernIndex) => {
         const key = section.getAttribute("data-concern") || "";
         const label = CONCERNS[key] || section.querySelector("h3")?.textContent?.trim() || "고민";
@@ -707,7 +710,7 @@
           {
             title: `${label} · 나를 이해하기`,
             subtitle: "핵심 성향 · 반복 패턴 · 내가 잘못 짚는 부분",
-            nodes: articles.slice(0, 3),
+            nodes: concernIndex === 0 && synthesis ? [synthesis, ...articles.slice(0, 3)] : articles.slice(0, 3),
             suffix: "01_나를_이해하기",
           },
           {
