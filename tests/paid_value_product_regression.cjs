@@ -679,6 +679,7 @@ function norm(v) {
   const contentPolicySource = fs.readFileSync('product-content-policy-v1.js','utf8');
   assert(!premium.includes('unniProductKeepsake') && !premium.includes('keepsakeCardHtml') && !premium.includes('renderPaidKeepsake'), 'paid keepsake-card subsystem should be removed');
   assert(premium.includes('saveFullPaidReport') && premium.includes('unniProductSaveAll'), 'full paid-report image save missing');
+  assert(premium.includes('어떤언니 상담 기록') && !premium.includes('어떤언니 리포트'), 'paid native-share title slipped back into report voice');
   assert(!premium.includes('다른 브라우저') && !premium.includes('외부 브라우저'), 'paid image save should not tell users to switch browsers');
   assert(premium.includes('prewarmPaidExport') && premium.includes('preparePaidExportAssets') && premium.includes('저장 준비 완료'), 'background paid-export preparation missing');
   assert(premium.includes('requiresFreshShareGesture') && premium.includes('setPaidExportButtonReady(root, false)') && premium.includes('setPaidExportButtonReady(root, true)'), 'mobile save must wait for prewarm before fresh-tap multi-share');
