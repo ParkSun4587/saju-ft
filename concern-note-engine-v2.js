@@ -390,13 +390,37 @@
     }
     pickedMonths.sort((a,b)=>String(a.startYmd).localeCompare(String(b.startYmd)));
 
+    function timingReasonPhrase(row, positive) {
+      const rows = positive ? (row?.supportSignals || []) : (row?.cautionSignals || []);
+      const signal = rows.find(x => x.severity === "major") || rows.find(x => x.severity === "support") || null;
+      if (!signal) return "";
+      const layer = signal.layer === "daeun" ? "큰 흐름"
+        : signal.layer === "seyun" ? "해의 흐름"
+          : signal.layer === "wolun" ? "달의 흐름" : "이 시기";
+      const code = signal.code || "";
+      let effect = positive ? "받쳐주는 힘" : "주의 신호";
+      if (/generate|rescue/.test(code)) effect = "회복·기반을 보태는 힘";
+      else if (/assist|root-add/.test(code)) effect = "내 힘과 버팀목을 보태는 흐름";
+      else if (/bridge|flow-unblock/.test(code)) effect = "막힌 연결을 이어주는 힘";
+      else if (/discharge/.test(code)) effect = "쌓인 힘을 밖으로 빼는 흐름";
+      else if (/control/.test(code)) effect = "힘을 역할과 기준으로 정리하는 흐름";
+      else if (/ziping-support/.test(code)) effect = "중심 구조를 살리는 힘";
+      else if (/root-clash/.test(code)) effect = "버티는 기반을 흔드는 신호";
+      else if (/body-cost/.test(code)) effect = "감당해야 할 부담을 키우는 신호";
+      else if (/ziping-harm/.test(code)) effect = "중심 흐름을 흔드는 신호";
+      else if (/over-support/.test(code)) effect = "이미 많은 힘을 더 쌓는 신호";
+      return `${layer}에서 ${effect}`;
+    }
+
     function monthSentence(row) {
       const when = formatMonth(row);
-      if (row.class==="supportive") return `<b>${when}</b> — 중요한 도움 근거가 뚜렷하고 큰 주의 근거가 맞서지 않는 구간이라 ${situation.move}처럼 실제 반응을 확인하는 행동을 몰아주기 좋아.`;
-      if (row.class==="mild-support") return `<b>${when}</b> — 보조 도움 근거가 잡혀 있어 크게 벌리기보다 ${situation.move}를 한 번 시험해보기 좋은 쪽이야.`;
-      if (row.class==="caution") return `<b>${when}</b> — 중요한 주의 근거가 뚜렷해. 새 판을 벌이기보다 손실과 과로를 먼저 줄여.`;
-      if (row.class==="mild-caution") return `<b>${when}</b> — 보조 주의 근거가 있어서 속도를 줄이고 한 번 더 확인하는 편이 좋아.`;
-      if (row.class==="mixed") return `<b>${when}</b> — 도움과 주의 근거가 같이 잡혀 있어, 한 방향으로 단정하기보다 조건을 나눠서 움직여야 해.`;
+      const supportWhy = timingReasonPhrase(row, true);
+      const cautionWhy = timingReasonPhrase(row, false);
+      if (row.class==="supportive") return `<b>${when}</b> — ${supportWhy || "중요한 도움 근거"}가 뚜렷하고 큰 주의 근거가 맞서지 않는 구간이라 ${situation.move}처럼 실제 반응을 확인하는 행동을 몰아주기 좋아.`;
+      if (row.class==="mild-support") return `<b>${when}</b> — ${supportWhy || "보조 도움 근거"}가 잡혀 있어 크게 벌리기보다 ${situation.move}를 한 번 시험해보기 좋은 쪽이야.`;
+      if (row.class==="caution") return `<b>${when}</b> — ${cautionWhy || "중요한 주의 근거"}가 뚜렷해. 새 판을 벌이기보다 손실과 과로를 먼저 줄여.`;
+      if (row.class==="mild-caution") return `<b>${when}</b> — ${cautionWhy || "보조 주의 근거"}가 있어서 속도를 줄이고 한 번 더 확인하는 편이 좋아.`;
+      if (row.class==="mixed") return `<b>${when}</b> — ${supportWhy || "도움 근거"}와 ${cautionWhy || "주의 근거"}가 같이 잡혀 있어, 한 방향으로 단정하기보다 조건을 나눠서 움직여야 해.`;
       return `<b>${when}</b> — 한쪽으로 강하게 기울지 않아, 결과보다 준비 상태를 점검하기 좋아.`;
     }
 
@@ -407,11 +431,13 @@
     const detailEndYear = Number(String(timing.detailEnd||"").slice(0,4)) || 0;
     const laterYears = years.filter(y => y.year >= detailEndYear).slice(0,4);
     function yearSentence(y) {
-      if (y.class==="supportive") return `<b>${y.year}년</b> — 중요한 도움 근거가 뚜렷하고 큰 주의 근거가 맞서지 않아, 준비한 걸 밖으로 꺼내기 좋은 해야.`;
-      if (y.class==="mild-support") return `<b>${y.year}년</b> — 보조 도움 근거가 있어 무리한 확장보다는 준비한 선택을 실제로 시험해보기 좋아.`;
-      if (y.class==="caution") return `<b>${y.year}년</b> — 중요한 주의 근거가 뚜렷해, 판을 넓히기보다 지킬 것과 버릴 것을 나누는 게 중요해.`;
-      if (y.class==="mild-caution") return `<b>${y.year}년</b> — 보조 주의 근거가 있어 같은 속도로 계속 밀기보다 조건을 조정하면서 가는 편이 좋아.`;
-      if (y.class==="mixed") return `<b>${y.year}년</b> — 도움과 주의가 같이 잡혀 있어, 잘 되는 부분과 무리되는 부분을 분리해서 써야 하는 해야.`;
+      const supportWhy = timingReasonPhrase(y, true);
+      const cautionWhy = timingReasonPhrase(y, false);
+      if (y.class==="supportive") return `<b>${y.year}년</b> — ${supportWhy || "중요한 도움 근거"}가 뚜렷하고 큰 주의 근거가 맞서지 않아, 준비한 걸 밖으로 꺼내기 좋은 해야.`;
+      if (y.class==="mild-support") return `<b>${y.year}년</b> — ${supportWhy || "보조 도움 근거"}가 있어 무리한 확장보다는 준비한 선택을 실제로 시험해보기 좋아.`;
+      if (y.class==="caution") return `<b>${y.year}년</b> — ${cautionWhy || "중요한 주의 근거"}가 뚜렷해, 판을 넓히기보다 지킬 것과 버릴 것을 나누는 게 중요해.`;
+      if (y.class==="mild-caution") return `<b>${y.year}년</b> — ${cautionWhy || "보조 주의 근거"}가 있어 같은 속도로 계속 밀기보다 조건을 조정하면서 가는 편이 좋아.`;
+      if (y.class==="mixed") return `<b>${y.year}년</b> — ${supportWhy || "도움 근거"}와 ${cautionWhy || "주의 근거"}가 같이 잡혀 있어, 잘 되는 부분과 무리되는 부분을 분리해서 써야 하는 해야.`;
       return `<b>${y.year}년</b> — 한쪽으로 강하게 기울지 않아, 앞 단계에서 만든 기반을 이어가는 해로 보는 게 맞아.`;
     }
     const laterBody = laterYears.length ? laterYears.map(yearSentence).join("<br><br>") : "18개월 이후에는 별도 연도 데이터가 충분하지 않아 큰 흐름을 억지로 만들지 않았어.";
