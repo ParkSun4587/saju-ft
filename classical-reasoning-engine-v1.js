@@ -292,6 +292,7 @@
     const zMain=mainZipingFinding(zipingRows);
     const helpful=unionGods(zipingRows,"supportGods"),rescue=unionGods(zipingRows,"rescueGods"),harmful=unionGods(zipingRows,"harmGods");
     const bridge=byKind(ditianRows,"bridge"),special=byKind(ditianRows,"special-structure"),root=byKind(ditianRows,"root"),pressure=byKind(ditianRows,"pressure");
+    const flowChain=byKind(ditianRows,"flow-chain");
     const prescription=buildPrescription(ctx,ditianRows,zipingRows);
     return {
       strength,rootQuality:root?.facts?.quality||null,pressureGroup:pressure?.facts?.group||null,
@@ -300,6 +301,7 @@
       bridgeElement:bridge?.facts?.bridge||ctx.bridge?.bridge||null,
       bridgeElementName:(bridge?.facts?.bridge||ctx.bridge?.bridge)?ELEMENT_KR[bridge?.facts?.bridge||ctx.bridge?.bridge]:"",
       bridgeStatus:bridge?.facts?.status||null,
+      blockedFlowElement:flowChain?.facts?.blockedAt?.to||null,
       zipingState:zMain?.state||zMain?.facts?.state||"undetermined",zipingPath:zMain?.facts?.path||null,zipingConclusion:zMain?.conclusion||"",
       conflicts:prescription.conflicts,priorityPolicy:prescription.priorityPolicy,specialStructureStatus:special?.implementationStatus||"none",
       prescription,
@@ -385,15 +387,30 @@
     return rows;
   }
 
+  function transitTriadCompletions(zhi,pillars){
+    if(!zhi)return [];
+    const natalBranches=POSITIONS.map(pos=>pillars?.[pos]?.zhi).filter(Boolean);
+    return TRIADS.filter(t=>t.branches.includes(zhi))
+      .filter(t=>t.branches.filter(b=>b!==zhi).every(b=>natalBranches.includes(b)))
+      .map(t=>({type:"triad-completion",element:t.element,transitZhi:zhi,natalBranches:t.branches.filter(b=>b!==zhi),transformationStatus:"not-evaluated"}));
+  }
+
   function transitLayer(ctx,cross,ganZhi,god,layer){
     const gan=String(ganZhi||"").charAt(0),zhi=String(ganZhi||"").charAt(1);
     const ganEl=ganElement(gan),hidden=hiddenMap()[zhi]||[],hiddenEls=uniq(hidden.map(ganElement));
-    const group=groupForGod(god||tenGod(ctx.dayGan,gan));
+    const resolvedGod=god||tenGod(ctx.dayGan,gan);
+    const branchGods=uniq(hidden.map(h=>tenGod(ctx.dayGan,h)));
+    const group=groupForGod(resolvedGod);
     const supportSignals=[],cautionSignals=[],neutralSignals=[];
     const add=(arr,code,severity,reason,facts)=>arr.push({code,severity,layer,reason,facts:facts||{}});
-    if(cross.rescueGods.includes(god))add(supportSignals,"ziping-rescue","major","격의 손상을 다시 구하는 신호",{god});
-    else if(cross.helpfulGods.includes(god))add(supportSignals,"ziping-support","major","격을 살리는 신호",{god});
-    if(cross.harmfulGods.includes(god))add(cautionSignals,"ziping-harm","major","격을 흔드는 신호",{god});
+    if(cross.rescueGods.includes(resolvedGod))add(supportSignals,"ziping-rescue","major","천간에서 격의 손상을 다시 구하는 신호",{god:resolvedGod});
+    else if(cross.helpfulGods.includes(resolvedGod))add(supportSignals,"ziping-support","major","천간에서 격을 살리는 신호",{god:resolvedGod});
+    if(cross.harmfulGods.includes(resolvedGod))add(cautionSignals,"ziping-harm","major","천간에서 격을 흔드는 신호",{god:resolvedGod});
+    for(const branchGod of branchGods){
+      if(cross.rescueGods.includes(branchGod))add(supportSignals,"ziping-rescue-branch","support","지지 지장간에서 격의 손상을 구하는 신호가 보탬",{god:branchGod,zhi});
+      else if(cross.helpfulGods.includes(branchGod))add(supportSignals,"ziping-support-branch","support","지지 지장간에서 격을 살리는 신호가 보탬",{god:branchGod,zhi});
+      if(cross.harmfulGods.includes(branchGod))add(cautionSignals,"ziping-harm-branch","support","지지 지장간에서 격을 흔드는 신호가 보탬",{god:branchGod,zhi});
+    }
 
     if(cross.strength==="신약"){
       if(group==="print")add(supportSignals,"ditian-generate","major","약한 일간을 생하는 작용",{group});
@@ -408,6 +425,9 @@
 
     if(cross.bridgeElement&&(ganEl===cross.bridgeElement||hiddenEls.includes(cross.bridgeElement))){
       add(supportSignals,"bridge-activation",cross.bridgeStatus==="missing"?"major":"support","원국의 상극 사이를 잇는 통관 기운이 운에서 들어옴",{element:cross.bridgeElement,natalStatus:cross.bridgeStatus});
+    }
+    if(cross.blockedFlowElement&&(ganEl===cross.blockedFlowElement||hiddenEls.includes(cross.blockedFlowElement))){
+      add(supportSignals,"flow-unblock","support","원국의 생 흐름에서 비어 있던 연결 오행이 운에서 들어옴",{element:cross.blockedFlowElement});
     }
     const transitHasSelf=hidden.some(h=>relationGroup(ctx.dayGan,h)==="self");
     if(cross.strength==="신약"&&transitHasSelf)add(supportSignals,"root-add","support","지지에서 일간의 뿌리를 보태는 조건",{zhi});
@@ -430,7 +450,11 @@
       const target=STEM_COMBINE[gan+ng];
       if(target)add(neutralSignals,"stem-combine","observe","천간합은 감지하지만 합화는 확정하지 않음",{transitGan:gan,natalPos:pos,natalGan:ng,targetElement:target});
     }
-    return {layer,ganZhi,gan,zhi,god:god||tenGod(ctx.dayGan,gan),group,ganElement:ganEl,branchHiddenElements:hiddenEls,supportSignals,cautionSignals,neutralSignals,relations:rels};
+    const triadCompletions=transitTriadCompletions(zhi,ctx.pillars);
+    for(const triad of triadCompletions){
+      add(neutralSignals,"branch-triad-completion","observe","운의 지지가 원국 두 지지와 삼합 구성을 완성하지만 실제 회국·기세 전환은 확정하지 않음",triad);
+    }
+    return {layer,ganZhi,gan,zhi,god:resolvedGod,branchGods,group,ganElement:ganEl,branchHiddenElements:hiddenEls,supportSignals,cautionSignals,neutralSignals,relations:rels,triadCompletions};
   }
 
   function signalValue(rows){
