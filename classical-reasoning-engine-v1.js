@@ -312,6 +312,7 @@
       bridgeElementName:(bridge?.facts?.bridge||ctx.bridge?.bridge)?ELEMENT_KR[bridge?.facts?.bridge||ctx.bridge?.bridge]:"",
       bridgeStatus:bridge?.facts?.status||null,
       blockedFlowElement:flowChain?.facts?.blockedAt?.to||null,
+      zipingRuleId:zMain?.id||null,
       zipingState:zMain?.state||zMain?.facts?.state||"undetermined",zipingPath:zMain?.facts?.path||null,zipingConclusion:zMain?.conclusion||"",
       conflicts:prescription.conflicts,priorityPolicy:prescription.priorityPolicy,specialStructureStatus:special?.implementationStatus||"none",
       prescription,
@@ -412,7 +413,21 @@
     const branchGods=uniq(hidden.map(h=>tenGod(ctx.dayGan,h)));
     const group=groupForGod(resolvedGod);
     const supportSignals=[],cautionSignals=[],neutralSignals=[];
-    const add=(arr,code,severity,reason,facts)=>arr.push({code,severity,layer,reason,facts:facts||{}});
+    const sourceRulesForCode=(code)=>{
+      if(/^ziping-/.test(code)) return uniq([cross.zipingRuleId]);
+      if(["ditian-generate","ditian-assist","ditian-discharge","ditian-control","ditian-consume","body-cost","over-support"].includes(code)) return ["DTS_FORCE_101","DTS_BALANCE_110"];
+      if(code==="bridge-activation") return ["DTS_BRIDGE_112"];
+      if(code==="flow-unblock") return ["DTS_FLOW_108"];
+      if(["root-add","root-clash"].includes(code)) return ["DTS_ROOT_104"];
+      if(code==="month-clash") return uniq(["DTS_RELATION_114",cross.zipingRuleId]);
+      if(/^officer-/.test(code)) return uniq(["DTS_RELATION_114",cross.zipingRuleId]);
+      if(/^branch-/.test(code)) return ["DTS_RELATION_114"];
+      if(code==="stem-combine") return ["DTS_COMBINE_121"];
+      return [];
+    };
+    const add=(arr,code,severity,reason,facts)=>arr.push({
+      code,severity,layer,reason,facts:facts||{},sourceRuleIds:sourceRulesForCode(code),
+    });
     if(cross.structuralRescueGods.includes(resolvedGod))add(supportSignals,"ziping-rescue","major","천간에서 격의 손상을 다시 구할 수 있는 구조적 신호",{god:resolvedGod,presentInNatal:cross.rescueGods.includes(resolvedGod)});
     else if(cross.structuralSupportGods.includes(resolvedGod))add(supportSignals,"ziping-support","major","천간에서 격을 살릴 수 있는 구조적 신호",{god:resolvedGod,presentInNatal:cross.helpfulGods.includes(resolvedGod)});
     if(cross.structuralHarmGods.includes(resolvedGod))add(cautionSignals,"ziping-harm","major","천간에서 격을 흔드는 구조적 신호",{god:resolvedGod,presentInNatal:cross.harmfulGods.includes(resolvedGod)});
@@ -462,7 +477,11 @@
     }
     const triadCompletions=transitTriadCompletions(zhi,ctx.pillars);
     for(const triad of triadCompletions){
-      add(neutralSignals,"branch-triad-completion","observe","운의 지지가 원국 두 지지와 삼합 구성을 완성하지만 실제 회국·기세 전환은 확정하지 않음",triad);
+      neutralSignals.push({
+        code:"branch-triad-completion",severity:"observe",layer,
+        reason:"운의 지지가 원국 두 지지와 삼합 구성을 완성하지만 실제 회국·기세 전환은 확정하지 않음",
+        facts:triad,sourceRuleIds:["DTS_BRANCH_COMBINE_122"],
+      });
     }
     return {layer,ganZhi,gan,zhi,god:resolvedGod,branchGods,group,ganElement:ganEl,branchHiddenElements:hiddenEls,supportSignals,cautionSignals,neutralSignals,relations:rels,triadCompletions};
   }
@@ -609,6 +628,7 @@
       .map(y=>({
         scope:"year",date:`${y.year}-01-01`,year:y.year,label:String(y.year),
         evidence:y.evidence,class:y.class,supportSignals:y.supportSignals,cautionSignals:y.cautionSignals,
+        sourceRuleIds:uniq([...y.supportSignals,...y.cautionSignals].flatMap(sig=>sig.sourceRuleIds||[])),
       }))
       .filter(x=>["supportive","caution"].includes(x.class));
 
