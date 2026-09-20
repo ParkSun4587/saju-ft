@@ -23,6 +23,21 @@
       conditional:rows.filter(x=>["punishment","break","harm"].includes(x.type)),
     };
   }
+  const ROLE_CANDIDATES={
+    정관격:{support:["정재","편재","정인","편인"],harm:["상관"],rescue:["정인","편인"]},
+    편관격:{support:["식신","정인","편인"],harm:["정재","편재"],rescue:["식신","정인","편인"]},
+    정재격:{support:["식신","상관","정관","편관"],harm:["비견","겁재"],rescue:["식신","상관","정관","편관"]},
+    편재격:{support:["식신","상관","정관","편관"],harm:["비견","겁재"],rescue:["식신","상관","정관","편관"]},
+    정인격:{support:["정관","편관"],harm:["정재","편재"],rescue:["비견","겁재"]},
+    편인격:{support:["정관","편관"],harm:["정재","편재","식신"],rescue:["비견","겁재","정재","편재"]},
+    식신격:{support:["정재","편재"],harm:["편인"],rescue:["정재","편재"]},
+    상관격:{support:["정재","편재","정인","편인"],harm:["정관"],rescue:["정인","편인"]},
+    양인격:{support:["정관","편관"],harm:["식신","상관"],rescue:[]},
+    건록격:{support:["정관","편관","정재","편재","식신","상관"],harm:[],rescue:[]},
+    비견격:{support:["정관","편관","정재","편재","식신","상관"],harm:[],rescue:[]},
+    겁재격:{support:["정관","편관","정재","편재","식신","상관"],harm:[],rescue:[]},
+  };
+
   function finding(id,sourceIds,ctx,payload){
     const steps=payload?.causalSteps||[];
     const hasDamage=steps.some(x=>x.step==="damage");
@@ -37,7 +52,9 @@
           :hasSupport
             ?"성격"
             :"미정";
-    return {id,sourceIds,kind:"gyeok",gyeokName:ctx.structure?.gyeokName||"평격",sequenceStatus,...payload};
+    const gyeokName=ctx.structure?.gyeokName||"평격";
+    const roleCandidates=payload?.roleCandidates||ROLE_CANDIDATES[gyeokName]||{support:[],harm:[],rescue:[]};
+    return {id,sourceIds,kind:"gyeok",gyeokName,sequenceStatus,roleCandidates,...payload};
   }
   function chain(ctx,label,supportGods,harmGods,rescueGods,extraDamage){
     const sLoc=locs(ctx,supportGods,true),hLoc=locs(ctx,harmGods,true),rLoc=locs(ctx,rescueGods,true);
