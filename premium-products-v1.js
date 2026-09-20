@@ -260,7 +260,9 @@
 
     function yearTimelineCopy() {
       if (!years.length) return "5년 흐름 데이터가 충분하지 않아 연도별 이야기를 억지로 만들지 않았어.";
-      return years.slice(0,5).map(y=>{
+      const currentYear = Number(String(r.timing?.today || "").slice(0,4)) || 0;
+      const annualRows = years.filter(y => y.year > currentYear).slice(0,5);
+      return annualRows.map(y=>{
         if (y.class==="supportive") return `<b>${y.year}년</b> — 중요한 도움 조건이 분명한 해. 준비한 걸 실제 선택으로 옮기기 좋음.`;
         if (y.class==="mild-support") return `<b>${y.year}년</b> — 보조 도움 조건이 있는 해. 크게 벌리기보다 검증한 선택을 이어가기 좋음.`;
         if (y.class==="caution") return `<b>${y.year}년</b> — 중요한 주의 조건이 분명한 해. 확장보다 손실·과부하 관리가 먼저.`;
