@@ -1156,6 +1156,9 @@
         <div><div style="font-size:11px;font-weight:900;color:#475569;margin:0 0 5px">상대 이름</div><input id="partnerName" placeholder="이름 또는 별명" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-radius:12px"></div>
         <div><div style="font-size:11px;font-weight:900;color:#475569;margin:0 0 5px">상대 생년월일</div><input id="partnerBirth" inputmode="numeric" maxlength="8" placeholder="예: 1999년 2월 14일 → 19990214" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-radius:12px"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><select id="partnerGender" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="female">여성</option><option value="male">남성</option></select><select id="partnerCalendar" style="padding:12px;border:1px solid #e2e8f0;border-radius:12px"><option value="solar">양력</option><option value="lunar">음력</option></select></div>
+        <div id="partnerLeapWrap" style="display:none;padding:10px 12px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa">
+          <label style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:850;color:#9a3412;cursor:pointer"><input id="partnerLeapMonth" type="checkbox"> 윤달이에요</label>
+        </div>
         <div style="padding:12px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0">
           <div style="font-size:11px;font-weight:900;color:#334155;margin-bottom:7px">상대가 태어난 시간 <span style="font-weight:700;color:#94a3b8">(알면 선택)</span></div>
           <div style="display:grid;grid-template-columns:.9fr 1fr 1fr;gap:6px">
@@ -1168,6 +1171,24 @@
       </div>`;
     }
     return "";
+  }
+
+  function syncPartnerLeapUi(root) {
+    const calendar = root?.querySelector("#partnerCalendar");
+    const wrap = root?.querySelector("#partnerLeapWrap");
+    const check = root?.querySelector("#partnerLeapMonth");
+    if (!calendar || !wrap || !check) return;
+    const isLunar = calendar.value === "lunar";
+    wrap.style.display = isLunar ? "block" : "none";
+    if (!isLunar) check.checked = false;
+  }
+
+  function bindProductSetup(productId, root) {
+    if (productId !== "compatibility") return;
+    const calendar = root?.querySelector("#partnerCalendar");
+    if (!calendar) return;
+    calendar.addEventListener("change", () => syncPartnerLeapUi(root));
+    syncPartnerLeapUi(root);
   }
 
   function collectExtra(productId, data, root) {
@@ -1208,7 +1229,9 @@
         const hour24 = (hour12 % 12) + (ampm === "pm" ? 12 : 0);
         tRaw = `${String(hour24).padStart(2, "0")}:${minute}`;
       }
-      return { partner: { n: root.querySelector("#partnerName")?.value.trim() || "상대", b, t: tRaw, g: root.querySelector("#partnerGender")?.value || "female", c: root.querySelector("#partnerCalendar")?.value || "solar", l: false } };
+      const calendar = root.querySelector("#partnerCalendar")?.value || "solar";
+      const leap = calendar === "lunar" && !!root.querySelector("#partnerLeapMonth")?.checked;
+      return { partner: { n: root.querySelector("#partnerName")?.value.trim() || "상대", b, t: tRaw, g: root.querySelector("#partnerGender")?.value || "female", c: calendar, l: leap } };
     }
     return {};
   }
@@ -1300,6 +1323,7 @@
     root.querySelector("#unniProductTitle").textContent = product.name;
     root.querySelector("#unniProductPrice").textContent = won(product.price);
     root.querySelector("#unniProductSetup").innerHTML = setupHtml(productId, data);
+    bindProductSetup(productId, root);
     root.querySelector("#unniProductPayment").style.display = "none";
     const saveAll = root.querySelector("#unniProductSaveAll");
     const saveHint = root.querySelector("#unniProductSaveHint");
@@ -1460,7 +1484,7 @@
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
   global.__UNNI_PRODUCTS_V1__ = {
-    version: "2.0.0",
+    version: "2.0.1",
     products: PRODUCTS,
     contracts: global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.contracts || {},
     buildProductBody: productBody,
