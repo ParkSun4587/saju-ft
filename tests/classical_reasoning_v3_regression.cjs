@@ -11,7 +11,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load'});
   await page.waitForFunction(() =>
     globalThis.__CLASSICAL_REASONING_V1__?.version==='1.2.0' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='3.2.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='3.2.1' &&
     typeof buildClassicalReasoningV1==='function'
   );
 
@@ -200,7 +200,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     };
   });
 
-  assert(r.versions.note==='3.2.0'&&r.versions.profile==='2.1.0'&&r.versions.reasoning==='1.2.0','v3 runtime versions missing');
+  assert(r.versions.note==='3.2.1'&&r.versions.profile==='2.1.0'&&r.versions.reasoning==='1.2.0','v3 runtime versions missing');
 
   const requiredKinds=['strength','root','flow','pressure'];
   for(const kind of requiredKinds){
