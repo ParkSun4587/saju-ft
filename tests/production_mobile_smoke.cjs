@@ -94,38 +94,32 @@ async function enter(page, mode, concern, situation) {
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
   if (mode==='F') assert(
-    firstState.sisterText.includes('왔구나. 편하게 알려줘.') &&
-    firstState.sisterText.includes('이름이랑 생일부터 받고') &&
-    firstState.sisterText.includes('제일 마음 쓰이는 고민부터 같이 볼게') &&
+    firstState.sisterText.includes('왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
+    firstState.sisterText.includes('좋은 말만 골라 하진 않을게.') &&
+    firstState.sisterText.includes('네가 놓치고 있는 지점까지 언니가 같이 짚어줄게.') &&
     !firstState.sisterText.includes('ㅎㅎ'),
-    'F input lost calm close-sister voice '+firstState.sisterText
+    'F input lost warm pinpoint counselor voice '+firstState.sisterText
   );
   if (mode==='T') assert(
-    firstState.sisterText.includes('왔어. 바로 정리해보자.') &&
-    firstState.sisterText.includes('이름이랑 생일부터 받고') &&
-    firstState.sisterText.includes('제일 먼저 볼 고민 하나만 잡을게') &&
+    firstState.sisterText.includes('왔어. 이름이랑 생일부터 알려줘.') &&
+    firstState.sisterText.includes('괜히 겁주거나 돌려 말하지 않을게.') &&
+    firstState.sisterText.includes('원인·지금 할 일·움직일 타이밍까지 필요한 것만 정확히 정리해줄게.') &&
     !firstState.sisterText.includes('ㅎㅎ'),
-    'T input lost concise direct-care voice '+firstState.sisterText
+    'T input lost precise direct-care counselor voice '+firstState.sisterText
   );
   await page.fill('#nameInput','테스트');
   const label = concern === 'love' ? '연애 · 썸' : '마음 · 스트레스';
   await page.locator('#concernGrid .concern-chip').filter({hasText:label}).click();
   await page.waitForSelector('#concernSituationBox',{state:'visible'});
   const situationPrompt=(await page.locator('#concernSituationPrompt').innerText()).trim();
-  if(mode==='F') assert(
-    situationPrompt.includes(concern==='love' ? '연애 쪽이구나' : '마음·스트레스 쪽이구나'),
-    'F concern selection did not get an immediate counselor response '+situationPrompt
-  );
-  if(mode==='T') assert(
-    situationPrompt.includes(concern==='love' ? '연애 쪽이네' : '마음·스트레스 쪽이네'),
-    'T concern selection did not get an immediate counselor response '+situationPrompt
-  );
+  const expectedSituationPrompt=concern==='love'
+    ? '연애 얘기, 지금 너랑 제일 가까운 건 뭐야?'
+    : '마음이 힘든데, 지금 제일 가까운 느낌은 뭐야?';
+  assert(situationPrompt===expectedSituationPrompt,'restored situation prompt drift '+situationPrompt);
   assert(await page.locator('#concernSituationGrid [data-concern-situation]').count() === 4,'situation count');
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.waitForSelector('#concernSituationSummary',{state:'visible'});
-  const situationAck=(await page.locator('#concernSituationAck').innerText()).trim();
-  if(mode==='F') assert(situationAck.includes('이 상황 기준으로 같이 볼게'),'F situation acknowledgement missing '+situationAck);
-  if(mode==='T') assert(situationAck.includes('기준으로 바로 정리할게'),'T situation acknowledgement missing '+situationAck);
+  assert(await page.locator('#concernSituationAck').count()===0,'extra situation acknowledgement should stay removed');
   assert(!(await page.locator('#analysisSubmitButton').isDisabled()),'send button should unlock after concern and situation');
   assert(await page.locator('#concernSituationBox').isHidden(),'situation did not collapse');
   await page.locator('#concernSituationSummary button').click();
@@ -389,15 +383,15 @@ async function inspect(page, mode) {
     await small.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
     const voice=await small.locator('#welcomeSisterText').innerText();
     if(mode==='F') assert(
-      voice.includes('왔구나. 편하게 알려줘.') &&
-      voice.includes('이름이랑 생일부터 받고') &&
-      voice.includes('제일 마음 쓰이는 고민부터 같이 볼게'),
+      voice.includes('왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
+      voice.includes('좋은 말만 골라 하진 않을게.') &&
+      voice.includes('같이 짚어줄게'),
       '360px F voice drift '+voice
     );
     else assert(
-      voice.includes('왔어. 바로 정리해보자.') &&
-      voice.includes('이름이랑 생일부터 받고') &&
-      voice.includes('제일 먼저 볼 고민 하나만 잡을게'),
+      voice.includes('왔어. 이름이랑 생일부터 알려줘.') &&
+      voice.includes('겁주거나 돌려 말하지 않을게.') &&
+      voice.includes('필요한 것만 정확히 정리해줄게'),
       '360px T voice drift '+voice
     );
     await small.close();
