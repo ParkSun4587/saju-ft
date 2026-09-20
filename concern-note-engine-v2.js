@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "3.1.0";
+  const VERSION = "3.2.0";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   const SITUATIONS = {
@@ -358,14 +358,18 @@
 
   function timingNote(reasoning, situation, isT) {
     const timing = reasoning?.timing || {};
-    const nearMonths = Array.isArray(timing.nearMonths) ? timing.nearMonths : [];
-    const years = Array.isArray(timing.years) ? timing.years.filter((y) => y.status === "ok") : [];
-    const turns = timing.turningPoints || { opportunities: [], cautions: [] };
+    const near = timing.concernNearTerm || {};
+    const nearMonths = Array.isArray(near.months) ? near.months : (Array.isArray(timing.nearMonths) ? timing.nearMonths : []);
+    const longTermPivots = Array.isArray(timing.longTermPivots) ? timing.longTermPivots.slice(0,2) : [];
 
-    if (!nearMonths.length && !years.length) {
+    if (!nearMonths.length) {
       return {
         desc:isT ? "현재 저장된 시기 데이터가 부족해서 특정 때를 만들어내지 않을게." : "지금은 시기 자료가 충분하지 않아서 언니가 날짜를 지어내진 않을게.",
-        meta:{firstDate:null,secondDate:null,firstBody:"",secondBody:"",concernSituation:situation.key,structureFingerprint:reasoning?.structureFingerprint||"",timingFingerprint:reasoning?.timingFingerprint||"",method:timing.method||""},
+        meta:{
+          firstDate:null,secondDate:null,firstBody:"",secondBody:"",concernSituation:situation.key,
+          structureFingerprint:reasoning?.structureFingerprint||"",timingFingerprint:reasoning?.timingFingerprint||"",
+          method:timing.method||"",disclosureContract:"basic_concern",longTermPivotYears:[],
+        },
       };
     }
 
@@ -381,15 +385,18 @@
       for(let i=0;i<Math.max(a.length,b.length);i++){const d=(b[i]||0)-(a[i]||0);if(d)return d;}
       return 0;
     };
-    const monthCandidates = [...nearMonths]
-      .sort((a,b)=>Math.max(...supportRank(b).slice(0,3),...cautionRank(b).slice(0,3))-Math.max(...supportRank(a).slice(0,3),...cautionRank(a).slice(0,3)) || String(a.startYmd).localeCompare(String(b.startYmd)));
-    const pickedMonths = [];
-    const bestNear = [...nearMonths].filter(x => ["supportive","mild-support"].includes(x.class)).sort((a,b)=>cmpTuple(supportRank(a),supportRank(b))||String(a.startYmd).localeCompare(String(b.startYmd)))[0];
-    const cautionNear = [...nearMonths].filter(x => ["caution","mild-caution"].includes(x.class)).sort((a,b)=>cmpTuple(cautionRank(a),cautionRank(b))||String(a.startYmd).localeCompare(String(b.startYmd)))[0];
-    for (const row of [bestNear,cautionNear,...monthCandidates]) {
-      if (row && !pickedMonths.some(x=>x.startYmd===row.startYmd)) pickedMonths.push(row);
-      if (pickedMonths.length >= 3) break;
+
+    const sourceHighlights=Array.isArray(near.highlights)&&near.highlights.length ? near.highlights : [];
+    const pickedMonths=[...sourceHighlights];
+    if(!pickedMonths.length){
+      const bestNear=[...nearMonths].filter(x=>["supportive","mild-support"].includes(x.class)).sort((a,b)=>cmpTuple(supportRank(a),supportRank(b))||String(a.startYmd).localeCompare(String(b.startYmd)))[0];
+      const cautionNear=[...nearMonths].filter(x=>["caution","mild-caution"].includes(x.class)).sort((a,b)=>cmpTuple(cautionRank(a),cautionRank(b))||String(a.startYmd).localeCompare(String(b.startYmd)))[0];
+      for(const row of [bestNear,cautionNear,...nearMonths]){
+        if(row&&!pickedMonths.some(x=>x.startYmd===row.startYmd))pickedMonths.push(row);
+        if(pickedMonths.length>=3)break;
+      }
     }
+    pickedMonths.splice(3);
     pickedMonths.sort((a,b)=>String(a.startYmd).localeCompare(String(b.startYmd)));
 
     function timingReasonPhrase(row, positive) {
@@ -418,70 +425,61 @@
       const when = formatMonth(row);
       const supportWhy = timingReasonPhrase(row, true);
       const cautionWhy = timingReasonPhrase(row, false);
-      if (row.class==="supportive") return `<b>${when}</b> — ${supportWhy || "중요한 도움 근거가"} 뚜렷하고 큰 주의 근거가 맞서지 않는 구간이라 ${situation.move}처럼 실제 반응을 확인하는 행동을 몰아주기 좋아.`;
-      if (row.class==="mild-support") return `<b>${when}</b> — ${supportWhy || "보조 도움 근거가"} 잡혀 있어 크게 벌리기보다 ${situation.move}를 한 번 시험해보기 좋은 쪽이야.`;
-      if (row.class==="caution") return `<b>${when}</b> — ${cautionWhy || "중요한 주의 근거가"} 뚜렷해. 새 판을 벌이기보다 손실과 과로를 먼저 줄여.`;
-      if (row.class==="mild-caution") return `<b>${when}</b> — ${cautionWhy || "보조 주의 근거가"} 있어서 속도를 줄이고 한 번 더 확인하는 편이 좋아.`;
-      if (row.class==="mixed") return `<b>${when}</b> — ${supportWhy || "도움 근거가"} 있고 ${cautionWhy || "주의 근거가"} 같이 잡혀 있어, 한 방향으로 단정하기보다 조건을 나눠서 움직여야 해.`;
-      return `<b>${when}</b> — 한쪽으로 강하게 기울지 않아, 결과보다 준비 상태를 점검하기 좋아.`;
+      if (row.class==="supportive") return `<b>${when}</b> — ${supportWhy || "중요한 도움 근거가"} 뚜렷하고 큰 주의 근거가 맞서지 않아. ${situation.move}처럼 실제 반응을 확인하는 행동을 넣기 좋아.`;
+      if (row.class==="mild-support") return `<b>${when}</b> — ${supportWhy || "보조 도움 근거가"} 잡혀 있어. 크게 벌리기보다 ${situation.move}를 한 번 시험해보기 좋아.`;
+      if (row.class==="caution") return `<b>${when}</b> — ${cautionWhy || "중요한 주의 근거가"} 뚜렷해. 같은 속도로 밀기보다 손실과 과로를 먼저 줄여.`;
+      if (row.class==="mild-caution") return `<b>${when}</b> — ${cautionWhy || "보조 주의 근거가"} 있어. 속도를 줄이고 한 번 더 확인하는 편이 좋아.`;
+      if (row.class==="mixed") return `<b>${when}</b> — 도움과 주의 근거가 같이 잡혀 있어. 한 방향으로 단정하기보다 조건을 나눠서 움직여.`;
+      return `<b>${when}</b> — 한쪽으로 강하게 기울지 않아. 결과보다 준비 상태를 점검하기 좋아.`;
     }
 
     const nearBody = pickedMonths.length
       ? pickedMonths.map(monthSentence).join("<br><br>")
-      : "앞으로 18개월 안에서 한쪽으로 강하게 기울어진 달을 따로 잡지 않았어.";
+      : "앞으로 18개월 안에서는 특정 달 하나를 억지로 고르기보다 준비 상태를 확인하면서 움직이는 편이 맞아.";
 
-    const detailEndYear = Number(String(timing.detailEnd||"").slice(0,4)) || 0;
-    const laterYears = years.filter(y => y.year >= detailEndYear).slice(0,4);
-    function yearSentence(y) {
-      const supportWhy = timingReasonPhrase(y, true);
-      const cautionWhy = timingReasonPhrase(y, false);
-      if (y.class==="supportive") return `<b>${y.year}년</b> — ${supportWhy || "중요한 도움 근거가"} 뚜렷하고 큰 주의 근거가 맞서지 않아, 준비한 걸 밖으로 꺼내기 좋은 해야.`;
-      if (y.class==="mild-support") return `<b>${y.year}년</b> — ${supportWhy || "보조 도움 근거가"} 있어 무리한 확장보다는 준비한 선택을 실제로 시험해보기 좋아.`;
-      if (y.class==="caution") return `<b>${y.year}년</b> — ${cautionWhy || "중요한 주의 근거가"} 뚜렷해, 판을 넓히기보다 지킬 것과 버릴 것을 나누는 게 중요해.`;
-      if (y.class==="mild-caution") return `<b>${y.year}년</b> — ${cautionWhy || "보조 주의 근거가"} 있어 같은 속도로 계속 밀기보다 조건을 조정하면서 가는 편이 좋아.`;
-      if (y.class==="mixed") return `<b>${y.year}년</b> — ${supportWhy || "도움 근거가"} 있고 ${cautionWhy || "주의 근거가"} 같이 잡혀 있어, 잘 되는 부분과 무리되는 부분을 분리해서 써야 하는 해야.`;
-      return `<b>${y.year}년</b> — 한쪽으로 강하게 기울지 않아, 앞 단계에서 만든 기반을 이어가는 해로 보는 게 맞아.`;
-    }
-    const laterBody = laterYears.length ? laterYears.map(yearSentence).join("<br><br>") : "18개월 이후에는 별도 연도 데이터가 충분하지 않아 큰 흐름을 억지로 만들지 않았어.";
-
-    function turnLabel(p) {
-      if (!p) return "";
-      if (p.scope === "month") {
-        const parts=String(p.date||"").split("-");
-        return parts.length===3 ? `${Number(parts[1])}월 ${Number(parts[2])}일 무렵` : p.date;
+    function pivotSentence(pivot) {
+      const year = pivot?.year || String(pivot?.date||"").slice(0,4);
+      if(!year)return "";
+      if(pivot.class==="supportive"){
+        return `<b>${year}년 전후</b> — ${situation.object}에서 지금보다 판을 넓혀볼 만한 큰 변곡점이 실제 계산에서 잡혀 있어. 여기서는 시점만 남기고, 그때 왜 힘이 붙는지와 월별 세부 흐름·다른 영역과의 연결은 펼치지 않을게.`;
       }
-      return String(p.label||p.date||"");
+      return `<b>${year}년 전후</b> — ${situation.object}에서 방식이나 속도를 한 번 크게 조정해야 할 변곡점이 실제 계산에서 잡혀 있어. 여기서는 시점만 남기고, 구체 원인·월별 흐름·다른 영역과의 연결은 풀어놓지 않을게.`;
     }
-    const opp=(turns.opportunities||[]).slice(0,3);
-    const caut=(turns.cautions||[]).slice(0,2);
-    const turnLines=[];
-    if (opp.length) turnLines.push(`<b>기회 변곡점</b> — ${opp.map(turnLabel).join(" / ")}`);
-    if (caut.length) turnLines.push(`<b>주의 변곡점</b> — ${caut.map(turnLabel).join(" / ")}`);
-    const turnBody=turnLines.length?turnLines.join("<br>"):"강한 변곡점은 확정해서 잡지 않았어.";
+
+    const pivotBody = longTermPivots.map(pivotSentence).filter(Boolean).join("<br><br>");
+    const pivotSection = pivotBody ? `<br><br><b>그 이후 큰 변곡점</b><br>${pivotBody}` : "";
 
     const intro = isT
-      ? "기본 사주는 그대로야. 가까운 18개월은 달 단위로 보고, 그 뒤는 5년 안의 큰 흐름만 따로 봤어."
-      : "네 기본 사주가 해마다 바뀌는 건 아니야. 언니는 가까운 18개월은 촘촘하게, 그 뒤는 5년 안에서 큰 흐름만 따로 나눠봤어.";
+      ? "이 고민은 가까운 12~18개월을 가장 구체적으로 보는 게 실용적이야. 그래서 실제로 움직일 달과 줄일 달부터 잡았어."
+      : "이 고민은 멀리 있는 미래를 전부 늘어놓는 것보다, 앞으로 12~18개월에 언제 움직이고 언제 속도를 줄일지 아는 게 더 쓸모 있어. 언니가 그 구간부터 촘촘하게 골라봤어.";
     const close = isT
-      ? `좋은 구간엔 ${situation.move}. 조심 구간엔 같은 속도로 밀지 마.`
-      : `움직이기 좋은 구간에는 ${situation.move}. 반대로 힘이 덜 받쳐주는 때는 같은 속도를 억지로 유지하지 않아도 돼.`;
+      ? `움직이기 좋은 구간엔 ${situation.move}. 조심 구간엔 같은 속도로 밀지 마.`
+      : `움직이기 좋은 구간에는 ${situation.move}. 힘이 덜 받쳐주는 때는 같은 속도를 억지로 유지하지 않아도 돼.`;
 
-    const first=opp[0]||caut[0]||null,second=opp[1]||caut[1]||null;
+    const first=pickedMonths[0]||longTermPivots[0]||null;
+    const second=pickedMonths[1]||longTermPivots[1]||pickedMonths[2]||null;
+    const label=(row)=>{
+      if(!row)return null;
+      if(row.scope==="year"||row.year&&!row.startYmd)return `${row.year}년`;
+      return formatMonth(row);
+    };
     return {
-      desc:`${intro}<br><br><b>가까운 시기 상세</b><br>${nearBody}<br><br><b>이후 큰 흐름</b><br>${laterBody}<br><br><b>핵심 변곡점</b><br>${turnBody}<br><br>${close}`,
+      desc:`${intro}<br><br><b>가까운 시기 상세</b><br>${nearBody}${pivotSection}<br><br>${close}`,
       meta:{
-        firstDate:first?turnLabel(first):null,
-        secondDate:second?turnLabel(second):null,
-        firstBody:first?`${turnLabel(first)} ${first.class||""}`:"",
-        secondBody:second?`${turnLabel(second)} ${second.class||""}`:"",
+        firstDate:label(first),
+        secondDate:label(second),
+        firstBody:first?`${label(first)} ${first.class||""}`:"",
+        secondBody:second?`${label(second)} ${second.class||""}`:"",
         concernSituation:situation.key,
         structureFingerprint:reasoning?.structureFingerprint||"",
         timingFingerprint:reasoning?.timingFingerprint||"",
         method:timing.method||"",
         horizonEnd:timing.horizonEnd||"",
+        internalHorizonEnd:timing.internalHorizonEnd||"",
         detailEnd:timing.detailEnd||"",
         nearMonthCount:nearMonths.length,
-        yearCount:years.length,
+        longTermPivotYears:longTermPivots.map(x=>x.year),
+        disclosureContract:"basic_concern",
       },
     };
   }
