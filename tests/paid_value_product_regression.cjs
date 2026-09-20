@@ -765,8 +765,8 @@ function norm(v) {
   assert(
     premium.includes('로아 언니가 이어서 본 결과') &&
     premium.includes('서아 언니가 정리한 결과') &&
-    premium.includes('지금 보던 얘기에서 이어서, 여기서 새로 볼 수 있는 것만 같이 볼게.') &&
-    premium.includes('지금 결과와 겹치는 건 빼고, 여기서 새로 열리는 정보부터 볼게.'),
+    premium.includes('아까 보던 상담에서 이어서, 여기서는 새로 볼 수 있는 것만 보여줄게.') &&
+    premium.includes('앞에서 본 내용은 반복하지 않을게. 여기서 새로 확인할 정보만 정리해.'),
     'premium modal lost counselor continuity'
   );
   for (const staleGeneric of [
