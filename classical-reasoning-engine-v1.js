@@ -248,7 +248,7 @@
     const helpful=unionGods(zipingRows,"supportGods"), rescue=unionGods(zipingRows,"rescueGods"), harmful=unionGods(zipingRows,"harmGods");
     const ditianOperations=regulation?.facts?.operations||[];
     const ditianElements=[];
-    if(bridge?.facts?.bridge&&!bridge.facts.established)ditianElements.push(bridge.facts.bridge);
+    if(bridge?.facts?.bridge&&bridge.facts.status==="missing")ditianElements.push(bridge.facts.bridge);
     if(strength?.facts?.verdict==="신약"){
       ditianElements.push(groupElement(ctx.dayElement,"print"),groupElement(ctx.dayElement,"self"));
     }else if(strength?.facts?.verdict==="신강"){
@@ -273,7 +273,7 @@
     let sequence=[];
     let priorityPolicy="두 체계가 같은 방향이면 공통 작용을 우선한다.";
     if(overlap.length)sequence=overlap.map(e=>({source:"overlap",element:e,reason:"적천수의 필요한 작용과 자평진전의 격 보완이 일치"}));
-    if(!sequence.length&&bridge?.facts?.bridge&&!bridge.facts.established){
+    if(!sequence.length&&bridge?.facts?.bridge&&bridge.facts.status==="missing"){
       sequence.push({source:"ditian-bridge",element:bridge.facts.bridge,reason:"원국의 상극 흐름을 잇는 통관 기운이 비어 있음"});
     }
     if(!sequence.length)dEls.forEach(e=>sequence.push({source:"ditian",element:e,reason:"강약·기세 쪽에서 필요한 작용"}));
@@ -283,7 +283,7 @@
     return {
       evidenceStatus,ditianOperations,ditianElements:dEls,zipingGods,zipingElements,harmfulGods:harmful,harmfulElements,
       overlapElements:overlap,conflicts,priorityPolicy,sequence:sequence.slice(0,4),
-      legacyBalance:ctx.profile?.balance||null,
+      compatibilityNote:"기존 balance.primary/secondary/avoid는 통합 프로필에만 보존하며 이 처방 순서에는 사용하지 않음",
     };
   }
 
@@ -299,7 +299,7 @@
       neededGroups:strength==="신약"?["print","self"]:strength==="신강"?["output","officer"]:[],
       bridgeElement:bridge?.facts?.bridge||ctx.bridge?.bridge||null,
       bridgeElementName:(bridge?.facts?.bridge||ctx.bridge?.bridge)?ELEMENT_KR[bridge?.facts?.bridge||ctx.bridge?.bridge]:"",
-      bridgeEstablished:!!bridge?.facts?.established,
+      bridgeStatus:bridge?.facts?.status||null,
       zipingState:zMain?.state||zMain?.facts?.state||"undetermined",zipingPath:zMain?.facts?.path||null,zipingConclusion:zMain?.conclusion||"",
       conflicts:prescription.conflicts,priorityPolicy:prescription.priorityPolicy,specialStructureStatus:special?.implementationStatus||"none",
       prescription,
@@ -407,7 +407,7 @@
     }
 
     if(cross.bridgeElement&&(ganEl===cross.bridgeElement||hiddenEls.includes(cross.bridgeElement))){
-      add(supportSignals,"bridge-activation",cross.bridgeEstablished?"support":"major","원국의 상극 사이를 잇는 통관 기운이 운에서 들어옴",{element:cross.bridgeElement});
+      add(supportSignals,"bridge-activation",cross.bridgeStatus==="missing"?"major":"support","원국의 상극 사이를 잇는 통관 기운이 운에서 들어옴",{element:cross.bridgeElement,natalStatus:cross.bridgeStatus});
     }
     const transitHasSelf=hidden.some(h=>relationGroup(ctx.dayGan,h)==="self");
     if(cross.strength==="신약"&&transitHasSelf)add(supportSignals,"root-add","support","지지에서 일간의 뿌리를 보태는 조건",{zhi});
