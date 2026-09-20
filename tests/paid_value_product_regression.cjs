@@ -711,9 +711,13 @@ function norm(v) {
     html.includes('원하는 상담 스타일을 골라봐') &&
     html.includes('감정 공감형') &&
     html.includes('핵심 정리형') &&
-    html.includes('선택한 언니의 말투로 결과 끝까지 이어져') &&
-    html.includes('응, 언니랑 천천히 풀어볼래') &&
-    html.includes('좋아, 핵심만 바로 알려줘'),
+    html.includes('왜 자꾸 마음이 쓰이는지부터 같이 풀어볼게.') &&
+    html.includes('돌려 말 안 할게. 뭐가 핵심인지부터 딱 정리해줄게.') &&
+    html.includes('응, 내 얘기 좀 들어줘') &&
+    html.includes('좋아, 핵심부터 알려줘') &&
+    !html.includes('선택한 언니의 말투로 결과 끝까지 이어져') &&
+    !html.includes('응, 언니랑 천천히 풀어볼래') &&
+    !html.includes('좋아, 핵심만 바로 알려줘'),
     'immersive first counselor-choice copy missing'
   );
   for (const staleIntro of ['응, 내 얘기부터 천천히 같이 봐줘','좋아. 돌려 말하지 말고 필요한 것만 알려줘','괜히 겁주거나 포장 안 해. 좋은 건 좋다, 아닌 건 아니다 말하고 지금 필요한 것만 정리해줄게.']) {
