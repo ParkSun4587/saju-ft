@@ -1586,22 +1586,27 @@
     };
   }
 
-  function recommendedProductId(data) {
+  function recommendedProductId(data, entitlementState = null) {
+    const api = entitlementApi();
+    const direct = api?.verifiedProductIds?.(entitlementState) || [];
+    const has = (id) => direct.includes(id);
     const explicitIntent = data?.premiumIntent || "";
-    if (explicitIntent === "everything") return "all_in_one";
-    if (explicitIntent === "other-concerns") return "concern_bundle3";
-    if (explicitIntent === "relationship-person") return "compatibility";
-    if (explicitIntent === "long-term") return "full_saju";
-
     const concern = data?.concernKey || "money";
     const situation = data?.concernSituation || "";
-    if (concern === "love" && ["crush","relationship","breakup"].includes(situation)) return "compatibility";
-    if (["mental","people"].includes(concern)) return "concern_bundle3";
+    const relationshipIntent = explicitIntent === "relationship-person" || (concern === "love" && ["crush","relationship","breakup"].includes(situation));
 
-    const reasoning = getReasoning(data);
-    const hasRealLongPivot = (reasoning?.timing?.longTermPivots || []).length > 0;
-    if (hasRealLongPivot && ["money","career","path"].includes(concern)) return "full_saju";
-    if (concern === "path" && situation === "strength") return "all_in_one";
+    if (has("all_in_one")) return "compatibility";
+    if (relationshipIntent && !has("compatibility")) return "compatibility";
+    if (has("full_saju") && has("concern_bundle3")) return "all_in_one";
+    if (has("full_saju")) return "all_in_one";
+    if (has("concern_bundle3")) {
+      if (explicitIntent === "everything") return "all_in_one";
+      return "full_saju";
+    }
+
+    if (explicitIntent === "everything") return "all_in_one";
+    if (explicitIntent === "other-concerns") return "concern_bundle3";
+    if (relationshipIntent) return "compatibility";
     return "full_saju";
   }
 
@@ -1609,36 +1614,63 @@
     return productValueCopy(productId)?.short || PRODUCTS[productId]?.desc || "";
   }
 
-  function recommendationReason(productId, data, isT) {
+  function recommendationReason(productId, data, isT, entitlementState) {
+    const direct = entitlementApi()?.verifiedProductIds?.(entitlementState) || [];
     const situation = situationLabel(data?.concernKey, data?.concernSituation);
     if (productId === "compatibility") {
-      return isT
-        ? "지금 질문에는 네 사주만 더 보는 것보다 상대 사주까지 겹쳐야 새로 알 수 있는 정보가 많아."
-        : `${situation ? "방금 말한 ‘" + situation + "’라면 " : ""}이제 네 마음만 더 보는 것보다, 상대 사주까지 같이 놓고 둘 사이 이유를 보는 게 완전히 다른 답을 줄 수 있어.`;
+      return direct.includes("all_in_one")
+        ? "나 한 사람에 대한 건 완전판에 이미 들어 있어. 여기서 새로 열 수 있는 건 특정 상대와 둘 사이 계산이야."
+        : isT
+          ? "지금 질문에는 네 사주만 더 보는 것보다 상대 사주까지 겹쳐야 새로 알 수 있는 정보가 많아."
+          : `${situation ? "방금 말한 ‘" + situation + "’라면 " : ""}상대 사주까지 같이 놓고 둘 사이 이유를 보는 게 완전히 다른 답을 줄 수 있어.`;
     }
     if (productId === "full_saju") {
-      return isT
-        ? "기본 NOTE에서 가까운 시기는 충분히 봤어. 다음 정보 가치는 5년 전체 흐름과 여러 영역이 같이 바뀌는 이유에 있어."
-        : "지금 고민 하나의 가까운 시기는 이미 충분히 봤으니까, 다음에는 네 인생 전체 구조와 5년 큰 흐름을 이어서 보는 게 새 정보가 제일 많아.";
+      return direct.includes("concern_bundle3")
+        ? "다른 고민 3개는 이미 깊게 봤으니까, 이제 새로 열리는 가치는 네 전체 구조와 5년 흐름이야."
+        : isT
+          ? "기본 NOTE에서 가까운 시기는 충분히 봤어. 다음 정보 가치는 5년 전체 흐름과 여러 영역이 같이 바뀌는 이유에 있어."
+          : "지금 고민 하나의 가까운 시기는 이미 충분히 봤으니까, 다음에는 네 인생 전체 구조와 5년 큰 흐름을 이어서 보는 게 새 정보가 제일 많아.";
     }
     if (productId === "concern_bundle3") {
       return isT
         ? "지금 고민은 여기서 닫고, 다른 고민 3개에 같은 원판이 어떻게 다르게 적용되는지 보는 게 중복이 적어."
-        : "지금 고민 하나는 충분히 풀었으니까, 아직 마음에 남은 다른 고민 3개를 같은 깊이로 보면 ‘같은 나인데 왜 문제마다 다르게 꼬이는지’가 더 선명해져.";
+        : "지금 고민 하나는 충분히 풀었으니까, 아직 마음에 남은 다른 고민 3개를 같은 깊이로 보는 게 새 정보가 많아.";
+    }
+    const quote = entitlementApi()?.calculateUpgradeQuote?.({ targetProduct:"all_in_one", verifiedEntitlements:direct });
+    if (quote?.creditAmount > 0) {
+      return `이미 산 1인 상품 ${quote.creditedProducts.map((id)=>PRODUCTS[id]?.name || id).join(" + ")} 금액을 인정해서, 중복 결제 없이 완전판으로 합칠 수 있어.`;
     }
     return isT
       ? "한 사람 기준으로 전체 구조·6개 고민·5년 흐름을 따로 열기 싫다면 한 번에 묶는 구성이 맞아."
-      : "내 사주 전체판도 보고 6가지 고민도 하나씩 다 풀고 싶다면, 나 한 사람에 대한 내용을 한 번에 여는 쪽이 제일 편해.";
+      : "내 전체 사주판도 보고 6가지 고민도 하나씩 다 풀고 싶다면, 나 한 사람에 대한 내용을 한 번에 여는 쪽이 제일 편해.";
   }
 
-  function productButtonHtml(p, { recommended = false, secondary = false, reason = "" } = {}) {
+  function productButtonHtml(p, { recommended = false, secondary = false, reason = "", state = null } = {}) {
+    const resolvedState = state || { kind:"unpurchased", amount:p.price, label:`${won(p.price)}에 열기` };
     const border = recommended ? "#fda4af" : "#e2e8f0";
     const bg = recommended ? "linear-gradient(135deg,#fff1f2,#fff)" : "#fff";
     const pad = recommended ? "15px" : "12px 13px";
     const value = productValueCopy(p.id);
     const description = recommended ? p.desc : productShort(p.id);
-    const cta = value?.cta || p.badge;
-    return `<button data-unni-product="${p.id}" ${secondary ? 'data-secondary-product="1"' : ""} style="text-align:left;width:100%;padding:${pad};border:${recommended ? "2px" : "1px"} solid ${border};border-radius:16px;background:${bg};cursor:pointer;box-shadow:${recommended ? "0 8px 24px rgba(244,63,94,.10)" : "none"}"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div style="min-width:0"><div style="font-size:10px;font-weight:900;color:${recommended ? "#f43f5e" : "#94a3b8"};margin-bottom:3px">${recommended ? "언니가 지금 먼저 골라준 건 · " : ""}${p.badge}</div><div style="font-size:${recommended ? "15px" : "13px"};font-weight:950;color:#0f172a">${p.name}</div></div><div style="font-size:${recommended ? "14px" : "13px"};font-weight:950;color:#0f172a;white-space:nowrap">${won(p.price)}</div></div><div style="font-size:${recommended ? "11.5px" : "10.5px"};line-height:1.6;color:#64748b;margin-top:${recommended ? "7px" : "5px"}">${description}</div><div style="margin-top:7px;font-size:10.5px;font-weight:900;color:${recommended ? "#be123c" : "#475569"}">새로 열리는 것 · ${esc(cta)}</div>${recommended && reason ? `<div style="margin-top:8px;padding:8px 9px;border-radius:11px;background:rgba(255,255,255,.75);font-size:10.5px;line-height:1.55;font-weight:800;color:#be123c">왜 이걸 먼저 추천하냐면 · ${reason}</div>` : ""}</button>`;
+    const priceLabel = resolvedState.kind === "purchased" ? "구매 완료"
+      : resolvedState.kind === "included" ? "완전판 포함"
+        : resolvedState.kind === "upgrade" ? `+${won(resolvedState.amount)}`
+          : won(p.price);
+    const stateCopy = resolvedState.kind === "purchased"
+      ? (p.id === "full_saju" ? "구매한 전체판 다시 보기" : "구매한 상품 다시 보기")
+      : resolvedState.kind === "included" ? "완전판에 포함됨 · 바로 보기"
+        : resolvedState.kind === "upgrade" ? resolvedState.label
+          : `새로 열리는 것 · ${value?.cta || p.badge}`;
+    return `<button data-unni-product="${p.id}" data-product-state="${resolvedState.kind}" ${secondary ? 'data-secondary-product="1"' : ""} style="text-align:left;width:100%;padding:${pad};border:${recommended ? "2px" : "1px"} solid ${border};border-radius:16px;background:${bg};cursor:pointer;box-shadow:${recommended ? "0 8px 24px rgba(244,63,94,.10)" : "none"}"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div style="min-width:0"><div style="font-size:10px;font-weight:900;color:${recommended ? "#f43f5e" : "#94a3b8"};margin-bottom:3px">${recommended ? "언니가 지금 먼저 골라준 건 · " : ""}${p.badge}</div><div style="font-size:${recommended ? "15px" : "13px"};font-weight:950;color:#0f172a">${p.name}</div></div><div style="font-size:${recommended ? "14px" : "13px"};font-weight:950;color:#0f172a;white-space:nowrap">${priceLabel}</div></div><div style="font-size:${recommended ? "11.5px" : "10.5px"};line-height:1.6;color:#64748b;margin-top:${recommended ? "7px" : "5px"}">${description}</div><div style="margin-top:7px;font-size:10.5px;font-weight:900;color:${recommended ? "#be123c" : "#475569"}">${esc(stateCopy)}</div>${recommended && reason ? `<div style="margin-top:8px;padding:8px 9px;border-radius:11px;background:rgba(255,255,255,.75);font-size:10.5px;line-height:1.55;font-weight:800;color:#be123c">왜 이걸 먼저 추천하냐면 · ${reason}</div>` : ""}</button>`;
+  }
+
+  function foldedProductGroups(products, states) {
+    const single = products.filter((p) => p.id !== "compatibility");
+    const pair = products.filter((p) => p.id === "compatibility");
+    const block = (title, rows) => rows.length
+      ? `<div data-product-group="${title === "나를 더 보기" ? "single" : "pair"}"><div style="font-size:10px;font-weight:900;color:#94a3b8;margin:4px 2px 7px">${title}</div><div style="display:grid;gap:9px">${rows.map((p)=>productButtonHtml(p,{secondary:true,state:states[p.id]})).join("")}</div></div>`
+      : "";
+    return block("나를 더 보기",single) + block("둘 사이 보기",pair);
   }
 
   function renderCatalog() {
@@ -1655,33 +1687,66 @@
       return;
     }
     if (existing) return;
+
+    const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
+    const state = isFreeLaunch ? { verifiedPurchases:[], effectiveEntitlements:[], allInOneQuote:null } : cachedEntitlements(data);
+    if (!isFreeLaunch && !state) {
+      if (!entitlementPromise) {
+        resolveVerifiedEntitlements(data).then(() => {
+          document.getElementById("unniProductLadder")?.remove();
+          renderCatalog();
+        }).catch(() => {
+          const pending = document.getElementById("unniProductLadder");
+          if (pending) pending.querySelector("[data-entitlement-status]")?.replaceChildren(document.createTextNode("구매 내역 확인이 지연되고 있어. 중복 결제를 막기 위해 잠시 후 다시 확인해줘."));
+        });
+      }
+      const wrap = document.createElement("section");
+      wrap.id = "unniProductLadder";
+      wrap.style.cssText = "margin-top:24px;padding:18px 14px;border-radius:22px;background:#fff;border:1px solid #fde2e8";
+      wrap.innerHTML = '<div data-entitlement-status style="font-size:11.5px;line-height:1.6;color:#64748b">기존 구매 내역 확인 중…</div>';
+      notes.insertAdjacentElement("afterend",wrap);
+      return;
+    }
+
+    const direct = entitlementApi()?.verifiedProductIds?.(state) || [];
+    const allOwned = direct.includes("all_in_one");
+    const visibleProducts = allOwned ? [PRODUCTS.compatibility] : Object.values(PRODUCTS);
+    const states = Object.fromEntries(visibleProducts.map((p)=>[p.id,productStateFor(p.id,state)]));
     const isT = data?.currentMode === "T";
-    const recommendedId = recommendedProductId(data);
-    const recommended = PRODUCTS[recommendedId] || PRODUCTS.full_saju;
-    const others = Object.values(PRODUCTS).filter((p) => p.id !== recommended.id);
+    let recommendedId = recommendedProductId(data,state);
+    if (!visibleProducts.some((p)=>p.id === recommendedId)) recommendedId = visibleProducts[0]?.id;
+    const recommended = PRODUCTS[recommendedId] || visibleProducts[0];
+    if (!recommended) return;
+    const others = visibleProducts.filter((p) => p.id !== recommended.id);
+    const reason = recommendationReason(recommended.id,data,isT,state);
+
     const wrap = document.createElement("section");
     wrap.id = "unniProductLadder";
+    wrap.dataset.verifiedPremium = isFreeLaunch ? "free-launch" : "server";
     wrap.style.cssText = "margin-top:24px;padding:18px 14px;border-radius:22px;background:#fff;border:1px solid #fde2e8;box-shadow:0 10px 30px rgba(225,175,185,.10)";
-    const eyebrow = isT ? "이 고민은 여기까지 정리했어" : "이 고민 끝까지 같이 봤으니까";
-    const headline = isT ? "다음으로 볼 건 이게 제일 맞아" : "언니가 너한테 다음 하나만 골라봤어";
-    const sub = isT
-      ? "방금 본 내용을 다시 파는 게 아니라, 여기서부터 새로 열리는 정보가 가장 많은 걸 맨 위에 뒀어."
-      : "방금 상담에서 이미 본 건 빼고, 여기서부터 새로 알 수 있는 게 가장 많은 걸 언니가 맨 위에 골라뒀어.";
-    const reason = recommendationReason(recommended.id, data, isT);
-    wrap.innerHTML = `<div style="font-size:11px;font-weight:900;color:#f43f5e">${eyebrow}</div><h3 style="font-size:18px;font-weight:950;margin:5px 0 5px">${headline}</h3><p style="font-size:11.5px;line-height:1.6;color:#64748b;margin:0 0 12px">${sub}</p><div style="display:grid;gap:9px">${productButtonHtml(recommended,{recommended:true,reason})}<button id="unniShowOtherProducts" type="button" aria-expanded="false" style="width:100%;border:1px solid #e2e8f0;background:#f8fafc;border-radius:13px;padding:10px 12px;font-size:11px;font-weight:900;color:#64748b;cursor:pointer">목적이 다르면 다른 3개 보기</button><div id="unniOtherProducts" style="display:none;gap:9px">${others.map((p)=>productButtonHtml(p,{secondary:true})).join("")}</div></div>`;
-    notes.insertAdjacentElement("afterend", wrap);
+    const eyebrow = allOwned ? "나에 대한 완전판은 이미 열려 있어" : (isT ? "이 고민은 여기까지 정리했어" : "이 고민 끝까지 같이 봤으니까");
+    const headline = allOwned ? "이제 별도인 둘 사이 풀이만 남아 있어" : (isT ? "다음으로 볼 건 이게 제일 맞아" : "언니가 너한테 다음 하나만 골라봤어");
+    const sub = allOwned
+      ? "완전판에 포함된 1인 상품은 다시 팔지 않을게. 궁합만 두 번째 사람의 사주가 필요한 별도 계산이야."
+      : (isT ? "방금 본 내용을 다시 파는 게 아니라, 여기서부터 새로 열리는 정보가 가장 많은 걸 맨 위에 뒀어." : "방금 상담에서 이미 본 건 빼고, 여기서부터 새로 알 수 있는 게 가장 많은 걸 언니가 맨 위에 골라뒀어.");
+    const toggleHtml = others.length
+      ? `<button id="unniShowOtherProducts" type="button" aria-expanded="false" style="width:100%;border:1px solid #e2e8f0;background:#f8fafc;border-radius:13px;padding:10px 12px;font-size:11px;font-weight:900;color:#64748b;cursor:pointer">목적이 다르면 다른 ${others.length}개 보기</button><div id="unniOtherProducts" style="display:none;gap:14px">${foldedProductGroups(others,states)}</div>`
+      : "";
+    wrap.innerHTML = `<div style="font-size:11px;font-weight:900;color:#f43f5e">${eyebrow}</div><h3 style="font-size:18px;font-weight:950;margin:5px 0 5px">${headline}</h3><p style="font-size:11.5px;line-height:1.6;color:#64748b;margin:0 0 12px">${sub}</p><div style="display:grid;gap:9px">${productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})}${toggleHtml}</div>`;
+    notes.insertAdjacentElement("afterend",wrap);
+
     const toggle = wrap.querySelector("#unniShowOtherProducts");
     const otherWrap = wrap.querySelector("#unniOtherProducts");
-    toggle?.addEventListener("click", () => {
+    toggle?.addEventListener("click",() => {
       const open = toggle.getAttribute("aria-expanded") !== "true";
-      toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      toggle.textContent = open ? "다른 3개 접기" : "목적이 다르면 다른 3개 보기";
+      toggle.setAttribute("aria-expanded",open ? "true" : "false");
+      toggle.textContent = open ? "다른 상품 접기" : `목적이 다르면 다른 ${others.length}개 보기`;
       if (otherWrap) {
         otherWrap.style.display = open ? "grid" : "none";
-        otherWrap.style.gap = "9px";
+        otherWrap.style.gap = "14px";
       }
     });
-    wrap.querySelectorAll("[data-unni-product]").forEach((btn) => btn.addEventListener("click", () => openProduct(btn.dataset.unniProduct)));
+    wrap.querySelectorAll("[data-unni-product]").forEach((btn)=>btn.addEventListener("click",()=>openProduct(btn.dataset.unniProduct)));
   }
 
   global.handleUnniProductPaymentReturn = async function (params, resume, restored, ticket) {
