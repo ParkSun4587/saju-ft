@@ -1676,7 +1676,10 @@
           root.querySelector("#unniProductClose")?.click();
           await openProduct(productId);
         };
-        body.insertAdjacentHTML("beforeend", `<div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;font-size:11px;line-height:1.6;color:#9a3412">기존 구매 확인이 지연되고 있어. 중복 결제를 막기 위해 지금은 새 결제를 열지 않을게.</div>`);
+        body.insertAdjacentHTML("beforeend", `<div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;font-size:11px;line-height:1.6;color:#9a3412">${productVoice(data, {
+          F: "기존 구매 확인이 조금 늦어지고 있어. 구매 내역은 그대로 두고 확인 중이니까 걱정하지 않아도 돼. 중복 결제되지 않게 지금은 새 결제를 열지 않을게.",
+          T: "구매 확인이 지연 중이야. 중복 결제 방지를 위해 새 결제는 열지 않을게.",
+        })}</div>`);
         return;
       }
       verifiedState = { verifiedPurchases:[], effectiveEntitlements:[], allInOneQuote:null };
