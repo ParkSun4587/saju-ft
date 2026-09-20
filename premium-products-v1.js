@@ -1433,27 +1433,46 @@
     prewarmPaidExport(root, productId);
   }
 
-  async function beginPaidCheckout(productId, data, extra, root) {
+  async function beginPaidCheckout(productId, data, extra, root, verifiedState) {
     if (typeof paymentAPI !== "function" || typeof resultSnapshot !== "function") throw new Error("결제 준비 함수를 불러오지 못했어.");
-    const snap = { ...resultSnapshot(data), p: productId, x: extra };
-    const order = await paymentAPI({ action: "prepare", data: snap });
+    const snap = { ...resultSnapshot(data), p:productId, x:extra };
+    const entitlementTokens = entitlementTokenRecords();
+    const order = await paymentAPI({ action:"prepare", data:snap, entitlementTokens });
     const product = PRODUCTS[productId];
-    if (!order?.ok || order.productId !== productId || Number(order.amount) !== product.price) throw new Error("상품 주문 정보가 맞지 않아. 다시 시도해줘.");
+    if (!order?.ok || order.productId !== productId || Number(order.baseAmount || product.price) !== product.price || !(Number(order.amount) > 0)) {
+      throw new Error("상품 주문 정보가 맞지 않아. 다시 시도해줘.");
+    }
+    const state = productStateFor(productId, verifiedState || cachedEntitlements(data));
+    if (productId === "all_in_one" && state.kind === "upgrade" && Number(order.amount) !== Number(state.amount)) {
+      // 화면에 표시한 가격과 서버 quote가 달라졌다면 서버 값을 우선하고 사용자가 다시 확인하게 한다.
+      throw new Error("구매 상태가 방금 갱신됐어. 상품을 다시 열어서 최종 업그레이드 금액을 확인해줘.");
+    }
     if (typeof PaymentWidget === "undefined") throw new Error("결제창을 불러오지 못했어. 새로고침 후 다시 해줘.");
+    root.querySelector("#unniProductPrice").textContent = productId === "all_in_one" && Number(order.amount) < product.price
+      ? `${won(product.price)} → ${won(order.amount)}`
+      : won(order.amount);
     root.querySelector("#unniProductPayment").style.display = "block";
     root.querySelector("#unniProductPaymentMethod").innerHTML = "";
     root.querySelector("#unniProductPaymentAgreement").innerHTML = "";
     const widget = PaymentWidget(TOSS_CLIENT_KEY, PaymentWidget.ANONYMOUS);
-    widget.renderPaymentMethods("#unniProductPaymentMethod", { value: order.amount, currency: "KRW" }, { variantKey: "saju" });
+    widget.renderPaymentMethods("#unniProductPaymentMethod", { value:order.amount, currency:"KRW" }, { variantKey:"saju" });
     widget.renderAgreement("#unniProductPaymentAgreement");
     const action = root.querySelector("#unniProductAction");
-    action.textContent = `${won(order.amount)} 결제하고 열기`;
+    action.textContent = productId === "all_in_one" && Number(order.amount) < product.price
+      ? `업그레이드 ${won(order.amount)} 결제하고 열기`
+      : `${won(order.amount)} 결제하고 열기`;
     action.onclick = async () => {
       action.disabled = true;
       try {
         const base = (location.hostname === "sajuft.com" || location.hostname === "www.sajuft.com" ? "https://sajuft.com" : location.origin) + location.pathname;
         const ticket = encodeURIComponent(order.ticket);
-        await widget.requestPayment({ orderId: order.orderId, orderName: product.name, customerName: data.name || data.userName || "구매자", successUrl: `${base}?payment=success&state=${ticket}`, failUrl: `${base}?payment=fail&state=${ticket}` });
+        await widget.requestPayment({
+          orderId:order.orderId,
+          orderName:product.name,
+          customerName:data.name || data.userName || "구매자",
+          successUrl:`${base}?payment=success&state=${ticket}`,
+          failUrl:`${base}?payment=fail&state=${ticket}`,
+        });
       } catch (e) {
         action.disabled = false;
         if (typeof showToast === "function") showToast(e?.message || "결제창을 열지 못했어.");
