@@ -420,7 +420,7 @@
       }else if(rel.type==="clash"&&rel.natalPos==="month"){
         add(cautionSignals,"month-clash","support","월령 자리를 충해 구조 작동을 흔들 수 있음",rel);
       }else if(["harm","break","punishment"].includes(rel.type)&&rel.natalPos==="month"&&ctx.structure?.gyeokName==="정관격"){
-        add(cautionSignals,`officer-${rel.type}`,"support","정관격의 월령 구조에 형·파·해 관계가 걸림",rel);
+        add(neutralSignals,`officer-${rel.type}-observe`,"observe","정관격의 월령에 형·파·해가 걸리지만 단독 손상으로 점수화하지 않고 경중 판단 근거로만 보존",rel);
       }else{
         add(neutralSignals,`branch-${rel.type}`,"observe","지지 관계는 감지하되 단독 길흉으로 확정하지 않음",rel);
       }
