@@ -1507,9 +1507,11 @@
     root.style.display = "block";
     document.body.style.overflow = "hidden";
 
-    let verifiedState = null;
+    let verifiedState = isFreeLaunch
+      ? { verifiedPurchases:[], effectiveEntitlements:[], allInOneQuote:null }
+      : null;
     try {
-      verifiedState = await resolveVerifiedEntitlements(data);
+      if (!isFreeLaunch) verifiedState = await resolveVerifiedEntitlements(data);
     } catch (error) {
       if (!isFreeLaunch) {
         action.disabled = false;
