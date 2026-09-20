@@ -248,7 +248,7 @@ async function inspect(page, mode) {
     await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
   }
   const postUnlock=await page.evaluate(()=>({
-    cards:document.querySelectorAll('#notesListContainer > div').length,
+    cards:document.querySelectorAll('#notesListContainer > [data-note-role]').length,
     preview:!!document.getElementById('note2PreviewCard'),
     catalogAfterNotes:(document.getElementById('notesListContainer').compareDocumentPosition(document.getElementById('unniProductLadder')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
   }));
