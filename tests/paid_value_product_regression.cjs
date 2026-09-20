@@ -16,6 +16,31 @@ function norm(v) {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const errors = [];
+  // Paid-mode UI checks need a healthy entitlement lookup. The app deliberately
+  // fails closed when that lookup is unavailable, so mock only the entitlement
+  // read here while keeping checkout/payment paths untouched.
+  await page.route('**/api/confirm-payment', async route => {
+    const request = route.request();
+    let body = {};
+    try { body = JSON.parse(request.postData() || '{}'); } catch (_) {}
+    if (request.method() === 'POST' && body.action === 'entitlements') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok:true,
+          verifiedPurchases:[],
+          effectiveEntitlements:[],
+          allInOneQuote:{
+            targetProduct:'all_in_one',baseAmount:9900,creditAmount:0,amount:9900,
+            alreadyOwned:false,creditedProducts:[],
+          },
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
   page.on('pageerror', e => errors.push(`[pageerror] ${e.stack || e.message}`));
   page.on('console', m => { if (m.type() === 'error') errors.push(`[console] ${m.text()}`); });
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
