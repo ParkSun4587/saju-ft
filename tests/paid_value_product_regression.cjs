@@ -707,12 +707,18 @@ function norm(v) {
   for (const harsh of ['아이고 왔어?', '시간 낭비 말고', '똑바로 찍어', '똥고집', '미련 곰탱이', '팩트 꽂힌', '팩폭 모드', '징징대지 말고 와', '살인 충동 느낌', '상대방 사람 취급', '멍청한 질문 3번']) assert(!html.includes(harsh), `harsh/old sister copy remains: ${harsh}`);
   assert(
     html.includes('왔구나. 편하게 알려줘.') &&
-    html.includes('아 이거였구나.') &&
-    html.includes('잠깐만. 언니가 네 사주랑 지금 고민을 같이 놓고') &&
-    html.includes('왔어. 핵심부터 잡아볼게.') &&
-    html.includes('이유랑 다음 행동까지 순서대로 정리해줄게.') &&
+    html.includes('이름이랑 생일부터 받고, 요즘 제일 마음 쓰이는 고민부터 같이 볼게.') &&
+    html.includes('왔어. 바로 정리해보자.') &&
+    html.includes('지금 제일 먼저 볼 고민 하나만 잡을게.') &&
+    html.includes('CONCERN_CONVERSATION_PROMPTS') &&
+    html.includes('concernSituationAck') &&
+    html.includes('사주 전체부터 보고 있어. 지금 고민이 왜 여기서 반복되는지도 같이 연결해볼게.') &&
+    html.includes('사주 구조부터 확인할게. 지금 고민과 직접 연결되는 것만 추리는 중이야.') &&
+    html.includes('resultSisterHandoff') &&
+    html.includes('note-bridge') &&
+    !html.includes('bg-[#fee500]') &&
     !html.includes('ㅎㅎ'),
-    'distinct F/T sister copy missing'
+    'distinct F/T conversational journey missing'
   );
   assert(html.includes('function currentVoiceMode(') && html.includes('function voiceText(') && html.includes('function showVoiceToast('), 'main journey counselor voice router missing');
   assert(premium.includes('function productVoice(') && premium.includes('function applyProductModalVoice('), 'premium counselor voice router missing');
