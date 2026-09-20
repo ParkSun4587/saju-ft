@@ -35,10 +35,11 @@ async function prepareResult(page,mode='F'){
   await page.fill('#birthDateInput','20010418');
   await page.fill('#birthTimeInput','1420');
   await shot(page,'05-input-filled',page.locator('#sajuInputCardBox'));
-  await page.locator('#splitNextButton button').click();
-  await page.waitForSelector('#loadingSection',{state:'visible',timeout:5000});
-  await sleep(900);
+  await page.evaluate(()=>changeViewState('loading'));
+  await sleep(250);
   await shot(page,'06-loading');
+  await page.evaluate(()=>changeViewState('input'));
+  await page.locator('#splitNextButton button').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
   await page.waitForSelector('#lockedOverlay',{state:'visible',timeout:10000});
 }
