@@ -504,7 +504,7 @@
       },
       {
         title:"12 · 큰 흐름 전환 + 평생 사용법",
-        body:`<b>큰 흐름</b><br>${daeunCopy()}<br><br><b>반복해서 가져갈 사용법</b><br><b>1.</b> ${pressureHuman}이 커질수록 무작정 버티지 말고 네 기본 버팀보다 과제가 큰지 먼저 확인해.<br><b>2.</b> ${blockedTo ? `${ELEMENT_WORD[blockedTo] || blockedTo} 쪽 연결을 생략하지 마.` : `${strong}을 현실 결과까지 넘기는 중간 단계를 지켜.`}<br><b>3.</b> ${actions.length ? `${actions.slice(0,2).join(" → ")} 순서를 기억해.` : "좋은 시기에도 작은 검증 → 확정 순서를 지켜."}<br><br>이 세 가지는 돈·일·관계·마음이 달라져도 같은 사주판에서 반복해서 남는 사용법이야.`,
+        body:`<b>핵심 · 큰 흐름</b><br>${daeunCopy()}<br><br><b>왜</b> · 지금과 다음 큰 흐름에서 앞에 나오는 힘이 달라지면 같은 장점도 쓰는 방식과 과부하 지점이 달라져.<br><br><b>이렇게 써 · 반복해서 가져갈 사용법</b><br><b>1.</b> ${pressureHuman}이 커질수록 무작정 버티지 말고 네 기본 버팀보다 과제가 큰지 먼저 확인해.<br><b>2.</b> ${blockedTo ? `${ELEMENT_WORD[blockedTo] || blockedTo} 쪽 연결을 생략하지 마.` : `${strong}을 현실 결과까지 넘기는 중간 단계를 지켜.`}<br><b>3.</b> ${actions.length ? `${actions.slice(0,2).join(" → ")} 순서를 기억해.` : "좋은 시기에도 작은 검증 → 확정 순서를 지켜."}<br><br>이 세 가지는 돈·일·관계·마음이 달라져도 같은 사주판에서 반복해서 남는 사용법이야.`,
         claim:{ section:12,sourceRuleIds:uniq([...timingRuleIds(years),...ids(pressure,flow,bridge,balance)]),newFacts:[textFact("daeunPeriods",daeunPeriods.map((x) => `${x.startYear}-${x.endYear}:${x.ganZhi}`).join("|")),textFact("prescription",actions.join("→"))],conclusion:"현재 큰 흐름과 다음 전환을 평생 반복되는 행동 순서에 연결한다." },
       },
     ];
