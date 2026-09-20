@@ -707,7 +707,9 @@ function norm(v) {
   assert(server.includes('all_in_one: { amount: 9900, name: "어떤언니 내 사주 완전판" }'), 'Toss all-in-one order name is stale');
   assert(!server.includes('어떤언니 올인원'), 'old all-in-one order name remains in Toss server');
   assert(server.includes('const product = productFor(order.data);'), 'server does not resolve signed product price');
-  assert(server.includes('Number(body.amount) !== product.amount'), 'server does not reject amount mismatch');
+  assert(server.includes('const expectedAmount = Number(order.amount ?? product.amount)') && server.includes('Number(body.amount) !== expectedAmount'), 'server does not reject client amount against signed server quote');
+  assert(server.includes('body:JSON.stringify({ paymentKey:body.paymentKey,orderId:order.orderId,amount:expectedAmount })'), 'Toss confirm is not bound to server-quoted amount');
+  assert(server.includes('resolveVerifiedEntitlements(data,body.entitlementTokens,secret,signing)') && server.includes('calculateUpgradeQuote(data.p,entitlementState.verifiedPurchases)'), 'server-side verified entitlement upgrade quote missing');
   assert(server.includes('if (!d.p || d.p === "concern_single") return legacy;'), 'legacy 990 result key compatibility missing');
 
   assert(errors.length === 0, `browser errors: ${errors.join(' | ')}`);
