@@ -99,7 +99,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
         id:x.id,concern:x.concern,situation:x.situation,
         fp:x.structureFingerprint,timingFp:x.timingFingerprint,
         note6:x.note6,note6Meta:x.note6Meta,
-        pivots:(x.timing.longTermPivots||[]).map(p=>({year:p.year,class:p.class})),
+        pivots:(x.timing.longTermPivots||[]).map(p=>({year:p.year,class:p.class,sourceRuleIds:p.sourceRuleIds||[]})),
         nearCount:x.timing.concernNearTerm?.months?.length||0,
         fullPublicYears:(x.timing.fullSajuTimeline?.years||[]).map(y=>y.year),
         fullInternalYears:(x.timing.fullHorizon?.years||[]).map(y=>y.year),
@@ -173,6 +173,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     assert(run.fullPublicYears.length>=5,'public full_saju five-year computation missing: '+run.id);
     assert(run.fullInternalYears.length>=6,'internal horizon is not longer than product disclosure: '+run.id);
     assert(run.pivots.length<=2,'basic long-term teaser exceeds two real pivots: '+run.id);
+    for(const pivot of run.pivots) assert(pivot.sourceRuleIds.length>0,'long-term pivot lacks classical rule provenance: '+run.id+' '+JSON.stringify(pivot));
     assert(!run.note6.includes('앞으로 5년 큰 흐름'),'basic NOTE6 leaked full_saju five-year heading: '+run.id);
     const shownYears=[...new Set((run.note6.match(/20\d{2}년/g)||[]).map(x=>Number(x.slice(0,4))))];
     const pivotYears=run.pivots.map(x=>x.year);
