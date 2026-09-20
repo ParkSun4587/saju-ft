@@ -286,7 +286,7 @@
       : "사주의 중심 힘이 겉으로 바로 나오기보다 안쪽에서 먼저 작동하는 편";
     const supportLine = helpful.length ? `살리는 쪽은 ${helpful.join("·")}` : "살리는 신호가 한 가지로 단정되진 않아";
     const harmLine = harmful.length ? `반대로 ${harmful.join("·")}이 과해지면 중심 흐름이 깨질 수 있어` : "뚜렷한 방해 신호가 하나로 고정되진 않아";
-    const bridgeLine = bridge ? `그리고 서로 부딪히는 힘 사이에서는 <b>${bridge}</b>이 중간 연결 역할을 할 수 있어.` : "";
+    const bridgeLine = bridge ? `그리고 서로 부딪히는 힘 사이에서는 <b>${bridge}</b> 기운이 중간 연결 역할을 할 수 있어.` : "";
     const conflictLine = conflict
       ? "두 판단이 완전히 같은 방향은 아니라서, 먼저 네가 받아낼 힘이나 연결을 만든 뒤 그다음 결과 쪽으로 써야 해"
       : "";
@@ -436,9 +436,9 @@
       const supportWhy = timingReasonPhrase(y, true);
       const cautionWhy = timingReasonPhrase(y, false);
       if (y.class==="supportive") return `<b>${y.year}년</b> — ${supportWhy || "중요한 도움 근거가"} 뚜렷하고 큰 주의 근거가 맞서지 않아, 준비한 걸 밖으로 꺼내기 좋은 해야.`;
-      if (y.class==="mild-support") return `<b>${y.year}년</b> — ${supportWhy || "보조 도움 근거"}가 있어 무리한 확장보다는 준비한 선택을 실제로 시험해보기 좋아.`;
+      if (y.class==="mild-support") return `<b>${y.year}년</b> — ${supportWhy || "보조 도움 근거가"} 있어 무리한 확장보다는 준비한 선택을 실제로 시험해보기 좋아.`;
       if (y.class==="caution") return `<b>${y.year}년</b> — ${cautionWhy || "중요한 주의 근거가"} 뚜렷해, 판을 넓히기보다 지킬 것과 버릴 것을 나누는 게 중요해.`;
-      if (y.class==="mild-caution") return `<b>${y.year}년</b> — ${cautionWhy || "보조 주의 근거"}가 있어 같은 속도로 계속 밀기보다 조건을 조정하면서 가는 편이 좋아.`;
+      if (y.class==="mild-caution") return `<b>${y.year}년</b> — ${cautionWhy || "보조 주의 근거가"} 있어 같은 속도로 계속 밀기보다 조건을 조정하면서 가는 편이 좋아.`;
       if (y.class==="mixed") return `<b>${y.year}년</b> — ${supportWhy || "도움 근거가"} 있고 ${cautionWhy || "주의 근거가"} 같이 잡혀 있어, 잘 되는 부분과 무리되는 부분을 분리해서 써야 하는 해야.`;
       return `<b>${y.year}년</b> — 한쪽으로 강하게 기울지 않아, 앞 단계에서 만든 기반을 이어가는 해로 보는 게 맞아.`;
     }
