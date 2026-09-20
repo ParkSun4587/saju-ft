@@ -43,29 +43,29 @@
       id: "concern_bundle3",
       name: "고민 3개 더 깊게",
       price: 2900,
-      badge: "다른 고민도 3개 더",
-      desc: "방금 받은 상담처럼, 아직 마음에 남은 고민 3개를 골라 각각 원인부터 행동·사람·시기까지 이어서 봐.",
+      badge: "다른 고민 3개 확장",
+      desc: "지금 고민은 그대로 두고, 다른 고민 3개를 각각 같은 깊이로 풀어. 세 고민에 반복되는 공통 구조도 마지막에 묶어봐.",
     },
     full_saju: {
       id: "full_saju",
       name: "내 전체 사주판",
       price: 4900,
-      badge: "내 사주 전체 보기",
-      desc: "왜 비슷한 선택과 고민이 반복되는지, 내 성향·일·돈·연애·관계·회복을 하나의 흐름으로 이어서 봐.",
+      badge: "전체 구조 + 5년 흐름",
+      desc: "고민 하나가 아니라 내 사주 전체 구조, 여러 삶의 영역이 연결되는 이유, 가까운 핵심 시기와 향후 5년 큰 흐름을 한 장으로 이어서 봐.",
     },
     compatibility: {
       id: "compatibility",
       name: "우리 둘 궁합",
       price: 5900,
-      badge: "우리 둘 깊게 보기",
-      desc: "왜 끌리고 어디서 서운해지는지, 연락·싸움·화해·애정표현·생활·돈·오래 가는 방식까지 둘 사이를 깊게 봐.",
+      badge: "두 사람 사주 교차",
+      desc: "내 사주만으로는 만들 수 없는 결과야. 상대 사주까지 겹쳐 끌림·오해·갈등·보완과 둘만의 관계 시기를 같이 봐.",
     },
     all_in_one: {
       id: "all_in_one",
       name: "내 사주 완전판",
       price: 9900,
-      badge: "내 사주 전부 보기",
-      desc: "내 성향부터 돈·일·연애·관계·마음까지, 따로 하나씩 고르지 않고 내 사주와 6가지 고민을 한 번에 다 이어서 봐. 궁합만 별도야.",
+      badge: "나 한 사람 전체판",
+      desc: "전체 사주판과 6가지 고민, 고민 간 공통패턴, 5년 흐름과 영역 간 변곡점을 한 번에 열어. 두 사람 궁합은 포함하지 않아.",
     },
   };
 
@@ -104,6 +104,43 @@
       try { return global.buildIntegratedSajuProfile(data); } catch (_) {}
     }
     return null;
+  }
+
+  function getReasoning(data) {
+    if (!data) return null;
+    if (data.classicalReasoningV1) return data.classicalReasoningV1;
+    if (typeof global.buildClassicalReasoningV1 === "function") {
+      try { return global.buildClassicalReasoningV1(data); } catch (_) {}
+    }
+    return null;
+  }
+
+  function contentPolicy(productId) {
+    return global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.getContract?.(productId)
+      || global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.contracts?.[productId]
+      || null;
+  }
+
+  function productValueCopy(productId) {
+    return global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.valueCopy?.[productId] || null;
+  }
+
+  const TEN_GOD_WORD = {
+    비견:"내 기준과 버티는 힘",겁재:"내 몫을 확보하는 힘",
+    식신:"꾸준히 만들어 밖으로 빼는 힘",상관:"막힌 걸 표현하고 바꾸는 힘",
+    정재:"안정적으로 현실 조건을 관리하는 힘",편재:"기회와 자원을 넓게 움직이는 힘",
+    정관:"기준과 책임을 세우는 힘",편관:"강한 압박을 다루는 힘",
+    정인:"배우고 보호받아 기반을 세우는 힘",편인:"깊게 파고들어 다른 길을 찾는 힘",
+  };
+
+  function stripTags(v) {
+    return String(v || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  function reasoningMainZiping(reasoning) {
+    return reasoning?.ziping?.findings?.find((x) => x.id !== "ZZ_MONTH_101" && x.kind === "gyeok" && x.implementationStatus !== "unimplemented")
+      || reasoning?.ziping?.findings?.find((x) => x.id === "ZZ_MONTH_101")
+      || null;
   }
 
   function strengthCopy(profile, isT) {
