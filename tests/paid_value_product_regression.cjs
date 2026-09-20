@@ -701,7 +701,9 @@ function norm(v) {
   }
   assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 1)') && html.includes('paywallNextTeaser') && html.includes('teaserProbe') && html.includes('로아 언니, 나머지도 같이 봐줘') && html.includes('서아 언니, 답까지 정리해줘'), 'paid teaser must be NOTE1 full + short NOTE2 + actual locked-content teaser + distinct F/T 990 handoff');
   assert(!html.includes('storyCaptureReturnTimer') && !html.includes('7000') && html.includes('storyCaptureCleanTimer'), 'capture should use delayed fullscreen-clean transition, not timed auto-return');
-  assert(html.includes('id="finalNotePaymentButton"') && html.includes('990원 결제하고 이어보기') && html.includes('선택한 결제수단으로 결제돼') && !html.includes('bg-[#fee500]'), '990 won final payment CTA must use brand-primary copy/style instead of Kakao-like yellow');
+  const finalNotePaymentAt = html.indexOf('id="finalNotePaymentButton"');
+  const finalNotePaymentSlice = finalNotePaymentAt >= 0 ? html.slice(finalNotePaymentAt, finalNotePaymentAt + 900) : '';
+  assert(finalNotePaymentAt >= 0 && finalNotePaymentSlice.includes('990원 결제하고 이어보기') && html.includes('선택한 결제수단으로 결제돼') && !finalNotePaymentSlice.includes('bg-[#fee500]'), '990 won final payment CTA must use brand-primary copy/style instead of Kakao-like yellow');
   assert(premium.includes('data-bundle-situation') && premium.includes('data-all-situation'), 'premium situation selectors missing');
   assert(premium.includes('<option value="solar">양력</option><option value="lunar">음력</option>') && !premium.includes('양력 생일') && !premium.includes('음력 생일'), 'compatibility calendar labels should be simple');
   assert(!premium.includes('예: 오후 3시 20분이면'), 'compatibility birth-time helper should be removed');
