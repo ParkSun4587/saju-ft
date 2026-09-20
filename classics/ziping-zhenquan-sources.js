@@ -21,6 +21,12 @@
       principle: "격은 월령만 이름 붙이는 것으로 끝나지 않고 네 기둥의 배합을 통해 성·패·구응을 함께 본다.",
       sourceUrl: "https://shuyuan.zhiming.life/read/%E5%AD%90%E5%B9%B3%E7%9C%9F%E8%AF%A0/13",
     },
+    ZZ_POSITION_019: {
+      work: "자평진전",
+      section: "용신의 성패와 구응을 논함",
+      principle: "같은 십신이 있어도 어느 기둥에 투출하고 서로 직접 극하는 위치인지에 따라 성패가 달라질 수 있으므로 위치를 보존한다.",
+      sourceUrl: "https://shuyuan.zhiming.life/read/%E5%AD%90%E5%B9%B3%E7%9C%9F%E8%AF%A0/13",
+    },
     ZZ_OFFICER_011: {
       work: "자평진전",
       section: "용신의 성패와 구응을 논함",
@@ -75,6 +81,24 @@
       principle: "성중유패·패중유성은 단순 점수 평균이 아니라 무엇이 무엇을 깨고 무엇이 다시 구하는지 순서를 보존한다.",
       sourceUrl: "https://shuyuan.zhiming.life/read/%E5%AD%90%E5%B9%B3%E7%9C%9F%E8%AF%A0/13",
     },
+    ZZ_SEQUENCE_021: {
+      work: "자평진전",
+      section: "용신의 성패와 구응을 논함",
+      principle: "성격을 세우는 배합, 그것을 깨뜨리는 기신, 다시 깨진 구조를 구하는 구응을 인과 순서로 판정한다.",
+      sourceUrl: "https://donglishuzhai.net/chapter/3722.html",
+    },
+    ZZ_RELATION_022: {
+      work: "자평진전",
+      section: "용신의 성패와 구응을 논함",
+      principle: "관격 등에서는 형·충·파·해가 성패 조건에 직접 들어가므로 관계의 종류와 월령 관여 여부를 구분한다.",
+      sourceUrl: "https://donglishuzhai.net/chapter/3722.html",
+    },
+    ZZ_COMBINE_023: {
+      work: "자평진전",
+      section: "용신의 성패와 구응을 논함",
+      principle: "합은 무조건 좋은 작용이 아니며, 무엇을 합해 묶는지에 따라 성중유패 또는 구응이 될 수 있다.",
+      sourceUrl: "https://donglishuzhai.net/chapter/3722.html",
+    },
     ZZ_CHANGE_030: {
       work: "자평진전",
       section: "용신 변화",
@@ -85,7 +109,7 @@
   };
 
   global.__ZIPING_ZHENQUAN_SOURCES__ = {
-    version: "1.0.0",
+    version: "1.1.0",
     sources: SOURCES,
   };
 })(globalThis);
