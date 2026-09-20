@@ -181,6 +181,9 @@ async function inspect(page, mode) {
         firstLook:document.getElementById('resultFirstLookLabel')?.innerText||'',
         concernHandoff:document.getElementById('resultConcernHandoffText')?.innerText||'',
         shareText:document.getElementById('mainShareBtnText')?.innerText||'',
+        shareLead:document.getElementById('resultShareLead')?.innerText||'',
+        reAnalyzeSub:document.getElementById('reAnalyzeSubText')?.innerText||'',
+        freshAnalysisText:document.getElementById('freshAnalysisBtnText')?.innerText||'',
       },
       memoLayout:(()=>{
         const shell=document.getElementById('consultationNotesShell');
@@ -250,13 +253,19 @@ async function inspect(page, mode) {
   if(mode==='F') assert(
     r.hierarchy.firstLook.includes('로아 언니가 먼저 본 너') &&
     r.hierarchy.concernHandoff.includes('이제 네가 물어본 고민으로 들어가볼게') &&
-    r.hierarchy.shareText.includes('인스타 스토리'),
+    r.hierarchy.shareText.includes('인스타 스토리') &&
+    r.hierarchy.shareLead.includes('상담 기록') &&
+    r.hierarchy.reAnalyzeSub.includes('새 고민만 골라서 이어서 볼게') &&
+    r.hierarchy.freshAnalysisText.includes('다른 사람 사주도 같이 볼까'),
     'F counseling handoff disappeared '+JSON.stringify(r.hierarchy)
   );
   if(mode==='T') assert(
     r.hierarchy.firstLook.includes('서아 언니가 먼저 정리한 너') &&
     r.hierarchy.concernHandoff.includes('네 고민에 직접 연결되는 부분만 볼게') &&
-    r.hierarchy.shareText.includes('인스타 스토리'),
+    r.hierarchy.shareText.includes('인스타 스토리') &&
+    r.hierarchy.shareLead.includes('상담 기록') &&
+    r.hierarchy.reAnalyzeSub.includes('새 고민만 선택해서 바로 이어보기') &&
+    r.hierarchy.freshAnalysisText.includes('다른 사람 사주 새로 보기'),
     'T counseling handoff disappeared '+JSON.stringify(r.hierarchy)
   );
   assert(
