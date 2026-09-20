@@ -763,10 +763,14 @@ function norm(v) {
     'F/T payment/recovery voice handoff missing'
   );
   assert(
-    premium.includes('로아 언니가 이어서 본 결과') &&
-    premium.includes('서아 언니가 정리한 결과') &&
+    premium.includes('로아 언니가 이어서 정리한 상담 기록') &&
+    premium.includes('서아 언니가 이어서 정리한 상담 기록') &&
+    premium.includes('좋아, 여기서부터 이어서 볼게') &&
+    premium.includes('결제수단만 선택해') &&
     premium.includes('아까 보던 상담에서 이어서, 여기서는 새로 볼 수 있는 것만 보여줄게.') &&
-    premium.includes('앞에서 본 내용은 반복하지 않을게. 여기서 새로 확인할 정보만 정리해.'),
+    premium.includes('앞에서 본 내용은 반복하지 않을게. 여기서 새로 확인할 정보만 정리해.') &&
+    premium.includes('결제 확인됐어. 아까 보던 상담에서 그대로 이어갈게.') &&
+    premium.includes('결제 확인됐어. 바로 이어서 정리할게.'),
     'premium modal lost counselor continuity'
   );
   for (const staleGeneric of [
