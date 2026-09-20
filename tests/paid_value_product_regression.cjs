@@ -680,6 +680,14 @@ function norm(v) {
   assert(!premium.includes('unniProductKeepsake') && !premium.includes('keepsakeCardHtml') && !premium.includes('renderPaidKeepsake'), 'paid keepsake-card subsystem should be removed');
   assert(premium.includes('saveFullPaidReport') && premium.includes('unniProductSaveAll'), 'full paid-report image save missing');
   assert(premium.includes('어떤언니 상담 기록') && !premium.includes('어떤언니 리포트'), 'paid native-share title slipped back into report voice');
+  assert(
+    premium.includes('구매한 내용 다시 보기') &&
+    premium.includes('이미 구매한 1인 구성 금액을 빼고 계산했어.') &&
+    premium.includes('결제 정보가 맞지 않아. 다시 결제하지 말고 지금 보던 내용을 한 번만 다시 열어줘.') &&
+    premium.includes('결제 복귀 정보가 맞지 않아. 다시 결제하지 말고 주문번호로 문의해줘.') &&
+    !['구매한 상품 다시 보기','상품 주문 정보','상품을 열지 못했어','상품 결제 복귀 정보','이미 산 1인 상품','별도 상품에서만 계산해'].some((copy)=>premium.includes(copy)),
+    'premium revisit/recovery copy slipped back into storefront voice'
+  );
   assert(!premium.includes('다른 브라우저') && !premium.includes('외부 브라우저'), 'paid image save should not tell users to switch browsers');
   assert(premium.includes('prewarmPaidExport') && premium.includes('preparePaidExportAssets') && premium.includes('저장 준비 완료'), 'background paid-export preparation missing');
   assert(premium.includes('requiresFreshShareGesture') && premium.includes('setPaidExportButtonReady(root, false)') && premium.includes('setPaidExportButtonReady(root, true)'), 'mobile save must wait for prewarm before fresh-tap multi-share');
