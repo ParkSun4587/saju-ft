@@ -744,8 +744,10 @@ function norm(v) {
     html.includes('data-consult-mode="${targetMode}"') &&
     html.includes('#analysisSubmitButton[data-consult-mode="F"]') &&
     html.includes('#analysisSubmitButton[data-consult-mode="T"]') &&
-    !html.includes('class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e]'),
-    'other-concern analysis CTA still uses legacy Kakao-yellow styling'
+    !html.includes('class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e]') &&
+    !html.includes('#fee500') &&
+    html.includes('function recoveryActionButtonStyle('),
+    'counseling continuation or payment recovery CTA still uses legacy Kakao-yellow styling'
   );
   assert(/(?:const|let) FREE_LAUNCH_MODE\s*=\s*false/.test(html), 'FREE_LAUNCH_MODE must remain false');
   assert(
