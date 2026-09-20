@@ -211,8 +211,23 @@ function norm(v) {
   assert(qa.chartCompare.diffs.filter(Boolean).length >= 4, 'different charts do not materially change enough NOTE outputs');
 
   // Production-like result path: verify catalog is actually visible and free-launch previews work.
-  const ui = await page.evaluate(() => {
+  const ui = await page.evaluate(async () => {
     window.gtag = () => {};
+    const originalPaymentAPI = paymentAPI;
+    paymentAPI = async (body) => {
+      if (body?.action === 'entitlements') {
+        return {
+          ok:true,
+          verifiedPurchases:[],
+          effectiveEntitlements:[],
+          allInOneQuote:{
+            targetProduct:'all_in_one',baseAmount:9900,creditAmount:0,amount:9900,
+            alreadyOwned:false,creditedProducts:[],
+          },
+        };
+      }
+      return originalPaymentAPI(body);
+    };
     window.setTimeout = (fn) => { fn(); return 1; };
     window.clearTimeout = () => {};
     document.getElementById('nameInput').value = '박태양';
@@ -246,6 +261,11 @@ function norm(v) {
 
     unlockFullReport(null, true);
     renderUnniProductCatalog();
+    if (!FREE_LAUNCH_MODE) {
+      for (let i=0; i<8 && !document.querySelector('#unniProductLadder [data-unni-product]'); i++) {
+        await Promise.resolve();
+      }
+    }
     const catalog = document.getElementById('unniProductLadder');
     const unlockedNoteCards = document.querySelectorAll('#notesListContainer > div').length;
     const previewAfterUnlock = !!document.getElementById('note2PreviewCard');
