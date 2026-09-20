@@ -445,13 +445,19 @@
     const safeName = esc(pName);
     const a = elementOf(data);
     const b = elementOf(partner);
-    const relation = relationCopy(a, b, isT);
     const myP = getProfile(data);
     const partnerP = getProfile(partner);
+    const myR = getReasoning(data);
+    const partnerR = getReasoning(partner);
+    const overlay = typeof global.buildCompatibilityOverlayV1 === "function"
+      ? global.buildCompatibilityOverlayV1(data, partner)
+      : null;
 
-    if (!myP || !partnerP) {
-      return `<p style="font-size:13px;line-height:1.8;color:#475569">두 사람의 사주 정보를 충분히 읽지 못했어. 입력값을 다시 확인해줘.</p>`;
+    if (!myP || !partnerP || !myR || !partnerR || !overlay) {
+      return `<p data-content-blocked="compatibility" style="font-size:13px;line-height:1.8;color:#475569">두 사람의 사주 정보를 충분히 읽지 못했어. 상대 사주까지 계산돼야 둘 사이 결과를 만들 수 있어.</p>`;
     }
+
+    const relation = relationCopy(a, b, isT);
 
     const myDom = myP.sipsin?.dominantHuman || "내 기준을 찾고 움직이는 성향";
     const partnerDom = partnerP.sipsin?.dominantHuman || "자기 기준을 찾고 움직이는 성향";
@@ -477,6 +483,26 @@
     const sameStrongElement = myP.elements?.influenceRank?.strongest === partnerP.elements?.influenceRank?.strongest;
     const bothClash = myClash && partnerClash;
 
+    const dayRelations = overlay.dayBranchRelations || [];
+    const directPairRelation = dayRelations.find(x=>x.type==="clash")
+      || dayRelations.find(x=>x.type==="combine")
+      || dayRelations.find(x=>["harm","break","punishment"].includes(x.type))
+      || null;
+    const directPairCopy = directPairRelation?.type === "clash"
+      ? (isT ? "둘의 가까운 관계 자리가 직접 부딪히는 신호가 있어, 감정이 커졌을 때 바로 결론내리면 충돌이 증폭될 수 있어." : "둘의 가까운 관계 자리가 정면으로 부딪히는 신호가 있어서, 좋아하는 마음과 별개로 감정이 커진 순간엔 서로를 밀어내듯 반응할 수 있어.")
+      : directPairRelation?.type === "combine"
+        ? (isT ? "둘의 가까운 관계 자리에 서로 묶이는 신호가 있어 반응을 빠르게 의식할 수 있어. 다만 실제 합화까지 확정하진 않아." : "둘의 가까운 관계 자리에 서로를 의식하고 묶이기 쉬운 신호가 있어. 다만 ‘무조건 잘 맞는다’로 단정하지는 않을게.")
+        : directPairRelation
+          ? (isT ? "둘의 가까운 관계 자리에 미세한 마찰 신호가 있어. 이 관계 하나만으로 길흉을 확정하지 않고 실제 반복패턴과 함께 봐." : "둘의 가까운 관계 자리에는 작은 마찰 신호가 있어. 이 신호 하나로 관계를 나쁘다고 말하지 않고, 실제로 어떤 장면에서 반복되는지 같이 봐야 해.")
+          : (isT ? "가까운 관계 자리에서 직접적인 합·충 신호가 강하게 잡히진 않아. 실제 차이는 두 사람의 힘 쓰는 방식에서 더 본다." : "가까운 관계 자리끼리 바로 부딪히거나 강하게 묶이는 신호는 두드러지지 않아. 그래서 둘 사이 차이는 서로 힘을 쓰는 방식에서 더 선명하게 보여.");
+
+    const complement = overlay.complement || {};
+    const complementCopy = complement.aStrongSupportsB && complement.bStrongSupportsA
+      ? (isT ? "서로의 강점이 상대에게 필요한 방향과 양쪽 모두 맞물리는 부분이 있어. 도움은 되지만 대신 결정해주지는 않는 게 중요해." : "서로 잘하는 힘이 상대에게 필요한 방향과 양쪽 모두 맞물리는 부분이 있어. 잘 쓰면 ‘내가 없는 걸 저 사람이 채워준다’는 느낌이 들 수 있어.")
+      : complement.aStrongSupportsB || complement.bStrongSupportsA
+        ? (isT ? "한쪽의 강점이 다른 쪽에게 필요한 방향과 맞물리는 비대칭 보완이 있어. 도움과 의존을 구분해." : "한 사람의 강점이 다른 사람에게 필요한 방향과 맞물리는 부분이 있어. 그래서 한쪽이 자연스럽게 끌어주거나 정리해주는 장면이 생길 수 있어.")
+        : (isT ? "서로의 강점이 상대의 필요한 방향을 바로 채우는 구조는 아니야. 보완을 기대하기보다 역할과 기대를 명확히 맞추는 게 중요해." : "서로 잘하는 힘이 상대가 필요한 방향을 바로 채워주는 조합은 아니야. 그래서 ‘알아서 채워주겠지’보다 필요한 걸 직접 말해주는 게 더 중요해.");
+
     const intro = isT
       ? `궁합은 ‘좋다/나쁘다’ 한 줄로 끝내면 쓸모가 없어. 너와 ${safeName}의 사주를 따로 본 다음, 실제 관계에서 어디가 맞고 어디서 충돌하는지 처음부터 오래 가는 방식까지 나눠서 볼게.`
       : `궁합은 그냥 “둘이 잘 맞아” 한마디 듣고 끝내면 너무 아깝잖아. 언니가 너랑 ${safeName} 사주를 따로 펼쳐놓고, 왜 끌리고 어디서 서운해지고 어떻게 해야 오래 편한지까지 관계 흐름대로 차근차근 풀어줄게.`;
@@ -485,14 +511,14 @@
       {
         title: "01 · 둘 사이를 한 문장으로 보면",
         body: isT
-          ? `${relation} 너는 <b>${myDom}</b> 쪽, ${safeName}은 <b>${partnerDom}</b> 쪽이 강하다. 둘의 차이는 애정의 크기보다 반응 방식 차이로 보는 게 정확해.`
-          : `${relation} 너는 <b>${myDom}</b> 쪽으로 마음이 움직이고, ${safeName}은 <b>${partnerDom}</b> 쪽으로 반응하는 편이야. 그래서 같은 마음이어도 표현되는 모양은 꽤 다를 수 있어. 그 차이를 “나를 덜 좋아하나?”로 번역하지 않는 게 첫 번째야.`
+          ? `${relation} ${directPairCopy} 너는 <b>${myDom}</b> 쪽, ${safeName}은 <b>${partnerDom}</b> 쪽이 강하다. 둘의 차이는 애정의 크기보다 반응 방식 차이로 보는 게 정확해.`
+          : `${relation} ${directPairCopy} 너는 <b>${myDom}</b> 쪽으로 마음이 움직이고, ${safeName}은 <b>${partnerDom}</b> 쪽으로 반응하는 편이야. 그래서 같은 마음이어도 표현되는 모양은 꽤 다를 수 있어.`
       },
       {
         title: "02 · 처음 서로에게 끌리는 이유",
         body: isT
-          ? `너의 <b>${myStrong}</b>과 ${safeName}의 <b>${partnerStrong}</b>이 관계의 첫 인상을 만든다. ${sameStrongElement ? "강점이 비슷해서 상대 방식이 빨리 읽히는 조합이다." : "강점이 달라 서로에게 없는 면이 매력으로 보일 가능성이 있다."}`
-          : `처음에는 네 <b>${myStrong}</b>과 ${safeName}의 <b>${partnerStrong}</b>이 서로 눈에 들어오기 쉬워. ${sameStrongElement ? "둘이 비슷한 힘을 써서 ‘이 사람은 말 안 해도 좀 알겠다’ 싶은 순간이 생길 수 있어." : "서로 잘하는 방향이 달라서 ‘나한테 없는 게 저 사람한테 있네’ 하고 끌릴 수 있어."}`
+          ? `너의 <b>${myStrong}</b>과 ${safeName}의 <b>${partnerStrong}</b>이 관계의 첫 인상을 만든다. ${complementCopy}`
+          : `처음에는 네 <b>${myStrong}</b>과 ${safeName}의 <b>${partnerStrong}</b>이 서로 눈에 들어오기 쉬워. ${complementCopy}`
       },
       {
         title: "03 · 내가 사랑할 때 나오는 모습",
@@ -580,9 +606,27 @@
       },
     ];
 
-    const summary = `<div data-export-intro="compat" style="padding:15px;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;margin-bottom:10px"><div style="font-size:11px;font-weight:900;color:#c2410c;margin-bottom:6px">우리 둘 관계를 깊게 보는 궁합</div><div style="font-size:13px;line-height:1.85;color:#7c2d12">${intro}</div></div>`;
+    const pairTimeline = overlay.compatibilityTimeline || { nearMonths:[], years:[] };
+    const interestingMonths = (pairTimeline.nearMonths || []).filter(x=>x.pairClass!=="neutral").slice(0,3);
+    const interestingYears = (pairTimeline.years || []).filter(x=>x.pairClass!=="neutral").slice(0,5);
+    const pairClassCopy = (row) => {
+      if (row.pairClass === "aligned-support") return "둘 다 움직일 여유가 같이 생기는 구간";
+      if (row.pairClass === "shared-caution") return "둘 다 여유가 줄어 갈등 관리가 먼저인 구간";
+      if (row.pairClass === "asymmetric") return "한쪽은 앞으로 가고 한쪽은 버거울 수 있어 속도차 조정이 필요한 구간";
+      if (row.pairClass === "one-side-support") return "한쪽의 여유가 관계를 받쳐줄 수 있는 구간";
+      if (row.pairClass === "one-side-caution") return "한쪽의 부담을 다른 쪽이 오해하지 않게 확인할 구간";
+      return "도움과 부담이 섞여 한쪽 결론으로 밀지 않는 구간";
+    };
+    const pairTimingBody = `
+      <div data-export-compat-timing="1" data-product-exclusive="compatibility" data-product-contract="compatibility" data-overlay-fingerprint="${esc(overlay.fingerprint)}" style="padding:14px 15px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0;margin:14px 0 6px;font-size:12.5px;line-height:1.8;color:#475569">
+        <b>둘이 같이 있을 때의 시기 흐름</b><br>
+        ${interestingMonths.length ? interestingMonths.map(x=>`<span><b>${esc(x.startYmd)}</b> · ${esc(pairClassCopy(x))}</span>`).join("<br>") : "가까운 18개월에는 둘 사이에서 한쪽으로 강하게 기운 달을 억지로 만들지 않았어."}
+        <br><br><b>연도 단위 관계 흐름</b><br>
+        ${interestingYears.length ? interestingYears.map(x=>`<span><b>${x.year}년</b> · ${esc(pairClassCopy(x))}</span>`).join("<br>") : "5년 안에서 둘의 흐름이 동시에 크게 꺾이는 해는 따로 잡지 않았어."}
+      </div>`;
+    const summary = `<div data-export-intro="compat" data-product-contract="compatibility" data-person-a-fingerprint="${esc(overlay.personAFingerprint)}" data-person-b-fingerprint="${esc(overlay.personBFingerprint)}" style="padding:15px;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;margin-bottom:10px"><div style="font-size:11px;font-weight:900;color:#c2410c;margin-bottom:6px">우리 둘 관계를 깊게 보는 궁합</div><div style="font-size:13px;line-height:1.85;color:#7c2d12">${intro}</div></div>`;
     const pairCard = `<div data-export-pair="compat" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 6px"><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">나</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(myDom)}</div></div><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">${safeName}</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(partnerDom)}</div></div></div>`;
-    return summary + pairCard + cards.map((s, index) => `<section data-export-kind="compat" data-export-index="${index}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:950;margin:0 0 8px;color:#0f172a">${s.title}</h4><div style="font-size:13px;line-height:1.9;color:#475569">${s.body}</div></section>`).join("");
+    return summary + pairCard + pairTimingBody + cards.map((row, index) => `<section data-export-kind="compat" data-export-index="${index}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:950;margin:0 0 8px;color:#0f172a">${row.title}</h4><div style="font-size:13px;line-height:1.9;color:#475569">${row.body}</div></section>`).join("");
   }
 
 
@@ -633,6 +677,7 @@
       const sections = [...body.querySelectorAll('[data-export-kind="compat"]')];
       const intro = body.querySelector('[data-export-intro="compat"]');
       const pair = body.querySelector('[data-export-pair="compat"]');
+      const timing = body.querySelector('[data-export-compat-timing="1"]');
       const titles = [
         ["1장 · 우리는 왜 끌릴까", "첫인상 · 나의 연애 방식 · 상대의 연애 방식", "01_우리는_왜_끌릴까"],
         ["2장 · 대화하고 싸우고 화해하는 법", "대화 · 서운함 · 갈등 · 화해", "02_대화_갈등_화해"],
@@ -642,7 +687,7 @@
       for (let i = 0; i < 4; i++) {
         const chunk = sections.slice(i * 4, i * 4 + 4);
         if (!chunk.length) continue;
-        const extra = i === 0 ? [intro, pair].filter(Boolean) : [];
+        const extra = i === 0 ? [intro, pair, timing].filter(Boolean) : [];
         groups.push(exportGroup(
           titles[i][0],
           titles[i][1],
