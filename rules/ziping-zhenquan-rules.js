@@ -81,6 +81,7 @@
           facts:{
             monthBranch:ctx.monthBranch||null,basisGan:s.basisGan||null,basis:s.basis||null,saryeongGan:s.saryeongGan||null,
             flow:s.flow||null,touchul:!!s.touchul,hiddenGans:s.hiddenGans||[],hiddenLayers,visibleHidden:s.visibleHidden||[],candidates:s.candidates||[],
+            calculatedSangsin:s.sangsin||null,calculatedGisin:s.gisin||null,calculatedStatus:s.status||null,
             branchType:s.branchType||null,confidence:s.confidence||null,
           },
           conditions:["월령을 격의 출발점으로 사용","본기·중기·여기와 투출·사령 후보를 구분해 보존"],
