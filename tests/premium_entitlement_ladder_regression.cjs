@@ -206,7 +206,7 @@ function loadServer(){
   assert(report.graph.states.fullOwned.kind==='purchased'&&report.graph.states.fullIncluded.kind==='included','purchased/included states drift');
   assert(report.graph.states.upgradeFull.amount===5000&&report.graph.states.upgradeBoth.amount===2100,'upgrade UI states drift');
   assert(report.graph.recs.none==='full_saju','no-premium default recommendation must be full_saju');
-  assert(report.graph.recs.full==='all_in_one'&&report.graph.recs.bundle==='full_saju'&&report.graph.recs.both==='all_in_one'&&report.graph.recs.all==='compatibility','entitlement-aware recommendations drift '+JSON.stringify(report.graph.recs));
+  assert(report.graph.recs.full==='all_in_one'&&report.graph.recs.bundle==='full_saju'&&report.graph.recs.both==='all_in_one'&&report.graph.recs.all==='compatibility'&&report.graph.recs.compat==='full_saju','entitlement-aware recommendations drift '+JSON.stringify(report.graph.recs));
 
   const freeGrant=await page.evaluate(async()=>{
     for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith('unni_product_grant_v1_'))localStorage.removeItem(k);}
