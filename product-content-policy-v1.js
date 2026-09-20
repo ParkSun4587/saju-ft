@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.0.0";
+  const VERSION = "1.1.0";
 
   const CONTRACTS = {
     basic_concern: {
@@ -61,6 +61,64 @@
     },
   };
 
+  const FEATURE_MATRIX = {
+    basic_concern: {
+      "selected-concern": true,
+      "additional-concerns": false,
+      "full-five-year": false,
+      "monthly-detail": true,
+      "cross-domain": false,
+      "second-person": false,
+      compatibility: false,
+      "all-six-concerns": false,
+      "daewoon-context": false,
+    },
+    concern_bundle3: {
+      "selected-concern": false,
+      "additional-concerns": true,
+      "full-five-year": false,
+      "monthly-detail": true,
+      "cross-domain": false,
+      "second-person": false,
+      compatibility: false,
+      "all-six-concerns": false,
+      "daewoon-context": false,
+    },
+    full_saju: {
+      "selected-concern": false,
+      "additional-concerns": false,
+      "full-five-year": true,
+      "monthly-detail": true,
+      "cross-domain": true,
+      "second-person": false,
+      compatibility: false,
+      "all-six-concerns": false,
+      "daewoon-context": true,
+    },
+    compatibility: {
+      "selected-concern": false,
+      "additional-concerns": false,
+      "full-five-year": false,
+      "monthly-detail": true,
+      "cross-domain": false,
+      "second-person": true,
+      compatibility: true,
+      "all-six-concerns": false,
+      "daewoon-context": false,
+    },
+    all_in_one: {
+      "selected-concern": false,
+      "additional-concerns": false,
+      "full-five-year": true,
+      "monthly-detail": true,
+      "cross-domain": true,
+      "second-person": false,
+      compatibility: false,
+      "all-six-concerns": true,
+      "daewoon-context": true,
+    },
+  };
+
   const VALUE_COPY = {
     concern_bundle3: {
       short: "다른 고민 3개도 같은 사주로 각각 깊게 풀어보기",
@@ -88,21 +146,125 @@
     return CONTRACTS[id] || null;
   }
 
-  function assertDisclosure(productId, feature) {
+  function canRenderFeature(productId, feature, context) {
     const contract = getContract(productId);
-    if (!contract) return false;
-    if (feature === "compatibility") return contract.compatibilityAllowed === true;
-    if (feature === "full-five-year") return contract.longTermDetail === "full-five-year";
-    if (feature === "second-person") return contract.secondPersonRequired === true;
-    if (feature === "cross-domain") return !!contract.crossDomainAnalysis;
+    const row = FEATURE_MATRIX[productId];
+    if (!contract || !row || !Object.prototype.hasOwnProperty.call(row, feature)) return false;
+    if (row[feature] !== true) return false;
+    if (feature === "monthly-detail") {
+      const months = Number(context?.months || 0);
+      if (months > 0 && months > Number(contract.monthlyDetailRange || 0)) return false;
+    }
+    if (feature === "second-person" || feature === "compatibility") {
+      if (context?.secondPersonPresent === false) return false;
+    }
     return true;
+  }
+
+  function sanitizeProductPayload(productId, payload) {
+    const input = payload && typeof payload === "object" ? payload : {};
+    const out = { ...input };
+    if (input.extra && typeof input.extra === "object") {
+      out.extra = { ...input.extra };
+    }
+    if (!canRenderFeature(productId, "second-person", { secondPersonPresent:true })) {
+      delete out.partner;
+      delete out.secondPerson;
+      delete out.compatibilityOverlay;
+      delete out.compatibilityTimeline;
+      if (out.extra) delete out.extra.partner;
+    }
+    if (!canRenderFeature(productId, "full-five-year")) {
+      delete out.fullSajuTimeline;
+      delete out.fullFiveYear;
+      delete out.daeunContext;
+    }
+    if (!canRenderFeature(productId, "cross-domain")) {
+      delete out.crossDomain;
+      delete out.crossDomainAnalysis;
+    }
+    return out;
+  }
+
+  function validateProductPayload(productId, payload) {
+    const contract = getContract(productId);
+    if (!contract) return { ok:false, productId, errors:["unknown-product"], deniedFeatures:[] };
+
+    const input = payload && typeof payload === "object" ? payload : {};
+    const features = Array.isArray(input.features) ? input.features : [];
+    const context = {
+      months: input.months,
+      secondPersonPresent: !!input.secondPersonPresent,
+    };
+    const deniedFeatures = features.filter((feature) => !canRenderFeature(productId, feature, context));
+    const errors = deniedFeatures.map((feature) => "feature-not-allowed:" + feature);
+
+    if (contract.secondPersonRequired && !context.secondPersonPresent) {
+      errors.push("second-person-required");
+    }
+
+    const count = Number(input.concernCount);
+    if (Number.isFinite(count) && count >= 0) {
+      if (productId === "concern_bundle3" && count !== contract.concernCount) errors.push("concern-count-mismatch");
+      if (productId === "all_in_one" && count !== contract.concernCount) errors.push("concern-count-mismatch");
+      if (productId === "basic_concern" && count !== 1) errors.push("concern-count-mismatch");
+    }
+
+    return {
+      ok: errors.length === 0,
+      productId,
+      contract,
+      requestedFeatures: features,
+      deniedFeatures,
+      errors,
+    };
+  }
+
+  function filterTimingForProduct(productId, timing) {
+    const source = timing && typeof timing === "object" ? timing : {};
+    const contract = getContract(productId);
+    if (!contract) return {
+      concernNearTerm:null,
+      longTermPivots:[],
+      fullSajuTimeline:null,
+      compatibilityTimeline:null,
+      fullHorizon:null,
+    };
+
+    const monthlyAllowed = canRenderFeature(productId, "monthly-detail", {
+      months: contract.monthlyDetailRange,
+    });
+    const fullFiveAllowed = canRenderFeature(productId, "full-five-year");
+    const compatibilityAllowed = canRenderFeature(productId, "compatibility", {
+      secondPersonPresent:true,
+    });
+
+    return {
+      concernNearTerm: monthlyAllowed ? (source.concernNearTerm || null) : null,
+      longTermPivots: contract.longTermDetail === "teaser-only"
+        ? (Array.isArray(source.longTermPivots) ? source.longTermPivots.slice(0, 2) : [])
+        : [],
+      fullSajuTimeline: fullFiveAllowed ? (source.fullSajuTimeline || null) : null,
+      compatibilityTimeline: compatibilityAllowed ? (source.compatibilityTimeline || null) : null,
+      // fullHorizon is an internal calculation surface and is never exposed by a product renderer.
+      fullHorizon: null,
+    };
+  }
+
+  function assertDisclosure(productId, feature, context) {
+    return canRenderFeature(productId, feature, context);
   }
 
   global.__UNNI_PRODUCT_CONTENT_POLICY_V1__ = {
     version: VERSION,
     contracts: CONTRACTS,
+    featureMatrix: FEATURE_MATRIX,
     valueCopy: VALUE_COPY,
     getContract,
+    canRenderFeature,
+    validateProductPayload,
+    sanitizeProductPayload,
+    filterTimingForProduct,
     assertDisclosure,
   };
 })(globalThis);
