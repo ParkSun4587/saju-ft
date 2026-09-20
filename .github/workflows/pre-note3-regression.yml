@@ -44,5 +44,7 @@ jobs:
         run: node tests/integrated_profile_regression.cjs
       - name: Run classical causal reasoning A-G regression
         run: node tests/classical_reasoning_v3_regression.cjs
+      - name: Run classical depth v3.1 regression
+        run: node tests/classical_depth_v31_regression.cjs
       - name: Run paid-value and product regression
         run: node tests/paid_value_product_regression.cjs
