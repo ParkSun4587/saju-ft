@@ -558,7 +558,7 @@ function norm(v) {
   assert((await page.locator('#unniProductSaveAll').innerText()).includes('사진으로 한 번에 저장하기'), 'one-action paid save CTA missing');
   assert(await page.locator('#unniProductSavePdf').count() === 0, 'PDF save UI must be removed');
   assert(await page.locator('#unniProductStickyHead').evaluate((el) => getComputedStyle(el).position) === 'sticky', 'paid report header must remain sticky');
-  await page.waitForFunction(() => document.getElementById('unniProductSaveHint')?.innerText.includes('저장 준비 완료'), null, { timeout:30000 });
+  await page.waitForFunction(() => /저장할 사진 준비됐어|저장 준비 완료/.test(document.getElementById('unniProductSaveHint')?.innerText || ''), null, { timeout:30000 });
   assert(await page.locator('#unniProductSaveAll').isEnabled(), 'paid save must be tappable as soon as prewarm is ready');
   const fullReportDownload = await Promise.all([
     page.waitForEvent('download', { timeout: 20000 }),
