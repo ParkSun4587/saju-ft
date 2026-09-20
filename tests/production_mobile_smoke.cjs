@@ -172,6 +172,26 @@ async function inspect(page, mode) {
         mbtiBeforeChem:(document.getElementById('gradeSection').compareDocumentPosition(document.getElementById('chemBestCard')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
         mbtiSize:parseFloat(getComputedStyle(document.getElementById('resultBigMbti')).fontSize||'0'),
       },
+      memoLayout:(()=>{
+        const shell=document.getElementById('consultationNotesShell');
+        const paper=document.getElementById('consultationNotesPaper');
+        const note=document.querySelector('#notesListContainer .note-editorial');
+        const metaRight=document.querySelector('#consultationNotesHeader>div:first-child>span:last-child');
+        const sr=shell?.getBoundingClientRect();
+        const pr=paper?.getBoundingClientRect();
+        const nr=note?.getBoundingClientRect();
+        const ns=note?getComputedStyle(note):null;
+        return {
+          viewport:document.documentElement.clientWidth,
+          shell:sr?{left:sr.left,right:sr.right,width:sr.width}:null,
+          paper:pr?{left:pr.left,right:pr.right,width:pr.width}:null,
+          note:nr?{left:nr.left,right:nr.right,width:nr.width}:null,
+          noteRadius:ns?.borderRadius||'',
+          noteBackground:ns?.backgroundColor||'',
+          metaRightDisplay:metaRight?getComputedStyle(metaRight).display:'',
+          overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth,
+        };
+      })(),
     };
   },mode);
   assert(r.noteV2Audit?.version==='3.2.1'&&r.noteV2Audit?.structureFingerprint,mode+' NOTE v3 audit missing');
@@ -206,6 +226,19 @@ async function inspect(page, mode) {
   assert(r.switchCount===0,'bottom F/T CTA remains');
   assert(r.hierarchy.oneLineBeforeThreeLine&&r.hierarchy.threeLineBeforeMbti&&r.hierarchy.mbtiBeforeChem&&r.hierarchy.mbtiSize<=38,
     'result hierarchy is wrong '+JSON.stringify(r.hierarchy));
+  assert(
+    r.memoLayout.shell &&
+    r.memoLayout.paper &&
+    r.memoLayout.note &&
+    r.memoLayout.shell.width<=386.5 &&
+    Math.abs(r.memoLayout.shell.left-(r.memoLayout.viewport-r.memoLayout.shell.right))<=2 &&
+    r.memoLayout.note.left>=r.memoLayout.paper.left-1 &&
+    r.memoLayout.note.right<=r.memoLayout.paper.right+1 &&
+    r.memoLayout.noteRadius==='0px' &&
+    r.memoLayout.metaRightDisplay==='none' &&
+    !r.memoLayout.overflow,
+    'consultation memo containment drift '+JSON.stringify(r.memoLayout)
+  );
   assert(!r.badges.some(x=>x.includes('·')||x.includes('사람 필터')||x.includes('7일 처방')||x.includes('놓친 포인트')),
     'old NOTE badge wording remains '+JSON.stringify(r.badges));
   assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
