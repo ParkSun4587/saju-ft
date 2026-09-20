@@ -181,7 +181,7 @@
   function policyBlockedHtml(productId, gate) {
     const reason = (gate?.errors || []).join(",");
     const blockedKind = productId === "compatibility" ? "compatibility" : "policy";
-    return `<p data-content-blocked="${blockedKind}" data-policy-blocked="1" data-product-contract="${esc(productId)}" data-policy-errors="${esc(reason)}" style="font-size:13px;line-height:1.8;color:#475569">이 상품에서 허용되지 않은 정보 요청이 감지돼서 결과를 열지 않았어.</p>`;
+    return `<p data-content-blocked="${blockedKind}" data-policy-blocked="1" data-product-contract="${esc(productId)}" data-policy-errors="${esc(reason)}" style="font-size:13px;line-height:1.8;color:#475569">이 구성에서 제공하지 않는 정보 요청이 감지돼서 결과를 열지 않았어.</p>`;
   }
 
   function policyTiming(productId, timing) {
@@ -521,7 +521,7 @@
       },
       {
         title:"07 · 연애와 가까운 관계",
-        body:`<b>핵심</b> · 이 장은 특정 상대 궁합이 아니라 <b>너 한 사람의 가까운 관계 패턴</b>만 봐. 네 기준을 지키는 힘은 <b>${selfGod.count}개</b>, 관계에서 밖으로 표현하는 힘은 <b>${outputGod.count}개</b>로 잡혀 있어.<br><br><b>왜</b> · 내 기준을 지키는 힘, 표현하는 힘, 실제 합·충 같은 관계 신호를 같이 보되 상대방 성격은 만들어내지 않아.<br><br><b>실제</b> · ${hasClash ? "관계 안에서 기준이 부딪히는 장면이 생기면 감정을 오래 참기보다 무엇이 충돌했는지 빨리 확인하는 편이 중요해." : "관계 신호 하나만으로 충돌을 과장하지 않고, 표현을 미루는지 기준을 너무 단단히 잡는지 같은 네 반응을 더 중요하게 봐."}<br><br><b>이렇게 써</b> · 상대 마음을 추측하기보다 불편함이 시작된 장면과 말한 뒤 실제 조정 반응을 확인해. 특정 사람과의 궁합은 별도 상품에서만 계산해.`,
+        body:`<b>핵심</b> · 이 장은 특정 상대 궁합이 아니라 <b>너 한 사람의 가까운 관계 패턴</b>만 봐. 네 기준을 지키는 힘은 <b>${selfGod.count}개</b>, 관계에서 밖으로 표현하는 힘은 <b>${outputGod.count}개</b>로 잡혀 있어.<br><br><b>왜</b> · 내 기준을 지키는 힘, 표현하는 힘, 실제 합·충 같은 관계 신호를 같이 보되 상대방 성격은 만들어내지 않아.<br><br><b>실제</b> · ${hasClash ? "관계 안에서 기준이 부딪히는 장면이 생기면 감정을 오래 참기보다 무엇이 충돌했는지 빨리 확인하는 편이 중요해." : "관계 신호 하나만으로 충돌을 과장하지 않고, 표현을 미루는지 기준을 너무 단단히 잡는지 같은 네 반응을 더 중요하게 봐."}<br><br><b>이렇게 써</b> · 상대 마음을 추측하기보다 불편함이 시작된 장면과 말한 뒤 실제 조정 반응을 확인해. 특정 사람과의 궁합은 ‘우리 둘 궁합’에서만 따로 계산해.`,
         claim:{ section:7,sourceRuleIds:ids(relationFinding,pressure),newFacts:[textFact("selfGodCount",selfGod.count),textFact("outputCount",outputGod.count),textFact("hasClash",hasClash),textFact("relationKeys",Object.keys(relationRaw).sort().join(","))],conclusion:"가까운 관계는 본인의 기준·표현·충돌 신호만 해석하고 특정 상대 정보는 생성하지 않는다." },
       },
       {
@@ -1542,16 +1542,16 @@
     const product = PRODUCTS[productId];
     if (!order?.ok || order.productId !== productId || Number(order.baseAmount || product.price) !== product.price || !(Number(order.amount) > 0)) {
       throw new Error(productVoice(data, {
-        F: "상품 주문 정보가 맞지 않아. 다시 결제하지 말고 현재 상품을 한 번만 다시 열어줘.",
-        T: "상품 주문 정보가 일치하지 않아. 재결제하지 말고 상품을 다시 열어 확인해줘.",
+        F: "결제 정보가 맞지 않아. 다시 결제하지 말고 지금 보던 내용을 한 번만 다시 열어줘.",
+        T: "결제 정보가 일치하지 않아. 재결제하지 말고 지금 보던 내용을 다시 열어 확인해줘.",
       }));
     }
     const state = productStateFor(productId, verifiedState || cachedEntitlements(data));
     if (productId === "all_in_one" && state.kind === "upgrade" && Number(order.amount) !== Number(state.amount)) {
       // 화면에 표시한 가격과 서버 quote가 달라졌다면 서버 값을 우선하고 사용자가 다시 확인하게 한다.
       throw new Error(productVoice(data, {
-        F: "구매 상태가 방금 바뀌었어. 다시 결제하지 말고 상품을 다시 열어서 최종 업그레이드 금액부터 확인해줘.",
-        T: "구매 상태가 갱신됐어. 재결제하지 말고 상품을 다시 열어 최종 업그레이드 금액을 확인해줘.",
+        F: "구매 상태가 방금 바뀌었어. 다시 결제하지 말고 이 내용을 다시 열어서 최종 업그레이드 금액부터 확인해줘.",
+        T: "구매 상태가 갱신됐어. 재결제하지 말고 이 내용을 다시 열어 최종 업그레이드 금액을 확인해줘.",
       }));
     }
     if (typeof PaymentWidget === "undefined")
@@ -1686,7 +1686,7 @@
     }
 
     const state = directGrantVerified
-      ? { kind:"purchased", productId, amount:0, label:productId === "full_saju" ? "구매한 전체판 다시 보기" : "구매한 상품 다시 보기" }
+      ? { kind:"purchased", productId, amount:0, label:productId === "full_saju" ? "구매한 전체판 다시 보기" : "구매한 내용 다시 보기" }
       : productStateFor(productId, verifiedState);
     const directGrant = directGrantVerified ? directStoredGrant : verifiedGrantFor(verifiedState, productId);
     action.disabled = false;
@@ -1745,7 +1745,7 @@
 
     if (state.kind === "upgrade") {
       root.querySelector("#unniProductPrice").textContent = `${won(product.price)} → ${won(state.amount)}`;
-      body.insertAdjacentHTML("beforeend", `<div data-upgrade-quote="all_in_one" style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff1f2;border:1px solid #fecdd3;font-size:11px;line-height:1.65;color:#9f1239"><b>이미 산 1인 상품 금액을 빼고 계산했어.</b><br>${esc((state.quote?.creditedProducts || []).map((id)=>PRODUCTS[id]?.name || id).join(" + "))} 구매가 서버에서 확인돼서 <b>${won(state.amount)}</b>만 결제하면 완전판으로 올라가.</div>`);
+      body.insertAdjacentHTML("beforeend", `<div data-upgrade-quote="all_in_one" style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff1f2;border:1px solid #fecdd3;font-size:11px;line-height:1.65;color:#9f1239"><b>이미 구매한 1인 구성 금액을 빼고 계산했어.</b><br>${esc((state.quote?.creditedProducts || []).map((id)=>PRODUCTS[id]?.name || id).join(" + "))} 구매가 서버에서 확인돼서 <b>${won(state.amount)}</b>만 결제하면 완전판으로 올라가.</div>`);
       action.textContent = productActionLabel(productId,state);
       action.onclick = async () => {
         action.disabled = true;
@@ -1772,8 +1772,8 @@
         await beginPaidCheckout(productId,data,extra,root,verifiedState);
       } catch (e) {
         productToast(data, e?.message || {
-          F: "상품을 열지 못했어. 지금 결과는 그대로니까 한 번만 다시 눌러줘.",
-          T: "상품을 열지 못했어. 현재 결과는 유지됐어. 다시 눌러줘.",
+          F: "내용을 열지 못했어. 지금 결과는 그대로니까 한 번만 다시 눌러줘.",
+          T: "내용을 열지 못했어. 현재 결과는 유지됐어. 다시 눌러줘.",
         });
       } finally { action.disabled = false; }
     };
@@ -1831,14 +1831,14 @@
   };
 
   function productUx(productId) {
-    return PRODUCT_UX[productId] || { eyebrow:PRODUCTS[productId]?.badge || "", value:PRODUCTS[productId]?.desc || "", difference:PRODUCTS[productId]?.desc || "", cta:PRODUCTS[productId]?.name || "상품 보기" };
+    return PRODUCT_UX[productId] || { eyebrow:PRODUCTS[productId]?.badge || "", value:PRODUCTS[productId]?.desc || "", difference:PRODUCTS[productId]?.desc || "", cta:PRODUCTS[productId]?.name || "내용 보기" };
   }
 
   function productActionLabel(productId, state, amountOverride) {
     const ux = productUx(productId);
     const amount = Number(amountOverride ?? state?.amount ?? PRODUCTS[productId]?.price ?? 0);
     if (state?.kind === "purchased") {
-      return productId === "full_saju" ? "구매한 전체판 다시 보기" : productId === "all_in_one" ? "구매한 완전판 다시 보기" : "구매한 상품 다시 보기";
+      return productId === "full_saju" ? "구매한 전체판 다시 보기" : productId === "all_in_one" ? "구매한 완전판 다시 보기" : "구매한 내용 다시 보기";
     }
     if (state?.kind === "included") return "완전판에 포함됨 · 바로 보기";
     if (state?.kind === "upgrade") return `완전판으로 이어보기 · +${won(amount)}`;
@@ -1873,7 +1873,7 @@
     }
     const quote = entitlementApi()?.calculateUpgradeQuote?.({ targetProduct:"all_in_one", verifiedEntitlements:direct });
     if (quote?.creditAmount > 0) {
-      return `이미 산 1인 상품 ${quote.creditedProducts.map((id)=>PRODUCTS[id]?.name || id).join(" + ")} 금액을 인정해서, 중복 결제 없이 완전판으로 합칠 수 있어.`;
+      return `이미 구매한 1인 구성 ${quote.creditedProducts.map((id)=>PRODUCTS[id]?.name || id).join(" + ")} 금액을 인정해서, 중복 결제 없이 완전판으로 합칠 수 있어.`;
     }
     return isT
       ? "한 사람 기준으로 전체 구조·6개 고민·5년 흐름을 따로 열기 싫다면 한 번에 묶는 구성이 맞아."
@@ -2019,8 +2019,8 @@
     const paymentKey = params.get("paymentKey"), orderId = params.get("orderId"), amount = Number(params.get("amount"));
     if (!paymentKey || orderId !== resume.orderId || amount !== Number(resume.amount))
       throw new Error(productVoice(restored, {
-        F: "상품 결제 복귀 정보가 맞지 않아. 다시 결제하지 말고 주문번호로 문의해줘.",
-        T: "상품 결제 복귀 정보가 일치하지 않아. 재결제하지 말고 주문번호로 문의해줘.",
+        F: "결제 복귀 정보가 맞지 않아. 다시 결제하지 말고 주문번호로 문의해줘.",
+        T: "결제 복귀 정보가 일치하지 않아. 재결제하지 말고 주문번호로 문의해줘.",
       }));
     const token = await confirmPaymentOnServer(paymentKey, orderId, amount, resume.userKey, ticket);
     saveGrant(restored, productId, {
