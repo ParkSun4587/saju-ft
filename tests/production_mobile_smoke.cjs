@@ -95,14 +95,15 @@ async function enter(page, mode, concern, situation) {
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
   if (mode==='F') assert(
     firstState.sisterText.includes('왔구나. 편하게 알려줘.') &&
-    firstState.sisterText.includes('왜 이 고민이 자꾸 마음에 남는지') &&
-    firstState.sisterText.includes('어떻게 움직이면 좋을지') &&
+    firstState.sisterText.includes('이름이랑 생일부터 받고') &&
+    firstState.sisterText.includes('제일 마음 쓰이는 고민부터 같이 볼게') &&
     !firstState.sisterText.includes('ㅎㅎ'),
     'F input lost calm close-sister voice '+firstState.sisterText
   );
   if (mode==='T') assert(
-    firstState.sisterText.includes('왔어. 핵심부터 잡아볼게.') &&
-    firstState.sisterText.includes('이유랑 다음 행동까지 순서대로 정리해줄게.') &&
+    firstState.sisterText.includes('왔어. 바로 정리해보자.') &&
+    firstState.sisterText.includes('이름이랑 생일부터 받고') &&
+    firstState.sisterText.includes('제일 먼저 볼 고민 하나만 잡을게') &&
     !firstState.sisterText.includes('ㅎㅎ'),
     'T input lost concise direct-care voice '+firstState.sisterText
   );
@@ -110,9 +111,21 @@ async function enter(page, mode, concern, situation) {
   const label = concern === 'love' ? '연애 · 썸' : '마음 · 스트레스';
   await page.locator('#concernGrid .concern-chip').filter({hasText:label}).click();
   await page.waitForSelector('#concernSituationBox',{state:'visible'});
+  const situationPrompt=(await page.locator('#concernSituationPrompt').innerText()).trim();
+  if(mode==='F') assert(
+    situationPrompt.includes(concern==='love' ? '연애 쪽이구나' : '마음·스트레스 쪽이구나'),
+    'F concern selection did not get an immediate counselor response '+situationPrompt
+  );
+  if(mode==='T') assert(
+    situationPrompt.includes(concern==='love' ? '연애 쪽이네' : '마음·스트레스 쪽이네'),
+    'T concern selection did not get an immediate counselor response '+situationPrompt
+  );
   assert(await page.locator('#concernSituationGrid [data-concern-situation]').count() === 4,'situation count');
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.waitForSelector('#concernSituationSummary',{state:'visible'});
+  const situationAck=(await page.locator('#concernSituationAck').innerText()).trim();
+  if(mode==='F') assert(situationAck.includes('이 상황 기준으로 같이 볼게'),'F situation acknowledgement missing '+situationAck);
+  if(mode==='T') assert(situationAck.includes('기준으로 바로 정리할게'),'T situation acknowledgement missing '+situationAck);
   assert(!(await page.locator('#analysisSubmitButton').isDisabled()),'send button should unlock after concern and situation');
   assert(await page.locator('#concernSituationBox').isHidden(),'situation did not collapse');
   await page.locator('#concernSituationSummary button').click();
