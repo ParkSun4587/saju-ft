@@ -1,6 +1,6 @@
 const { chromium } = require('playwright');
 const fs=require('fs');
-const BASE='https://sajuft.com/index.html';
+const BASE=process.env.AUDIT_BASE || 'https://sajuft.com/index.html';
 const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
 async function waitDeployed(page){
   for(let i=0;i<24;i++){
