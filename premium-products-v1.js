@@ -153,6 +153,96 @@
     return global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.valueCopy?.[productId] || null;
   }
 
+  function entitlementApi() {
+    return global.__UNNI_PRODUCT_ENTITLEMENTS_V1__ || null;
+  }
+
+  let entitlementCacheKey = "";
+  let entitlementCache = null;
+  let entitlementPromise = null;
+
+  function entitlementSubjectKey(data) {
+    return JSON.stringify([
+      data?.name || data?.userName || "",
+      data?.userBirthStr || "",
+      data?.userTimeKey || "unknown",
+      data?.userGender || "female",
+      data?.userCalendar || "solar",
+      data?.isLeapMonth === true,
+    ]);
+  }
+
+  function invalidateEntitlementCache() {
+    entitlementCacheKey = "";
+    entitlementCache = null;
+    entitlementPromise = null;
+  }
+
+  function collectStoredPremiumGrants() {
+    const rows = [];
+    const prefix = "unni_product_grant_v1_";
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i) || "";
+        if (!key.startsWith(prefix)) continue;
+        let grant = null;
+        try { grant = JSON.parse(localStorage.getItem(key) || "null"); } catch (_) {}
+        if (!grant?.token || !grant?.userKey) continue;
+        rows.push({ key, grant, userKey:grant.userKey, token:grant.token });
+      }
+    } catch (_) {}
+    const seen = new Set();
+    return rows.filter((row) => {
+      const sig = row.userKey + "|" + row.token;
+      if (seen.has(sig)) return false;
+      seen.add(sig);
+      return true;
+    });
+  }
+
+  function entitlementTokenRecords() {
+    return collectStoredPremiumGrants().map((row) => ({ userKey:row.userKey, token:row.token }));
+  }
+
+  async function resolveVerifiedEntitlements(data, { force = false } = {}) {
+    const key = entitlementSubjectKey(data);
+    if (!force && entitlementCache && entitlementCacheKey === key) return entitlementCache;
+    if (!force && entitlementPromise && entitlementCacheKey === key) return entitlementPromise;
+    if (typeof paymentAPI !== "function" || typeof resultSnapshot !== "function") {
+      return { verifiedPurchases:[], effectiveEntitlements:[], allInOneQuote:null, unavailable:true };
+    }
+    entitlementCacheKey = key;
+    const records = entitlementTokenRecords();
+    entitlementPromise = paymentAPI({
+      action:"entitlements",
+      data:resultSnapshot(data),
+      tokens:records,
+    }).then((state) => {
+      entitlementCache = state;
+      entitlementPromise = null;
+      return state;
+    }).catch((error) => {
+      entitlementPromise = null;
+      throw error;
+    });
+    return entitlementPromise;
+  }
+
+  function cachedEntitlements(data) {
+    return entitlementCacheKey === entitlementSubjectKey(data) ? entitlementCache : null;
+  }
+
+  function verifiedGrantFor(state, productId) {
+    const purchase = (state?.verifiedPurchases || []).find((row) => row.productId === productId);
+    if (!purchase) return null;
+    return collectStoredPremiumGrants().find((row) => row.userKey === purchase.userKey)?.grant || null;
+  }
+
+  function productStateFor(productId, state) {
+    return entitlementApi()?.getProductState?.(productId,state)
+      || { kind:"unpurchased", productId, amount:PRODUCTS[productId]?.price || 0, label:`${won(PRODUCTS[productId]?.price || 0)}에 열기` };
+  }
+
   const TEN_GOD_WORD = {
     비견:"내 기준과 버티는 힘",겁재:"내 몫을 확보하는 힘",
     식신:"꾸준히 만들어 밖으로 빼는 힘",상관:"막힌 걸 표현하고 바꾸는 힘",
