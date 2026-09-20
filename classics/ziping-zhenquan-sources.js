@@ -90,8 +90,8 @@
     ZZ_RELATION_022: {
       work: "자평진전",
       section: "용신의 성패와 구응을 논함",
-      principle: "관격 등에서는 형·충·파·해가 성패 조건에 직접 들어가므로 관계의 종류와 월령 관여 여부를 구분한다.",
-      sourceUrl: "https://donglishuzhai.net/chapter/3722.html",
+      principle: "관격 등에서 형·충·파·해를 살피되 충을 가장 무겁게 보고, 형·파·해는 경중을 따져 단독으로 모두 파격 처리하지 않는다.",
+      sourceUrl: "https://www.8bei8.com/book/zipingzhenquanpingzhu_11.html",
     },
     ZZ_COMBINE_023: {
       work: "자평진전",
