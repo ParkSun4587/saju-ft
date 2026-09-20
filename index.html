@@ -2440,7 +2440,7 @@
                   <span id="reAnalyzeArrow">→</span>
                 </div>
                 <span id="reAnalyzeSubText" class="text-[10px] font-medium"
-                  >기존 사주 데이터 유지 · 추가 처방전 990원 즉시 확인</span
+                  >사주정보는 그대로 · 새 고민만 골라서 이어서 볼게</span
                 >
               </button>
 
@@ -2450,7 +2450,7 @@
                 onclick="startFreshAnalysis()"
                 class="w-full py-3 px-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
               >
-                <span>🔍 다른 사람(친구/최애) 사주도 까보기</span>
+                <span id="freshAnalysisBtnText">이번엔 다른 사람 사주도 같이 볼까?</span>
               </button>
             </div>
           </div>
@@ -2507,7 +2507,7 @@
         </details>
 
         <div id="resultShareActions">
-          <div id="resultShareLead">상담은 여기까지 읽었어. 필요하면 이 기록을 한 장으로 남겨도 돼.</div>
+          <div id="resultShareLead">이번 고민은 여기까지 같이 봤어. 마음에 남으면 이 상담 기록을 한 장으로 간직해도 돼.</div>
           <button
             type="button"
             id="mainShareBtn"
@@ -6279,7 +6279,7 @@ currentResultData = {
           if (resultConcernHandoffName) resultConcernHandoffName.textContent = "서아 언니";
           if (resultConcernHandoffText) resultConcernHandoffText.textContent = "기본 구조는 확인했어. 이제 네 고민에 직접 연결되는 부분만 볼게.";
           if (resultFunExtrasSummary) resultFunExtrasSummary.textContent = "참고로 가볍게 볼 것 · MBTI와 찰떡";
-          if (resultShareLead) resultShareLead.textContent = "이번 고민 정리는 여기까지야. 필요하면 결과를 한 장으로 남겨.";
+          if (resultShareLead) resultShareLead.textContent = "이번 고민 정리는 여기까지야. 필요하면 상담 기록을 한 장으로 남겨.";
           if (consultationCloseoutTitle) consultationCloseoutTitle.textContent = "여기까지가 이번 고민에 대한 내 정리야.";
           if (consultationCloseoutSub) consultationCloseoutSub.textContent = "다른 고민도 볼 거면 사주정보는 그대로 두고 바로 이어갈 수 있어.";
           if (resSisterProfile) resSisterProfile.src = "./서아.png";
@@ -6333,19 +6333,26 @@ currentResultData = {
         const reBtn = document.getElementById("reAnalyzeMainBtn");
         const reArrow = document.getElementById("reAnalyzeArrow");
         const reSub = document.getElementById("reAnalyzeSubText");
+        const freshAnalysisBtnText = document.getElementById("freshAnalysisBtnText");
         if (reBtn) {
           if (isT) {
             reBtn.className =
               "w-full py-3.5 px-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-2xl text-xs sm:text-sm font-black transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer shadow-sm active:scale-[0.98]";
             if (reArrow) reArrow.className = "text-sky-600 font-bold";
-            if (reSub)
+            if (reSub) {
               reSub.className = "text-[10px] text-slate-500 font-medium";
+              reSub.textContent = "사주정보 유지 · 새 고민만 선택해서 바로 이어보기";
+            }
+            if (freshAnalysisBtnText) freshAnalysisBtnText.textContent = "다른 사람 사주 새로 보기";
           } else {
             reBtn.className =
               "w-full py-3.5 px-4 bg-[#fffaf3] hover:bg-amber-50 border border-amber-200 text-slate-800 rounded-2xl text-xs sm:text-sm font-black transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer shadow-sm active:scale-[0.98]";
             if (reArrow) reArrow.className = "text-rose-400 font-bold";
-            if (reSub)
+            if (reSub) {
               reSub.className = "text-[10px] text-slate-500 font-medium";
+              reSub.textContent = "사주정보는 그대로 · 새 고민만 골라서 이어서 볼게";
+            }
+            if (freshAnalysisBtnText) freshAnalysisBtnText.textContent = "이번엔 다른 사람 사주도 같이 볼까?";
           }
         }
         const prof = SAZU_CHARACTER_PROFILES[mKey];
