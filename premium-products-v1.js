@@ -279,12 +279,16 @@
     const strong = ELEMENT_WORD[strongEl] || "익숙한 방식으로 밀어가는 힘";
     const weak = ELEMENT_WORD[weakEl] || "일부러 챙겨야 하는 힘";
     const strength = r.profile?.strength || {};
-    const pressure = r.ditian?.findings?.find(x=>x.id==="DTS_PRESSURE_109");
-    const flow = r.ditian?.findings?.find(x=>x.id==="DTS_FLOW_108");
-    const root = r.ditian?.findings?.find(x=>x.id==="DTS_ROOT_104");
-    const season = r.ditian?.findings?.find(x=>x.id==="DTS_SEASON_102");
-    const party = r.ditian?.findings?.find(x=>x.id==="DTS_PARTY_105");
-    const bridge = r.ditian?.findings?.find(x=>x.id==="DTS_BRIDGE_112");
+    const finding = (id) => r.ditian?.findings?.find((x) => x.id === id) || null;
+    const force = finding("DTS_FORCE_101");
+    const season = finding("DTS_SEASON_102");
+    const root = finding("DTS_ROOT_104");
+    const party = finding("DTS_PARTY_105");
+    const flow = finding("DTS_FLOW_108");
+    const pressure = finding("DTS_PRESSURE_109");
+    const balance = finding("DTS_BALANCE_110");
+    const bridge = finding("DTS_BRIDGE_112");
+    const relationFinding = finding("DTS_RELATION_114");
     const z = reasoningMainZiping(r);
     const prescription = r.integrated?.prescription || {};
     const disclosedTiming = policyTiming("full_saju", r.timing);
@@ -293,101 +297,129 @@
     const nearHighlights = Array.isArray(timeline.nearHighlights) ? timeline.nearHighlights : [];
     const daeunPeriods = Array.isArray(timeline.daeunPeriods) ? timeline.daeunPeriods : [];
 
+    const uniq = (rows) => [...new Set((rows || []).filter(Boolean))];
+    const ids = (...rows) => uniq(rows.flat().map((x) => typeof x === "string" ? x : x?.id));
+    const textFact = (label,value) => `${label}:${value == null || value === "" ? "none" : String(value)}`;
+
+    function godFacts(names) {
+      const counts = p.sipsin?.counts || {};
+      const all = Array.isArray(p.sipsin?.all) ? p.sipsin.all : [];
+      const count = names.reduce((sum,name) => sum + Number(counts[name] || 0),0);
+      const rows = all.filter((row) => names.includes(row?.value));
+      const placements = uniq(rows.map((row) => `${row.pillar || ""}${row.position ? "/" + row.position : ""}`).filter(Boolean));
+      return { count, placements };
+    }
+
+    const wealth = godFacts(["정재","편재"]);
+    const officer = godFacts(["정관","편관"]);
+    const selfGod = godFacts(["비견","겁재"]);
+    const outputGod = godFacts(["식신","상관"]);
+    const printGod = godFacts(["정인","편인"]);
+
     function forceCopy() {
       const verdict = strength.verdict || "중화";
-      const ratio = Number(strength.supportRatio);
       if (verdict === "신약") return isT
         ? "받치는 힘보다 밖으로 빠지거나 눌리는 힘이 더 커서, 무조건 버티는 방식보다 먼저 기반과 연결을 만들어야 해."
-        : "너는 못 버티는 사람이 아니라, 처음부터 네 힘보다 바깥 압력이 더 크게 들어오는 쪽이야. 그래서 더 세게 참는 것보다 먼저 받쳐주는 힘과 연결을 만들어야 편해져.";
+        : "너는 못 버티는 사람이 아니라, 처음부터 네 힘보다 바깥 압력이 더 크게 들어오는 쪽이야. 더 세게 참는 것보다 먼저 받쳐주는 힘과 연결을 만들어야 편해져.";
       if (verdict === "신강") return isT
-        ? "스스로 버티고 밀어붙일 힘이 충분한 편이라, 더 채우기보다 어디로 빼고 정리할지가 중요해."
-        : "기본 힘이 약한 편은 아니야. 그래서 더 많이 쥐는 것보다, 가진 힘을 어디에 쓰고 어디서 덜어낼지가 훨씬 중요해.";
+        ? "스스로 버티고 밀어붙일 힘이 충분해서, 더 채우기보다 어디로 빼고 정리할지가 중요해."
+        : "기본 힘이 약한 편은 아니야. 더 많이 쥐는 것보다 가진 힘을 어디에 쓰고 어디서 덜어낼지가 훨씬 중요해.";
       return isT
         ? "받치는 힘과 소모되는 힘이 한쪽으로 극단적이지 않아, 강약 하나보다 흐름이 막히는 지점을 보는 게 중요해."
-        : "한쪽으로 너무 치우친 편은 아니라서, ‘강하다/약하다’ 한마디보다 네 힘이 어디서 막히고 어디서 잘 이어지는지를 보는 게 더 정확해.";
+        : "한쪽으로 너무 치우친 편은 아니라서 ‘강하다/약하다’보다 네 힘이 어디서 막히고 어디서 잘 이어지는지를 보는 게 더 정확해.";
     }
 
     function rootCopy() {
       const q = root?.facts?.quality || strength.deukji?.quality || "rootless";
       const seasonOn = !!(season?.facts?.active ?? strength.deukryeong?.active);
       const partyOn = !!(party?.facts?.active ?? strength.deukse?.active);
-      const qCopy = q === "month-rooted"
-        ? "태어난 계절 자리에도 직접 뿌리가 있어"
-        : q === "day-rooted"
-          ? "가까운 생활 자리에서 직접 뿌리가 확인돼"
-          : q === "other-rooted"
-            ? "바깥 자리에는 뿌리가 있지만 중심 자리보다 간접적이야"
+      const qCopy = q === "month-rooted" ? "태어난 계절 자리에도 직접 뿌리가 있어"
+        : q === "day-rooted" ? "가까운 생활 자리에서 직접 뿌리가 확인돼"
+          : q === "other-rooted" ? "바깥 자리에는 뿌리가 있지만 중심 자리보다 간접적이야"
             : "직접 기대는 뿌리가 선명하지 않아";
-      const seasonCopy = seasonOn ? "계절의 지원도 받는 편" : "계절 자체가 바로 받쳐주는 쪽은 아니고";
-      const partyCopy = partyOn ? "다른 자리의 도움도 같이 붙어" : "다른 자리의 도움까지 크게 우세한 편은 아니야";
-      return `${qCopy}. ${seasonCopy}, ${partyCopy}.`;
+      return `${qCopy}. 계절의 도움은 <b>${seasonOn ? "받는 쪽" : "바로 받는 쪽은 아니고"}</b>, 다른 자리의 지원은 <b>${partyOn ? "붙는 쪽" : "크게 우세하지 않은 쪽"}</b>이야.`;
     }
 
     function structureCopy() {
-      if (!z) return "태어난 계절의 중심은 잡히지만, 그 구조가 잘 굴러가는 조건은 한쪽으로 단정하지 않았어.";
-      if (z.sequenceStatus?.includes("구응")) return "중심 구조를 흔드는 조건이 있어도 다시 받아주는 길이 함께 잡혀 있어. 무너짐 자체보다 ‘어떻게 다시 살리느냐’가 중요한 구조야.";
-      if (z.sequenceStatus === "파격" || z.state === "damaged") return "중심 구조를 흔드는 조건이 실제로 보여. 그래서 좋은 힘을 더 넣기보다 먼저 깨지는 지점을 막는 순서가 중요해.";
-      if (z.sequenceStatus === "성중유패") return "기본 구조는 서지만, 그 안에 다시 흔드는 조건이 섞여 있어. 잘될 때일수록 방해 신호를 같이 보는 게 중요해.";
-      if (z.sequenceStatus === "성격" || z.state === "supported") return "중심 구조를 살리는 연결이 비교적 곧게 잡혀 있어. 맞는 조건에 들어가면 장점이 결과로 이어지기 쉬운 편이야.";
-      return "중심 구조는 보이지만 살리는 힘과 흔드는 힘의 우선순위를 한쪽으로 과장하지 않는 게 맞아.";
+      if (!z) return "태어난 계절의 중심은 잡히지만, 그 구조가 잘 굴러가는 조건은 근거 부족 때문에 한쪽으로 단정하지 않았어.";
+      const support = uniq([...(z.supportGods || []),...(z.rescueGods || [])]).map((g) => TEN_GOD_WORD[g] || g);
+      const harm = uniq(z.harmGods || []).map((g) => TEN_GOD_WORD[g] || g);
+      const state = z.sequenceStatus || z.state || "판단 보류";
+      const supportText = support.length ? `살리는 쪽은 <b>${support.slice(0,2).join(" · ")}</b>` : "살리는 힘은 현재 확인된 범위에서 뚜렷하게 하나로 못 박지 않았고";
+      const harmText = harm.length ? `흔드는 쪽은 <b>${harm.slice(0,2).join(" · ")}</b>` : "크게 흔드는 힘도 한쪽으로 과장하지 않았어";
+      return `중심 구조의 현재 판정은 <b>${state}</b>이야. ${supportText}, ${harmText}. 그래서 ‘좋은 요소 하나 더하기’보다 무엇이 구조를 세우고 무엇이 끊는지 순서를 봐야 해.`;
     }
 
     function flowCopy() {
       const blocked = flow?.facts?.blockedAt;
       if (blocked?.to) {
         const bridgeName = ELEMENT_WORD[blocked.to] || blocked.to;
-        return `가장 강한 힘에서 다음 단계로 넘어갈 때 <b>${bridgeName}</b> 쪽 연결이 비어 있어. 그래서 잘하는 걸 더 세게 하는 것만으로는 풀리지 않고, 그 다음 단계로 넘기는 행동이 필요해.`;
+        return `가장 강한 힘이 다음 단계로 넘어갈 때 <b>${bridgeName}</b> 쪽 연결이 비어 있어. 잘하는 걸 더 세게 하는 것만으로는 풀리지 않고, 그 힘을 다음 단계로 넘기는 장치가 필요해.`;
       }
-      return "강한 힘이 다음 단계로 이어질 길이 원래 사주 안에 어느 정도 있어. 문제는 힘의 부족보다 그 흐름을 끊지 않고 현실 결과까지 연결하는 거야.";
+      return "강한 힘이 다음 단계로 이어질 길이 사주 안에 어느 정도 있어. 힘의 총량보다 그 흐름을 중간에서 끊지 않고 현실 결과까지 연결하는 게 핵심이야.";
     }
 
-    function prescriptionCopy() {
-      const seq = prescription.sequence || [];
-      const actions = seq.map(x=>ELEMENT_WORD[x.element]).filter(Boolean);
-      if (actions.length >= 2) return `전체판에서 반복되는 순서는 <b>${actions[0]}</b>을 먼저 만들고, 그다음 <b>${actions[1]}</b>으로 넘기는 쪽이야.`;
-      if (actions.length === 1) return `전체판에서 가장 먼저 챙길 건 <b>${actions[0]}</b>이야.`;
-      return "한 가지 보완법을 억지로 정하지 않고, 실제로 막히는 지점을 먼저 확인한 뒤 다음 행동을 붙이는 게 맞아.";
+    function prescriptionSteps() {
+      return (prescription.sequence || []).map((x) => ELEMENT_WORD[x.element]).filter(Boolean);
+    }
+
+    function firstPrescriptionCopy() {
+      const actions = prescriptionSteps();
+      if (actions.length >= 2) return `먼저 <b>${actions[0]}</b>을 만들고, 다음에 <b>${actions[1]}</b>으로 넘기는 순서가 반복해서 유효해.`;
+      if (actions.length === 1) return `가장 먼저 챙길 건 <b>${actions[0]}</b>이야.`;
+      return "한 가지 처방을 억지로 고르지 않고 실제로 막히는 지점을 먼저 확인하는 게 맞아.";
     }
 
     function signalWhy(row, positive) {
       const rows = positive ? row?.supportSignals : row?.cautionSignals;
-      const sig = (rows||[]).find(x=>x.severity==="major") || (rows||[])[0];
-      if (!sig) return positive ? "도움 조건" : "주의 조건";
+      const sig = (rows || []).find((x) => x.severity === "major") || (rows || [])[0];
+      if (!sig) return positive ? "도움 조건이 겹침" : "주의 조건이 겹침";
       const code = sig.code || "";
-      if (/rescue|generate/.test(code)) return "기반과 회복을 보태는 조건";
-      if (/assist|root-add/.test(code)) return "버티는 힘을 보태는 조건";
-      if (/bridge|flow-unblock/.test(code)) return "막힌 연결을 이어주는 조건";
-      if (/discharge/.test(code)) return "쌓인 힘을 밖으로 빼는 조건";
-      if (/control/.test(code)) return "힘을 역할과 기준으로 정리하는 조건";
-      if (/ziping-support/.test(code)) return "중심 구조를 살리는 조건";
-      if (/root-clash/.test(code)) return "기반을 흔드는 조건";
-      if (/body-cost/.test(code)) return "부담을 키우는 조건";
-      if (/ziping-harm/.test(code)) return "중심 흐름을 흔드는 조건";
-      return positive ? "도움 조건" : "주의 조건";
+      if (/rescue|generate/.test(code)) return "기반과 회복을 보태는 힘이 들어옴";
+      if (/assist|root-add/.test(code)) return "버티는 힘과 뿌리가 보강됨";
+      if (/bridge|flow-unblock/.test(code)) return "막혔던 연결이 이어짐";
+      if (/discharge/.test(code)) return "쌓인 힘을 밖으로 빼는 길이 생김";
+      if (/control/.test(code)) return "힘을 역할과 기준으로 정리하는 조건이 생김";
+      if (/ziping-support/.test(code)) return "중심 구조를 살리는 힘이 붙음";
+      if (/root-clash/.test(code)) return "기존 버팀목이 흔들림";
+      if (/body-cost/.test(code)) return "내가 감당할 부담이 커짐";
+      if (/ziping-harm/.test(code)) return "중심 구조를 흔드는 힘이 붙음";
+      return positive ? "도움 조건이 겹침" : "주의 조건이 겹침";
     }
 
     function nearTimelineCopy() {
       const rows = nearHighlights.slice(0,3);
-      if (!rows.length) return "가까운 18개월에서는 특정 달 하나를 억지로 고르기보다 준비 상태를 보면서 움직이는 편이 맞아.";
-      return rows.map(row=>{
-        const when = row.startMonth ? `${row.startMonth}월 ${row.startDay ? row.startDay+"일 무렵" : ""}` : (row.startYmd||"가까운 시기");
-        if (row.class==="supportive"||row.class==="mild-support") return `<b>${when}</b> — ${signalWhy(row,true)}이 잡혀 있어 움직임을 시험해보기 좋은 구간.`;
-        if (row.class==="caution"||row.class==="mild-caution") return `<b>${when}</b> — ${signalWhy(row,false)}이 잡혀 있어 확장보다 정리·확인이 먼저인 구간.`;
-        return `<b>${when}</b> — 도움과 주의가 같이 보여 한 번에 크게 움직이기보다 조건을 나눠 보는 구간.`;
+      if (!rows.length) return "가까운 18개월에서는 특정 달 하나를 억지로 고르지 않고 준비 상태를 보면서 움직이는 편이 맞아.";
+      return rows.map((row) => {
+        const when = row.startMonth ? `${row.startMonth}월 ${row.startDay ? row.startDay+"일 무렵" : ""}` : (row.startYmd || "가까운 시기");
+        if (["supportive","mild-support"].includes(row.class)) {
+          return `<b>${when}</b><br>왜: ${signalWhy(row,true)}.<br>전체판에서의 쓰임: 한 영역에만 몰지 말고 일·돈·관계 중 실제 반응이 오는 곳부터 작게 확정해.`;
+        }
+        if (["caution","mild-caution"].includes(row.class)) {
+          return `<b>${when}</b><br>왜: ${signalWhy(row,false)}.<br>전체판에서의 쓰임: 새 판을 크게 벌리기보다 일정·지출·관계 약속 중 과부하가 큰 것부터 줄여.`;
+        }
+        return `<b>${when}</b><br>왜: 도움과 주의 신호가 함께 잡혀.<br>전체판에서의 쓰임: 잘되는 영역과 버거운 영역을 분리해서 움직여.`;
       }).join("<br><br>");
     }
 
     function yearTimelineCopy() {
       if (!years.length) return "5년 흐름 데이터가 충분하지 않아 연도별 이야기를 억지로 만들지 않았어.";
       const currentYear = Number(String(r.timing?.today || "").slice(0,4)) || 0;
-      const annualRows = years.filter(y => y.year > currentYear).slice(0,5);
-      return annualRows.map(y=>{
-        if (y.class==="supportive") return `<b>${y.year}년</b> — 중요한 도움 조건이 분명한 해. 준비한 걸 실제 선택으로 옮기기 좋음.`;
-        if (y.class==="mild-support") return `<b>${y.year}년</b> — 보조 도움 조건이 있는 해. 크게 벌리기보다 검증한 선택을 이어가기 좋음.`;
-        if (y.class==="caution") return `<b>${y.year}년</b> — 중요한 주의 조건이 분명한 해. 확장보다 손실·과부하 관리가 먼저.`;
-        if (y.class==="mild-caution") return `<b>${y.year}년</b> — 조정이 필요한 해. 같은 속도를 고집하지 말고 조건을 바꾸는 게 유리.`;
-        if (y.class==="mixed") return `<b>${y.year}년</b> — 도움과 부담이 같이 오는 해. 잘되는 영역과 무리되는 영역을 분리해야 함.`;
-        return `<b>${y.year}년</b> — 한쪽으로 강하게 기울지 않는 해. 앞에서 만든 기반을 이어가기 좋음.`;
+      const annualRows = years.filter((y) => y.year > currentYear).slice(0,5);
+      return annualRows.map((y) => {
+        const positive = ["supportive","mild-support"].includes(y.class);
+        const negative = ["caution","mild-caution"].includes(y.class);
+        const direction = positive ? "준비한 걸 현실 선택으로 옮기기 쉬운 쪽"
+          : negative ? "확장보다 조정과 방어를 먼저 보는 쪽"
+            : y.class === "mixed" ? "잘되는 부분과 부담되는 부분이 동시에 커지는 쪽"
+              : "한쪽으로 크게 기울지 않는 쪽";
+        const why = positive ? signalWhy(y,true) : negative ? signalWhy(y,false)
+          : `${signalWhy(y,true)} / ${signalWhy(y,false)}`;
+        const use = positive ? "활용: 이미 검증한 일·돈·관계 선택을 한 단계 확정해."
+          : negative ? "주의: 손실·과로·갈등이 커지기 전에 범위와 속도를 줄여."
+            : y.class === "mixed" ? "활용: 잘되는 영역만 키우고 부담이 큰 영역은 같은 속도로 밀지 마."
+              : "활용: 새 판보다 앞에서 만든 기반을 유지하고 다음 강한 구간을 준비해.";
+        return `<b>${y.year}년 · ${direction}</b><br>왜: ${why}.<br>${use}`;
       }).join("<br><br>");
     }
 
@@ -397,69 +429,87 @@
       const next = daeunPeriods[1];
       const currentGod = TEN_GOD_WORD[current.god] || "현재 삶의 과제를 밀어주는 힘";
       const nextText = next
-        ? ` 그리고 <b>${next.startYear}년 무렵</b>부터 계산 범위 안에서 큰 흐름의 결이 바뀌어, ${TEN_GOD_WORD[next.god] || "다른 방식의 힘"}이 더 앞에 나와.`
-        : " 계산 범위 안에서는 다음 큰 흐름 전환이 아직 뚜렷하게 들어오지 않아.";
-      return `지금 큰 흐름에서는 <b>${currentGod}</b>이 반복해서 개입해.${nextText}`;
+        ? `<br><br><b>${next.startYear}년 무렵</b> 계산 범위 안에서 큰 흐름의 결이 바뀌면 <b>${TEN_GOD_WORD[next.god] || "다른 방식의 힘"}</b>이 더 앞에 나와. 지금 잘되던 방식 그대로만 밀기보다 역할과 선택 기준을 다시 맞추는 전환점으로 보는 게 좋아.`
+        : "<br><br>계산 범위 안에서는 다음 큰 흐름 전환을 억지로 만들지 않았어.";
+      return `지금 큰 흐름에서는 <b>${currentGod}</b>이 반복해서 개입해. 지금의 장점도 이 힘을 잘 쓸 때 커지고, 과부하도 이 힘이 지나칠 때 먼저 보여.${nextText}`;
     }
 
     const pressureHuman = r.integrated?.pressureHuman || "여러 조건이 한꺼번에 들어오는 압박";
     const mismatch = !!p.elements?.rawVsInfluenceMismatch;
     const mismatchCopy = mismatch
-      ? "겉 글자 수와 실제 힘의 순위가 달라서 단순 오행 개수만 보고 판단하면 핵심을 놓칠 수 있어."
-      : "겉 글자 수와 실제 힘의 방향이 크게 어긋나지 않지만, 계절·뿌리·위치까지 봐야 실제 세기가 정리돼.";
+      ? "겉으로 보이는 오행 개수와 실제 힘의 순위가 달라. 그래서 ‘몇 개 있나’보다 계절·뿌리·위치까지 반영한 실제 세력을 기준으로 봐야 해."
+      : "겉으로 보이는 오행 개수와 실제 힘의 방향이 크게 어긋나진 않지만, 계절·뿌리·위치가 최종 세기를 결정해.";
+    const bridgeStatus = bridge?.facts?.status || "unknown";
+    const blockedTo = flow?.facts?.blockedAt?.to || "";
+    const relationRaw = p.relations?.raw || {};
+    const hasClash = !!p.relations?.hasClash;
+    const actions = prescriptionSteps();
+    const timingRuleIds = (rows) => uniq((rows || []).flatMap((row) => [...(row.supportSignals || []),...(row.cautionSignals || [])].flatMap((sig) => sig.sourceRuleIds || [])));
 
-    return [
+    const sections = [
       {
-        title: "01 · 내 사주 전체 한 줄 요약",
-        body: isT
-          ? `네 전체판의 핵심은 <b>${dom}</b>${second ? `, 보조로 ${second}` : ""}. ${forceCopy()} 지금 고민 하나가 아니라 네 선택 전반에 반복되는 기본 구조부터 잡는 게 이 상품의 시작이야.`
-          : `언니가 네 사주 전체를 한 문장으로 잡으면 <b>${dom}</b>${second ? `, 그리고 그 안의 ${second}` : ""}이 먼저 보여. ${forceCopy()} 이건 지금 고민 하나를 길게 늘인 게 아니라, 여러 고민 밑에 깔린 같은 원판을 보는 거야.`
+        title:"01 · 내 사주 전체 핵심",
+        body:`<b>핵심</b> · ${dom}${second ? `, 그 안에 ${second}` : ""}.<br><br><b>왜</b> · ${forceCopy()} 지금 가장 크게 걸리는 쪽은 <b>${pressureHuman}</b>이야.<br><br><b>실제</b> · 한 고민에서만 나타나는 성격이 아니라 선택·관계·성과를 다룰 때 같은 구조가 반복될 가능성이 커.<br><br><b>이렇게 써</b> · 전체판에서는 ‘무슨 성격인가’보다 압박을 어떤 순서로 받아내고 결과로 바꾸는지를 기준으로 볼게.`,
+        claim:{ section:1,sourceRuleIds:ids(force,pressure,z),newFacts:[textFact("strength",strength.verdict),textFact("pressure",pressure?.facts?.group),textFact("gyeok",z?.gyeokName)],conclusion:`전체 선택을 묶는 핵심은 ${dom}과 ${pressureHuman}의 결합이다.` },
       },
       {
-        title: "02 · 태어난 계절·뿌리·버티는 힘",
-        body: `${rootCopy()}<br><br>${mismatchCopy} 그래서 같은 ‘약함’이나 ‘강함’ 안에서도 실제 버티는 방식이 사람마다 달라져.`
+        title:"02 · 계절·뿌리·버티는 힘",
+        body:`<b>핵심</b> · ${rootCopy()}<br><br><b>왜</b> · 계절의 지원, 실제 뿌리 위치, 다른 자리의 도움이 각각 따로 계산돼 있어. ${mismatchCopy}<br><br><b>실제</b> · 같은 일을 맡아도 ‘처음부터 버틸 수 있는 양’과 ‘밖에서 받쳐줘야 버틸 수 있는 양’이 달라져.<br><br><b>이렇게 써</b> · 힘들 때 의지부터 탓하지 말고, 지금 과제가 네 기본 버팀보다 큰지부터 확인해.`,
+        claim:{ section:2,sourceRuleIds:ids(season,root,party),newFacts:[textFact("deukryeong",season?.facts?.active),textFact("rootQuality",root?.facts?.quality || strength.deukji?.quality),textFact("deukse",party?.facts?.active)],conclusion:"버티는 힘은 계절·뿌리·주변 지원을 분리해서 봐야 한다." },
       },
       {
-        title: "03 · 실제 기세는 어디로 흐르는가",
-        body: `네 사주에서 가장 자연스럽게 커지는 쪽은 <b>${strong}</b>이고, 의식적으로 챙겨야 하는 쪽은 <b>${weak}</b>이야.<br><br>${flowCopy()}`
+        title:"03 · 실제 기세의 흐름",
+        body:`<b>핵심</b> · 가장 자연스럽게 커지는 쪽은 <b>${strong}</b>, 의식적으로 챙겨야 하는 쪽은 <b>${weak}</b>이야.<br><br><b>왜</b> · ${flowCopy()}<br><br><b>실제</b> · 강한 힘이 많아도 다음 단계로 못 넘어가면 ‘열심히 하는데 결과가 안 붙는’ 느낌이 날 수 있어.<br><br><b>이렇게 써</b> · ${blockedTo ? `막힌 다음 단계인 <b>${ELEMENT_WORD[blockedTo] || blockedTo}</b>을 실제 행동으로 하나 넣어.` : "이미 이어지는 흐름을 끊지 않도록 중간 과정을 생략하지 마."}`,
+        claim:{ section:3,sourceRuleIds:ids(flow,bridge),newFacts:[textFact("strongElement",strongEl),textFact("weakElement",weakEl),textFact("blockedTo",blockedTo),textFact("bridge",bridgeStatus)],conclusion:"강한 힘의 양보다 다음 단계로 이어지는지 여부가 현실 결과를 좌우한다." },
       },
       {
-        title: "04 · 중심 구조가 잘 굴러갈 때와 깨질 때",
-        body: `${structureCopy()}<br><br>지금 가장 크게 걸리는 쪽은 <b>${pressureHuman}</b>이야. ${bridge?.facts?.status==="missing" ? "서로 부딪히는 힘 사이에 필요한 연결이 비어 있는 구간도 있어서, 바로 정면승부하기보다 중간 단계를 만드는 게 중요해." : "중간 연결 후보가 이미 있어서 그 힘을 실제 행동으로 이어주는 방식이 중요해."}`
+        title:"04 · 중심 구조가 서는 조건과 깨지는 조건",
+        body:`<b>핵심</b> · ${structureCopy()}<br><br><b>왜</b> · 태어난 계절에서 잡힌 중심과, 그 중심을 살리는 힘·흔드는 힘·다시 살리는 힘의 순서를 따로 확인했어.<br><br><b>실제</b> · 같은 압박도 받쳐주는 연결이 있으면 책임과 성과로 바뀌고, 그 연결이 끊기면 부담으로 먼저 느껴질 수 있어.<br><br><b>이렇게 써</b> · 구조가 흔들릴 때는 좋은 걸 더 얹기 전에 무엇이 먼저 깨졌는지부터 찾아.`,
+        claim:{ section:4,sourceRuleIds:ids(z,relationFinding),newFacts:[textFact("zipingState",z?.sequenceStatus || z?.state),textFact("supportGods",(z?.supportGods || []).join(",")),textFact("harmGods",(z?.harmGods || []).join(",")),textFact("rescueGods",(z?.rescueGods || []).join(","))],conclusion:"중심 구조는 세우는 힘→깨뜨리는 힘→다시 구하는 힘의 순서로 읽는다." },
       },
       {
-        title: "05 · 돈·성과·보상이 연결되는 방식",
-        body: `돈에서는 ‘얼마나 욕심이 많은가’보다 네 힘이 현실 결과까지 넘어가는 순서를 봐야 해. ${prescriptionCopy()} 특히 <b>${pressureHuman}</b>이 커질 때 조건·가격·지출을 한 덩어리로 처리하지 말고 따로 나누면 손실이 줄어.`
+        title:"05 · 돈과 현실 결과",
+        body:`<b>핵심</b> · 돈을 직접 다루는 신호는 현재 계산에서 <b>${wealth.count}개</b> 잡혀 있어. 이 숫자만으로 돈복을 정하지 않고, 돈이 네 힘을 빼는지 결과로 연결하는지까지 같이 봐.<br><br><b>왜</b> · 돈 관련 힘의 분포와 <b>${pressureHuman}</b>, 그리고 실제 흐름이 결과 단계까지 이어지는지를 함께 봤어.<br><br><b>실제</b> · ${wealth.count >= 2 ? "기회·가격·지출처럼 돈과 관련된 선택이 여러 장면에서 동시에 들어오면 관리 기준이 흐려질 수 있어." : wealth.count === 1 ? "돈 문제는 한 번의 큰 승부보다 조건 하나를 정확히 관리할 때 결과가 더 선명해질 수 있어." : "돈 신호가 전면에 많이 드러난 구조는 아니라서 ‘돈 자체를 쫓는 것’보다 네 강점을 결과·가격으로 연결하는 과정이 더 중요해."}<br><br><b>이렇게 써</b> · 수입·가격·지출을 한 덩어리로 보지 말고 각각 기준을 정해. ${firstPrescriptionCopy()}`,
+        claim:{ section:5,sourceRuleIds:ids(pressure,flow,balance,z),newFacts:[textFact("wealthCount",wealth.count),textFact("wealthPlacements",wealth.placements.join(",")),textFact("pressureGroup",pressure?.facts?.group)],conclusion:"돈은 추상적인 돈복보다 자원·가격·성과가 현실 결과로 이어지는 방식으로 판단한다." },
       },
       {
-        title: "06 · 일·진로에서 자리를 만드는 방식",
-        body: `직업명보다 판의 구조가 중요해. <b>${strong}</b>을 실제 결과로 쓸 수 있고, 역할·평가·권한이 서로 맞는 곳에서 장점이 오래가. 반대로 ${pressureHuman}만 늘고 네가 힘을 넘길 다음 단계가 막히는 환경에서는 잘해도 소모가 먼저 쌓여.`
+        title:"06 · 일·직업·진로",
+        body:`<b>핵심</b> · 역할·기준·책임을 다루는 신호는 <b>${officer.count}개</b> 잡혀 있어. 특정 직업명을 찍기보다 어떤 평가 구조에서 네 힘이 살아나는지가 중요해.<br><br><b>왜</b> · 역할 압력의 위치와 네 기본 버팀, 강한 힘이 다음 결과로 넘어가는 흐름을 같이 봤어.<br><br><b>실제</b> · ${officer.count >= 2 ? "책임과 평가가 동시에 커지는 환경에서는 잘해도 업무 범위가 계속 넓어질 수 있어서 권한·보상 기준이 중요해." : officer.count === 1 ? "명확한 역할 하나를 맡고 결과를 확인받는 구조에서 강점이 보이기 쉬워." : "직함 자체보다 실제 성과를 만들어 역할을 확보하는 과정이 더 중요하게 작동할 수 있어."}<br><br><b>이렇게 써</b> · <b>${strong}</b>을 쓸 수 있으면서 역할·평가·보상의 기준이 분명한 환경을 골라.`,
+        claim:{ section:6,sourceRuleIds:ids(pressure,flow,force,z),newFacts:[textFact("officerCount",officer.count),textFact("officerPlacements",officer.placements.join(",")),textFact("forceVerdict",strength.verdict)],conclusion:"일은 직업명보다 역할 압력과 평가 구조가 개인의 힘과 맞는지로 판단한다." },
       },
       {
-        title: "07 · 연애·관계에서 반복되는 구조",
-        body: `연애든 친구든 네 기본 구조는 바뀌지 않아. 다만 가까운 관계에서는 <b>${pressureHuman}</b>이 감정으로 번역되기 쉬워. 상대 마음을 추측하는 것보다 불편함이 시작된 장면과 실제 조정 반응을 보는 게 더 정확해. 특정 사람과의 궁합은 이 한 사람 결과로 만들지 않아.`
+        title:"07 · 연애와 가까운 관계",
+        body:`<b>핵심</b> · 이 장은 특정 상대 궁합이 아니라 <b>너 한 사람의 가까운 관계 패턴</b>만 봐. 네 기준을 지키는 힘은 <b>${selfGod.count}개</b>, 관계에서 밖으로 표현하는 힘은 <b>${outputGod.count}개</b>로 잡혀 있어.<br><br><b>왜</b> · 내 기준을 지키는 힘, 표현하는 힘, 실제 합·충 같은 관계 신호를 같이 보되 상대방 성격은 만들어내지 않아.<br><br><b>실제</b> · ${hasClash ? "관계 안에서 기준이 부딪히는 장면이 생기면 감정을 오래 참기보다 무엇이 충돌했는지 빨리 확인하는 편이 중요해." : "관계 신호 하나만으로 충돌을 과장하지 않고, 표현을 미루는지 기준을 너무 단단히 잡는지 같은 네 반응을 더 중요하게 봐."}<br><br><b>이렇게 써</b> · 상대 마음을 추측하기보다 불편함이 시작된 장면과 말한 뒤 실제 조정 반응을 확인해. 특정 사람과의 궁합은 별도 상품에서만 계산해.`,
+        claim:{ section:7,sourceRuleIds:ids(relationFinding,pressure),newFacts:[textFact("selfGodCount",selfGod.count),textFact("outputCount",outputGod.count),textFact("hasClash",hasClash),textFact("relationKeys",Object.keys(relationRaw).sort().join(","))],conclusion:"가까운 관계는 본인의 기준·표현·충돌 신호만 해석하고 특정 상대 정보는 생성하지 않는다." },
       },
       {
-        title: "08 · 사람·환경을 고르는 기준",
-        body: `너한테 맞는 환경은 단순히 편한 곳이 아니라 <b>${strong}</b>을 쓰면서도 다음 단계로 힘을 넘길 수 있는 곳이야. ${prescriptionCopy()} 그 순서를 막고 같은 압박만 반복시키는 사람·환경은 오래 둘수록 비용이 커져.`
+        title:"08 · 사람과 환경",
+        body:`<b>핵심</b> · 사람을 많이 만나는지보다 <b>네 힘을 쓰고 다음 단계로 넘길 수 있는 환경인지</b>가 중요해.<br><br><b>왜</b> · 다른 자리의 지원 여부와 뿌리의 질, 실제 흐름을 함께 보면 ‘혼자 버티는 환경’과 ‘받쳐주면서 결과를 내는 환경’의 차이가 보여.<br><br><b>실제</b> · ${party?.facts?.active ? "주변 도움을 실제 자원으로 바꿀 여지가 있어서 역할과 피드백이 분명한 조직에서 힘을 덜 낭비할 수 있어." : "주변 도움을 기본값으로 기대하기보다 역할·요청·경계를 명시적으로 만드는 편이 안정적이야."}<br><br><b>이렇게 써</b> · ${root?.facts?.quality === "rootless" ? "사람 수보다 반복해서 기대어도 되는 한두 개의 기준과 지원선을 먼저 만들어." : "이미 있는 버팀목을 유지하면서 네 강점을 다음 결과로 넘겨주는 사람·환경을 남겨."}`,
+        claim:{ section:8,sourceRuleIds:ids(party,root,flow),newFacts:[textFact("partyActive",party?.facts?.active),textFact("rootQuality",root?.facts?.quality),textFact("flowBlocked",!!flow?.facts?.blockedAt)],conclusion:"환경 적합성은 주변 지원·뿌리·흐름이 실제 결과를 돕는지로 판단한다." },
       },
       {
-        title: "09 · 마음이 지칠 때 어디부터 무너지는가",
-        body: `${forceCopy()} 그래서 지쳤을 때 의지를 더 넣는 게 항상 답은 아니야. 먼저 ${pressureHuman}을 줄일 수 있는 조건과, 네가 다시 기대어 설 수 있는 기반을 따로 확인하는 게 회복의 시작이야.`
+        title:"09 · 마음·스트레스·회복",
+        body:`<b>핵심</b> · 의료 진단이 아니라 <b>과부하가 생기는 구조와 회복 순서</b>만 봐. 받아들이고 기반을 만드는 힘은 <b>${printGod.count}개</b>, 밖으로 빼고 표현하는 힘은 <b>${outputGod.count}개</b> 잡혀 있어.<br><br><b>왜</b> · 기본 버팀보다 압력이 큰지, 쌓인 힘을 밖으로 빼는 통로가 있는지를 같이 확인했어.<br><br><b>실제</b> · ${strength.verdict === "신약" ? "과제가 한꺼번에 늘면 회복 전에 버티는 데 에너지를 써버릴 수 있어." : strength.verdict === "신강" ? "버티는 힘이 있어도 계속 쥐고만 있으면 쉬는 동안에도 머리와 몸이 일을 놓지 못하는 느낌이 생길 수 있어." : "힘의 총량보다 여러 요구가 동시에 겹칠 때 회복 리듬이 깨지는지 보는 게 중요해."}<br><br><b>이렇게 써</b> · ${firstPrescriptionCopy()} 이 장은 질병이나 정신건강 진단을 대신하지 않아.`,
+        claim:{ section:9,sourceRuleIds:ids(force,pressure,balance),newFacts:[textFact("printCount",printGod.count),textFact("outputCount",outputGod.count),textFact("strength",strength.verdict)],conclusion:"회복은 진단이 아니라 과부하와 배출·기반의 순서를 조정하는 문제로 해석한다." },
       },
       {
-        title: "10 · 가까운 18개월 핵심 시기",
-        body: `기본 NOTE에서는 현재 고민에 필요한 시기만 골라 보여줬다면, 여기서는 한 사람 전체판 기준으로 가까운 핵심 구간을 같이 봐.<br><br>${nearTimelineCopy()}`
+        title:"10 · 가까운 18개월",
+        body:`<b>핵심</b> · 기본 NOTE6는 지금 고른 고민에 필요한 달만 골랐다면, 전체판에서는 <b>삶 전체에 영향을 주는 가까운 구간</b>을 본다.<br><br>${nearTimelineCopy()}<br><br><b>이렇게 써</b> · 같은 달이어도 돈·일·관계 중 실제 반응이 먼저 오는 영역부터 작게 움직이고, 나머지는 그 결과를 본 뒤 따라가.`,
+        claim:{ section:10,sourceRuleIds:timingRuleIds(nearHighlights),newFacts:nearHighlights.slice(0,3).map((x) => textFact("near",`${x.startYmd}:${x.class}`)),conclusion:"가까운 시기는 특정 고민 하나가 아니라 한 사람 전체판의 동시 반응 가능성을 기준으로 사용한다." },
       },
       {
-        title: "11 · 앞으로 5년 큰 흐름",
-        body: `여기부터는 기본 NOTE6에서 전부 풀지 않았던 장기 흐름이야. 같은 사주 원판 위에 해마다 어떤 도움·주의 조건이 겹치는지 연도별로 압축해서 보면 이렇게 이어져.<br><br>${yearTimelineCopy()}`
+        title:"11 · 앞으로 5년",
+        body:`<b>핵심</b> · 여기부터는 기본 NOTE6에서 전부 공개하지 않았던 연도별 큰 흐름이야. 각 해를 ‘좋다/나쁘다’로 끝내지 않고 방향·근거·활용 또는 주의까지 이어서 볼게.<br><br>${yearTimelineCopy()}`,
+        claim:{ section:11,sourceRuleIds:timingRuleIds(years),newFacts:years.slice(0,6).map((x) => textFact("year",`${x.year}:${x.class}`)),conclusion:"5년 흐름은 각 연도의 방향·발화 근거·활용 또는 주의 행동까지 묶어서 공개한다." },
       },
       {
-        title: "12 · 평생 가져갈 내 사용법 3가지 + 큰 흐름 전환",
-        body: `${daeunCopy()}<br><br><b>1.</b> 압박이 커질수록 바로 버티기보다 받쳐주는 조건과 다음 연결을 먼저 만들기.<br><b>2.</b> ${strong}만 과하게 반복하지 말고, 막힌 다음 단계가 무엇인지 확인하기.<br><b>3.</b> 좋은 시기에도 한 번에 전부 바꾸지 말고 작은 검증 → 확정 순서로 움직이기.<br><br>이 세 가지가 돈·일·관계·마음이 달라져도 반복해서 남는 네 전체 사용법이야.`
+        title:"12 · 큰 흐름 전환 + 평생 사용법",
+        body:`<b>큰 흐름</b><br>${daeunCopy()}<br><br><b>반복해서 가져갈 사용법</b><br><b>1.</b> ${pressureHuman}이 커질수록 무작정 버티지 말고 네 기본 버팀보다 과제가 큰지 먼저 확인해.<br><b>2.</b> ${blockedTo ? `${ELEMENT_WORD[blockedTo] || blockedTo} 쪽 연결을 생략하지 마.` : `${strong}을 현실 결과까지 넘기는 중간 단계를 지켜.`}<br><b>3.</b> ${actions.length ? `${actions.slice(0,2).join(" → ")} 순서를 기억해.` : "좋은 시기에도 작은 검증 → 확정 순서를 지켜."}<br><br>이 세 가지는 돈·일·관계·마음이 달라져도 같은 사주판에서 반복해서 남는 사용법이야.`,
+        claim:{ section:12,sourceRuleIds:uniq([...timingRuleIds(years),...ids(pressure,flow,bridge,balance)]),newFacts:[textFact("daeunPeriods",daeunPeriods.map((x) => `${x.startYear}-${x.endYear}:${x.ganZhi}`).join("|")),textFact("prescription",actions.join("→"))],conclusion:"현재 큰 흐름과 다음 전환을 평생 반복되는 행동 순서에 연결한다." },
       },
     ];
+
+    return sections;
   }
 
   function noteCards(notes) {
