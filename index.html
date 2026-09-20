@@ -792,6 +792,9 @@
   .note-check-mark{font-weight:900;color:#d14f6d}
   .note-tone-t .note-check-mark{color:#3f87a7}
   .note-check-label{font-weight:820;color:#354052}
+  .note-bridge{margin:1px 2px -5px;padding-left:10px;font-size:10.5px;line-height:1.45;font-weight:680;color:#9a6a76;letter-spacing:-.01em}
+  .note-bridge.note-tone-t{color:#62889a}
+  .note-bridge::before{content:"";display:inline-block;width:12px;height:1px;margin:0 7px 3px 0;background:currentColor;opacity:.38}
   .note-preview-continuation{margin-top:13px;padding:11px 12px;border-radius:13px;background:#faf7f4;border:1px dashed #e6d8d1;text-align:center}
   .note-preview-continuation p{font-size:11.5px;line-height:1.55;font-weight:720;color:#7b6b65;margin:0}
 
@@ -1387,6 +1390,7 @@
                   <div class="min-w-0 text-left">
                     <div class="text-[9px] font-bold text-slate-400">지금 내 상황</div>
                     <div id="concernSituationSummaryText" class="text-[10.5px] font-black text-slate-800 truncate"></div>
+                    <div id="concernSituationAck" class="mt-0.5 text-[9px] font-semibold leading-snug break-keep"></div>
                   </div>
                   <button
                     type="button"
@@ -1551,7 +1555,7 @@
                 <span
                   class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"
                 ></span>
-                사주를 보고 있어
+                <span id="loadingStatusText">사주를 보고 있어</span>
               </span>
             </div>
           </div>
@@ -1562,7 +1566,7 @@
             <span
               class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
             ></span>
-            <span>상담 준비 중</span>
+            <span id="loadingStageText">상담 준비 중</span>
           </div>
         </header>
 
@@ -1608,6 +1612,7 @@
 
           <!-- 언니의 1:1 카톡 상담 최종 요약 말풍선 -->
           <div
+            id="resultSisterHandoff"
             class="flex items-start gap-2.5 text-left bg-white/95 p-3.5 rounded-2xl border border-rose-200/80 shadow-sm"
           >
             <img
@@ -3500,7 +3505,7 @@
             if (senderTitle) senderTitle.textContent = "로아 언니 (F)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔구나. 편하게 알려줘.<br>왜 이 고민이 자꾸 마음에 남는지부터 같이 보고, 그래서 어떻게 움직이면 좋을지까지 이어서 풀어볼게.<br>이름이랑 생일부터 알려줘.";
+                "왔구나. 편하게 알려줘.<br>이름이랑 생일부터 받고, 요즘 제일 마음 쓰이는 고민부터 같이 볼게.";
             }
           } else {
             if (sisterImg) sisterImg.src = "./서아.png";
@@ -3512,7 +3517,7 @@
             if (senderTitle) senderTitle.textContent = "서아 언니 (T)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔어. 핵심부터 잡아볼게.<br>지금 고민이 어디서 꼬이는지 보고, 이유랑 다음 행동까지 순서대로 정리해줄게.<br>이름이랑 생일부터 알려줘.";
+                "왔어. 바로 정리해보자.<br>이름이랑 생일부터 받고, 지금 제일 먼저 볼 고민 하나만 잡을게.";
             }
           }
 
@@ -3614,6 +3619,33 @@
       };
       window.__CONCERN_SITUATIONS__ = CONCERN_SITUATIONS;
 
+      const CONCERN_CONVERSATION_PROMPTS = {
+        money: {
+          F: "응, 돈 쪽이구나. 지금 뭐가 제일 마음에 걸리는지 골라줘.",
+          T: "돈 쪽이네. 먼저 상황부터 나눌게. 어디에 해당해?",
+        },
+        career: {
+          F: "응, 학업·직장 쪽이구나. 지금 제일 답답한 상황부터 골라줘.",
+          T: "학업·직장 쪽이네. 현재 상태부터 나눌게. 어디에 해당해?",
+        },
+        love: {
+          F: "응, 연애 쪽이구나. 지금 관계가 어디쯤인지부터 알려줘.",
+          T: "연애 쪽이네. 현재 상태부터 나눌게. 어디에 해당해?",
+        },
+        path: {
+          F: "응, 진로 쪽이구나. 지금 어디에서 제일 막히는지 골라줘.",
+          T: "진로 쪽이네. 막힌 지점부터 나눌게. 어디에 해당해?",
+        },
+        people: {
+          F: "응, 사람·관계 쪽이구나. 지금 누구와의 관계가 제일 신경 쓰이는지 골라줘.",
+          T: "관계 문제네. 누구와의 상황인지부터 나눌게.",
+        },
+        mental: {
+          F: "응, 마음·스트레스 쪽이구나. 지금 제일 가까운 상태를 골라줘.",
+          T: "마음·스트레스 쪽이네. 현재 상태부터 정확히 나눌게.",
+        },
+      };
+
       function concernSituationValid(concernKey, situationKey) {
         const options = CONCERN_SITUATIONS[concernKey]?.options || [];
         return options.some(([key]) => key === situationKey);
@@ -3633,7 +3665,10 @@
         const grid = document.getElementById("concernSituationGrid");
         const hidden = document.getElementById("selectedConcernSituation");
         if (!prompt || !grid || !hidden) return;
-        prompt.textContent = config.prompt;
+        const voicePrompt = CONCERN_CONVERSATION_PROMPTS[concernKey]?.[
+          selectedSplitMode === "T" ? "T" : "F"
+        ];
+        prompt.textContent = voicePrompt || config.prompt;
         if (!preserve) hidden.value = "";
         grid.innerHTML = config.options
           .map(
@@ -3685,6 +3720,17 @@
         const selectedRow = config.options.find(([key]) => key === situationKey);
         const summaryText = document.getElementById("concernSituationSummaryText");
         if (summaryText) summaryText.textContent = selectedRow?.[1] || "";
+        const summaryAck = document.getElementById("concernSituationAck");
+        if (summaryAck) {
+          const label = selectedRow?.[1] || "이 상황";
+          const isT = selectedSplitMode === "T";
+          summaryAck.textContent = isT
+            ? `좋아. ‘${label}’ 기준으로 바로 정리할게.`
+            : `응, ‘${label}’ 쪽이구나. 이 상황 기준으로 같이 볼게.`;
+          summaryAck.className = isT
+            ? "mt-0.5 text-[9px] font-semibold leading-snug break-keep text-sky-700"
+            : "mt-0.5 text-[9px] font-semibold leading-snug break-keep text-rose-600";
+        }
         document
           .querySelectorAll("#concernSituationGrid .concern-situation-chip")
           .forEach((btn) => {
@@ -3775,6 +3821,8 @@
         if (box) box.style.display = "none";
         if (summary) summary.style.display = "none";
         if (grid) grid.innerHTML = "";
+        const ack = document.getElementById("concernSituationAck");
+        if (ack) ack.textContent = "";
         refreshAnalysisSubmitState();
       }
 
@@ -5311,8 +5359,21 @@ function generateConcernNotes(data, mode) {
           isAnalyzing = true;
           saveInputDraft();
 
-          // 1단계: 입력 폼 카드를 숨기고, 유저가 보낸 메시지를 카톡 우측 말풍선으로 띄움
+          // 1단계: 입력 폼 카드를 숨기고, 유저가 보낸 메시지를 우측 답장 말풍선으로 띄움
           const inputCardBox = document.getElementById("sajuInputCardBox");
+          const loadingProfile = document.getElementById("loadingSisterProfile");
+          const loadingName = document.getElementById("loadingSisterName");
+          const loadingStatusText = document.getElementById("loadingStatusText");
+          const loadingStageText = document.getElementById("loadingStageText");
+          if (loadingProfile) loadingProfile.src = mode === "T" ? "./서아.png" : "./로아.png";
+          if (loadingName) loadingName.textContent = mode === "T" ? "서아 언니" : "로아 언니";
+          if (loadingStatusText) {
+            loadingStatusText.textContent =
+              mode === "T" ? "사주 구조를 확인 중" : "사주랑 고민을 같이 보고 있어";
+          }
+          if (loadingStageText) {
+            loadingStageText.textContent = mode === "T" ? "정리 중" : "같이 보는 중";
+          }
           if (inputCardBox) inputCardBox.style.display = "none";
 
           const streamArea = document.getElementById("chatStreamArea");
@@ -5342,12 +5403,21 @@ function generateConcernNotes(data, mode) {
             return `${ampm} ${h}:${m}`;
           };
 
-          // 1) 유저 전송 톡: '읽음' 텍스트를 완전히 없애고 실제 카톡처럼 시간만 하단에 배치
+          // 1) 유저 전송 톡: 카카오 색을 복제하지 않고 현재 브랜드 안에서 답장 리듬만 유지
+          const sentSituationText =
+            getConcernSituationLabel(concernKey, concernSituation) || "지금 상황";
+          const userBubbleClass =
+            mode === "T"
+              ? "bg-slate-700 text-white border border-slate-600"
+              : "bg-rose-50 text-rose-950 border border-rose-200";
+          const userBubbleCopy =
+            mode === "T" ? "이 상황 기준으로 정리해줘" : "이 상황으로 같이 봐줘";
           const userBubbleHTML = `
                     <div class="flex justify-end items-end gap-1.5 fade-in-up">
                         <span class="text-[9px] text-slate-500 font-medium shrink-0 leading-tight mb-0.5">${getCurrTime()}</span>
-                        <div class="bg-[#fee500] text-slate-900 text-xs font-bold px-3.5 py-2 rounded-2xl rounded-tr-none shadow-sm max-w-[240px] leading-snug break-keep">
-                            ${escapeHTML(name)} / ${calendarLabel} ${formattedBirth} / ${formattedBirthTime} / 언니 내 사주 얼른 봐줘!
+                        <div class="${userBubbleClass} text-[11px] font-semibold px-3.5 py-2.5 rounded-2xl rounded-tr-none shadow-none max-w-[250px] leading-snug break-keep">
+                            <div class="text-[9.5px] opacity-70 font-medium">${escapeHTML(name)} · ${calendarLabel} ${formattedBirth} · ${formattedBirthTime}</div>
+                            <div class="mt-1 font-bold">${escapeHTML(sentSituationText)} · ${userBubbleCopy}</div>
                         </div>
                     </div>
                 `;
@@ -5408,8 +5478,8 @@ function generateConcernNotes(data, mode) {
 
             const ackText =
               mode === "T"
-                ? `${callVoc}, 확인했어. 이 고민 기준으로 볼게. 먼저 핵심을 잡고, 왜 그런지랑 다음 행동까지 순서대로 정리해줄게.`
-                : `${callVoc}, 아 이거였구나. 계속 마음에 걸렸겠다. 다른 얘기 섞지 않고, 지금 네 상황에서 왜 그런지부터 같이 볼게.`;
+                ? `${callVoc}, 확인했어. ${selectedSituationText} 기준으로 판단할게.`
+                : `${callVoc}, 응. ${selectedSituationText} 쪽이구나. 이 상황 기준으로 같이 볼게.`;
 
             const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up mt-1">
@@ -5527,8 +5597,8 @@ currentResultData = {
                 removeLiveTyping("liveT1");
                 appendSisterMsg(
                   isT
-                    ? `${callVoc}, 잠깐. 사주부터 맞춰보고 지금 고민이 어디서 꼬였는지 볼게. 결론부터 깔끔하게 정리해줄게.`
-                    : `${callVoc}, 잠깐만. 언니가 네 사주랑 지금 고민을 같이 놓고, 어디서 자꾸 마음이 걸리는지 꼼꼼하게 보고 올게.`,
+                    ? `${callVoc}, 사주 구조부터 확인할게. 지금 고민과 직접 연결되는 것만 추리는 중이야.`
+                    : `${callVoc}, 사주 전체부터 보고 있어. 지금 고민이 왜 여기서 반복되는지도 같이 연결해볼게.`,
                   false,
                 );
 
@@ -5577,8 +5647,8 @@ currentResultData = {
                     removeLiveTyping("liveT3");
                     appendSisterMsg(
                       isT
-                        ? `다 봤어. 중요한 것부터 정리했어. 이제 핵심부터 보자.`
-                        : `다 봤어. 네가 왜 여기서 자꾸 마음이 쓰였는지 연결되는 지점이 보여. 언니가 하나씩 같이 풀어보자.`,
+                        ? `정리 끝. 먼저 볼 핵심이 잡혔어. 중요한 것부터 바로 보여줄게.`
+                        : `다 봤어. 왜 이 상황이 자꾸 마음에 남는지 연결됐어. 핵심부터 하나씩 같이 볼게.`,
                       true,
                     );
 
@@ -5669,8 +5739,8 @@ currentResultData = {
 
         if (payBoxHookMsg) {
           payBoxHookMsg.textContent = isT
-            ? "패턴은 확인했어. 이제 원인하고 끊을 지점만 잡으면 돼."
-            : "여기까지 보니까 왜 마음 쓰였는지는 보여. 근데 진짜 중요한 건 이제부터야.";
+            ? "패턴은 확인했어. 이제 원인과 끊을 지점만 잡으면 돼."
+            : "여기까지만 봐도 왜 반복되는지는 보여. 이제 어떻게 끊을지가 남아 있어.";
         }
         if (payBoxSubMsg) {
           payBoxSubMsg.textContent = isT
@@ -5782,6 +5852,7 @@ currentResultData = {
         const resSisterProfile = document.getElementById("resultSisterProfile");
         const resSisterName = document.getElementById("resultSisterName");
         const resGreeting = document.getElementById("resultSisterGreeting");
+        const resHandoff = document.getElementById("resultSisterHandoff");
         const badge = document.getElementById("resultModeBadge");
 
         // 성을 제외한 이름만 추출 (예: 박태양 -> 태양, 이지우 -> 지우)
@@ -5810,11 +5881,15 @@ currentResultData = {
             badge.className =
               "px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full text-[10px] font-black";
           }
+          if (resHandoff) {
+            resHandoff.className =
+              "flex items-start gap-2.5 text-left bg-white/95 p-3.5 rounded-2xl border border-sky-200/80 shadow-sm";
+          }
           if (resGreeting) {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
             const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
-            resGreeting.innerHTML = `<b>${callVoc}</b>, 다 봤어. [${escapeHTML(situationText)}]에서 뭐가 진짜 문제고 뭐가 괜한 걱정인지 구분해놨어. 좋은 건 좋다, 아닌 건 아니다 딱 말해줄게.`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, 봤어. ‘${escapeHTML(situationText)}’ 상황에서 먼저 볼 핵심이 잡혔어. 중요한 것부터 정리할게.`;
           }
         } else {
           if (resSisterProfile) resSisterProfile.src = "./로아.png";
@@ -5827,11 +5902,15 @@ currentResultData = {
 
           // 이름만 볼드 처리하고 뒤의 호칭 조사('이')는 얇은 기본 폰트로 분리
           const fSuffix = hasBatchim ? "이" : "";
+          if (resHandoff) {
+            resHandoff.className =
+              "flex items-start gap-2.5 text-left bg-white/95 p-3.5 rounded-2xl border border-rose-200/80 shadow-sm";
+          }
           if (resGreeting) {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
             const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
-            resGreeting.innerHTML = `<b>${callVoc}</b>, 다 봤어! [${escapeHTML(situationText)}]에서 왜 자꾸 마음이 쓰였는지 흐름이 보여. 언니가 어려운 말 빼고, 네 얘기부터 차근차근 같이 풀어볼게.`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, 응. ‘${escapeHTML(situationText)}’ 상황에서 왜 자꾸 마음이 남는지 보여. 먼저 핵심부터 같이 볼게.`;
           }
         }
         // [추가] '다른 고민도 풀어보기' CTA 버튼 테마 컬러 실시간 동기화
@@ -6038,6 +6117,21 @@ currentResultData = {
         };
 
         const buildNotesHTML = (items) => {
+          const bridgeCopy = isT
+            ? {
+                "02": "이제 반복되는 순서를 볼게.",
+                "03": "다음은 왜 그렇게 되는지 원인을 볼게.",
+                "04": "그다음은 바꿀 순서.",
+                "05": "이제 맞는 조건과 피할 조건을 나눌게.",
+                "06": "마지막으로 움직일 시기를 볼게.",
+              }
+            : {
+                "02": "이게 한 번으로 끝나는 게 아니라, 반복되는 순서가 있어.",
+                "03": "그럼 왜 이 순서가 생기는지 뿌리부터 같이 볼게.",
+                "04": "이제 어디부터 바꾸면 되는지 순서대로 잡아보자.",
+                "05": "그다음은 네 힘이 살아나는 조건을 볼게.",
+                "06": "마지막으로, 언제 움직이면 좋은지도 같이 보자.",
+              };
           return items
             .map((item) => {
               const num = String(item.themeNum).padStart(2,"0");
@@ -6047,7 +6141,11 @@ currentResultData = {
               const badgeHtml = badgeText && badgeText !== meta.label
                 ? `<span class="note-badge">${badgeText}</span>`
                 : "";
+              const bridgeHtml = bridgeCopy[num]
+                ? `<div class="note-bridge ${accent}">${bridgeCopy[num]}</div>`
+                : "";
               return `
+                    ${bridgeHtml}
                     <div class="note-editorial ${meta.className} ${accent}" data-note-role="${num}">
                         <div class="note-editorial-head">
                           <span class="note-number">NOTE ${item.themeNum}</span>
@@ -6098,6 +6196,7 @@ currentResultData = {
               notesContainer.insertAdjacentHTML(
                 "beforeend",
                 `
+                  <div class="note-bridge ${isT ? "note-tone-t" : "note-tone-f"}">${isT ? "이제 반복되는 순서를 볼게." : "이게 한 번으로 끝나는 게 아니라, 반복되는 순서가 있어."}</div>
                   <div id="note2PreviewCard" class="note-editorial note-role-pattern ${isT ? "note-tone-t" : "note-tone-f"} relative overflow-hidden text-left">
                       <div class="note-editorial-head">
                           <span class="note-number ${
@@ -7817,8 +7916,8 @@ currentResultData = {
 
         if (welcomeSisterText) {
           welcomeSisterText.innerHTML = isT
-            ? "사주정보는 그대로 챙겨뒀어.<br>이번에도 네 상황만 놓고 하나씩 정리해줄게. 어떤 고민을 볼지 골라줘."
-            : "사주정보는 언니가 그대로 챙겨뒀어.<br>이번엔 어떤 고민이 마음에 걸리는지 골라줘. 같은 방식으로 차근차근 볼게.";
+            ? "사주정보는 그대로 챙겨뒀어.<br>이번엔 새 고민 하나만 골라줘. 그 상황 기준으로 바로 정리할게."
+            : "사주정보는 언니가 그대로 챙겨뒀어.<br>이번엔 뭐가 마음에 걸리는지 골라줘. 그 얘기부터 같이 볼게.";
         }
 
         const nextBtn = document.getElementById("splitNextButton");
