@@ -322,7 +322,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         detailEnd:CANON.reasoning.timing.detailEnd,
         horizonEnd:CANON.reasoning.timing.horizonEnd,
         nearMonthCount:CANON.reasoning.timing.nearMonths.length,
-        years:CANON.reasoning.timing.years.map(y=>({year:y.year,daeunGanZhi:y.daeunGanZhi,seyunGanZhi:y.seyunGanZhi,score:y.score,class:y.class})),
+        years:CANON.reasoning.timing.years.map(y=>({year:y.year,daeunGanZhi:y.daeunGanZhi,seyunGanZhi:y.seyunGanZhi,class:y.class,evidence:y.evidence})),
         turningPoints:CANON.reasoning.timing.turningPoints,
         note6:plain(CANON.notes[5].desc),
         note6Meta:CANON.notes[5].__timingQA,
@@ -423,6 +423,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(r.canonicalTiming.nearMonthCount>=18,'rolling horizon does not provide ~18 months of monthly detail: '+r.canonicalTiming.nearMonthCount);
   assert(r.canonicalTiming.years.length>=5,'five-year annual timing coverage missing');
   assert((r.canonicalTiming.turningPoints.opportunities||[]).length<=3&&(r.canonicalTiming.turningPoints.cautions||[]).length<=2,'turning-point caps violated');
+  assert((r.canonicalTiming.turningPoints.opportunities||[]).every(x=>['supportive','mild-support'].includes(x.class)),'opportunity turning point was produced by numeric averaging instead of support evidence class');
+  assert((r.canonicalTiming.turningPoints.cautions||[]).every(x=>['caution','mild-caution'].includes(x.class)),'caution turning point was produced by numeric averaging instead of caution evidence class');
   assert(/가까운 시기 상세/.test(r.canonicalTiming.note6)&&/이후 큰 흐름/.test(r.canonicalTiming.note6)&&/핵심 변곡점/.test(r.canonicalTiming.note6),'NOTE6 user hierarchy missing');
   assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관)/.test(r.canonicalTiming.note6),'NOTE6 leaked internal jargon');
 
