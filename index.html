@@ -746,6 +746,24 @@
   .note-body p{margin:0 0 12px}
   .note-body p:last-child{margin-bottom:0}
   .note-role-diagnosis .note-body>p:first-child{font-size:15px;line-height:1.7;color:#303b4c;font-weight:620}
+  .note-body-fit{display:grid;gap:10px}
+  .note-fit-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .note-fit-panel{min-width:0;padding:12px 11px;border-radius:14px;border:1px solid #e8e2dc;background:#fbfaf8}
+  .note-fit-good{background:#f6faf7;border-color:#dfe9e1}
+  .note-fit-drain{background:#fcf7f7;border-color:#eddfe1}
+  .note-fit-kicker{display:flex;align-items:center;gap:6px;margin-bottom:7px;font-size:10px;line-height:1.35;font-weight:850;color:#465365}
+  .note-fit-dot{width:7px;height:7px;border-radius:50%;background:#7caa8a;flex:none}
+  .note-fit-drain .note-fit-dot{background:#c98994}
+  .note-fit-copy{font-size:12.5px;line-height:1.7;color:#4d596a;font-weight:470;word-break:keep-all}
+  .note-fit-criterion{padding:12px 13px;border-radius:14px;background:#faf8f5;border:1px solid #e8e2dc}
+  .note-fit-criterion-label{margin-bottom:6px;font-size:10px;line-height:1.35;font-weight:850;color:#6f6870}
+  .note-tone-t .note-fit-good{background:#f4f9fb;border-color:#dce9ef}
+  .note-tone-t .note-fit-good .note-fit-dot{background:#70a8bd}
+  .note-tone-t .note-fit-drain{background:#f8f8f8;border-color:#e4e5e7}
+  .note-tone-t .note-fit-drain .note-fit-dot{background:#9299a3}
+  @media(max-width:370px){
+    .note-fit-compare{grid-template-columns:1fr}
+  }
   .note-body-flow{display:grid;gap:0}
   .note-flow-row{display:grid;grid-template-columns:14px 1fr;gap:9px;position:relative;padding-bottom:14px}
   .note-flow-row:last-child{padding-bottom:0}
@@ -5903,6 +5921,27 @@ currentResultData = {
             return `<div class="note-body note-body-flow">${parts
               .map((part)=>`<div class="note-flow-row"><span class="note-flow-line"></span><div>${part}</div></div>`)
               .join("")}</div>`;
+          }
+          if (String(item.themeNum) === "05") {
+            const fit = parts[0] || "";
+            const drain = parts[1] || "";
+            const criterion = parts.slice(2).join("<br><br>");
+            return `<div class="note-body note-body-fit">
+              <div class="note-fit-compare">
+                <section class="note-fit-panel note-fit-good">
+                  <div class="note-fit-kicker"><span class="note-fit-dot"></span><span>잘 맞는 쪽</span></div>
+                  <div class="note-fit-copy">${fit}</div>
+                </section>
+                <section class="note-fit-panel note-fit-drain">
+                  <div class="note-fit-kicker"><span class="note-fit-dot"></span><span>오래 두면 소모되는 쪽</span></div>
+                  <div class="note-fit-copy">${drain}</div>
+                </section>
+              </div>
+              <section class="note-fit-criterion">
+                <div class="note-fit-criterion-label">마지막 판단 기준</div>
+                <div class="note-fit-copy">${criterion}</div>
+              </section>
+            </div>`;
           }
           return `<div class="note-body">${parts.map((part)=>`<p>${part}</p>`).join("")}</div>`;
         };
