@@ -2,6 +2,8 @@ const { chromium } = require('playwright');
 const fs=require('fs');
 const BASE=process.env.AUDIT_BASE || 'https://sajuft.com/index.html';
 const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+const assert=(v,m)=>{if(!v)throw new Error(m);};
+async function assertNoOverflow(page,label){const m=await page.evaluate(()=>({w:innerWidth,sw:document.documentElement.scrollWidth,bw:document.body.scrollWidth}));assert(m.sw<=m.w+1&&m.bw<=m.w+1,label+' horizontal overflow '+JSON.stringify(m));}
 async function waitDeployed(page){
   for(let i=0;i<24;i++){
     try{
@@ -119,11 +121,59 @@ async function prepareResult(page,mode='F'){
   await page.waitForSelector('#storyCaptureMode',{state:'visible',timeout:8000});
   await shot(page,'25-share-capture');
 
+  await assertNoOverflow(page,'390 result');
+
   const small=await browser.newContext({viewport:{width:360,height:740},deviceScaleFactor:1});
   const smallPage=await small.newPage();
   await waitDeployed(smallPage);
   await shot(smallPage,'26-small-entry');
+  await assertNoOverflow(smallPage,'360 entry');
+  await smallPage.locator('#panelRoa').click();
+  await smallPage.waitForSelector('#sajuInputCardBox',{state:'visible'});
+  await shot(smallPage,'27-small-input',smallPage.locator('#sajuInputCardBox'));
+  await assertNoOverflow(smallPage,'360 input');
+  const inputFonts=await smallPage.evaluate(()=>[
+    '#nameInput','#birthDateInput','#birthTimeInput'
+  ].map(s=>parseFloat(getComputedStyle(document.querySelector(s)).fontSize||'0')));
+  assert(inputFonts.every(v=>v>=16),'small mobile inputs can trigger zoom '+JSON.stringify(inputFonts));
+  await smallPage.fill('#nameInput','지은');
+  await smallPage.locator('#concernGrid .concern-chip').filter({hasText:'연애 · 썸'}).click();
+  await smallPage.locator('#concernSituationGrid [data-concern-situation="relationship"]').click();
+  await smallPage.fill('#birthDateInput','20010418');
+  await smallPage.fill('#birthTimeInput','1420');
+  await smallPage.locator('#splitNextButton button').click();
+  await smallPage.waitForSelector('#resultSection',{state:'visible',timeout:30000});
+  await smallPage.waitForSelector('#lockedOverlay',{state:'visible',timeout:10000});
+  await shot(smallPage,'28-small-result');
+  await shot(smallPage,'29-small-paywall',smallPage.locator('#paywallCard'));
+  await assertNoOverflow(smallPage,'360 result');
   await small.close();
+
+  const tctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1});
+  const tpage=await tctx.newPage();
+  await waitDeployed(tpage);
+  await tpage.locator('#panelSeoa').click();
+  await tpage.waitForSelector('#sajuInputCardBox',{state:'visible'});
+  await shot(tpage,'30-t-input',tpage.locator('#sajuInputCardBox'));
+  await tpage.fill('#nameInput','지은');
+  await tpage.locator('#concernGrid .concern-chip').filter({hasText:'연애 · 썸'}).click();
+  await tpage.locator('#concernSituationGrid [data-concern-situation="relationship"]').click();
+  await tpage.fill('#birthDateInput','20010418');
+  await tpage.fill('#birthTimeInput','1420');
+  await tpage.locator('#splitNextButton button').click();
+  await tpage.waitForSelector('#resultSection',{state:'visible',timeout:30000});
+  await tpage.waitForSelector('#lockedOverlay',{state:'visible',timeout:10000});
+  await shot(tpage,'31-t-result');
+  await shot(tpage,'32-t-paywall',tpage.locator('#paywallCard'));
+  const tUi=await tpage.evaluate(()=>({
+    greeting:document.getElementById('resultSisterGreeting')?.innerText||'',
+    title:document.getElementById('sazuCharacterTitle')?.innerText||'',
+    noteCount:document.querySelectorAll('#notesListContainer > [data-note-role]').length,
+    paywall:document.getElementById('paywallCard')?.innerText||''
+  }));
+  assert(tUi.title&&tUi.noteCount>=1&&tUi.paywall.includes('서아 언니'),'T visual flow missing '+JSON.stringify(tUi));
+  await assertNoOverflow(tpage,'T result');
+  await tctx.close();
 
   await browser.close();
 })().catch(e=>{console.error(e.stack||e);process.exit(1);});
