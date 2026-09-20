@@ -10,13 +10,13 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.1.0' &&
-        globalThis.__UNNI_PRODUCTS_V1__?.version === '1.9.1' &&
+        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.2.0' &&
+        globalThis.__UNNI_PRODUCTS_V1__?.version === '2.0.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach NOTE v3 / paid 1.5.0 / products 1.9.1');
+  throw new Error('production did not reach NOTE v3 / paid 1.5.0 / products 2.0.0');
 }
 
 async function enter(page, mode, concern, situation) {
@@ -116,7 +116,7 @@ async function inspect(page, mode) {
       },
     };
   },mode);
-  assert(r.noteV2Audit?.version==='3.1.0'&&r.noteV2Audit?.structureFingerprint,mode+' NOTE v3 audit missing');
+  assert(r.noteV2Audit?.version==='3.2.0'&&r.noteV2Audit?.structureFingerprint,mode+' NOTE v3 audit missing');
   assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
   assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six causal claims missing');
   for(const claim of r.noteV2Audit.claims) assert(claim.ditianRuleIds?.filter(Boolean).length&&claim.zipingRuleIds?.filter(Boolean).length&&claim.noteSentence,mode+' claim provenance missing');
