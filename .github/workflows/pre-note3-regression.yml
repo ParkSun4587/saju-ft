@@ -50,5 +50,7 @@ jobs:
         run: node tests/product_content_boundary_regression.cjs
       - name: Run legacy timing, policy gate and leap-month regression
         run: node tests/tech_debt_policy_leap_regression.cjs
+      - name: Run premium hierarchy and entitlement regression
+        run: node tests/premium_entitlement_ladder_regression.cjs
       - name: Run paid-value and product regression
         run: node tests/paid_value_product_regression.cjs
