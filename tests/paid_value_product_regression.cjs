@@ -810,7 +810,7 @@ function norm(v) {
     contentPolicySource.includes('내 사주 전체 구조와 앞으로 5년의 큰 흐름 보기') &&
     contentPolicySource.includes('두 사람 사주를 겹쳐 관계의 이유와 시기 보기') &&
     contentPolicySource.includes('나 한 사람의 전체 사주판과 6개 고민을 한 번에 열기') &&
-    premium.includes('왜 추천했냐면') &&
+    premium.includes('왜 이걸 먼저 보냐면') &&
     premium.includes('내 전체 사주판 열기') &&
     premium.includes('완전판으로 이어보기'),
     'young-user outcome-led product copy missing'
