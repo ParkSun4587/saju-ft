@@ -733,26 +733,28 @@
   /* consultation notes */
   #consultationNotesShell{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
   #consultationNotesPaper{padding:0!important;background:transparent!important}
-  #consultationNotesHeader{background:transparent!important;border:0!important;box-shadow:none!important;padding:12px 0 0!important;border-radius:0!important}
-  #consultationNotesHeader>div:first-child{border-color:var(--unni-line)!important;color:#9196a0!important}
-  #vipSectionMainTitle{font-size:17px!important;font-weight:850!important;letter-spacing:-.025em!important}
-  #vipSectionSubTitle{font-size:11.5px!important;line-height:1.5!important;padding-left:0!important;color:#7b828e!important}
-  #notesListContainer{display:grid!important;gap:14px!important;padding-top:1px!important}
-  .note-editorial{position:relative;background:#fff;border:1px solid var(--unni-line);border-radius:19px;padding:15px 15px 16px;box-shadow:none;text-align:left;overflow:hidden}
+  #consultationNotesHeader{background:transparent!important;border:0!important;box-shadow:none!important;padding:10px 0 0!important;border-radius:0!important}
+  #consultationNotesHeader>div:first-child{border-color:var(--unni-line)!important;color:#9196a0!important;font-size:10px!important;padding-bottom:8px!important}
+  #consultationNotesHeader>div:first-child>span:last-child{font-size:9.25px!important;letter-spacing:-.01em!important}
+  #consultationNotesHeader>div:nth-child(2){min-width:0!important}
+  #vipSectionMainTitle{font-size:15.75px!important;line-height:1.34!important;font-weight:850!important;letter-spacing:-.025em!important;word-break:keep-all!important;overflow-wrap:anywhere!important}
+  #vipSectionSubTitle{font-size:10.75px!important;line-height:1.48!important;padding-left:0!important;color:#7b828e!important;word-break:keep-all!important;overflow-wrap:anywhere!important}
+  #notesListContainer{display:grid!important;gap:17px!important;padding-top:2px!important}
+  .note-editorial{position:relative;min-width:0;max-width:100%;background:#fff;border:1px solid var(--unni-line);border-radius:18px;padding:15px 14px 15px;box-shadow:none;text-align:left;overflow:hidden}
   .note-editorial::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#e9c7cf}
   .note-tone-t::before{background:#b8d7e4}
-  .note-editorial-head{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:6px;margin-bottom:9px}
-  .note-number{font-size:8.5px;line-height:1;font-weight:850;letter-spacing:.07em;color:#bd526b;background:#fff4f6;border:1px solid #f5d7de;padding:5px 6px;border-radius:999px;white-space:nowrap}
+  .note-editorial-head{display:flex;align-items:center;gap:6px;min-width:0;margin-bottom:8px}
+  .note-number{flex:none;font-size:8.25px;line-height:1;font-weight:850;letter-spacing:.055em;color:#bd526b;background:#fff4f6;border:1px solid #f5d7de;padding:5px 6px;border-radius:999px;white-space:nowrap}
   .note-tone-t .note-number{color:#347b9c;background:#f1f8fb;border-color:#d3e8f1}
-  .note-role-label{font-size:9.5px;font-weight:800;color:#424b59;white-space:nowrap}
-  .note-badge{font-size:9.5px;font-weight:620;color:#9a9fa8;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .note-editorial-title{font-size:17px;line-height:1.38;font-weight:830;color:#1f2937;letter-spacing:-.025em;text-wrap:balance;margin:0 0 10px}
-  .note-body{font-size:12.75px;line-height:1.72;color:#556171;font-weight:420;word-break:keep-all}
-  .note-body b{font-weight:720;color:#344052}
-  .note-body p{margin:0 0 14px}
+  .note-role-label{flex:none;font-size:9px;font-weight:800;color:#424b59;white-space:nowrap}
+  .note-badge{min-width:0;max-width:42%;margin-left:auto;font-size:8.75px;font-weight:620;color:#9a9fa8;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .note-editorial-title{max-width:100%;font-size:15.75px;line-height:1.42;font-weight:830;color:#1f2937;letter-spacing:-.022em;text-wrap:pretty;margin:0 0 10px;word-break:keep-all;overflow-wrap:anywhere}
+  .note-body{min-width:0;max-width:100%;font-size:12.5px;line-height:1.76;color:#566171;font-weight:420;word-break:keep-all;overflow-wrap:anywhere}
+  .note-body b{font-weight:700;color:#344052}
+  .note-body p{margin:0 0 13px}
   .note-body p+p{padding-top:1px}
   .note-body p:last-child{margin-bottom:0}
-  .note-role-diagnosis .note-body>p:first-child{font-size:13.5px;line-height:1.66;color:#303b4c;font-weight:590}
+  .note-role-diagnosis .note-body>p:first-child{font-size:12.9px;line-height:1.72;color:#303b4c;font-weight:570}
   .note-body-fit{display:grid;gap:10px}
   .note-fit-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .note-fit-panel{min-width:0;padding:12px 11px;border-radius:14px;border:1px solid #e8e2dc;background:#fbfaf8}
@@ -761,7 +763,7 @@
   .note-fit-kicker{display:flex;align-items:center;gap:6px;margin-bottom:7px;font-size:10px;line-height:1.35;font-weight:850;color:#465365}
   .note-fit-dot{width:7px;height:7px;border-radius:50%;background:#7caa8a;flex:none}
   .note-fit-drain .note-fit-dot{background:#c98994}
-  .note-fit-copy{font-size:12.25px;line-height:1.68;color:#556171;font-weight:430;word-break:keep-all}
+  .note-fit-copy{font-size:12px;line-height:1.7;color:#556171;font-weight:430;word-break:keep-all;overflow-wrap:anywhere}
   .note-fit-criterion{padding:12px 13px;border-radius:14px;background:#faf8f5;border:1px solid #e8e2dc}
   .note-fit-criterion-label{margin-bottom:6px;font-size:10px;line-height:1.35;font-weight:850;color:#6f6870}
   .note-tone-t .note-fit-good{background:#f4f9fb;border-color:#dce9ef}
@@ -786,16 +788,13 @@
   .note-time-row:last-child{padding-bottom:0}
   .note-time-dot{width:11px;height:11px;border-radius:50%;margin-top:7px;background:#fff;border:3px solid #df8fa3;z-index:1}
   .note-tone-t .note-time-dot{border-color:#73acc4}
-  .note-check{display:grid;grid-template-columns:18px 1fr;gap:8px;margin-top:19px;padding:12px 13px;border:1px solid #eee5df;background:#faf8f5;border-radius:14px;font-size:11.75px;line-height:1.58;color:#536071}
+  .note-check{display:grid;grid-template-columns:16px minmax(0,1fr);gap:7px;min-width:0;margin-top:16px;padding:11px 12px;border:1px solid #eee5df;background:#faf8f5;border-radius:13px;font-size:11.25px;line-height:1.62;color:#536071;word-break:keep-all;overflow-wrap:anywhere}
   .note-tone-f .note-check{background:#fff9fa;border-color:#f2e1e5}
   .note-tone-t .note-check{background:#f6fafc;border-color:#dfeaf0}
   .note-check-mark{font-weight:900;color:#d14f6d}
   .note-tone-t .note-check-mark{color:#3f87a7}
   .note-check-label{font-weight:820;color:#354052}
-  .note-bridge{margin:0 0 8px;padding-left:1px;font-size:10.5px;line-height:1.45;font-weight:680;color:#9a6a76;letter-spacing:-.01em}
-  .note-bridge.note-tone-t{color:#62889a}
-  .note-bridge::before{content:"";display:inline-block;width:12px;height:1px;margin:0 7px 3px 0;background:currentColor;opacity:.38}
-  .note-preview-continuation{margin-top:13px;padding:11px 12px;border-radius:13px;background:#faf7f4;border:1px dashed #e6d8d1;text-align:center}
+   .note-preview-continuation{margin-top:13px;padding:11px 12px;border-radius:13px;background:#faf7f4;border:1px dashed #e6d8d1;text-align:center}
   .note-preview-continuation p{font-size:11.5px;line-height:1.55;font-weight:720;color:#7b6b65;margin:0}
 
   /* paywall continuation */
@@ -819,10 +818,16 @@
     #sajuForm{gap:10px!important}
     #sajuInputCardBox input[type="text"],#sajuInputCardBox input[type="tel"],#sajuInputCardBox select{min-height:40px!important;height:40px!important}
     #sazuCharacterTitle{font-size:21px!important}
-    .note-editorial{padding:14px 13px 15px}
-    .note-editorial-title{font-size:16.5px}
-    .note-body{font-size:12.5px}
-    .note-role-diagnosis .note-body>p:first-child{font-size:13.25px}
+    #vipSectionMainTitle{font-size:15px!important}
+    #vipSectionSubTitle{font-size:10.5px!important}
+    .note-editorial{padding:14px 12px 14px}
+    .note-editorial-head{gap:5px}
+    .note-number{font-size:8px;padding:4.5px 5.5px}
+    .note-role-label{font-size:8.75px}
+    .note-badge{font-size:8.25px;max-width:38%}
+    .note-editorial-title{font-size:15.25px}
+    .note-body{font-size:12.25px}
+    .note-role-diagnosis .note-body>p:first-child{font-size:12.65px}
   }
 </style>
 </head>
@@ -1390,7 +1395,6 @@
                   <div class="min-w-0 text-left">
                     <div class="text-[9px] font-bold text-slate-400">지금 내 상황</div>
                     <div id="concernSituationSummaryText" class="text-[10.5px] font-black text-slate-800 truncate"></div>
-                    <div id="concernSituationAck" class="mt-0.5 text-[9px] font-semibold leading-snug break-keep"></div>
                   </div>
                   <button
                     type="button"
@@ -3505,7 +3509,7 @@
             if (senderTitle) senderTitle.textContent = "로아 언니 (F)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔구나. 편하게 알려줘.<br>이름이랑 생일부터 받고, 요즘 제일 마음 쓰이는 고민부터 같이 볼게.";
+                "왔구나. 이름이랑 생일부터 편하게 알려줘.<br>좋은 말만 골라 하진 않을게. 왜 이 고민이 자꾸 마음에 걸리는지부터 보고, 네가 놓치고 있는 지점까지 언니가 같이 짚어줄게.";
             }
           } else {
             if (sisterImg) sisterImg.src = "./서아.png";
@@ -3517,7 +3521,7 @@
             if (senderTitle) senderTitle.textContent = "서아 언니 (T)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔어. 바로 정리해보자.<br>이름이랑 생일부터 받고, 지금 제일 먼저 볼 고민 하나만 잡을게.";
+                "왔어. 이름이랑 생일부터 알려줘.<br>괜히 겁주거나 돌려 말하지 않을게. 지금 상황에서 뭐가 핵심인지 먼저 가르고, 원인·지금 할 일·움직일 타이밍까지 필요한 것만 정확히 정리해줄게.";
             }
           }
 
@@ -3526,7 +3530,7 @@
             nextButtonContainer.style.display = "block";
             nextButtonContainer.innerHTML = `
                         <button id="analysisSubmitButton" data-consult-mode="${mode}" type="button" disabled aria-disabled="true" onclick="startAnalysis('${mode}')" style="opacity:.48;cursor:default" class="w-full py-3.5 active:scale-[0.98] text-white font-extrabold text-[13px] rounded-2xl transition-all flex items-center justify-center gap-1.5">
-                            <span>${mode === "F" ? "로아 언니, 이걸로 같이 봐줘" : "서아 언니, 이걸로 정리해줘"}</span>
+                            <span>${mode === "F" ? "로아 언니, 내 얘기부터 같이 봐줘" : "서아 언니, 핵심부터 정리해줘"}</span>
                         </button>
                     `;
           }
@@ -3619,34 +3623,7 @@
       };
       window.__CONCERN_SITUATIONS__ = CONCERN_SITUATIONS;
 
-      const CONCERN_CONVERSATION_PROMPTS = {
-        money: {
-          F: "응, 돈 쪽이구나. 지금 뭐가 제일 마음에 걸리는지 골라줘.",
-          T: "돈 쪽이네. 먼저 상황부터 나눌게. 어디에 해당해?",
-        },
-        career: {
-          F: "응, 학업·직장 쪽이구나. 지금 제일 답답한 상황부터 골라줘.",
-          T: "학업·직장 쪽이네. 현재 상태부터 나눌게. 어디에 해당해?",
-        },
-        love: {
-          F: "응, 연애 쪽이구나. 지금 관계가 어디쯤인지부터 알려줘.",
-          T: "연애 쪽이네. 현재 상태부터 나눌게. 어디에 해당해?",
-        },
-        path: {
-          F: "응, 진로 쪽이구나. 지금 어디에서 제일 막히는지 골라줘.",
-          T: "진로 쪽이네. 막힌 지점부터 나눌게. 어디에 해당해?",
-        },
-        people: {
-          F: "응, 사람·관계 쪽이구나. 지금 누구와의 관계가 제일 신경 쓰이는지 골라줘.",
-          T: "관계 문제네. 누구와의 상황인지부터 나눌게.",
-        },
-        mental: {
-          F: "응, 마음·스트레스 쪽이구나. 지금 제일 가까운 상태를 골라줘.",
-          T: "마음·스트레스 쪽이네. 현재 상태부터 정확히 나눌게.",
-        },
-      };
-
-      function concernSituationValid(concernKey, situationKey) {
+       function concernSituationValid(concernKey, situationKey) {
         const options = CONCERN_SITUATIONS[concernKey]?.options || [];
         return options.some(([key]) => key === situationKey);
       }
@@ -3665,10 +3642,7 @@
         const grid = document.getElementById("concernSituationGrid");
         const hidden = document.getElementById("selectedConcernSituation");
         if (!prompt || !grid || !hidden) return;
-        const voicePrompt = CONCERN_CONVERSATION_PROMPTS[concernKey]?.[
-          selectedSplitMode === "T" ? "T" : "F"
-        ];
-        prompt.textContent = voicePrompt || config.prompt;
+        prompt.textContent = config.prompt;
         if (!preserve) hidden.value = "";
         grid.innerHTML = config.options
           .map(
@@ -3720,17 +3694,6 @@
         const selectedRow = config.options.find(([key]) => key === situationKey);
         const summaryText = document.getElementById("concernSituationSummaryText");
         if (summaryText) summaryText.textContent = selectedRow?.[1] || "";
-        const summaryAck = document.getElementById("concernSituationAck");
-        if (summaryAck) {
-          const label = selectedRow?.[1] || "이 상황";
-          const isT = selectedSplitMode === "T";
-          summaryAck.textContent = isT
-            ? `좋아. ‘${label}’ 기준으로 바로 정리할게.`
-            : `응, ‘${label}’ 쪽이구나. 이 상황 기준으로 같이 볼게.`;
-          summaryAck.className = isT
-            ? "mt-0.5 text-[9px] font-semibold leading-snug break-keep text-sky-700"
-            : "mt-0.5 text-[9px] font-semibold leading-snug break-keep text-rose-600";
-        }
         document
           .querySelectorAll("#concernSituationGrid .concern-situation-chip")
           .forEach((btn) => {
@@ -3821,8 +3784,6 @@
         if (box) box.style.display = "none";
         if (summary) summary.style.display = "none";
         if (grid) grid.innerHTML = "";
-        const ack = document.getElementById("concernSituationAck");
-        if (ack) ack.textContent = "";
         refreshAnalysisSubmitState();
       }
 
@@ -6117,21 +6078,6 @@ currentResultData = {
         };
 
         const buildNotesHTML = (items) => {
-          const bridgeCopy = isT
-            ? {
-                "02": "이제 반복되는 순서를 볼게.",
-                "03": "다음은 왜 그렇게 되는지 원인을 볼게.",
-                "04": "그다음은 바꿀 순서.",
-                "05": "이제 맞는 조건과 피할 조건을 나눌게.",
-                "06": "마지막으로 움직일 시기를 볼게.",
-              }
-            : {
-                "02": "이게 한 번으로 끝나는 게 아니라, 반복되는 순서가 있어.",
-                "03": "그럼 왜 이 순서가 생기는지 뿌리부터 같이 볼게.",
-                "04": "이제 어디부터 바꾸면 되는지 순서대로 잡아보자.",
-                "05": "그다음은 네 힘이 살아나는 조건을 볼게.",
-                "06": "마지막으로, 언제 움직이면 좋은지도 같이 보자.",
-              };
           return items
             .map((item) => {
               const num = String(item.themeNum).padStart(2,"0");
@@ -6141,12 +6087,8 @@ currentResultData = {
               const badgeHtml = badgeText && badgeText !== meta.label
                 ? `<span class="note-badge">${badgeText}</span>`
                 : "";
-              const bridgeHtml = bridgeCopy[num]
-                ? `<div class="note-bridge ${accent}">${bridgeCopy[num]}</div>`
-                : "";
               return `
                     <div class="note-editorial ${meta.className} ${accent}" data-note-role="${num}">
-                        ${bridgeHtml}
                         <div class="note-editorial-head">
                           <span class="note-number">NOTE ${item.themeNum}</span>
                           <span class="note-role-label">${meta.label}</span>
@@ -6197,7 +6139,6 @@ currentResultData = {
                 "beforeend",
                 `
                   <div id="note2PreviewCard" class="note-editorial note-role-pattern ${isT ? "note-tone-t" : "note-tone-f"} relative overflow-hidden text-left">
-                      <div class="note-bridge ${isT ? "note-tone-t" : "note-tone-f"}">${isT ? "이제 반복되는 순서를 볼게." : "이게 한 번으로 끝나는 게 아니라, 반복되는 순서가 있어."}</div>
                       <div class="note-editorial-head">
                           <span class="note-number ${
                             isT
@@ -7916,8 +7857,8 @@ currentResultData = {
 
         if (welcomeSisterText) {
           welcomeSisterText.innerHTML = isT
-            ? "사주정보는 그대로 챙겨뒀어.<br>이번엔 새 고민 하나만 골라줘. 그 상황 기준으로 바로 정리할게."
-            : "사주정보는 언니가 그대로 챙겨뒀어.<br>이번엔 뭐가 마음에 걸리는지 골라줘. 그 얘기부터 같이 볼게.";
+            ? "사주정보는 그대로 있어.<br>이번엔 새 고민 하나만 골라줘. 앞에서 본 구조랑 어디가 이어지는지부터 빠르게 정리할게."
+            : "사주정보는 언니가 그대로 가지고 있어.<br>이번엔 새로 마음에 걸리는 고민 하나만 골라줘. 앞에서 본 흐름이랑 어디서 이어지는지도 같이 짚어볼게.";
         }
 
         const nextBtn = document.getElementById("splitNextButton");
