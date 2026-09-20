@@ -792,7 +792,7 @@
   .note-check-mark{font-weight:900;color:#d14f6d}
   .note-tone-t .note-check-mark{color:#3f87a7}
   .note-check-label{font-weight:820;color:#354052}
-  .note-bridge{margin:1px 2px -5px;padding-left:10px;font-size:10.5px;line-height:1.45;font-weight:680;color:#9a6a76;letter-spacing:-.01em}
+  .note-bridge{margin:0 0 8px;padding-left:1px;font-size:10.5px;line-height:1.45;font-weight:680;color:#9a6a76;letter-spacing:-.01em}
   .note-bridge.note-tone-t{color:#62889a}
   .note-bridge::before{content:"";display:inline-block;width:12px;height:1px;margin:0 7px 3px 0;background:currentColor;opacity:.38}
   .note-preview-continuation{margin-top:13px;padding:11px 12px;border-radius:13px;background:#faf7f4;border:1px dashed #e6d8d1;text-align:center}
@@ -6145,8 +6145,8 @@ currentResultData = {
                 ? `<div class="note-bridge ${accent}">${bridgeCopy[num]}</div>`
                 : "";
               return `
-                    ${bridgeHtml}
                     <div class="note-editorial ${meta.className} ${accent}" data-note-role="${num}">
+                        ${bridgeHtml}
                         <div class="note-editorial-head">
                           <span class="note-number">NOTE ${item.themeNum}</span>
                           <span class="note-role-label">${meta.label}</span>
@@ -6196,8 +6196,8 @@ currentResultData = {
               notesContainer.insertAdjacentHTML(
                 "beforeend",
                 `
-                  <div class="note-bridge ${isT ? "note-tone-t" : "note-tone-f"}">${isT ? "이제 반복되는 순서를 볼게." : "이게 한 번으로 끝나는 게 아니라, 반복되는 순서가 있어."}</div>
                   <div id="note2PreviewCard" class="note-editorial note-role-pattern ${isT ? "note-tone-t" : "note-tone-f"} relative overflow-hidden text-left">
+                      <div class="note-bridge ${isT ? "note-tone-t" : "note-tone-f"}">${isT ? "이제 반복되는 순서를 볼게." : "이게 한 번으로 끝나는 게 아니라, 반복되는 순서가 있어."}</div>
                       <div class="note-editorial-head">
                           <span class="note-number ${
                             isT
