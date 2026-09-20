@@ -651,9 +651,9 @@
   /* first choice */
   #splitIntroSection{background:#17161b!important}
   #splitIntroSection>div{background:#17161b!important;box-shadow:none!important}
-  #topTitleBox{width:max-content!important;max-width:calc(100% - 52px)!important;padding:6px 12px 5px!important;border-radius:15px!important;background:rgba(255,253,250,.91)!important;border:1px solid rgba(255,255,255,.72)!important;box-shadow:0 4px 12px rgba(15,23,42,.055)!important}
-  #topTitleBox p:first-child{font-size:15px!important;line-height:1.18!important;font-weight:830!important;letter-spacing:-.035em!important;max-width:310px}
-  #topTitleBox p:nth-child(2){font-size:8.75px!important;margin-top:2px!important;color:#707784!important;font-weight:700!important}
+  #topTitleBox{width:max-content!important;max-width:calc(100% - 56px)!important;padding:5px 11px 4px!important;border-radius:14px!important;background:rgba(255,253,250,.91)!important;border:1px solid rgba(255,255,255,.72)!important;box-shadow:0 4px 12px rgba(15,23,42,.05)!important}
+  #topTitleBox p:first-child{font-size:14.5px!important;line-height:1.18!important;font-weight:830!important;letter-spacing:-.035em!important;max-width:305px}
+  #topTitleBox p:nth-child(2){font-size:8.5px!important;margin-top:1px!important;color:#707784!important;font-weight:700!important}
   #centerDivider{background:rgba(255,255,255,.035)!important;box-shadow:none!important}
   #imgRoa{filter:saturate(.87) brightness(.99)}
   #imgSeoa{filter:saturate(.82) brightness(.92)}
@@ -733,24 +733,26 @@
   /* consultation notes */
   #consultationNotesShell{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
   #consultationNotesPaper{padding:0!important;background:transparent!important}
-  #consultationNotesHeader{background:transparent!important;border:0!important;box-shadow:none!important;padding:14px 0 0!important;border-radius:0!important}
+  #consultationNotesHeader{background:transparent!important;border:0!important;box-shadow:none!important;padding:12px 0 0!important;border-radius:0!important}
   #consultationNotesHeader>div:first-child{border-color:var(--unni-line)!important;color:#9196a0!important}
-  #vipSectionMainTitle{font-size:18px!important;font-weight:850!important;letter-spacing:-.025em!important}
-  #vipSectionSubTitle{font-size:12px!important;line-height:1.55!important;padding-left:0!important;color:#7b828e!important}
-  #notesListContainer{display:grid!important;gap:14px!important;padding-top:2px!important}
-  .note-editorial{position:relative;background:#fff;border:1px solid var(--unni-line);border-radius:20px;padding:17px 16px;box-shadow:none;text-align:left;overflow:hidden}
+  #vipSectionMainTitle{font-size:17px!important;font-weight:850!important;letter-spacing:-.025em!important}
+  #vipSectionSubTitle{font-size:11.5px!important;line-height:1.5!important;padding-left:0!important;color:#7b828e!important}
+  #notesListContainer{display:grid!important;gap:14px!important;padding-top:1px!important}
+  .note-editorial{position:relative;background:#fff;border:1px solid var(--unni-line);border-radius:19px;padding:15px 15px 16px;box-shadow:none;text-align:left;overflow:hidden}
   .note-editorial::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#e9c7cf}
   .note-tone-t::before{background:#b8d7e4}
-  .note-editorial-head{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:7px;margin-bottom:12px}
-  .note-number{font-size:9px;line-height:1;font-weight:850;letter-spacing:.07em;color:#bd526b;background:#fff4f6;border:1px solid #f5d7de;padding:6px 7px;border-radius:999px;white-space:nowrap}
+  .note-editorial-head{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:6px;margin-bottom:9px}
+  .note-number{font-size:8.5px;line-height:1;font-weight:850;letter-spacing:.07em;color:#bd526b;background:#fff4f6;border:1px solid #f5d7de;padding:5px 6px;border-radius:999px;white-space:nowrap}
   .note-tone-t .note-number{color:#347b9c;background:#f1f8fb;border-color:#d3e8f1}
-  .note-role-label{font-size:10px;font-weight:800;color:#424b59;white-space:nowrap}
-  .note-badge{font-size:10px;font-weight:650;color:#9a9fa8;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .note-editorial-title{font-size:18px;line-height:1.42;font-weight:830;color:#1f2937;letter-spacing:-.025em;text-wrap:balance;margin:0 0 12px}
-  .note-body{font-size:14px;line-height:1.78;color:#4d596a;font-weight:450;word-break:keep-all}
-  .note-body p{margin:0 0 12px}
+  .note-role-label{font-size:9.5px;font-weight:800;color:#424b59;white-space:nowrap}
+  .note-badge{font-size:9.5px;font-weight:620;color:#9a9fa8;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .note-editorial-title{font-size:17px;line-height:1.38;font-weight:830;color:#1f2937;letter-spacing:-.025em;text-wrap:balance;margin:0 0 10px}
+  .note-body{font-size:12.75px;line-height:1.72;color:#556171;font-weight:420;word-break:keep-all}
+  .note-body b{font-weight:720;color:#344052}
+  .note-body p{margin:0 0 14px}
+  .note-body p+p{padding-top:1px}
   .note-body p:last-child{margin-bottom:0}
-  .note-role-diagnosis .note-body>p:first-child{font-size:15px;line-height:1.7;color:#303b4c;font-weight:620}
+  .note-role-diagnosis .note-body>p:first-child{font-size:13.5px;line-height:1.66;color:#303b4c;font-weight:590}
   .note-body-fit{display:grid;gap:10px}
   .note-fit-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .note-fit-panel{min-width:0;padding:12px 11px;border-radius:14px;border:1px solid #e8e2dc;background:#fbfaf8}
@@ -759,7 +761,7 @@
   .note-fit-kicker{display:flex;align-items:center;gap:6px;margin-bottom:7px;font-size:10px;line-height:1.35;font-weight:850;color:#465365}
   .note-fit-dot{width:7px;height:7px;border-radius:50%;background:#7caa8a;flex:none}
   .note-fit-drain .note-fit-dot{background:#c98994}
-  .note-fit-copy{font-size:12.5px;line-height:1.7;color:#4d596a;font-weight:470;word-break:keep-all}
+  .note-fit-copy{font-size:12.25px;line-height:1.68;color:#556171;font-weight:430;word-break:keep-all}
   .note-fit-criterion{padding:12px 13px;border-radius:14px;background:#faf8f5;border:1px solid #e8e2dc}
   .note-fit-criterion-label{margin-bottom:6px;font-size:10px;line-height:1.35;font-weight:850;color:#6f6870}
   .note-tone-t .note-fit-good{background:#f4f9fb;border-color:#dce9ef}
@@ -770,21 +772,23 @@
     .note-fit-compare{grid-template-columns:1fr}
   }
   .note-body-flow{display:grid;gap:0}
-  .note-flow-row{display:grid;grid-template-columns:14px 1fr;gap:9px;position:relative;padding-bottom:14px}
+  .note-flow-row{display:grid;grid-template-columns:14px 1fr;gap:9px;position:relative;padding-bottom:12px}
   .note-flow-row:last-child{padding-bottom:0}
   .note-flow-line{width:7px;height:7px;margin-top:8px;border-radius:50%;background:#e3a9b7;box-shadow:0 12px 0 -3px #ead9de}
   .note-tone-t .note-flow-line{background:#9bc7d9}
   .note-body-steps{display:grid;gap:9px}
-  .note-step{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:11px 12px;border-radius:14px;background:#faf8f5;border:1px solid #eee8e2}
+  .note-step{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:10px 11px;border-radius:14px;background:#faf8f5;border:1px solid #eee8e2}
   .note-step-num{width:24px;height:24px;border-radius:999px;display:grid;place-items:center;background:#fff;color:#b74c65;border:1px solid #f0ccd4;font-size:10px;font-weight:850}
   .note-tone-t .note-step-num{color:#347b9c;border-color:#cce2eb}
   .note-body-timeline{position:relative;padding-left:3px}
-  .note-time-row{display:grid;grid-template-columns:16px 1fr;gap:9px;position:relative;padding-bottom:15px}
+  .note-time-row{display:grid;grid-template-columns:16px 1fr;gap:9px;position:relative;padding-bottom:13px}
   .note-time-row:not(:last-child)::after{content:"";position:absolute;left:5px;top:15px;bottom:0;width:1px;background:#e7ddd8}
   .note-time-row:last-child{padding-bottom:0}
   .note-time-dot{width:11px;height:11px;border-radius:50%;margin-top:7px;background:#fff;border:3px solid #df8fa3;z-index:1}
   .note-tone-t .note-time-dot{border-color:#73acc4}
-  .note-check{display:grid;grid-template-columns:18px 1fr;gap:8px;margin-top:15px;padding:11px 12px;border-top:1px solid #eee8e2;background:#fbfaf8;border-radius:0 0 13px 13px;font-size:12px;line-height:1.62;color:#4a5565}
+  .note-check{display:grid;grid-template-columns:18px 1fr;gap:8px;margin-top:19px;padding:12px 13px;border:1px solid #eee5df;background:#faf8f5;border-radius:14px;font-size:11.75px;line-height:1.58;color:#536071}
+  .note-tone-f .note-check{background:#fff9fa;border-color:#f2e1e5}
+  .note-tone-t .note-check{background:#f6fafc;border-color:#dfeaf0}
   .note-check-mark{font-weight:900;color:#d14f6d}
   .note-tone-t .note-check-mark{color:#3f87a7}
   .note-check-label{font-weight:820;color:#354052}
@@ -799,10 +803,11 @@
   #paywallNextTeaserBox{box-shadow:none!important;border-color:#eee2e5!important}
   #directPaymentOpenButton,#finalNotePaymentButton{background:linear-gradient(90deg,#e94f72,#ed6a87)!important;box-shadow:0 9px 22px rgba(205,68,101,.16)!important;border-radius:15px!important;min-height:50px!important}
   #paymentWidgetArea{background:#faf7f6!important;border-color:#eee1e1!important;border-radius:17px!important}
+  #mainFooter{margin-top:52px!important;padding-top:22px!important}
 
   @media(max-width:370px){
-    #topTitleBox{max-width:calc(100% - 42px)!important}
-    #topTitleBox p:first-child{font-size:14.25px!important}
+    #topTitleBox{max-width:calc(100% - 46px)!important}
+    #topTitleBox p:first-child{font-size:13.75px!important}
     .split-choice-bubble{max-width:88%!important;padding:8px 10px!important}
     .split-choice-bubble p{font-size:11px!important}
     .split-choice-cta{padding:6.5px 10px!important}
@@ -811,9 +816,10 @@
     #sajuForm{gap:10px!important}
     #sajuInputCardBox input[type="text"],#sajuInputCardBox input[type="tel"],#sajuInputCardBox select{min-height:40px!important;height:40px!important}
     #sazuCharacterTitle{font-size:21px!important}
-    .note-editorial{padding:15px 14px}
-    .note-editorial-title{font-size:17px}
-    .note-body{font-size:13.5px}
+    .note-editorial{padding:14px 13px 15px}
+    .note-editorial-title{font-size:16.5px}
+    .note-body{font-size:12.5px}
+    .note-role-diagnosis .note-body>p:first-child{font-size:13.25px}
   }
 </style>
 </head>
