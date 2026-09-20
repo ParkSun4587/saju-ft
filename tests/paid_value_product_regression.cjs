@@ -267,7 +267,7 @@ function norm(v) {
       }
     }
     const catalog = document.getElementById('unniProductLadder');
-    const unlockedNoteCards = document.querySelectorAll('#notesListContainer > [data-note-role]').length;
+    const unlockedNoteCards = document.querySelectorAll('#notesListContainer > div').length;
     const previewAfterUnlock = !!document.getElementById('note2PreviewCard');
     const fChem = {
       best:document.getElementById('chemBestCard')?.className || '',
