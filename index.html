@@ -4797,7 +4797,8 @@ return [
       }
       function getRollingTimingYears(baseYear) {
         const start = Number(baseYear) || getSeoulCurrentYear();
-        return Array.from({ length: 6 }, (_, idx) => start + idx);
+        // 사용자 공개는 5년 중심이지만, 내부 추론은 다음 10년 흐름 전환까지 볼 수 있도록 더 길게 계산한다.
+        return Array.from({ length: 11 }, (_, idx) => start + idx);
       }
       function getRealYeonunInfo(baZi, dayGanChar, genderCode, targetYears) {
         let daYunList;
@@ -8204,9 +8205,10 @@ currentResultData = {
     <script src="./rules/ditian-sui-rules.js?v=1.1.0"></script>
     <script src="./rules/ziping-zhenquan-rules.js?v=1.1.0"></script>
     <script src="./integrated-saju-profile-v1.js?v=2.1.0"></script>
-    <script src="./classical-reasoning-engine-v1.js?v=1.1.0"></script>
+    <script src="./classical-reasoning-engine-v1.js?v=1.2.0"></script>
     <script src="./paid-value-layer-v1.js?v=1.5.0"></script>
-    <script src="./concern-note-engine-v2.js?v=3.1.0"></script>
-    <script src="./premium-products-v1.js?v=1.9.1"></script>
+    <script src="./concern-note-engine-v2.js?v=3.2.0"></script>
+    <script src="./product-content-policy-v1.js?v=1.0.0"></script>
+    <script src="./premium-products-v1.js?v=2.0.0"></script>
   </body>
 </html>
