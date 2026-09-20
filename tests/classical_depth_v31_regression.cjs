@@ -209,7 +209,13 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     const triadTiming=timingSet('甲',{seyun:'丁未'});
     const TRIAD_TRANSIT=run(mk(triadP,{realYeonun:triadTiming}));
 
-    // 18) Real runtime timing: canonical chart gets current-year..+5 data from calculateAccurateManse.
+    // 18) Missing one classical side must not backfill every rule ID; certainty must drop.
+    const savedDitianRules=globalThis.__DITIAN_SUI_RULES__.rules;
+    globalThis.__DITIAN_SUI_RULES__.rules=[];
+    const insufficientRun=run(mk(timingP),'career','current');
+    globalThis.__DITIAN_SUI_RULES__.rules=savedDitianRules;
+
+    // 19) Real runtime timing: canonical chart gets current-year..+5 data from calculateAccurateManse.
     const canonical=calculateAccurateManse(1998,2,21,'03:10','female');
     canonical.__testNowYmd='2026-09-20';
     canonical.concernKey='career'; canonical.concernSituation='current';
@@ -293,6 +299,17 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         note5:plain(x.notes[4].desc),
       })),
       provenance:provenanceCheck(CANON),
+      insufficient:{
+        claims:insufficientRun.audit.claims.map((c,i)=>({
+          noteNum:c.noteNum,
+          ditianRuleIds:c.ditianRuleIds,
+          zipingRuleIds:c.zipingRuleIds,
+          evidenceStatus:c.evidenceStatus,
+          certainty:c.certainty,
+          noteSentence:c.noteSentence,
+          actual:plain(insufficientRun.notes[i]?.desc),
+        })),
+      },
       legacy:{
         fpA:LEG_A.audit.structureFingerprint,fpB:LEG_B.audit.structureFingerprint,
         prescriptionA:LEG_A.reasoning.integrated.prescription,prescriptionB:LEG_B.reasoning.integrated.prescription,
@@ -403,6 +420,14 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     assert(p.sentenceMatches,'NOTE'+p.noteNum+' noteSentence not bound to actual rendered text');
   }
 
+  for(const c of r.insufficient.claims){
+    assert(c.ditianRuleIds.length===0,'insufficient evidence must not backfill all Ditian rule IDs');
+    assert(c.zipingRuleIds.length>0,'insufficient fixture should retain the Ziping rules that actually fired');
+    assert(c.evidenceStatus==='insufficient-evidence'&&c.certainty==='guarded','insufficient evidence did not lower certainty');
+    assert(/근거가 한쪽/.test(c.actual),'guarded user wording missing when one classical side lacks evidence');
+    assert(c.noteSentence===c.actual,'guarded noteSentence not bound to final rendered NOTE');
+  }
+
   assert(r.legacy.fpA===r.legacy.fpB,'legacy yongshin heuristic leaked into structural fingerprint');
   assert(JSON.stringify(r.legacy.prescriptionA)===JSON.stringify(r.legacy.prescriptionB),'legacy yongshin heuristic changed classical prescription');
   assert(r.legacy.claim4A===r.legacy.claim4B&&r.legacy.note4A===r.legacy.note4B,'legacy yongshin heuristic changed NOTE4');
@@ -433,7 +458,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   console.log('CLASSICAL_DEPTH_V31_PASS',JSON.stringify({
     rawMonth:true,rootPosition:true,touchul:true,sangsin:true,gisin:true,rescue:true,bridge:true,combine:true,special:true,
-    daeun:true,seyun:true,wolun:true,flowUnblock:true,branchZiping:true,triadObservation:true,concerns:true,provenance:true,legacyIndependence:true,rollingTiming:true
+    daeun:true,seyun:true,wolun:true,flowUnblock:true,branchZiping:true,triadObservation:true,concerns:true,provenance:true,insufficientEvidence:true,legacyIndependence:true,rollingTiming:true
   }));
   console.log('CLASSICAL_DEPTH_TRACE_SAMPLES',JSON.stringify(r.traces));
   console.log('NOTE6_FIVE_YEAR_SAMPLE',JSON.stringify(r.canonicalTiming));
