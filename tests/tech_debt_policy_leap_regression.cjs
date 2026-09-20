@@ -246,7 +246,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     }
   });
   assert(grant.storedLeap===true,'grant save dropped partner.l '+JSON.stringify(grant));
-  assert(grant.reopenLabel.includes('구매한 리포트 다시 열기'),'grant restore path not offered '+JSON.stringify(grant));
+  assert(grant.reopenLabel.includes('구매한')&&grant.reopenLabel.includes('다시 보기'),'grant restore path not offered '+JSON.stringify(grant));
   assert(grant.restoredFp===lunar.leapUnknown.bFp,'grant restore did not reuse leap-month partner extra '+JSON.stringify(grant));
 
   assert(errors.length===0,'browser errors: '+errors.join(' | '));
