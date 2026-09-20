@@ -199,8 +199,8 @@ async function inspect(page, mode) {
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
     assert(/NOTE 0?2/.test(r.note2Preview)&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
-    if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서부터 같이 보자')&&r.paywall.includes('진짜 중요한 건 이제부터야')&&r.paywall.includes('로아 언니, 나머지도 같이 봐줘'),'live F conversion paywall drift '+r.paywall);
-    if(mode==='T') assert(r.paywall.includes('서아 언니 · 여기서부터 정리할게')&&r.paywall.includes('원인하고 끊을 지점')&&r.paywall.includes('서아 언니, 답까지 정리해줘'),'live T conversion paywall drift '+r.paywall);
+    if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서부터 같이 보자')&&r.paywall.includes('이제 어떻게 끊을지가 남아 있어')&&r.paywall.includes('로아 언니, 나머지도 같이 봐줘'),'live F conversion paywall drift '+r.paywall);
+    if(mode==='T') assert(r.paywall.includes('서아 언니 · 여기서부터 정리할게')&&r.paywall.includes('원인과 끊을 지점')&&r.paywall.includes('서아 언니, 답까지 정리해줘'),'live T conversion paywall drift '+r.paywall);
     assert(r.paywall.includes('990원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
     assert(r.paywall.includes('NOTE2 다음부터 NOTE6까지')&&!/오픈 체험가/.test(r.paywall),'990 won unlock scope or stale sale copy drift '+r.paywall);
   }
@@ -215,8 +215,8 @@ async function inspect(page, mode) {
   assert(!r.badges.some(x=>x.includes('·')||x.includes('사람 필터')||x.includes('7일 처방')||x.includes('놓친 포인트')),
     'old NOTE badge wording remains '+JSON.stringify(r.badges));
   assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
-  if (mode==='F') assert(r.resultGreeting.includes('다 봤어!')&&r.resultGreeting.includes('네 얘기부터 차근차근 같이 풀어볼게')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=105,'F result warm close-sister intro drift '+r.resultGreeting);
-  if (mode==='T') assert(r.resultGreeting.includes('뭐가 진짜 문제고')&&r.resultGreeting.includes('좋은 건 좋다, 아닌 건 아니다')&&r.resultGreeting.length<=105,'T result tsundere intro drift '+r.resultGreeting);
+  if (mode==='F') assert(r.resultGreeting.includes('왜 자꾸 마음이 남는지 보여')&&r.resultGreeting.includes('먼저 핵심부터 같이 볼게')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=105,'F result warm close-sister intro drift '+r.resultGreeting);
+  if (mode==='T') assert(r.resultGreeting.includes('먼저 볼 핵심이 잡혔어')&&r.resultGreeting.includes('중요한 것부터 정리할게')&&r.resultGreeting.length<=105,'T result concise direct-care intro drift '+r.resultGreeting);
   assert(!r.resultGreeting.includes('ㅎㅎ'),'repeated laughter remains in result '+r.resultGreeting);
   if (mode==='T') assert(!/징징|살인 충동|사람 취급|멍청한 질문/.test(r.resultGreeting+r.catalog),'harsh T voice leaked into live journey '+JSON.stringify({greeting:r.resultGreeting,catalog:r.catalog}));
   return r;
