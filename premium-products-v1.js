@@ -1254,7 +1254,7 @@
     root = document.createElement("div");
     root.id = "unniProductModal";
     root.style.cssText = "display:none;position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.48);padding:10px;overflow:auto;-webkit-overflow-scrolling:touch";
-    root.innerHTML = `<div style="max-width:520px;margin:max(8px,env(safe-area-inset-top)) auto max(14px,env(safe-area-inset-bottom));background:#fff;border-radius:24px;padding:0 16px 18px;box-shadow:0 24px 70px rgba(15,23,42,.25);overflow:visible"><div id="unniProductStickyHead" style="position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin:0 -16px;padding:14px 16px 11px;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-radius:24px 24px 14px 14px;border-bottom:1px solid #f1f5f9"><div><div id="unniProductBadge" style="font-size:10px;font-weight:900;color:#f43f5e"></div><h2 id="unniProductTitle" style="font-size:19px;font-weight:950;margin:4px 0 2px"></h2><div id="unniProductPrice" style="font-size:12px;font-weight:800;color:#64748b"></div></div><button id="unniProductClose" style="flex:none;border:0;background:#f1f5f9;border-radius:999px;width:36px;height:36px;font-size:19px;cursor:pointer">×</button></div><div id="unniProductSetup" style="margin-top:14px"></div><div id="unniProductPayment" style="display:none;margin-top:15px"><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><div id="unniProductBody" style="margin-top:14px"></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#fb7185,#f472b6);color:white;padding:14px 16px;font-size:13px;font-weight:950;cursor:pointer">사진으로 한 번에 저장하기</button><div id="unniProductSaveHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:800;line-height:1.55;color:#94a3b8">결과 읽는 동안 저장용 사진을 미리 준비해둘게.</div><button id="unniProductAction" style="width:100%;margin-top:14px;border:0;border-radius:15px;background:#0f172a;color:white;padding:14px 16px;font-size:14px;font-weight:900;cursor:pointer"></button><div id="unniProductAccessNote" style="display:none;margin-top:9px;text-align:center;font-size:11px;font-weight:800;line-height:1.6;color:#a16207">🔐 한 번 결제하면 이 브라우저에서는 추가 결제 없이 계속 다시 볼 수 있어요.</div></div>`;
+    root.innerHTML = `<div style="max-width:520px;margin:max(8px,env(safe-area-inset-top)) auto max(14px,env(safe-area-inset-bottom));background:#fff;border-radius:28px;padding:0 16px 20px;box-shadow:0 26px 80px rgba(15,23,42,.24);overflow:visible"><div id="unniProductStickyHead" style="position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin:0 -16px;padding:15px 16px 12px;background:rgba(255,255,255,.97);backdrop-filter:blur(14px);border-radius:28px 28px 16px 16px;border-bottom:1px solid #f1f5f9"><div style="min-width:0;flex:1"><div id="unniProductBadge" style="font-size:10px;font-weight:950;color:#f43f5e"></div><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:4px"><h2 id="unniProductTitle" style="min-width:0;font-size:20px;line-height:1.25;font-weight:950;margin:0;color:#0f172a"></h2><div id="unniProductPrice" style="flex:none;border-radius:999px;background:#fff1f2;border:1px solid #ffe4e6;padding:6px 9px;font-size:11px;font-weight:950;color:#be123c;white-space:nowrap"></div></div></div><button id="unniProductClose" style="flex:none;border:0;background:#f8fafc;border-radius:999px;width:36px;height:36px;font-size:19px;color:#64748b;cursor:pointer">×</button></div><div id="unniProductBody" style="margin-top:14px"></div><div id="unniProductSetup" style="margin-top:14px"></div><div id="unniProductPayment" style="display:none;margin-top:14px;padding:12px;border-radius:18px;background:#fff7f8;border:1px solid #ffe4e6"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px"><div><div style="font-size:12px;font-weight:950;color:#334155">결제수단 선택</div><div style="margin-top:2px;font-size:10px;font-weight:750;color:#94a3b8">원하는 수단을 고른 뒤 아래에서 이어봐</div></div><div id="unniProductPaymentAmount" style="font-size:11px;font-weight:950;color:#e11d48"></div></div><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#fb7185,#f472b6);color:white;padding:14px 16px;font-size:13px;font-weight:950;cursor:pointer">사진으로 한 번에 저장하기</button><div id="unniProductSaveHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:800;line-height:1.55;color:#94a3b8">결과 읽는 동안 저장용 사진을 미리 준비해둘게.</div><button id="unniProductAction" style="width:100%;margin-top:14px;border:0;border-radius:16px;background:linear-gradient(90deg,#f43f5e,#ec4899);color:white;padding:14px 16px;font-size:14px;font-weight:950;cursor:pointer;box-shadow:0 10px 24px rgba(244,63,94,.20)"></button><div id="unniProductActionHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:800;line-height:1.55;color:#94a3b8">선택한 결제수단으로 결제됩니다</div><div id="unniProductAccessNote" style="display:none;margin-top:8px;text-align:center;font-size:10.5px;font-weight:800;line-height:1.6;color:#64748b">한 번 결제하면 이 브라우저에서 추가 결제 없이 다시 볼 수 있어요.</div></div>`;
     document.body.appendChild(root);
     root.querySelector("#unniProductClose").onclick = () => { root.style.display = "none"; document.body.style.overflow = ""; };
     root.addEventListener("click", (e) => { if (e.target === root) root.querySelector("#unniProductClose").click(); });
@@ -1406,6 +1406,8 @@
     root.querySelector("#unniProductPrice").textContent = "";
     root.querySelector("#unniProductSetup").innerHTML = "";
     root.querySelector("#unniProductPayment").style.display = "none";
+    const actionHint = root.querySelector("#unniProductActionHint");
+    if (actionHint) actionHint.style.display = "none";
     const accessNote = root.querySelector("#unniProductAccessNote");
     if (accessNote) accessNote.style.display = "none";
     root.querySelector("#unniProductBody").innerHTML = productBody(productId, data, extra);
@@ -1452,15 +1454,20 @@
       ? `${won(product.price)} → ${won(order.amount)}`
       : won(order.amount);
     root.querySelector("#unniProductPayment").style.display = "block";
+    const paymentAmount = root.querySelector("#unniProductPaymentAmount");
+    if (paymentAmount) paymentAmount.textContent = `최종 ${won(order.amount)}`;
     root.querySelector("#unniProductPaymentMethod").innerHTML = "";
     root.querySelector("#unniProductPaymentAgreement").innerHTML = "";
     const widget = PaymentWidget(TOSS_CLIENT_KEY, PaymentWidget.ANONYMOUS);
     widget.renderPaymentMethods("#unniProductPaymentMethod", { value:order.amount, currency:"KRW" }, { variantKey:"saju" });
     widget.renderAgreement("#unniProductPaymentAgreement");
     const action = root.querySelector("#unniProductAction");
-    action.textContent = productId === "all_in_one" && Number(order.amount) < product.price
-      ? `업그레이드 ${won(order.amount)} 결제하고 열기`
-      : `${won(order.amount)} 결제하고 열기`;
+    const finalState = productId === "all_in_one" && Number(order.amount) < product.price
+      ? { kind:"upgrade", amount:Number(order.amount) }
+      : { kind:"unpurchased", amount:Number(order.amount) };
+    action.textContent = productActionLabel(productId,finalState,Number(order.amount));
+    const actionHint = root.querySelector("#unniProductActionHint");
+    if (actionHint) { actionHint.style.display = "block"; actionHint.textContent = "선택한 결제수단으로 결제됩니다"; }
     action.onclick = async () => {
       action.disabled = true;
       try {
@@ -1485,7 +1492,8 @@
     const product = PRODUCTS[productId];
     if (!data || !product) return;
     const root = ensureModal();
-    root.querySelector("#unniProductBadge").textContent = product.badge;
+    const ux = productUx(productId);
+    root.querySelector("#unniProductBadge").textContent = ux.eyebrow || product.badge;
     root.querySelector("#unniProductTitle").textContent = product.name;
     root.querySelector("#unniProductPrice").textContent = won(product.price);
     root.querySelector("#unniProductSetup").innerHTML = setupHtml(productId, data);
@@ -1497,11 +1505,14 @@
     if (saveHint) saveHint.style.display = "none";
     const valueCopy = productValueCopy(productId);
     const body = root.querySelector("#unniProductBody");
-    body.innerHTML = `<p style="font-size:13px;line-height:1.75;color:#64748b">${esc(product.desc)}</p>${valueCopy?.unlocks ? `<div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;font-size:11px;line-height:1.65;color:#475569"><b>이 상품에서 새로 열리는 정보</b><br>${esc(valueCopy.unlocks)}</div>` : ""}`;
+    const unlockRows = String(valueCopy?.unlocks || "").split("·").map((x)=>x.trim()).filter(Boolean);
+    body.innerHTML = `<div data-product-value-intro="${esc(productId)}" style="padding:13px 14px;border-radius:17px;background:linear-gradient(145deg,#fff1f2,#fff);border:1px solid #ffe4e6"><div style="font-size:12.5px;font-weight:950;line-height:1.5;color:#9f1239">${esc(ux.value)}</div><p style="margin:6px 0 0;font-size:11.5px;line-height:1.65;color:#64748b">${esc(ux.difference)}</p></div>${unlockRows.length ? `<div style="margin-top:10px;padding:11px 12px;border-radius:15px;background:#f8fafc;border:1px solid #e2e8f0"><div style="font-size:10.5px;font-weight:950;color:#475569;margin-bottom:7px">구매하면 새로 열리는 내용</div><div style="display:flex;flex-wrap:wrap;gap:6px">${unlockRows.map((row)=>`<span style="display:inline-flex;padding:5px 8px;border-radius:999px;background:#fff;border:1px solid #e2e8f0;font-size:9.5px;font-weight:850;color:#64748b">${esc(row)}</span>`).join("")}</div></div>` : ""}`;
     const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
     const accessNote = root.querySelector("#unniProductAccessNote");
     if (accessNote) accessNote.style.display = isFreeLaunch ? "none" : "block";
     const action = root.querySelector("#unniProductAction");
+    const actionHint = root.querySelector("#unniProductActionHint");
+    if (actionHint) actionHint.style.display = "none";
     action.disabled = true;
     action.textContent = isFreeLaunch ? "무료 이벤트로 미리보기" : "구매 상태 확인 중…";
     root.style.display = "block";
@@ -1544,7 +1555,7 @@
 
     if (state.kind === "purchased") {
       root.querySelector("#unniProductPrice").textContent = "구매 완료";
-      action.textContent = productId === "full_saju" ? "구매한 전체판 다시 보기" : productId === "all_in_one" ? "구매한 완전판 다시 보기" : "구매한 상품 다시 보기";
+      action.textContent = productActionLabel(productId,state);
       if (productId === "all_in_one") {
         const savedSituations = directGrant?.extra?.situations || {};
         for (const key of Object.keys(CONCERNS)) {
@@ -1573,7 +1584,7 @@
 
     if (state.kind === "included") {
       root.querySelector("#unniProductPrice").textContent = "완전판에 포함";
-      action.textContent = "완전판에 포함됨 · 바로 보기";
+      action.textContent = productActionLabel(productId,state);
       action.onclick = () => {
         try {
           const extra = productId === "concern_bundle3" ? collectExtra(productId,data,root) : {};
@@ -1588,7 +1599,7 @@
     if (state.kind === "upgrade") {
       root.querySelector("#unniProductPrice").textContent = `${won(product.price)} → ${won(state.amount)}`;
       body.insertAdjacentHTML("beforeend", `<div data-upgrade-quote="all_in_one" style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff1f2;border:1px solid #fecdd3;font-size:11px;line-height:1.65;color:#9f1239"><b>이미 산 1인 상품 금액을 빼고 계산했어.</b><br>${esc((state.quote?.creditedProducts || []).map((id)=>PRODUCTS[id]?.name || id).join(" + "))} 구매가 서버에서 확인돼서 <b>${won(state.amount)}</b>만 결제하면 완전판으로 올라가.</div>`);
-      action.textContent = state.label;
+      action.textContent = productActionLabel(productId,state);
       action.onclick = async () => {
         action.disabled = true;
         try {
@@ -1602,7 +1613,7 @@
       return;
     }
 
-    action.textContent = isFreeLaunch ? "무료 이벤트로 미리보기" : state.label;
+    action.textContent = isFreeLaunch ? "무료 이벤트로 미리보기" : productActionLabel(productId,state);
     action.onclick = async () => {
       action.disabled = true;
       try {
@@ -1637,6 +1648,48 @@
     if (explicitIntent === "other-concerns") return "concern_bundle3";
     if (relationshipIntent && !has("compatibility")) return "compatibility";
     return "full_saju";
+  }
+
+  const PRODUCT_UX = {
+    concern_bundle3: {
+      eyebrow:"다른 고민 3개 확장",
+      value:"다른 고민 3개를 각각 NOTE 깊이로",
+      difference:"방금 본 고민은 빼고, 새로 고른 3개 고민을 각각 따로 풀어.",
+      cta:"고민 3개 더 깊게 보기",
+    },
+    full_saju: {
+      eyebrow:"1인 분석 대표",
+      value:"나 전체 구조 · 영역 연결 · 5년 흐름",
+      difference:"방금 본 고민 하나를 반복하지 않고, 돈·일·연애·관계가 왜 같이 움직이는지 한 판으로 연결해.",
+      cta:"내 전체 사주판 열기",
+    },
+    compatibility: {
+      eyebrow:"두 사람 사주 교차",
+      value:"상대 사주까지 겹쳐야 나오는 둘 사이 계산",
+      difference:"내 사주를 더 길게 보는 게 아니라, 상대 사주를 실제로 겹쳐 둘 사이를 계산해.",
+      cta:"우리 둘 궁합 보기",
+    },
+    all_in_one: {
+      eyebrow:"나 한 사람 전체판",
+      value:"전체 사주판 + 6개 고민 + 종합 연결",
+      difference:"전체 사주판과 6개 고민을 따로 보지 않고, 나 한 사람의 흐름으로 한 번에 연결해.",
+      cta:"내 사주 완전판 열기",
+    },
+  };
+
+  function productUx(productId) {
+    return PRODUCT_UX[productId] || { eyebrow:PRODUCTS[productId]?.badge || "", value:PRODUCTS[productId]?.desc || "", difference:PRODUCTS[productId]?.desc || "", cta:PRODUCTS[productId]?.name || "상품 보기" };
+  }
+
+  function productActionLabel(productId, state, amountOverride) {
+    const ux = productUx(productId);
+    const amount = Number(amountOverride ?? state?.amount ?? PRODUCTS[productId]?.price ?? 0);
+    if (state?.kind === "purchased") {
+      return productId === "full_saju" ? "구매한 전체판 다시 보기" : productId === "all_in_one" ? "구매한 완전판 다시 보기" : "구매한 상품 다시 보기";
+    }
+    if (state?.kind === "included") return "완전판에 포함됨 · 바로 보기";
+    if (state?.kind === "upgrade") return `완전판으로 이어보기 · +${won(amount)}`;
+    return `${ux.cta} · ${won(amount)}`;
   }
 
   function productShort(productId) {
@@ -1676,25 +1729,29 @@
 
   function productButtonHtml(p, { recommended = false, secondary = false, reason = "", state = null } = {}) {
     const resolvedState = state || { kind:"unpurchased", amount:p.price, label:`${won(p.price)}에 열기` };
-    const border = recommended ? "#fda4af" : "#e2e8f0";
-    const bg = recommended ? "linear-gradient(135deg,#fff1f2,#fff)" : "#fff";
-    const pad = recommended ? "15px" : "12px 13px";
-    const value = productValueCopy(p.id);
-    const description = recommended ? p.desc : productShort(p.id);
+    const ux = productUx(p.id);
+    const representative = p.id === "full_saju" && !recommended;
+    const border = recommended ? "#fb7185" : representative ? "#fecdd3" : "#e2e8f0";
+    const bg = recommended ? "linear-gradient(145deg,#fff1f2 0%,#ffffff 78%)" : representative ? "#fffafb" : "#fff";
+    const pad = recommended ? "15px" : "13px";
     const priceLabel = resolvedState.kind === "purchased" ? "구매 완료"
       : resolvedState.kind === "included" ? "완전판 포함"
         : resolvedState.kind === "upgrade" ? `+${won(resolvedState.amount)}`
           : won(p.price);
     const stateCopy = resolvedState.kind === "purchased"
-      ? (p.id === "full_saju" ? "구매한 전체판 다시 보기" : "구매한 상품 다시 보기")
-      : resolvedState.kind === "included" ? "완전판에 포함됨 · 바로 보기"
-        : resolvedState.kind === "upgrade" ? resolvedState.label
-          : `새로 열리는 것 · ${value?.cta || p.badge}`;
-    return `<button data-unni-product="${p.id}" data-product-state="${resolvedState.kind}" ${secondary ? 'data-secondary-product="1"' : ""} style="text-align:left;width:100%;padding:${pad};border:${recommended ? "2px" : "1px"} solid ${border};border-radius:16px;background:${bg};cursor:pointer;box-shadow:${recommended ? "0 8px 24px rgba(244,63,94,.10)" : "none"}"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div style="min-width:0"><div style="font-size:10px;font-weight:900;color:${recommended ? "#f43f5e" : "#94a3b8"};margin-bottom:3px">${recommended ? "언니가 지금 먼저 골라준 건 · " : ""}${p.badge}</div><div style="font-size:${recommended ? "15px" : "13px"};font-weight:950;color:#0f172a">${p.name}</div></div><div style="font-size:${recommended ? "14px" : "13px"};font-weight:950;color:#0f172a;white-space:nowrap">${priceLabel}</div></div><div style="font-size:${recommended ? "11.5px" : "10.5px"};line-height:1.6;color:#64748b;margin-top:${recommended ? "7px" : "5px"}">${description}</div><div style="margin-top:7px;font-size:10.5px;font-weight:900;color:${recommended ? "#be123c" : "#475569"}">${esc(stateCopy)}</div>${recommended && reason ? `<div style="margin-top:8px;padding:8px 9px;border-radius:11px;background:rgba(255,255,255,.75);font-size:10.5px;line-height:1.55;font-weight:800;color:#be123c">왜 이걸 먼저 추천하냐면 · ${reason}</div>` : ""}</button>`;
+      ? "구매 완료 · 바로 다시 보기"
+      : resolvedState.kind === "included" ? "완전판에 포함 · 추가 결제 없음"
+        : resolvedState.kind === "upgrade" ? `완전판으로 이어보기 · +${won(resolvedState.amount)}`
+          : "상품 내용 보기 →";
+    const topLabel = recommended ? "지금 이 고민 다음 추천" : ux.eyebrow;
+    const description = recommended ? ux.difference : productShort(p.id);
+    const stateColor = ["purchased","included"].includes(resolvedState.kind) ? "#047857" : resolvedState.kind === "upgrade" ? "#be123c" : "#64748b";
+    return `<button data-unni-product="${p.id}" data-product-state="${resolvedState.kind}" ${secondary ? 'data-secondary-product="1"' : ""} style="text-align:left;width:100%;padding:${pad};border:${recommended ? "2px" : "1px"} solid ${border};border-radius:18px;background:${bg};cursor:pointer;box-shadow:${recommended ? "0 12px 28px rgba(244,63,94,.10)" : representative ? "0 6px 18px rgba(244,63,94,.05)" : "none"}"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="min-width:0"><div style="font-size:9.5px;font-weight:950;color:${recommended || representative ? "#f43f5e" : "#94a3b8"};margin-bottom:4px">${topLabel}</div><div style="font-size:${recommended ? "16px" : "14px"};line-height:1.3;font-weight:950;color:#0f172a">${p.name}</div></div><div style="flex:none;border-radius:999px;background:${recommended || representative ? "#fff" : "#f8fafc"};border:1px solid ${recommended || representative ? "#ffe4e6" : "#f1f5f9"};padding:5px 8px;font-size:11px;font-weight:950;color:${recommended || representative ? "#be123c" : "#475569"};white-space:nowrap">${priceLabel}</div></div><div style="margin-top:8px;font-size:${recommended ? "12px" : "11.5px"};line-height:1.45;font-weight:900;color:#334155">${ux.value}</div><div style="font-size:${recommended ? "11px" : "10.5px"};line-height:1.6;color:#64748b;margin-top:5px">${description}</div><div style="margin-top:8px;font-size:10.5px;font-weight:900;color:${stateColor}">${stateCopy}</div>${recommended && reason ? `<div style="margin-top:9px;padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.82);border:1px solid #ffe4e6;font-size:10.5px;line-height:1.55;font-weight:800;color:#9f1239"><span style="font-weight:950">왜 추천했냐면</span> · ${reason}</div>` : ""}</button>`;
   }
 
   function foldedProductGroups(products, states) {
-    const single = products.filter((p) => p.id !== "compatibility");
+    const order = ["full_saju","concern_bundle3","all_in_one"];
+    const single = products.filter((p) => p.id !== "compatibility").sort((a,b) => order.indexOf(a.id) - order.indexOf(b.id));
     const pair = products.filter((p) => p.id === "compatibility");
     const block = (title, rows) => rows.length
       ? `<div data-product-group="${title === "나를 더 보기" ? "single" : "pair"}"><div style="font-size:10px;font-weight:900;color:#94a3b8;margin:4px 2px 7px">${title}</div><div style="display:grid;gap:9px">${rows.map((p)=>productButtonHtml(p,{secondary:true,state:states[p.id]})).join("")}</div></div>`
@@ -1753,11 +1810,11 @@
     wrap.id = "unniProductLadder";
     wrap.dataset.verifiedPremium = isFreeLaunch ? "free-launch" : "server";
     wrap.style.cssText = "margin-top:24px;padding:18px 14px;border-radius:22px;background:#fff;border:1px solid #fde2e8;box-shadow:0 10px 30px rgba(225,175,185,.10)";
-    const eyebrow = allOwned ? "나에 대한 완전판은 이미 열려 있어" : (isT ? "이 고민은 여기까지 정리했어" : "이 고민 끝까지 같이 봤으니까");
-    const headline = allOwned ? "이제 별도인 둘 사이 풀이만 남아 있어" : (isT ? "다음으로 볼 건 이게 제일 맞아" : "언니가 너한테 다음 하나만 골라봤어");
+    const eyebrow = allOwned ? "나에 대한 완전판은 이미 열려 있어" : (isT ? "이 고민은 여기까지 정리했어" : "이 고민은 여기까지 같이 봤어");
+    const headline = allOwned ? "이제 별도인 둘 사이 풀이만 남아 있어" : (isT ? "다음으로 볼 건 이게 제일 맞아" : "다음엔 이걸 먼저 보는 게 좋아");
     const sub = allOwned
       ? "완전판에 포함된 1인 상품은 다시 팔지 않을게. 궁합만 두 번째 사람의 사주가 필요한 별도 계산이야."
-      : (isT ? "방금 본 내용을 다시 파는 게 아니라, 여기서부터 새로 열리는 정보가 가장 많은 걸 맨 위에 뒀어." : "방금 상담에서 이미 본 건 빼고, 여기서부터 새로 알 수 있는 게 가장 많은 걸 언니가 맨 위에 골라뒀어.");
+      : "방금 본 내용과 겹치지 않고, 여기서부터 새로 열리는 정보가 가장 많은 걸 맨 위에 뒀어.";
     const toggleHtml = others.length
       ? `<button id="unniShowOtherProducts" type="button" aria-expanded="false" style="width:100%;border:1px solid #e2e8f0;background:#f8fafc;border-radius:13px;padding:10px 12px;font-size:11px;font-weight:900;color:#64748b;cursor:pointer">목적이 다르면 다른 ${others.length}개 보기</button><div id="unniOtherProducts" style="display:none;gap:14px">${foldedProductGroups(others,states)}</div>`
       : "";
