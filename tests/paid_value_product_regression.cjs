@@ -508,7 +508,9 @@ function norm(v) {
   const fullSections = await page.locator('#unniProductBody section').count();
   assert(fullSections === 12, `full_saju section count ${fullSections}`);
   assert(modal.includes('내 사주 전체 한 줄 요약') && modal.includes('평생 가져갈 내 사용법 3가지'), 'full_saju preview content missing');
-  assert(modal.includes('지금 선택한 고민을 또 풀어쓰는 리포트가 아니야'), 'full_saju differentiation copy missing');
+  assert(modal.includes('방금 본 고민 하나를 길게 반복하는 결과가 아니야') && modal.includes('앞으로 5년 큰 흐름'), 'full_saju differentiation/long-term content missing');
+  assert(await page.locator('#unniProductBody [data-product-contract="full_saju"]').count()===1,'full_saju contract marker missing');
+  assert(await page.locator('#unniProductBody [data-structure-fingerprint]').getAttribute('data-structure-fingerprint'),'full_saju reasoning fingerprint missing');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'full_saju full-report save button missing');
   assert((await page.locator('#unniProductSaveAll').innerText()).includes('사진으로 한 번에 저장하기'), 'one-action paid save CTA missing');
   assert(await page.locator('#unniProductSavePdf').count() === 0, 'PDF save UI must be removed');
@@ -564,6 +566,8 @@ function norm(v) {
   modal = await page.locator('#unniProductModal').innerText();
   const bundleArticles = await page.locator('#unniProductBody article').count();
   assert(bundleArticles === 18, `bundle3 NOTE card count ${bundleArticles}`);
+  assert(await page.locator('#unniProductBody [data-product-exclusive="concern_bundle3"]').count()===1,'bundle3 shared-structure exclusive block missing');
+  assert(await page.locator('#unniProductBody [data-export-kind="full"]').count()===0,'bundle3 leaked full_saju chapters');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'bundle3 full-report save missing');
   await page.locator('#unniProductClose').click();
 
@@ -580,6 +584,11 @@ function norm(v) {
   modal = await page.locator('#unniProductModal').innerText();
   const compatibilitySections = await page.locator('#unniProductBody section').count();
   assert(compatibilitySections === 16, `compatibility section count ${compatibilitySections}`);
+  assert(await page.locator('#unniProductBody [data-export-compat-timing="1"]').count()===1,'compatibility pair timing missing');
+  const pairFps=await page.locator('#unniProductBody [data-export-intro="compat"]').evaluate(el=>({
+    a:el.getAttribute('data-person-a-fingerprint'),b:el.getAttribute('data-person-b-fingerprint')
+  }));
+  assert(pairFps.a&&pairFps.b&&pairFps.a!==pairFps.b,'compatibility must contain two distinct person fingerprints '+JSON.stringify(pairFps));
   assert(modal.includes('우리 둘 관계를 깊게 보는 궁합') && !modal.includes('16개 챕터'), 'compatibility intro should explain the outcome, not chapter volume');
   assert(modal.includes('처음 서로에게 끌리는 이유') && modal.includes('싸움이 커지는 순서') && modal.includes('싸운 뒤 화해하는 법') && modal.includes('돈과 현실 문제를 같이 다룰 때') && modal.includes('둘이 실제로 지키면 좋은 약속'), 'compatibility deep content missing');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'compatibility full-report save missing');
@@ -598,14 +607,19 @@ function norm(v) {
   for (const label of ['돈·재물','학업·직장','연애·썸','진로·적성','사람·관계','마음·스트레스']) assert(modal.includes(label), `all-in-one missing ${label}`);
   const allInOneArticles = await page.locator('#unniProductBody article').count();
   assert(allInOneArticles === 36, `all-in-one NOTE card count ${allInOneArticles}`);
+  assert(await page.locator('#unniProductBody [data-product-exclusive="all_in_one"]').count()===1,'all-in-one cross-domain exclusive block missing');
+  assert(await page.locator('#unniProductBody [data-export-compat-timing]').count()===0,'all-in-one must not include compatibility timeline');
+  assert(await page.locator('#unniProductBody [data-product-exclusive="compatibility"]').count()===0,'all-in-one swallowed compatibility content');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'all-in-one full-report save missing');
   await page.locator('#unniProductClose').click();
 
   const html = fs.readFileSync('index.html','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.0'), 'paid value script include missing');
+  assert(html.includes('./product-content-policy-v1.js?v=1.0.0'),'product content policy script include missing');
   assert(html.includes('./premium-products-v1.js?v=2.0.0'), 'product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
-  assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('premium-products-v1.js'), 'product script order wrong');
+  assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('concern-note-engine-v2.js'),'paid/note script order wrong');
+  assert(html.indexOf('concern-note-engine-v2.js') < html.indexOf('product-content-policy-v1.js') && html.indexOf('product-content-policy-v1.js') < html.indexOf('premium-products-v1.js'),'policy/product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
   assert(html.includes('__UNNI_IMAGE_EXPORT_V2__'), 'shared image export engine missing');
   assert(html.includes('UNNI_VAULT_ENABLED = false') && html.includes('id="unniVaultEntry"') && html.includes('id="unniVaultModal"'), 'paused vault scaffolding missing');
@@ -620,8 +634,8 @@ function norm(v) {
   assert(premium.includes('isCurrentPaidExport') && premium.includes('EXPORT_IDLE_CANCELLED'), 'stale paid-export jobs must stop when the report changes');
   assert(premium.includes('paidExportCache.clear()') && premium.includes('paidExportCache.set(key, prepared)'), 'paid PNG blob cache must stay bounded to the current report');
   assert(premium.includes('nativeSharePngFiles') && premium.includes('isMobileDevice'), 'one-action mobile multi-image share path missing');
-  assert(premium.includes('recommendedProductId') && premium.includes('recommendationReason') && premium.includes('const unlocked = typeof isUnlocked') && premium.includes('if (!unlocked)') && premium.includes('data-secondary-product') && premium.includes('다른 게 더 궁금하다면'), 'post-unlock personalized premium recommendation + discoverable alternatives missing');
-  assert(!premium.includes('unniShowOtherProducts') && !premium.includes('다른 리포트 3개 보기'), 'premium alternatives should not be hidden behind a disclosure toggle');
+  assert(premium.includes('recommendedProductId') && premium.includes('recommendationReason') && premium.includes('const unlocked = typeof isUnlocked') && premium.includes('if (!unlocked)') && premium.includes('data-secondary-product'), 'post-unlock personalized premium recommendation missing');
+  assert(premium.includes('unniShowOtherProducts') && premium.includes('unniOtherProducts') && premium.includes('목적이 다르면 다른 3개 보기') && premium.includes('aria-expanded="false"'), 'recommended-first folded but discoverable alternatives missing');
   assert(!premium.includes('unniProductSavePdf') && !premium.includes('printPaidReport') && !premium.includes('unniPaidPrintHost') && !premium.includes('PDF로 한 파일 보관하기'), 'PDF save code must be fully removed');
   assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="concern"'), 'semantic paid-report grouping missing');
   assert(premium.includes('나를 이해하는 법') && premium.includes('대화하고 싸우고 화해하는 법') && premium.includes('어떻게 움직일지'), 'human-readable export group titles missing');
