@@ -16,7 +16,7 @@ async function deployed(page) {
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach NOTE v3 / paid 1.5.0 / products 2.0.0');
+  throw new Error('production did not reach NOTE v3 / paid 1.5.0 / products 2.0.1');
 }
 
 async function clickCatalogProduct(page, productId) {
@@ -259,6 +259,12 @@ async function inspect(page, mode) {
   const compatibilitySetup=await page.locator('#unniProductModal').innerText();
   assert(compatibilitySetup.includes('양력')&&compatibilitySetup.includes('음력')&&!compatibilitySetup.includes('양력 생일')&&!compatibilitySetup.includes('음력 생일'),'live compatibility calendar labels are not simplified');
   assert(!compatibilitySetup.includes('예: 오후 3시 20분이면'),'live compatibility time helper was not removed');
+  assert(!(await page.locator('#partnerLeapWrap').isVisible()),'live leap-month UI must stay hidden for solar');
+  await page.selectOption('#partnerCalendar','lunar');
+  assert(await page.locator('#partnerLeapWrap').isVisible(),'live leap-month UI did not appear for lunar');
+  await page.check('#partnerLeapMonth');
+  await page.selectOption('#partnerCalendar','solar');
+  assert(!(await page.locator('#partnerLeapWrap').isVisible())&&!(await page.locator('#partnerLeapMonth').isChecked()),'live leap-month UI did not hide/reset for solar');
   await page.locator('#unniProductClose').click();
 
   await clickCatalogProduct(page,'full_saju');
