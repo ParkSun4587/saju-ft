@@ -178,10 +178,19 @@
       delete out.fullSajuTimeline;
       delete out.fullFiveYear;
       delete out.daeunContext;
+      if (out.extra) {
+        delete out.extra.fullSajuTimeline;
+        delete out.extra.fullFiveYear;
+        delete out.extra.daeunContext;
+      }
     }
     if (!canRenderFeature(productId, "cross-domain")) {
       delete out.crossDomain;
       delete out.crossDomainAnalysis;
+      if (out.extra) {
+        delete out.extra.crossDomain;
+        delete out.extra.crossDomainAnalysis;
+      }
     }
     return out;
   }
