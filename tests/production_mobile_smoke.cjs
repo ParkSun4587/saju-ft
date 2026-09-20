@@ -388,8 +388,18 @@ async function inspect(page, mode) {
     await small.locator(mode==='F'?'#panelRoa':'#panelSeoa').click();
     await small.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
     const voice=await small.locator('#welcomeSisterText').innerText();
-    if(mode==='F') assert(voice.includes('왜 이 고민이 자꾸 마음에 남는지'),'360px F voice drift '+voice);
-    else assert(voice.includes('이유랑 다음 행동까지 순서대로 정리해줄게.'),'360px T voice drift '+voice);
+    if(mode==='F') assert(
+      voice.includes('왔구나. 편하게 알려줘.') &&
+      voice.includes('이름이랑 생일부터 받고') &&
+      voice.includes('제일 마음 쓰이는 고민부터 같이 볼게'),
+      '360px F voice drift '+voice
+    );
+    else assert(
+      voice.includes('왔어. 바로 정리해보자.') &&
+      voice.includes('이름이랑 생일부터 받고') &&
+      voice.includes('제일 먼저 볼 고민 하나만 잡을게'),
+      '360px T voice drift '+voice
+    );
     await small.close();
   }
   await smallCtx.close();
