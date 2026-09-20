@@ -272,16 +272,16 @@ function norm(v) {
     const fChem = {
       best:document.getElementById('chemBestCard')?.className || '',
       worst:document.getElementById('chemWorstCard')?.className || '',
-      bestTitle:document.getElementById('chemBestTitle')?.innerText || '',
-      worstTitle:document.getElementById('chemWorstTitle')?.innerText || '',
+      bestTitle:document.getElementById('chemBestTitle')?.textContent || '',
+      worstTitle:document.getElementById('chemWorstTitle')?.textContent || '',
     };
     const fOheng = document.getElementById('ohengSummaryTxt')?.innerText || '';
     updateResultContentByMode('T');
     const tChem = {
       best:document.getElementById('chemBestCard')?.className || '',
       worst:document.getElementById('chemWorstCard')?.className || '',
-      bestTitle:document.getElementById('chemBestTitle')?.innerText || '',
-      worstTitle:document.getElementById('chemWorstTitle')?.innerText || '',
+      bestTitle:document.getElementById('chemBestTitle')?.textContent || '',
+      worstTitle:document.getElementById('chemWorstTitle')?.textContent || '',
     };
     const tOheng = document.getElementById('ohengSummaryTxt')?.innerText || '';
     const tGreeting = document.getElementById('resultSisterGreeting')?.innerText || '';
