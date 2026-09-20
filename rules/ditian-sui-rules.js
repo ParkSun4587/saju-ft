@@ -234,14 +234,14 @@
         const b=ctx.bridge;
         if(!b) return null;
         const bridgeForce=Number(ctx.influence?.[b.bridge]||0);
-        const established=bridgeForce>0;
+        const status=bridgeForce>0?"present-candidate":"missing";
         return {
-          conclusion:established
-            ?`${b.controller}와 ${b.controlled}의 직접 제어 사이에 ${b.bridge}가 실제로 존재해 생의 연결고리로 작동할 조건이 있다.`
+          conclusion:status==="present-candidate"
+            ?`${b.controller}와 ${b.controlled}의 직접 제어 사이에 ${b.bridge}가 원국에 존재해 통관 후보는 성립하지만, 실제 효과의 충분성은 위치·세력 조건을 더 봐야 한다.`
             :`${b.controller}와 ${b.controlled}가 맞서지만 필요한 중간 기운 ${b.bridge}가 원국에서 비어 있어 운에서 연결될 때 변화 가능성을 본다.`,
-          facts:{controller:b.controller,controlled:b.controlled,bridge:b.bridge,pressure:round(b.pressure,2),bridgeForce:round(bridgeForce,2),established},
+          facts:{controller:b.controller,controlled:b.controlled,bridge:b.bridge,pressure:round(b.pressure,2),bridgeForce:round(bridgeForce,2),status},
           conditions:["서로 제어 관계인 두 오행의 실제 세력이 함께 확인됨","통관 오행이 원국에 존재하는지 별도 확인"],
-          exceptions:["합화·회국을 통관 성립 근거로 자동 사용하지 않음"],
+          exceptions:["통관 오행이 존재해도 실제 효과의 충분성을 단순 세력 임계값으로 확정하지 않음","합화·회국을 통관 성립 근거로 자동 사용하지 않음"],
           tags:["bridge","prescription-input"],
         };
       },
