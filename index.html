@@ -1120,7 +1120,7 @@
               aria-hidden="true"
               class="bg-white/70 border border-white/70 text-rose-600 px-2.5 py-1 rounded-full text-[9.5px] font-black shadow-sm active:scale-95 transition-transform whitespace-nowrap"
             >
-              내 보관함 ♡
+              내 보관함
             </button>
           </div>
         </header>
@@ -2611,13 +2611,17 @@
           }
         } catch (error) {
           console.error("어떤언니 로그인 연결 실패:", error);
-          showToast("로그인 연결이 잠깐 꼬였어. 다시 눌러줘.");
+          showVoiceToast({
+            F: "보관함 연결이 잠깐 꼬였어. 지금 결과는 그대로 있으니까 한 번만 다시 눌러줘.",
+            T: "보관함 연결이 잠깐 실패했어. 지금 결과는 유지됐어. 다시 눌러줘.",
+          });
           return;
         }
 
-        showToast(
-          `${unniProviderLabel(provider)} 로그인 연결만 붙이면 바로 쓸 수 있어. 지금 결과는 그대로 볼 수 있어.`,
-        );
+        showVoiceToast({
+          F: `${unniProviderLabel(provider)} 연결 기능은 아직 준비 중이야. 지금 결과는 그대로 볼 수 있어.`,
+          T: `${unniProviderLabel(provider)} 연결 기능은 아직 준비 중이야. 현재 결과는 그대로 유지돼.`,
+        });
       }
 
       function openUnniEmailAuth() {
@@ -2632,7 +2636,7 @@
       function beginUnniEmailAuth() {
         const email = document.getElementById("unniEmailInput")?.value.trim() || "";
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          showToast("이메일 주소를 한 번 확인해줘.");
+          showVoiceToast({ F: "이메일 주소가 맞는지 한 번만 확인해줘.", T: "이메일 주소를 확인해줘." });
           return;
         }
         beginUnniAuth("email");
@@ -2647,14 +2651,20 @@
           email: profile.email || "",
         });
         renderUnniVault();
-        showToast("이제 언니가 네 결과 챙겨둘게 ♡");
+        showVoiceToast({
+          F: "연결됐어. 이제 언니가 네 결과를 다시 볼 수 있게 챙겨둘게.",
+          T: "연결됐어. 이제 이 결과를 다시 불러올 수 있어.",
+        });
         return true;
       }
 
       function signOutUnniVault() {
         setUnniAuthProfile(null);
         renderUnniVault();
-        showToast("보관함 연결을 해제했어.");
+        showVoiceToast({
+          F: "보관함 연결을 해제했어. 지금 보고 있는 결과는 그대로야.",
+          T: "보관함 연결을 해제했어. 현재 결과는 그대로 유지돼.",
+        });
       }
 
       function resultSnapshot(data) {
@@ -2826,7 +2836,10 @@
           if (!response.ok || !json.ok)
             throw new Error(
               json.message ||
-                "서버 확인에 실패했어요. 잠시 후 다시 눌러주세요.",
+                voiceText({
+                  F: "확인이 잠깐 늦어지고 있어. 지금 화면은 그대로 두고 한 번만 다시 눌러줘.",
+                  T: "서버 확인이 지연되고 있어. 현재 화면은 유지됐어. 다시 눌러줘.",
+                }),
             );
           return json;
         } finally {
@@ -2852,9 +2865,10 @@
           removeStore("tok_" + saved.key);
           document.getElementById("payRetryBox")?.remove();
           showLockedOverlayState();
-          showToast(
-            "기존 구매 권한이 확인되지 않았어. 이미 결제했다면 재결제하지 말고 문의해줘.",
-          );
+          showVoiceToast({
+            F: "구매 확인이 되지 않았어. 이미 결제했다면 다시 결제하지 말고 주문번호로 문의해줘.",
+            T: "구매 권한이 확인되지 않았어. 이미 결제했다면 재결제하지 말고 주문번호로 문의해줘.",
+          }, data.currentMode);
         } else {
           showAccessRetry(data, version);
         }
@@ -2867,8 +2881,10 @@
         box.style.cssText =
           "position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:398px;padding:16px;background:white;border:1px solid #f59e0b;border-radius:16px;z-index:99997;font-size:12px;text-align:center;";
         const text = document.createElement("p");
-        text.textContent =
-          "기존 구매 확인이 지연되고 있어. 다시 결제하지 말고 아래를 눌러줘.";
+        text.textContent = voiceText({
+          F: "구매 내역 확인이 조금 늦어지고 있어. 다시 결제하지 말고, 아래에서 같은 구매 내역부터 확인해보자.",
+          T: "구매 내역 확인이 지연되고 있어. 재결제하지 말고, 아래에서 같은 구매 내역부터 확인해줘.",
+        }, data.currentMode);
         const button = document.createElement("button");
         button.textContent = "구매 내역 다시 확인";
         button.style.cssText =
@@ -2923,15 +2939,23 @@
           if (!visibleResult(context.userKey, version)) return;
           unlockFullReport(
             persisted
-              ? "결제 완료! 언니가 적어둔 이야기, 이제 전부 볼 수 있어."
-              : "결제 완료! 저장이 차단돼 있어. 주문번호를 기록해줘: " +
-                  context.orderId,
+              ? voiceText({
+                  F: "결제 확인됐어. 언니가 이어서 적어둔 내용까지 전부 열어뒀어.",
+                  T: "결제 확인됐어. 이어지는 내용까지 전부 열어뒀어.",
+                })
+              : voiceText({
+                  F: "결제는 확인됐는데 이 기기에 저장하지 못했어. 주문번호만 꼭 남겨줘: ",
+                  T: "결제는 확인됐지만 이 기기에 저장하지 못했어. 주문번호를 기록해줘: ",
+                }) + context.orderId,
           );
         } catch (error) {
           if (visibleResult(context.userKey, version))
             showToast(
               error.message ||
-                "승인 확인이 지연되고 있어. 재결제하지 말고 다시 확인해줘.",
+                voiceText({
+                  F: "결제 승인이 조금 늦어지고 있어. 다시 결제하지 말고 같은 주문을 한 번 더 확인해줘.",
+                  T: "결제 승인 확인이 지연되고 있어. 재결제하지 말고 같은 주문을 다시 확인해줘.",
+                }),
             );
         } finally {
           context.busy = false;
@@ -2950,7 +2974,11 @@
           "position:fixed;inset:auto 16px 16px;z-index:99997;background:white;padding:16px;border:1px solid #f59e0b;border-radius:16px;text-align:center;font-size:12px;";
         const text = document.createElement("p");
         text.textContent =
-          "결과 복원이 지연되고 있어. 이미 결제했다면 재결제하지 마. 문의: support@sajuft.com / 주문번호: " +
+          voiceText({
+            F: "결과를 다시 불러오는 데 시간이 걸리고 있어. 이미 결제했다면 다시 결제하지 말고 이 주문부터 확인해보자. 문의: ",
+            T: "결과 복원이 지연되고 있어. 이미 결제했다면 재결제하지 말고 같은 주문부터 확인해줘. 문의: ",
+          }) +
+          "support@sajuft.com / 주문번호: " +
           (params.get("orderId") || "확인 필요");
         const button = document.createElement("button");
         button.textContent = "결과 복원 다시 확인";
@@ -3459,7 +3487,7 @@
             if (senderTitle) senderTitle.textContent = "로아 언니 (F)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔구나! 잘 왔어. 언니한테 그냥 편하게 털어놔.<br>사주 대충 훑고 끝내지 않고, 네가 왜 이 고민에서 자꾸 마음 쓰이는지까지 같이 깊게 봐줄게.<br>이름이랑 생일부터 알려줘!";
+                "왔구나. 편하게 알려줘.<br>왜 이 고민이 자꾸 마음에 남는지부터 같이 보고, 그래서 어떻게 움직이면 좋을지까지 이어서 풀어볼게.<br>이름이랑 생일부터 알려줘.";
             }
           } else {
             if (sisterImg) sisterImg.src = "./서아.png";
@@ -3471,7 +3499,7 @@
             if (senderTitle) senderTitle.textContent = "서아 언니 (T)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔어? 쓸데없이 겁주는 말부터 할 생각은 없어.<br>좋은 건 좋다, 아닌 건 아니다 딱 말해줄 거고 네 상황도 대충 안 봐.<br>이름이랑 생일부터 줘.";
+                "왔어. 핵심부터 잡아볼게.<br>지금 고민이 어디서 꼬이는지 보고, 이유랑 다음 행동까지 순서대로 정리해줄게.<br>이름이랑 생일부터 알려줘.";
             }
           }
 
@@ -5033,6 +5061,21 @@ function generateConcernNotes(data, mode) {
 
       let isAnalyzing = false;
       let selectedSplitMode = null;
+
+      function currentVoiceMode(fallback = "F") {
+        const mode = currentResultData?.currentMode || selectedSplitMode || fallback;
+        return mode === "T" ? "T" : "F";
+      }
+
+      function voiceText(copy, mode = currentVoiceMode()) {
+        if (typeof copy === "string") return copy;
+        return copy?.[mode === "T" ? "T" : "F"] || copy?.F || copy?.T || "";
+      }
+
+      function showVoiceToast(copy, mode = currentVoiceMode()) {
+        showToast(voiceText(copy, mode));
+      }
+
       window.appTimeouts = []; // 뒤로가기 시 꼬임 방지용 글로벌 타이머 저장소
 
       function runSafeTimeout(fn, delay) {
@@ -5057,14 +5100,20 @@ function generateConcernNotes(data, mode) {
           const concernSituation =
             document.getElementById("selectedConcernSituation")?.value || "";
           if (!CONCERN_SITUATIONS[concernKey]) {
-            showToast("가장 궁금한 고민부터 하나 눌러줘.");
+            showVoiceToast({
+              F: "가장 마음에 걸리는 고민 하나부터 골라줘. 그거부터 같이 볼게.",
+              T: "가장 궁금한 고민 하나부터 골라줘. 그 기준으로 바로 볼게.",
+            }, mode);
             document
               .getElementById("concernGrid")
               ?.scrollIntoView({ behavior: "smooth", block: "center" });
             return;
           }
           if (!concernSituationValid(concernKey, concernSituation)) {
-            showToast("지금 상황도 하나만 골라줘. 그래야 언니가 네 얘기만 정확히 볼 수 있어.");
+            showVoiceToast({
+              F: "지금 상황도 하나만 골라줘. 그래야 네 얘기에 맞춰 더 정확히 같이 볼 수 있어.",
+              T: "지금 상황도 하나 골라줘. 그래야 판단 기준을 정확히 잡을 수 있어.",
+            }, mode);
             renderConcernSituationPicker(concernKey);
             document
               .getElementById("concernSituationBox")
@@ -5101,9 +5150,10 @@ function generateConcernNotes(data, mode) {
               Number(cleanTime.slice(0, 2)) > 23 ||
               Number(cleanTime.slice(2)) > 59
             ) {
-              showToast(
-                "태어난 시간을 4자리(예: 1430)로 입력하거나 시간 모름을 체크해주세요.",
-              );
+              showVoiceToast({
+                F: "태어난 시간을 4자리로 적어줘. 모르면 ‘시간 모름’을 체크하면 돼.",
+                T: "태어난 시간을 4자리로 입력해줘. 모르면 ‘시간 모름’을 체크하면 돼.",
+              }, mode);
               if (birthTimeInput) birthTimeInput.focus();
               return;
             }
@@ -5122,12 +5172,18 @@ function generateConcernNotes(data, mode) {
           const gender = document.getElementById("genderValue").value;
 
           if (!name) {
-            showToast("이름을 입력해주세요.");
+            showVoiceToast({
+              F: "이름부터 알려줘. 그다음은 언니가 이어서 볼게.",
+              T: "이름부터 입력해줘. 그다음 바로 이어갈게.",
+            }, mode);
             document.getElementById("nameInput").focus();
             return;
           }
           if (!birthStr || birthStr.length !== 8) {
-            showToast("생년월일 8자리(예: 19991230)를 정확히 입력해주세요.");
+            showVoiceToast({
+              F: "생년월일 8자리를 한 번만 확인해줘. 예: 19991230",
+              T: "생년월일 8자리를 확인해줘. 예: 19991230",
+            }, mode);
             document.getElementById("birthDateInput").focus();
             return;
           }
@@ -5138,10 +5194,11 @@ function generateConcernNotes(data, mode) {
 
           // 양력과 음력은 날짜 구조가 다르므로 분리해서 검증한다.
           if (month < 1 || month > 12 || day < 1 || day > (isLunar ? 30 : 31)) {
-            showToast(
+            showVoiceToast(
               isLunar
-                ? "음력 생년월일을 다시 확인해주세요."
-                : "생년월일을 다시 확인해주세요.",
+                ? { F: "음력 생년월일이 맞는지 한 번만 확인해줘.", T: "음력 생년월일을 확인해줘." }
+                : { F: "생년월일이 맞는지 한 번만 확인해줘.", T: "생년월일을 확인해줘." },
+              mode,
             );
 
             document.getElementById("birthDateInput").focus();
@@ -5156,13 +5213,19 @@ function generateConcernNotes(data, mode) {
               checkDate.getMonth() !== month - 1 ||
               checkDate.getDate() !== day
             ) {
-              showToast("양력에 존재하지 않는 날짜입니다.");
+              showVoiceToast({
+                F: "입력한 양력 날짜가 실제 달력에 없는 날이야. 날짜만 다시 확인해줘.",
+                T: "입력한 양력 날짜가 실제 달력에 없어. 날짜를 다시 확인해줘.",
+              }, mode);
               document.getElementById("birthDateInput").focus();
               return;
             }
           }
           if (year < 1920 || year > 2026) {
-            showToast("1920년부터 2026년 사이의 연도를 입력해주세요.");
+            showVoiceToast({
+              F: "지금은 1920년부터 2026년까지 볼 수 있어. 연도만 다시 확인해줘.",
+              T: "1920년부터 2026년까지 입력할 수 있어. 연도를 다시 확인해줘.",
+            }, mode);
             document.getElementById("birthDateInput").focus();
             return;
           }
@@ -5173,9 +5236,10 @@ function generateConcernNotes(data, mode) {
 
           if (isLunar) {
             if (typeof Lunar === "undefined") {
-              showToast(
-                "음력 변환 모듈을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.",
-              );
+              showVoiceToast({
+                F: "음력 날짜를 확인하는 기능이 잠깐 준비되지 않았어. 새로고침하고 다시 해보자.",
+                T: "음력 날짜 확인 기능을 불러오지 못했어. 새로고침한 뒤 다시 해줘.",
+              }, mode);
               document.getElementById("birthDateInput").focus();
               return;
             }
@@ -5195,10 +5259,11 @@ function generateConcernNotes(data, mode) {
               calcMonth = solarObj.month;
               calcDay = solarObj.day;
             } catch (err) {
-              showToast(
+              showVoiceToast(
                 isLeapMonth
-                  ? `입력한 해에는 윤${month}월 ${day}일이 없습니다.`
-                  : "입력한 음력 날짜가 실제 음력 달력에 없습니다.",
+                  ? { F: `입력한 해에는 윤${month}월 ${day}일이 없어. 날짜를 한 번만 다시 확인해줘.`, T: `입력한 해에는 윤${month}월 ${day}일이 없어. 날짜를 다시 확인해줘.` }
+                  : { F: "입력한 음력 날짜가 실제 달력에 없는 날이야. 날짜만 다시 확인해줘.", T: "입력한 음력 날짜가 실제 달력에 없어. 날짜를 다시 확인해줘." },
+                mode,
               );
 
               document.getElementById("birthDateInput").focus();
@@ -5310,8 +5375,8 @@ function generateConcernNotes(data, mode) {
 
             const ackText =
               mode === "T"
-                ? `${callVoc}, 확인했어. 이 고민 기준으로 볼게. 대충 위로만 하진 않을 거고, 괜히 겁주지도 않을게. 필요한 것만 제대로 짚어줄게.`
-                : `${callVoc}, 아 이거였구나. 그래서 계속 마음에 걸렸겠다. 좋아, 언니가 다른 얘기 안 섞고 지금 네 상황만 제대로 볼게.`;
+                ? `${callVoc}, 확인했어. 이 고민 기준으로 볼게. 먼저 핵심을 잡고, 왜 그런지랑 다음 행동까지 순서대로 정리해줄게.`
+                : `${callVoc}, 아 이거였구나. 계속 마음에 걸렸겠다. 다른 얘기 섞지 않고, 지금 네 상황에서 왜 그런지부터 같이 볼게.`;
 
             const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up mt-1">
@@ -5429,8 +5494,8 @@ currentResultData = {
                 removeLiveTyping("liveT1");
                 appendSisterMsg(
                   isT
-                    ? `${callVoc}, 잠깐. 사주부터 맞춰보고 지금 고민이 어디서 꼬였는지 볼게. 결론은 깔끔하게 줄게.`
-                    : `${callVoc}, 잠깐만! 언니가 네 사주랑 지금 고민 같이 놓고, 어디서 자꾸 마음이 걸리는지 꼼꼼하게 보고 올게.`,
+                    ? `${callVoc}, 잠깐. 사주부터 맞춰보고 지금 고민이 어디서 꼬였는지 볼게. 결론부터 깔끔하게 정리해줄게.`
+                    : `${callVoc}, 잠깐만. 언니가 네 사주랑 지금 고민을 같이 놓고, 어디서 자꾸 마음이 걸리는지 꼼꼼하게 보고 올게.`,
                   false,
                 );
 
@@ -5479,8 +5544,8 @@ currentResultData = {
                     removeLiveTyping("liveT3");
                     appendSisterMsg(
                       isT
-                        ? `다 봤어. 괜한 소리 빼고 중요한 것만 정리했어. 이제 보자.`
-                        : `다 봤어! 네가 왜 여기서 자꾸 마음이 쓰였는지 연결되는 지점이 보여. 언니가 하나씩 같이 풀어보자.`,
+                        ? `다 봤어. 중요한 것부터 정리했어. 이제 핵심부터 보자.`
+                        : `다 봤어. 네가 왜 여기서 자꾸 마음이 쓰였는지 연결되는 지점이 보여. 언니가 하나씩 같이 풀어보자.`,
                       true,
                     );
 
@@ -5496,9 +5561,12 @@ currentResultData = {
               clearConversationReplies();
               changeViewState("input");
               saveInputDraft();
-              showToast(
-                calcErr.message ||
-                  "연산 중 오류가 발생했습니다. 생년월일을 다시 확인해주세요.",
+              showVoiceToast(
+                calcErr.message || {
+                  F: "계산이 잠깐 꼬였어. 입력은 그대로 둘게. 생년월일만 한 번 확인해줘.",
+                  T: "계산이 잠깐 멈췄어. 입력은 그대로 뒀어. 생년월일만 확인하고 다시 해줘.",
+                },
+                mode,
               );
               if (inputCardBox) inputCardBox.style.display = "block";
             }
@@ -5509,7 +5577,10 @@ currentResultData = {
           changeViewState("input");
           saveInputDraft();
           console.error("로딩 에러 방어:", error);
-          showToast("일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+          showVoiceToast({
+            F: "잠깐 오류가 있었어. 입력은 그대로 둘게. 한 번만 다시 해보자.",
+            T: "일시적인 오류가 있었어. 입력은 유지했어. 다시 한 번 실행해줘.",
+          }, mode);
           const inputCardBox = document.getElementById("sajuInputCardBox");
           if (inputCardBox) inputCardBox.style.display = "block";
         }
@@ -5662,9 +5733,10 @@ currentResultData = {
         if (!mKey || !SAZU_CHARACTER_PROFILES[mKey]) {
           console.error("유효하지 않은 MBTI 결과:", data && data.mbtiKey);
 
-          showToast(
-            "분석 결과를 안전하게 표시하지 못했어요. 다시 분석해주세요.",
-          );
+          showVoiceToast({
+            F: "결과를 불러오는 중에 잠깐 꼬였어. 입력은 그대로니까 다시 한 번 같이 봐보자.",
+            T: "결과를 표시하지 못했어. 입력은 유지됐으니 다시 분석해줘.",
+          }, mode);
 
           return;
         }
@@ -6020,8 +6092,8 @@ currentResultData = {
                       <div class="note-preview-continuation">
                           <p>
                               ${isT
-                                ? "여기서부터 원인과 끊을 지점이 나온다."
-                                : "응, 여기서부터가 진짜 중요한 부분이야."}
+                                ? "여기서부터 왜 반복되는지랑 어디서 끊을지 볼게."
+                                : "여기서부터 왜 반복되는지 같이 이어서 볼게."}
                           </p>
                       </div>
                   </div>
@@ -6343,7 +6415,10 @@ currentResultData = {
 
         if (!mKey || !prof) {
           console.error("유효하지 않은 MBTI 결과:", mKey);
-          showToast("분석 결과를 안전하게 표시하지 못했어요. 다시 분석해주세요.");
+          showVoiceToast({
+            F: "결과를 불러오는 중에 잠깐 꼬였어. 입력은 그대로니까 다시 한 번 같이 봐보자.",
+            T: "결과를 표시하지 못했어. 입력은 유지됐으니 다시 분석해줘.",
+          }, data.currentMode);
           return;
         }
 
@@ -6523,7 +6598,13 @@ currentResultData = {
           userKey,
           ticket,
         });
-        if (!json.token) throw new Error("승인 토큰을 받지 못했어요.");
+        if (!json.token)
+          throw new Error(
+            voiceText({
+              F: "결제 확인 정보가 아직 도착하지 않았어. 다시 결제하지 말고 같은 주문을 확인해줘.",
+              T: "결제 승인 정보를 받지 못했어. 재결제하지 말고 같은 주문을 다시 확인해줘.",
+            }),
+          );
         return json.token;
       }
 
@@ -6563,7 +6644,10 @@ currentResultData = {
           return;
         }
         if (typeof PaymentWidget === "undefined") {
-          showToast("결제 모듈 로딩 후 다시 눌러줘.");
+          showVoiceToast({
+            F: "결제 화면이 아직 준비 중이야. 잠깐 뒤에 한 번만 다시 눌러줘.",
+            T: "결제 화면을 아직 불러오는 중이야. 잠깐 뒤에 다시 눌러줘.",
+          });
           return;
         }
         const area = document.getElementById("paymentWidgetArea");
@@ -6597,7 +6681,10 @@ currentResultData = {
           }, 350);
         } catch {
           resetPaymentWidgetUI();
-          showToast("결제수단을 불러오지 못했어. 다시 눌러줘.");
+          showVoiceToast({
+            F: "결제수단을 불러오지 못했어. 지금 결과는 그대로니까 한 번만 다시 눌러줘.",
+            T: "결제수단을 불러오지 못했어. 현재 결과는 유지됐어. 다시 눌러줘.",
+          });
         } finally {
           if (generation === widgetGeneration) paymentPreparing = false;
         }
@@ -6615,7 +6702,10 @@ currentResultData = {
           paymentAgreementWidget?.getAgreementStatus &&
           !paymentAgreementWidget.getAgreementStatus().agreedRequiredTerms
         ) {
-          showToast("필수 결제 약관에 동의해줘.");
+          showVoiceToast({
+            F: "결제하려면 필수 약관 동의가 필요해. 확인하고 체크해줘.",
+            T: "결제하려면 필수 약관 동의가 필요해. 체크한 뒤 이어가면 돼.",
+          });
           return;
         }
         const data = currentResultData;
@@ -6634,7 +6724,12 @@ currentResultData = {
           });
           if (!visibleResult(key, version)) return;
           if (order.userKey !== key || order.amount !== PAY_AMOUNT)
-            throw new Error("주문 정보가 일치하지 않아. 다시 확인해줘.");
+            throw new Error(
+              voiceText({
+                F: "주문 정보가 맞지 않아. 다시 결제하지 말고 현재 주문부터 한 번 확인해줘.",
+                T: "주문 정보가 일치하지 않아. 재결제하지 말고 현재 주문을 다시 확인해줘.",
+              }),
+            );
           writeStore(
             "unni_order_" + order.orderId,
             JSON.stringify({ ...order, data: resultSnapshot(data) }),
@@ -6662,8 +6757,11 @@ currentResultData = {
           if (visibleResult(key, version))
             showToast(
               error.code === "USER_CANCEL"
-                ? "결제가 취소됐어."
-                : error.message || "결제 요청을 확인하지 못했어.",
+                ? voiceText({ F: "결제가 취소됐어. 지금 결과는 그대로 있어.", T: "결제가 취소됐어. 현재 결과는 그대로 유지돼." })
+                : error.message || voiceText({
+                    F: "결제 요청을 확인하지 못했어. 다시 결제하기 전에 한 번만 다시 눌러줘.",
+                    T: "결제 요청을 확인하지 못했어. 재결제 전에 다시 확인해줘.",
+                  }),
             );
         } finally {
           paymentSubmitting = false;
@@ -6817,7 +6915,9 @@ currentResultData = {
         layer.innerHTML = `
           <div style="max-width:370px;margin:0 auto">
             <div style="position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:max(8px,env(safe-area-inset-top)) 0 9px;background:linear-gradient(180deg,rgba(15,23,42,.98),rgba(15,23,42,.88),rgba(15,23,42,0));color:white">
-              <div style="font-size:13px;font-weight:950">${isShare ? "이 사진 저장해서 인스타에서 불러오면 돼 ♡" : "사진 길게 눌러 저장하면 돼 ♡"}</div>
+              <div style="font-size:13px;font-weight:950">${isShare
+                ? voiceText({ F: "이 사진 저장해두고 인스타에서 불러오면 돼.", T: "이 사진을 저장한 뒤 인스타에서 불러오면 돼." })
+                : voiceText({ F: "사진을 길게 눌러 저장해두면 돼.", T: "사진을 길게 눌러 저장하면 돼." })}</div>
               <button id="unniImageFallbackClose" type="button" style="flex:none;width:38px;height:38px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.10);color:white;font-size:24px;line-height:1;cursor:pointer">×</button>
             </div>
             <div style="padding:6px;border-radius:24px;background:white;box-shadow:0 22px 70px rgba(0,0,0,.38)">
@@ -7414,9 +7514,10 @@ currentResultData = {
         const amount = Number(params.get("amount"));
         let versionBefore = viewVersion;
         if (!ticket) {
-          showToast(
-            "이전 버전의 결제 복귀 정보야. 이미 결제했다면 재결제하지 말고 주문번호로 문의해줘.",
-          );
+          showVoiceToast({
+            F: "예전 결제 정보로 돌아왔어. 이미 결제했다면 다시 결제하지 말고 주문번호로 문의해줘.",
+            T: "이전 결제 복귀 정보야. 이미 결제했다면 재결제하지 말고 주문번호로 문의해줘.",
+          });
           showReturnRecovery(params);
           return;
         }
@@ -7436,7 +7537,10 @@ currentResultData = {
           }
           if (params.get("payment") === "fail") {
             removeStore("unni_pending_approval", true);
-            showToast("결제가 취소되었거나 실패했어. 입력 정보는 그대로 뒀어.");
+            showVoiceToast({
+              F: "결제가 취소됐거나 완료되지 않았어. 입력은 그대로 뒀으니 여기서 다시 확인하면 돼.",
+              T: "결제가 취소됐거나 완료되지 않았어. 입력 정보는 유지됐어.",
+            }, restored.currentMode);
             return;
           }
           if (params.get("payment") !== "success") return;
@@ -7446,7 +7550,10 @@ currentResultData = {
             amount !== PAY_AMOUNT
           )
             throw new Error(
-              "결제 복귀 정보가 일치하지 않아. 재결제하지 말고 주문번호로 문의해줘.",
+              voiceText({
+                F: "결제 복귀 정보가 맞지 않아. 다시 결제하지 말고 주문번호로 문의해줘.",
+                T: "결제 복귀 정보가 일치하지 않아. 재결제하지 말고 주문번호로 문의해줘.",
+              }, restored.currentMode),
             );
           const context = {
             paymentKey,
@@ -7478,8 +7585,10 @@ currentResultData = {
         box.style.cssText =
           "position:fixed;left:50%;transform:translateX(-50%);bottom:16px;width:calc(100% - 32px);max-width:398px;z-index:99997;background:white;border:1px solid #f59e0b;border-radius:16px;padding:14px;font-size:12px;text-align:center;";
         const message = document.createElement("p");
-        message.textContent =
-          "결제 완료 여부를 확인 중이야. 다시 결제하지 말고 이 주문으로 확인해줘.";
+        message.textContent = voiceText({
+          F: "결제가 잘 확인됐는지 보고 있어. 다시 결제하지 말고 이 주문으로 이어서 확인해보자.",
+          T: "결제 완료 여부를 확인 중이야. 재결제하지 말고 이 주문으로 확인해줘.",
+        });
         const button = document.createElement("button");
         button.id = "payRetryBtn";
         button.textContent = "같은 주문 다시 확인";
@@ -7514,7 +7623,10 @@ currentResultData = {
           return;
         }
         if (params.get("payment") === "fail")
-          showToast("결제가 취소되었거나 실패했어.");
+          showVoiceToast({
+            F: "결제가 취소됐거나 완료되지 않았어. 지금 결과는 그대로 있어.",
+            T: "결제가 취소됐거나 완료되지 않았어. 현재 결과는 그대로 유지돼.",
+          });
         if (view === "input") {
           try {
             const draft = JSON.parse(readStore("unni_input_draft", true));
@@ -7533,7 +7645,10 @@ currentResultData = {
           const data = JSON.parse(readStore("sazu_last_result_data_" + last));
           if (data) renderResultView(data);
         } catch {
-          showToast("저장한 결과를 불러오지 못했어. 새로 입력해줘.");
+          showVoiceToast({
+            F: "저장한 결과를 불러오지 못했어. 번거롭겠지만 한 번만 새로 알려줘.",
+            T: "저장한 결과를 불러오지 못했어. 새로 입력해줘.",
+          });
         }
       }
 
@@ -7553,7 +7668,10 @@ currentResultData = {
 
       function restartAnalysisWithOtherConcern() {
         if (!currentResultData) {
-          showToast("기존 사주정보를 불러오지 못했어. 처음부터 다시 입력해줘.");
+          showVoiceToast({
+            F: "기존 사주정보를 불러오지 못했어. 번거롭겠지만 처음부터 한 번만 다시 알려줘.",
+            T: "기존 사주정보를 불러오지 못했어. 처음부터 다시 입력해줘.",
+          });
 
           startFreshAnalysis();
           return;
@@ -7787,7 +7905,12 @@ currentResultData = {
         });
 
         saveInputDraft();
-        showToast("사주정보는 그대로 뒀어. 다른 고민만 골라줘!");
+        showVoiceToast(
+          isT
+            ? "사주정보는 그대로 뒀어. 다른 고민 하나만 골라줘. 그 기준으로 바로 정리할게."
+            : "사주정보는 그대로 챙겨뒀어. 이번엔 마음에 걸리는 다른 고민 하나만 골라줘.",
+          targetMode,
+        );
       }
 
       function startFreshAnalysis() {
