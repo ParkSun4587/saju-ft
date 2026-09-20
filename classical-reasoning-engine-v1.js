@@ -246,6 +246,10 @@
     const strength=byKind(ditianRows,"strength"), regulation=byKind(ditianRows,"regulation"), bridge=byKind(ditianRows,"bridge");
     const zMain=mainZipingFinding(zipingRows);
     const helpful=unionGods(zipingRows,"supportGods"), rescue=unionGods(zipingRows,"rescueGods"), harmful=unionGods(zipingRows,"harmGods");
+    const roleCandidates=zMain?.roleCandidates||{support:[],harm:[],rescue:[]};
+    const structuralSupport=uniq(roleCandidates.support||[]);
+    const structuralRescue=uniq(roleCandidates.rescue||[]);
+    const structuralHarm=uniq(roleCandidates.harm||[]);
     const ditianOperations=regulation?.facts?.operations||[];
     const ditianElements=[];
     if(bridge?.facts?.bridge&&bridge.facts.status==="missing")ditianElements.push(bridge.facts.bridge);
@@ -256,9 +260,9 @@
     }else if(bridge?.facts?.bridge){
       ditianElements.push(bridge.facts.bridge);
     }
-    const zipingGods=uniq([...rescue,...helpful]);
+    const zipingGods=uniq([...structuralRescue,...structuralSupport]);
     const zipingElements=uniq(zipingGods.map(g=>tenGodElement(ctx.dayGan,g)));
-    const harmfulElements=uniq(harmful.map(g=>tenGodElement(ctx.dayGan,g)));
+    const harmfulElements=uniq(structuralHarm.map(g=>tenGodElement(ctx.dayGan,g)));
     const dEls=uniq(ditianElements), overlap=dEls.filter(e=>zipingElements.includes(e));
     const conflicts=[];
     for(const god of zipingGods){
@@ -281,7 +285,10 @@
     if(conflicts.length)priorityPolicy="두 체계를 평균내지 않고, 일간의 감당력·통관을 먼저 확인한 뒤 격의 성패 조건을 적용한다.";
     const evidenceStatus=strength&&regulation&&zMain?"sufficient":"insufficient-evidence";
     return {
-      evidenceStatus,ditianOperations,ditianElements:dEls,zipingGods,zipingElements,harmfulGods:harmful,harmfulElements,
+      evidenceStatus,ditianOperations,ditianElements:dEls,
+      presentZiping:{supportGods:helpful,rescueGods:rescue,harmfulGods:harmful},
+      zipingGods,zipingElements,harmfulGods:structuralHarm,harmfulElements,
+      roleCandidates:{support:structuralSupport,rescue:structuralRescue,harm:structuralHarm},
       overlapElements:overlap,conflicts,priorityPolicy,sequence:sequence.slice(0,4),
       compatibilityNote:"기존 balance.primary/secondary/avoid는 통합 프로필에만 보존하며 이 처방 순서에는 사용하지 않음",
     };
@@ -297,6 +304,9 @@
     return {
       strength,rootQuality:root?.facts?.quality||null,pressureGroup:pressure?.facts?.group||null,
       pressureHuman:GROUP_KR[pressure?.facts?.group]||"",helpfulGods:helpful,rescueGods:rescue,harmfulGods:harmful,
+      structuralSupportGods:uniq(zMain?.roleCandidates?.support||[]),
+      structuralRescueGods:uniq(zMain?.roleCandidates?.rescue||[]),
+      structuralHarmGods:uniq(zMain?.roleCandidates?.harm||[]),
       neededGroups:strength==="신약"?["print","self"]:strength==="신강"?["output","officer"]:[],
       bridgeElement:bridge?.facts?.bridge||ctx.bridge?.bridge||null,
       bridgeElementName:(bridge?.facts?.bridge||ctx.bridge?.bridge)?ELEMENT_KR[bridge?.facts?.bridge||ctx.bridge?.bridge]:"",
@@ -403,13 +413,13 @@
     const group=groupForGod(resolvedGod);
     const supportSignals=[],cautionSignals=[],neutralSignals=[];
     const add=(arr,code,severity,reason,facts)=>arr.push({code,severity,layer,reason,facts:facts||{}});
-    if(cross.rescueGods.includes(resolvedGod))add(supportSignals,"ziping-rescue","major","천간에서 격의 손상을 다시 구하는 신호",{god:resolvedGod});
-    else if(cross.helpfulGods.includes(resolvedGod))add(supportSignals,"ziping-support","major","천간에서 격을 살리는 신호",{god:resolvedGod});
-    if(cross.harmfulGods.includes(resolvedGod))add(cautionSignals,"ziping-harm","major","천간에서 격을 흔드는 신호",{god:resolvedGod});
+    if(cross.structuralRescueGods.includes(resolvedGod))add(supportSignals,"ziping-rescue","major","천간에서 격의 손상을 다시 구할 수 있는 구조적 신호",{god:resolvedGod,presentInNatal:cross.rescueGods.includes(resolvedGod)});
+    else if(cross.structuralSupportGods.includes(resolvedGod))add(supportSignals,"ziping-support","major","천간에서 격을 살릴 수 있는 구조적 신호",{god:resolvedGod,presentInNatal:cross.helpfulGods.includes(resolvedGod)});
+    if(cross.structuralHarmGods.includes(resolvedGod))add(cautionSignals,"ziping-harm","major","천간에서 격을 흔드는 구조적 신호",{god:resolvedGod,presentInNatal:cross.harmfulGods.includes(resolvedGod)});
     for(const branchGod of branchGods){
-      if(cross.rescueGods.includes(branchGod))add(supportSignals,"ziping-rescue-branch","support","지지 지장간에서 격의 손상을 구하는 신호가 보탬",{god:branchGod,zhi});
-      else if(cross.helpfulGods.includes(branchGod))add(supportSignals,"ziping-support-branch","support","지지 지장간에서 격을 살리는 신호가 보탬",{god:branchGod,zhi});
-      if(cross.harmfulGods.includes(branchGod))add(cautionSignals,"ziping-harm-branch","support","지지 지장간에서 격을 흔드는 신호가 보탬",{god:branchGod,zhi});
+      if(cross.structuralRescueGods.includes(branchGod))add(supportSignals,"ziping-rescue-branch","support","지지 지장간에서 격의 손상을 구할 수 있는 구조적 신호가 보탬",{god:branchGod,zhi,presentInNatal:cross.rescueGods.includes(branchGod)});
+      else if(cross.structuralSupportGods.includes(branchGod))add(supportSignals,"ziping-support-branch","support","지지 지장간에서 격을 살릴 수 있는 구조적 신호가 보탬",{god:branchGod,zhi,presentInNatal:cross.helpfulGods.includes(branchGod)});
+      if(cross.structuralHarmGods.includes(branchGod))add(cautionSignals,"ziping-harm-branch","support","지지 지장간에서 격을 흔드는 구조적 신호가 보탬",{god:branchGod,zhi,presentInNatal:cross.harmfulGods.includes(branchGod)});
     }
 
     if(cross.strength==="신약"){
