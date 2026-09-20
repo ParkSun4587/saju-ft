@@ -131,9 +131,9 @@ function norm(v) {
           row.concern+'/'+row.situation+'/'+mode+': claim rule ids missing');
         assert(claim.conclusion && claim.noteSentence, row.concern+'/'+row.situation+'/'+mode+': claim conclusion/sentence missing');
       }
-      assert(audit.sourceLayers?.ditian === '1.2.0' && audit.sourceLayers?.ziping === '1.2.0',
+      assert(audit.sourceLayers?.ditian === '1.1.0' && audit.sourceLayers?.ziping === '1.1.0',
         row.concern+'/'+row.situation+'/'+mode+': source layer versions missing');
-      assert(audit.ruleLayers?.ditian === '1.2.0' && audit.ruleLayers?.ziping === '1.2.0',
+      assert(audit.ruleLayers?.ditian === '1.1.0' && audit.ruleLayers?.ziping === '1.1.0',
         row.concern+'/'+row.situation+'/'+mode+': rule layer versions missing');
       const all=notes.map(n=>plain((n.title||'')+' '+(n.desc||'')+' '+(n.checklist||''))).join(' ');
       assert(!jargon.test(all), row.concern+'/'+row.situation+'/'+mode+': internal saju jargon leaked: '+all);
