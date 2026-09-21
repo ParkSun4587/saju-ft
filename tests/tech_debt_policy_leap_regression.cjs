@@ -24,6 +24,29 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(!source.includes('2026-2027'),'legacy 2026-2027 NOTE6 badge remains in index.html');
   assert(!/\by2026\b|\by2027\b/.test(source),'legacy y2026/y2027 timing keys remain in index.html');
 
+  // Copy QA2: user-facing text must preserve the selected situation and must not
+  // present raw five-element counts or editorial action units as calculated facts.
+  const noteSource=fs.readFileSync('concern-note-engine-v2.js','utf8');
+  const productSource=fs.readFileSync('premium-products-v1.js','utf8');
+  const sneakStart=source.indexOf('const sazuSneakPeek = {');
+  const sneakEnd=source.indexOf('const targetMsgObj',sneakStart);
+  const rawResultStart=source.indexOf('const maxOheng =');
+  const rawResultEnd=source.indexOf('function renderResultView',rawResultStart);
+  const rawCountCopy=source.slice(sneakStart,sneakEnd)+source.slice(rawResultStart,rawResultEnd);
+  assert(sneakStart>=0&&sneakEnd>sneakStart&&rawResultStart>=0&&rawResultEnd>rawResultStart,'raw-count copy blocks not found');
+  assert(!/(화가 강하네|수가 강하네|목이 강하네|금이 강하네|토가 강하네|제일 강해|약한 편)/.test(rawCountCopy),'raw five-element count is still described as actual strength');
+  assert(/겉으로|비중/.test(rawCountCopy),'raw five-element copy no longer explains visible count/share');
+  assert(!noteSource.includes('손실과 과로를 먼저 줄여'),'generic NOTE6 caution copy remains');
+  assert(!noteSource.includes('평소보다 20% 이상'),'unsupported 20% threshold remains in NOTE copy');
+  assert(!noteSource.includes('서운함 하나를 24시간'),'unsupported 24-hour relationship threshold remains in NOTE copy');
+  assert(!productSource.includes('서운함은 24시간 안에'),'unsupported 24-hour compatibility threshold remains');
+  assert(!productSource.includes('같은 싸움이 세 번 반복되면'),'unsupported three-fights compatibility threshold remains');
+  assert(!productSource.includes('classical reasoning'),'internal classical reasoning phrase leaked to product copy');
+  assert(!productSource.includes('같은 원판')&&!productSource.includes('사주 원판'),'internal plate metaphor remains in product copy');
+  assert(!productSource.includes('다음 정보 가치')&&!productSource.includes('1인 분석 대표'),'internal product-planning language remains');
+  assert(!source.includes('왜 돈이 안 모이는지는 보였어')&&!source.includes('취업이 막히는 이유는 보여')&&!source.includes('현재 직장의 답답한 핵심은 보여'),'paywall still claims locked analysis was already shown');
+  assert(source.includes('TODO(legal/privacy audit)'),'separate legal/privacy TODO missing');
+
   const runtime=await page.evaluate(()=>{
     const d=calculateAccurateManse(1998,2,21,'03:10','female');
     d.__testNowYmd='2026-09-20';
@@ -54,6 +77,71 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(!runtime.note6Badge.includes('2026-2027')&&!runtime.note6Text.includes('2026-2027'),'legacy fixed-year NOTE6 badge/text generated');
   assert(runtime.meta.disclosureContract==='basic_concern'&&runtime.meta.fullFiveYearAllowed===false,'basic NOTE6 disclosure policy not enforced '+JSON.stringify(runtime.meta));
   assert(runtime.timing.nearCount>=17&&runtime.timing.publicYears.length>=5&&runtime.timing.internalYears.length>=10,'rolling timing coverage missing '+JSON.stringify(runtime.timing));
+
+
+  const copyQa=await page.evaluate(()=>{
+    const ui=globalThis.__CONCERN_SITUATIONS__||{};
+    const engine=globalThis.__CONCERN_NOTE_ENGINE_V2__?.situations||{};
+    const routes=[];
+    const failures=[];
+    const claimCore=(claims)=>(claims||[]).map((claim)=>{
+      const copy={...claim};
+      delete copy.noteSentence;
+      return copy;
+    });
+    const renderRoute=(concern,key,mode)=>{
+      const d=calculateAccurateManse(1998,2,21,'03:10','female');
+      d.__testNowYmd='2026-09-20';
+      d.concernKey=concern;
+      d.concernSituation=key;
+      d.currentMode=mode;
+      const notes=generateConcernNotes(d,mode);
+      return {
+        notes,
+        label:d.noteDiagnosisV2?.situation?.label||'',
+        situationKey:d.noteDiagnosisV2?.situation?.key||'',
+        structureFingerprint:d.noteV3Audit?.structureFingerprint||'',
+        timingFingerprint:d.noteV3Audit?.timingFingerprint||'',
+        claims:claimCore(d.noteV3Audit?.claims),
+      };
+    };
+    for(const [concern,config] of Object.entries(ui)){
+      for(const option of (config?.options||[])){
+        const [key,label]=option;
+        routes.push({concern,key,label});
+        const engineRow=engine?.[concern]?.[key];
+        if(!engineRow) {
+          failures.push(concern+'/'+key+': engine situation missing');
+          continue;
+        }
+        if(engineRow.label!==label) failures.push(concern+'/'+key+': label parity '+JSON.stringify({ui:label,engine:engineRow.label}));
+        const f=renderRoute(concern,key,'F');
+        const t=renderRoute(concern,key,'T');
+        for(const [mode,row] of [['F',f],['T',t]]){
+          if(row.situationKey!==key||row.label!==label) failures.push(concern+'/'+key+'/'+mode+': selected situation changed '+JSON.stringify({key:row.situationKey,label:row.label}));
+          if(row.notes.length!==6) failures.push(concern+'/'+key+'/'+mode+': note count '+row.notes.length);
+          if(!String(row.notes[0]?.title||'').includes(label)) failures.push(concern+'/'+key+'/'+mode+': NOTE1 title lost selected label');
+          const visible=row.notes.map(n=>[n?.badge,n?.title,n?.desc,n?.checklist].join(' ')).join(' ');
+          if(/\bundefined\b|\bnull\b/.test(visible)) failures.push(concern+'/'+key+'/'+mode+': undefined/null leaked');
+          if(/20%|24시간|세 번/.test(visible)) failures.push(concern+'/'+key+'/'+mode+': unsupported precision leaked');
+        }
+        if(f.structureFingerprint!==t.structureFingerprint||f.timingFingerprint!==t.timingFingerprint) {
+          failures.push(concern+'/'+key+': F/T factual fingerprint drift');
+        }
+        if(JSON.stringify(f.claims)!==JSON.stringify(t.claims)) failures.push(concern+'/'+key+': F/T claim core drift');
+      }
+    }
+    return {routeCount:routes.length,concernKeys:Object.keys(ui),failures};
+  });
+  assert(copyQa.routeCount>0,'no current concern/situation routes discovered');
+  assert(copyQa.failures.length===0,'copy QA2 route regression: '+copyQa.failures.join(' | '));
+  const cautionStart=noteSource.indexOf('const cautionAction = ({');
+  const cautionEnd=noteSource.indexOf('})[situation.concern]',cautionStart);
+  const cautionBlock=noteSource.slice(cautionStart,cautionEnd);
+  assert(cautionStart>=0&&cautionEnd>cautionStart,'NOTE6 concern caution map missing');
+  for(const concern of copyQa.concernKeys){
+    assert(new RegExp('\\b'+concern+':').test(cautionBlock),'NOTE6 caution language missing for current concern '+concern);
+  }
 
   async function mockedTiming(ymd){
     return page.evaluate((ymd)=>{
