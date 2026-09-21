@@ -237,10 +237,10 @@ function norm(v) {
     document.getElementById('birthDateInput').value = '19980221';
     document.getElementById('calendarSelect').value = 'solar';
     document.getElementById('genderValue').value = 'female';
-    const ub = document.getElementById('birthTimeUnknown');
-    ub.checked = false;
+    const directToggle = document.getElementById('birthTimeDirectToggle');
+    directToggle.checked = true;
+    toggleDirectBirthTime(directToggle, false);
     document.getElementById('birthTimeInput').value = '0310';
-    toggleBirthTimeUnknown(ub, false);
     startAnalysis('F');
 
     history.replaceState({},'',location.pathname+'?payment=fail&state=fake');
@@ -649,10 +649,15 @@ function norm(v) {
 
   await page.evaluate(() => openUnniProduct('compatibility'));
   modal = await page.locator('#unniProductModal').innerText();
-  assert(modal.includes('자시 · 밤 11시~새벽 1시') && modal.includes('태어난 시간을 몰라요'), 'branch-first partner time UI missing');
-  assert((await page.locator('#partnerTimeInput').getAttribute('placeholder'))==='직접 입력 (예: 1330)','compatibility direct-time placeholder missing');
-  assert(!modal.includes('오전/오후') && !modal.includes('몇 분') && !modal.includes('HH:MM'), 'old/technical compatibility time UI remains');
+  assert(modal.includes('자시 · 23:30~01:29') && modal.includes('(시간 모름)'), 'manse-corrected partner time UI missing');
+  assert(!modal.includes('태어난 시간을 몰라요') && !modal.includes('정확한 분을 몰라도') && !modal.includes('오전/오후') && !modal.includes('몇 분') && !modal.includes('HH:MM'), 'old/technical compatibility time UI remains');
   assert(await page.locator('#partnerTimeBranch option').count()===13,'compatibility branch selector count');
+  assert(await page.locator('#partnerTimeDirectToggle').isVisible(),'compatibility direct-time checkbox missing');
+  assert(await page.locator('#partnerTimeInput').isHidden(),'compatibility direct-time field should default hidden');
+  await page.check('#partnerTimeDirectToggle');
+  assert(await page.locator('#partnerTimeInput').isVisible(),'compatibility direct-time field did not open');
+  assert((await page.locator('#partnerTimeInput').getAttribute('placeholder'))==='예: 1330','compatibility direct-time placeholder missing');
+  await page.uncheck('#partnerTimeDirectToggle');
   await page.fill('#partnerName', '상대');
   await page.fill('#partnerBirth', '19990511');
   await page.selectOption('#partnerTimeBranch', '午');
@@ -818,7 +823,18 @@ function norm(v) {
     '사진 길게 눌러 저장하면 돼 ♡'
   ]) assert(!html.includes(staleGeneric), `generic/system voice remains: ${staleGeneric}`);
   assert(!html.includes('내 보관함 ♡') && !html.includes('내 사주 ♡'), 'vault copy still uses decorative heart as dialogue text');
-  assert(html.includes('id="birthTimeBranch"') && html.includes('자시 · 밤 11시~새벽 1시') && html.includes('해시 · 밤 9시~11시') && html.includes('직접 입력 (예: 1330)'), 'branch-first primary birth-time UI missing');
+  assert(
+    html.includes('id="birthTimeBranch"') &&
+    html.includes('<option value="">(시간 모름)</option>') &&
+    html.includes('자시 · 23:30~01:29') &&
+    html.includes('해시 · 21:30~23:29') &&
+    html.includes('id="birthTimeDirectToggle"') &&
+    html.includes('정확한 시간 직접 입력') &&
+    html.includes('placeholder="예: 1330"') &&
+    !html.includes('id="birthTimeUnknown"') &&
+    !html.includes('정확한 분을 몰라도 시간대만 고르면 돼'),
+    'exact manse primary birth-time UI missing'
+  );
   assert(html.includes('BIRTH_TIME_BRANCHES') && html.includes('BIRTH_TIME_BRANCH_LABELS'), 'branch-time parsing/restore support missing');
   assert(html.includes('note-preview-continuation::before') && html.includes('여기서부터가 중요해') && html.includes('linear-gradient(135deg,#fff0f4'), 'NOTE2 conversion turn emphasis missing');
   assert(html.includes('언니가 먼저 본 너') && html.includes('언니가 먼저 정리한 너') && html.includes('언니가 핵심만 적어둔 비밀 메모') && html.includes('언니가 너한테만 남기는 비밀 메모'), 'generic counselor editorial labels missing');
@@ -834,8 +850,9 @@ function norm(v) {
     !html.includes('마음부터 들어주는') &&
     !html.includes('핵심부터 짚어주는') &&
     html.includes('id="centerDivider"') &&
-    html.includes('h-[2px]') &&
-    html.includes('linear-gradient(to bottom,rgba(255,230,238,.34),rgba(239,244,247,.16) 50%,rgba(211,235,246,.30))') &&
+    html.includes('h-[14px]') &&
+    html.includes('backdrop-filter:blur(4px)') &&
+    html.includes('linear-gradient(to bottom,rgba(248,196,216,.24) 0%,rgba(224,213,238,.20) 50%,rgba(190,211,244,.24) 100%)') &&
     !html.includes('선택한 언니의 말투로 결과 끝까지 이어져') &&
     !html.includes('응, 언니랑 천천히 풀어볼래') &&
     !html.includes('좋아, 핵심만 바로 알려줘') &&
