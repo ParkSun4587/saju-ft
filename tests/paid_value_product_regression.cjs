@@ -762,8 +762,8 @@ function norm(v) {
     'F/T validation voice handoff missing'
   );
   assert(
-    html.includes('결제 확인됐어. 언니가 이어서 적어둔 내용까지 전부 열어뒀어.') &&
-    html.includes('결제 확인됐어. 이어지는 내용까지 전부 열어뒀어.') &&
+    html.includes('응, 확인됐어. 그럼 아까 얘기부터 계속 볼게') &&
+    html.includes('확인됐어. 바로 이어서 보자.') &&
     html.includes('결제가 잘 확인됐는지 보고 있어.') &&
     html.includes('결제 완료 여부를 확인 중이야.'),
     'F/T payment/recovery voice handoff missing'
