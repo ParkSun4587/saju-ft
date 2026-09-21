@@ -757,8 +757,8 @@ function norm(v) {
   assert(
     html.includes('어떤 고민인지 하나만 골라줄래? 그거부터 언니가 볼게') &&
     html.includes('지금 제일 궁금한 고민 하나만 골라줘. 그거부터 볼게.') &&
-    html.includes('이름도 알려줘. 그래야 언니가 편하게 불러주지') &&
-    html.includes('이름도 입력해줘. 바로 볼게.'),
+    html.includes('이름도 같이 적어줘. 그래야 언니가 편하게 불러주지') &&
+    html.includes('이름도 입력해줘. 빠진 것만 채우면 돼.'),
     'F/T validation voice handoff missing'
   );
   assert(
