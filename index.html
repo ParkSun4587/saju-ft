@@ -654,7 +654,12 @@
   #topTitleBox{width:max-content!important;max-width:calc(100% - 56px)!important;padding:5px 11px 4px!important;border-radius:14px!important;background:rgba(255,253,250,.91)!important;border:1px solid rgba(255,255,255,.72)!important;box-shadow:0 4px 12px rgba(15,23,42,.05)!important}
   #topTitleBox p:first-child{font-size:14.5px!important;line-height:1.18!important;font-weight:830!important;letter-spacing:-.035em!important;max-width:305px}
   #topTitleBox p:nth-child(2){font-size:8.5px!important;margin-top:1px!important;color:#707784!important;font-weight:700!important}
-  #centerDivider{background:rgba(255,255,255,.035)!important;box-shadow:none!important}
+  #centerDivider{
+    background:linear-gradient(to bottom,rgba(248,196,216,.24) 0%,rgba(224,213,238,.20) 50%,rgba(190,211,244,.24) 100%)!important;
+    box-shadow:none!important;
+    backdrop-filter:blur(4px);
+    -webkit-backdrop-filter:blur(4px)
+  }
   #imgRoa{filter:saturate(.87) brightness(.99)}
   #imgSeoa{filter:saturate(.84) brightness(.99) contrast(.96)}
   #panelSeoa{background:#1f2937!important}
@@ -1734,8 +1739,7 @@
         <!-- 중앙 구분선 -->
         <div
           id="centerDivider"
-          class="absolute top-1/2 left-0 w-full h-[2px] z-[80] pointer-events-none -translate-y-1/2 transition-opacity duration-200"
-          style="background:linear-gradient(to bottom,rgba(255,230,238,.34),rgba(239,244,247,.16) 50%,rgba(211,235,246,.30));"
+          class="absolute top-1/2 left-0 w-full h-[14px] z-[80] pointer-events-none -translate-y-1/2 transition-opacity duration-200"
         ></div>
 
         <!-- 첫 상담자 선택 헤더 -->
@@ -2297,57 +2301,57 @@
                 </div>
               </div>
 
-              <!-- 태어난 시간: 12시진을 먼저 고르고, 정확한 시간은 아래에서 직접 입력 -->
+              <!-- 태어난 시간: 만세력 시진을 기본으로, 정확한 시각은 선택적으로 직접 입력 -->
               <div>
-                <label
-                  class="block text-[9.5px] font-bold text-slate-500 mb-0.5"
-                  >태어난 시간</label
-                >
-                <select
-                  id="birthTimeBranch"
-                  onchange="selectBirthTimeBranch(this)"
-                  class="w-full h-[34px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[11px] text-slate-700 focus:bg-white focus:outline-none"
-                >
-                  <option value="">자시·축시로 골라줘</option>
-                  <option value="子">자시 · 밤 11시~새벽 1시</option>
-                  <option value="丑">축시 · 새벽 1시~3시</option>
-                  <option value="寅">인시 · 새벽 3시~5시</option>
-                  <option value="卯">묘시 · 새벽 5시~7시</option>
-                  <option value="辰">진시 · 오전 7시~9시</option>
-                  <option value="巳">사시 · 오전 9시~11시</option>
-                  <option value="午">오시 · 오전 11시~오후 1시</option>
-                  <option value="未">미시 · 오후 1시~3시</option>
-                  <option value="申">신시 · 오후 3시~5시</option>
-                  <option value="酉">유시 · 오후 5시~7시</option>
-                  <option value="戌">술시 · 저녁 7시~9시</option>
-                  <option value="亥">해시 · 밤 9시~11시</option>
-                </select>
-                <div class="mt-1 text-[9px] font-semibold text-slate-400">
-                  정확한 분을 몰라도 시간대만 고르면 돼
+                <div class="flex items-center justify-between gap-2 mb-1">
+                  <label class="block text-[9.5px] font-bold text-slate-500"
+                    >태어난 시간</label
+                  >
+                  <label
+                    class="inline-flex items-center gap-1.5 px-2.5 h-[27px] rounded-full border border-rose-200 bg-rose-50/70 cursor-pointer select-none"
+                  >
+                    <input
+                      type="checkbox"
+                      id="birthTimeDirectToggle"
+                      onchange="toggleDirectBirthTime(this)"
+                      class="accent-rose-500"
+                    />
+                    <span class="text-[9.5px] font-extrabold text-rose-700"
+                      >정확한 시간 직접 입력</span
+                    >
+                  </label>
                 </div>
-                <div class="mt-1.5 flex gap-1.5 items-center">
+                <div id="birthTimeBranchWrap">
+                  <select
+                    id="birthTimeBranch"
+                    onchange="selectBirthTimeBranch(this)"
+                    class="w-full h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[11px] text-slate-700 focus:bg-white focus:outline-none"
+                  >
+                    <option value="">(시간 모름)</option>
+                    <option value="子">자시 · 23:30~01:29</option>
+                    <option value="丑">축시 · 01:30~03:29</option>
+                    <option value="寅">인시 · 03:30~05:29</option>
+                    <option value="卯">묘시 · 05:30~07:29</option>
+                    <option value="辰">진시 · 07:30~09:29</option>
+                    <option value="巳">사시 · 09:30~11:29</option>
+                    <option value="午">오시 · 11:30~13:29</option>
+                    <option value="未">미시 · 13:30~15:29</option>
+                    <option value="申">신시 · 15:30~17:29</option>
+                    <option value="酉">유시 · 17:30~19:29</option>
+                    <option value="戌">술시 · 19:30~21:29</option>
+                    <option value="亥">해시 · 21:30~23:29</option>
+                  </select>
+                </div>
+                <div id="birthTimeDirectWrap" class="hidden">
                   <input
                     type="tel"
                     id="birthTimeInput"
                     maxlength="5"
                     inputmode="numeric"
-                    placeholder="직접 입력 (예: 1330)"
+                    placeholder="예: 1330"
                     oninput="formatBirthTime(this); selectDirectBirthTime(this)"
-                    class="flex-1 min-w-0 h-[32px] px-2 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-[11px] text-center font-mono focus:bg-white focus:outline-none"
+                    class="w-full h-[35px] px-2.5 rounded-xl border border-rose-200 bg-rose-50/45 font-bold placeholder-slate-400 text-[11px] text-center font-mono focus:bg-white focus:outline-none"
                   />
-                  <label
-                    class="h-[32px] px-2 rounded-xl border border-slate-200 bg-slate-50 flex items-center gap-1 shrink-0 cursor-pointer select-none"
-                  >
-                    <input
-                      type="checkbox"
-                      id="birthTimeUnknown"
-                      onchange="toggleBirthTimeUnknown(this)"
-                      class="accent-rose-500"
-                    />
-                    <span class="text-[10px] font-bold text-slate-600"
-                      >시간 모름</span
-                    >
-                  </label>
                 </div>
               </div>
               <!-- 전송 버튼 영역 (스크립트 자동 주입) -->
@@ -3894,9 +3898,9 @@
           userBirthStr: document
             .getElementById("birthDateInput")
             .value.replace(/\D/g, ""),
-          userTimeKey: document.getElementById("birthTimeUnknown").checked
-            ? "unknown"
-            : (document.getElementById("birthTimeInput").value || document.getElementById("birthTimeBranch")?.value || ""),
+          userTimeKey: document.getElementById("birthTimeDirectToggle")?.checked
+            ? (document.getElementById("birthTimeInput").value || "unknown")
+            : (document.getElementById("birthTimeBranch")?.value || "unknown"),
           userGender: document.getElementById("genderValue").value,
           userCalendar: document.getElementById("calendarSelect").value,
           concernKey: document.getElementById("selectedConcernKey").value,
@@ -5908,41 +5912,30 @@ function generateConcernNotes(data, mode) {
         午:"오시", 未:"미시", 申:"신시", 酉:"유시", 戌:"술시", 亥:"해시"
       };
 
-      function selectBirthTimeBranch(select) {
-        const timeInput = document.getElementById("birthTimeInput");
-        const unknown = document.getElementById("birthTimeUnknown");
-        if (select?.value && BIRTH_TIME_BRANCHES.has(select.value)) {
-          if (timeInput) timeInput.value = "";
-          if (unknown) unknown.checked = false;
-        }
+      function selectBirthTimeBranch() {
         saveInputDraft();
       }
 
-      function selectDirectBirthTime(input) {
-        const branch = document.getElementById("birthTimeBranch");
-        const unknown = document.getElementById("birthTimeUnknown");
-        if (input?.value) {
-          if (branch) branch.value = "";
-          if (unknown) unknown.checked = false;
-        }
+      function selectDirectBirthTime() {
         saveInputDraft();
       }
 
-      function toggleBirthTimeUnknown(checkbox, focus = true) {
+      function toggleDirectBirthTime(checkbox, focus = true) {
         const timeInput = document.getElementById("birthTimeInput");
         const branch = document.getElementById("birthTimeBranch");
-        if (!timeInput || !branch) return;
-
-        timeInput.disabled = checkbox.checked;
-        branch.disabled = checkbox.checked;
-        timeInput.classList.toggle("opacity-50", checkbox.checked);
-        branch.classList.toggle("opacity-50", checkbox.checked);
+        const branchWrap = document.getElementById("birthTimeBranchWrap");
+        const directWrap = document.getElementById("birthTimeDirectWrap");
+        if (!timeInput || !branch || !branchWrap || !directWrap) return;
 
         if (checkbox.checked) {
-          timeInput.value = "";
           branch.value = "";
-        } else if (focus) {
-          branch.focus();
+          branchWrap.classList.add("hidden");
+          directWrap.classList.remove("hidden");
+          if (focus) timeInput.focus();
+        } else {
+          timeInput.value = "";
+          directWrap.classList.add("hidden");
+          branchWrap.classList.remove("hidden");
         }
         saveInputDraft();
       }
@@ -6080,43 +6073,31 @@ function generateConcernNotes(data, mode) {
 
           const birthTimeInput = document.getElementById("birthTimeInput");
           const birthTimeBranch = document.getElementById("birthTimeBranch");
-          const birthTimeUnknown = document.getElementById("birthTimeUnknown");
+          const birthTimeDirectToggle = document.getElementById("birthTimeDirectToggle");
 
-          const isTimeUnknown = !!(
-            birthTimeUnknown && birthTimeUnknown.checked
-          );
-
-          // 정확한 시각을 적었으면 그 값을 우선하고, 아니면 자시~해시 선택값을 사용한다.
+          // 기본값은 시간 모름. 직접 입력을 켰을 때만 정확한 시각을 검증한다.
           let birthTime = "unknown";
-          if (!isTimeUnknown) {
+          const directTimeEnabled = !!birthTimeDirectToggle?.checked;
+          const branchTime = birthTimeBranch?.value || "";
+          if (directTimeEnabled) {
             const rawT = birthTimeInput ? birthTimeInput.value.trim() : "";
             const cleanTime = rawT.replace(/[^0-9]/g, "");
-            const branchTime = birthTimeBranch?.value || "";
-            if (cleanTime) {
-              if (
-                cleanTime.length !== 4 ||
-                Number(cleanTime.slice(0, 2)) > 23 ||
-                Number(cleanTime.slice(2)) > 59
-              ) {
-                showVoiceToast({
-                  F: "직접 입력한 시간만 한 번 봐줄래? 예를 들면 오후 1시 30분은 1330이야.",
-                  T: "직접 입력 시간은 4자리로 적어줘. 예: 1330",
-                }, mode);
-                if (birthTimeInput) birthTimeInput.focus();
-                return;
-              }
-              birthTime =
-                cleanTime.substring(0, 2) + ":" + cleanTime.substring(2, 4);
-            } else if (BIRTH_TIME_BRANCHES.has(branchTime)) {
-              birthTime = branchTime;
-            } else {
+            if (
+              cleanTime.length !== 4 ||
+              Number(cleanTime.slice(0, 2)) > 23 ||
+              Number(cleanTime.slice(2)) > 59
+            ) {
               showVoiceToast({
-                F: "태어난 시간대만 골라줘. 자시·축시처럼 고르면 되고, 정확한 시간을 알면 아래에 직접 적어도 돼.",
-                T: "태어난 시간대를 골라줘. 정확한 시간을 알면 아래에 직접 입력하면 돼.",
+                F: "정확한 시간을 직접 입력하려면 4자리로 적어줘. 예를 들면 오후 1시 30분은 1330이야.",
+                T: "직접 입력 시간은 4자리로 적어줘. 예: 1330",
               }, mode);
-              birthTimeBranch?.focus();
+              if (birthTimeInput) birthTimeInput.focus();
               return;
             }
+            birthTime =
+              cleanTime.substring(0, 2) + ":" + cleanTime.substring(2, 4);
+          } else if (BIRTH_TIME_BRANCHES.has(branchTime)) {
+            birthTime = branchTime;
           }
 
           const isLunar =
@@ -9343,7 +9324,11 @@ currentResultData = {
 
         const birthTimeBranch = document.getElementById("birthTimeBranch");
 
-        const birthTimeUnknown = document.getElementById("birthTimeUnknown");
+        const birthTimeDirectToggle = document.getElementById("birthTimeDirectToggle");
+
+        const birthTimeBranchWrap = document.getElementById("birthTimeBranchWrap");
+
+        const birthTimeDirectWrap = document.getElementById("birthTimeDirectWrap");
 
         const leapMonthCheck = document.getElementById("leapMonthCheck");
 
@@ -9371,27 +9356,22 @@ currentResultData = {
           leapMonthCheck.checked = !!savedData.isLeapMonth;
         }
 
-        const isTimeUnknown =
-          !savedData.userTimeKey || savedData.userTimeKey === "unknown";
-
-        if (birthTimeUnknown) {
-          birthTimeUnknown.checked = isTimeUnknown;
-        }
-
-        const savedTimeKey = String(savedData.userTimeKey || "");
+        const savedTimeKey = String(savedData.userTimeKey || "unknown");
         const savedAsBranch = BIRTH_TIME_BRANCHES.has(savedTimeKey);
+        const savedAsExact = savedTimeKey !== "unknown" && !savedAsBranch;
 
-        if (birthTimeBranch) {
-          birthTimeBranch.value = !isTimeUnknown && savedAsBranch ? savedTimeKey : "";
-          birthTimeBranch.disabled = isTimeUnknown;
-          birthTimeBranch.classList.toggle("opacity-50", isTimeUnknown);
+        if (birthTimeDirectToggle) {
+          birthTimeDirectToggle.checked = savedAsExact;
         }
-
+        if (birthTimeBranch) {
+          birthTimeBranch.value = savedAsBranch ? savedTimeKey : "";
+        }
         if (birthTimeInput) {
-          birthTimeInput.value =
-            !isTimeUnknown && !savedAsBranch ? savedTimeKey : "";
-          birthTimeInput.disabled = isTimeUnknown;
-          birthTimeInput.classList.toggle("opacity-50", isTimeUnknown);
+          birthTimeInput.value = savedAsExact ? savedTimeKey : "";
+        }
+        if (birthTimeBranchWrap && birthTimeDirectWrap) {
+          birthTimeBranchWrap.classList.toggle("hidden", savedAsExact);
+          birthTimeDirectWrap.classList.toggle("hidden", !savedAsExact);
         }
 
         const concernOrder = [
@@ -9455,9 +9435,11 @@ currentResultData = {
         setGender("female");
         setCalendar("solar");
         document.getElementById("leapMonthCheck").checked = false;
-        const unknown = document.getElementById("birthTimeUnknown");
-        unknown.checked = false;
-        toggleBirthTimeUnknown(unknown, false);
+        const directTimeToggle = document.getElementById("birthTimeDirectToggle");
+        if (directTimeToggle) {
+          directTimeToggle.checked = false;
+          toggleDirectBirthTime(directTimeToggle, false);
+        }
         clearConcernSelection();
         for (const id of ["resultSection", "loadingSection", "landingSection"])
           document.getElementById(id).style.display = "none";
