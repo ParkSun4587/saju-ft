@@ -233,7 +233,7 @@ async function resultLayoutSnapshot(page) {
 function assertResultLayout(layout, label) {
   const transparent=(v)=>v==='rgba(0, 0, 0, 0)'||v==='transparent';
   assert(!layout.overflow,label+' horizontal overflow '+JSON.stringify(layout));
-  assert(layout.axisCount===6 && layout.leftSpread<=1.5 && layout.rightSpread<=1.5 && layout.minSide>=13.5,
+  assert(layout.axisCount===6 && layout.leftSpread<=1.5 && layout.rightSpread<=1.5 && layout.minSide>=14.5,
     label+' result reading axis/gutter drift '+JSON.stringify(layout));
   for(const [id,r] of Object.entries(layout.axis)) {
     assert(r && r.left>=-1 && r.right<=layout.viewport.width+1,label+' section escaped viewport '+id+' '+JSON.stringify(r));
