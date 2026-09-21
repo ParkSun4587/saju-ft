@@ -46,11 +46,20 @@ async function checkRestartCta(page, mode) {
   );
   assert(!cta.className.includes('fee500')&&cta.background.includes('linear-gradient')&&cta.color==='rgb(255, 255, 255)',
     'other-concern CTA still uses legacy Kakao-yellow styling '+JSON.stringify(cta));
-  const returnVoice=await page.locator('#welcomeSisterText').innerText();
-  if(mode==='F') assert(returnVoice.includes('이번엔 뭐가 마음에 걸려?'),
-    'F other-concern return lost warm continuity '+returnVoice);
-  else assert(returnVoice.includes('좋아. 이번엔 뭐부터 볼까?'),
-    'T other-concern return lost concise continuity '+returnVoice);
+  const returnBubble=await page.locator('#welcomeSisterBubble').evaluate((el)=>({
+    voice:document.getElementById('welcomeSisterText')?.innerText||'',
+    bg:getComputedStyle(el).backgroundColor,
+    border:getComputedStyle(el).borderColor,
+    color:getComputedStyle(document.getElementById('welcomeSisterText')).color,
+    mode:el.dataset.consultMode||'',
+  }));
+  if(mode==='F') {
+    assert(returnBubble.voice.includes('이번엔 뭐가 마음에 걸려?'),'F other-concern return lost warm continuity '+returnBubble.voice);
+    assert(returnBubble.mode==='F'&&returnBubble.color.includes('123, 49, 69'),'F return bubble palette drift '+JSON.stringify(returnBubble));
+  } else {
+    assert(returnBubble.voice.includes('좋아. 이번엔 뭐부터 볼까?'),'T other-concern return lost concise continuity '+returnBubble.voice);
+    assert(returnBubble.mode==='T'&&returnBubble.color.includes('49, 93, 112'),'T return bubble should use blue palette '+JSON.stringify(returnBubble));
+  }
 }
 
 async function enter(page, mode, concern, situation) {
@@ -303,6 +312,15 @@ async function inspect(page, mode) {
       paywallNextTeaser:document.getElementById('paywallNextTeaser')?.innerText||'',
       paywallFeatureCount:document.querySelectorAll('#payBoxFeatures > div').length,
       paywallVisible:document.getElementById('lockedOverlay') ? getComputedStyle(document.getElementById('lockedOverlay')).display!=='none' : false,
+      paywallPrice:(()=>{
+        const badge=document.getElementById('paywallPriceBadge');
+        const amount=document.getElementById('paywallPriceAmount');
+        return {
+          badge:badge?.className||'',
+          amount:amount?.className||'',
+          text:amount?.innerText||'',
+        };
+      })(),
       paywallTurn:(()=>{
         const el=document.querySelector('#note2PreviewCard .note-preview-continuation');
         if(!el) return null;
@@ -387,8 +405,10 @@ async function inspect(page, mode) {
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
     assert(/NOTE 0?2/.test(r.note2Preview)&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
     if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서 하나만 더 보자')&&r.paywall.includes('같은 서운함이 반복되는지는 보여')&&r.paywall.includes('언니, 그것도 봐줘'),'live F conversion paywall drift '+r.paywall);
-    if(mode==='T') assert(!r.paywall.includes('서아 언니 · 마지막 기준만 보면 돼')&&r.paywall.includes('부하 제거')&&r.paywall.includes('응, 끝까지 봐줘'),'T 990 paywall should remove the extra sister bubble '+r.paywall);
+    if(mode==='T') assert(r.paywall.includes('서아 언니 · 마지막 기준만 보면 돼')&&r.paywall.includes('부하 제거')&&r.paywall.includes('응, 끝까지 봐줘'),'T 990 paywall sister header should be restored '+r.paywall);
     assert(r.paywall.includes('990원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
+    if(mode==='F') assert(r.paywallPrice.text==='990원'&&r.paywallPrice.badge.includes('rounded-full')&&r.paywallPrice.badge.includes('rose-50')&&r.paywallPrice.amount.includes('rose-600'),'F 990 price badge drift '+JSON.stringify(r.paywallPrice));
+    if(mode==='T') assert(r.paywallPrice.text==='990원'&&r.paywallPrice.badge.includes('rounded-full')&&r.paywallPrice.badge.includes('sky-50')&&r.paywallPrice.amount.includes('sky-600'),'T 990 price should match F shape with blue palette '+JSON.stringify(r.paywallPrice));
     assert(
       r.paywallTurn &&
       r.paywallTurn.borderLeft>=3 &&
