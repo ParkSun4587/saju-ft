@@ -735,7 +735,7 @@ function norm(v) {
   assert(!html.includes('정확한 만세력 조회를 위해 적어줘') && !html.includes('출생기록에 적힌 시각을 입력하면 더 정확해'), 'old birth-time helper copy remains');
   assert(!html.includes('🥺') && !html.includes('💕') && !html.includes('💌') && !html.includes('ㅠㅠ'), 'excessive F emoticon copy remains in the main journey');
   assert(!html.includes('id="sisterSwitchCard"') && !html.includes('switchSisterMode()'), 'bottom F/T mode-switch CTA code remains');
-  assert(html.includes('같은 장면이 반복되는 부분이 보여') && html.includes('바로 아래 비밀 메모에 이어서 적어뒀어') && html.includes('바로 아래 비밀 메모에서 이어서 보면 돼'), 'five-element secret-note teaser copy missing');
+  assert(html.includes('눈에 보이는 오행 분포') && html.includes('오행 개수 기준 분포') && html.includes('실제 세력 강약') && html.includes('아래 비밀 메모에 이어서 풀어뒀어') && html.includes('아래 비밀 메모는 그 실제 판단과 지금 고민을 같이 본 결과야'), 'five-element raw-count/secret-note copy missing');
   for (const oldOheng of ['목(나무)','화(불)','토(흙)','금(쇠)','수(물)']) assert(!html.includes(oldOheng), `old parenthetical five-element label remains: ${oldOheng}`);
   for (const oldStoryOheng of ['목 · 나무','화 · 불','토 · 흙','금 · 쇠','수 · 물']) assert(!html.includes(oldStoryOheng), `story card five-element label should stay simple: ${oldStoryOheng}`);
   assert(!html.includes('사주 데이터로 까본 내 진짜 MBTI'), 'MBTI is still framed as a true diagnostic result');
