@@ -839,10 +839,11 @@ function norm(v) {
   );
   assert(html.includes('BIRTH_TIME_BRANCHES') && html.includes('BIRTH_TIME_BRANCH_LABELS'), 'branch-time parsing/restore support missing');
   assert(
-    html.includes('id="paywallPriceBadge"') &&
+    html.includes('id="paywallPriceBadge" class="shrink-0 text-right"') &&
     html.includes('id="paywallPriceAmount"') &&
-    html.includes('rounded-full border border-sky-100 bg-sky-50 px-3 py-1.5 text-right') &&
+    html.includes('paywallPriceBadge.className = "shrink-0 text-right"') &&
     html.includes('text-[18px] font-black tracking-tight text-sky-600') &&
+    !html.includes('rounded-full border border-sky-100 bg-sky-50 px-3 py-1.5 text-right') &&
     html.includes('if (paywallSisterHeader) paywallSisterHeader.style.display = "flex";') &&
     html.includes('#welcomeSisterBubble[data-consult-mode="T"]') &&
     html.includes('color:#315d70!important') &&
@@ -850,7 +851,7 @@ function norm(v) {
     html.includes('border-left:3px solid #e77892') &&
     html.includes('이제 중요한 건 하나야. 어디서 끊고, 뭘 바꿀지.') &&
     html.includes('이제 핵심은 하나야. 어디서 끊고, 뭘 바꿀지.'),
-    'NOTE2 conversion turn should use one compact impact line'
+    'NOTE2 conversion turn should use one compact impact line with simple price text'
   );
   assert(html.includes('언니가 먼저 본 너') && html.includes('언니가 먼저 정리한 너') && html.includes('언니가 핵심만 적어둔 비밀 메모') && html.includes('언니가 너한테만 남기는 비밀 메모'), 'generic counselor editorial labels missing');
   assert(!html.includes('로아 언니가 먼저 본 너') && !html.includes('서아 언니가 먼저 정리한 너') && !html.includes('로아 언니가 너한테만 남기는 비밀 메모') && !html.includes('서아 언니가 핵심만 적어둔 비밀 메모'), 'character name still leaks into final editorial labels');
