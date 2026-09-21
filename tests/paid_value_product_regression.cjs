@@ -242,6 +242,19 @@ function norm(v) {
     document.getElementById('birthTimeInput').value = '0310';
     toggleBirthTimeUnknown(ub, false);
     startAnalysis('F');
+
+    history.replaceState({},'',location.pathname+'?payment=fail&state=fake');
+    preparePaymentFailureRetry(currentResultData,'F');
+    const paymentRetryRecovery = {
+      search:location.search,
+      boxText:document.getElementById('paymentFailRefreshBox')?.innerText || '',
+      retryFlag:readStore('unni_payment_retry_after_refresh',true) || '',
+      viewState:readStore('unni_view_state',true) || '',
+      savedKey:readStore('sazu_last_unique_key') || '',
+    };
+    document.getElementById('paymentFailRefreshBox')?.remove();
+    removeStore('unni_payment_retry_after_refresh',true);
+
     renderUnniProductCatalog();
     const notes = generateConcernNotes(currentResultData, 'F');
     const note6 = notes[5];
@@ -310,6 +323,7 @@ function norm(v) {
       previewVisible:!!note2Preview && getComputedStyle(note2Preview).display !== 'none',
       paywallVisible:!!document.getElementById('lockedOverlay') && getComputedStyle(document.getElementById('lockedOverlay')).display !== 'none',
       result:!!currentResultData,
+      paymentRetryRecovery,
       lockedCatalog:!!lockedCatalog,
       previewPlain,
       previewBodyPlain,
@@ -347,6 +361,15 @@ function norm(v) {
     };
   });
   assert(ui.result, 'production-like result missing');
+  assert(
+    ui.paymentRetryRecovery.search==='' &&
+    ui.paymentRetryRecovery.boxText.includes('새로고침을 한 번') &&
+    ui.paymentRetryRecovery.boxText.includes('새로고침하고 다시 결제') &&
+    ui.paymentRetryRecovery.retryFlag==='1' &&
+    ui.paymentRetryRecovery.viewState==='result' &&
+    ui.paymentRetryRecovery.savedKey,
+    'payment failure did not clean URL/save result/create refresh retry '+JSON.stringify(ui.paymentRetryRecovery)
+  );
   if (ui.sourceFreeLaunch) {
     assert(ui.lockedCatalog, 'free-launch mode should expose the post-report product catalog');
     assert(!ui.previewVisible && !ui.paywallVisible, 'free-launch mode must keep the 990 won lock UI hidden');
@@ -767,6 +790,8 @@ function norm(v) {
     html.includes('결제 완료 여부를 확인 중이야.') &&
     html.includes('function preparePaymentFailureRetry(') &&
     html.includes('새로고침하고 다시 결제') &&
+    html.includes('unni_payment_retry_after_refresh') &&
+    html.includes('이제 다시 결제할 수 있어. 아래 결제 버튼') &&
     html.includes('changeViewState("result")') &&
     premium.includes('window.preparePaymentFailureRetry'),
     'F/T payment/recovery voice handoff or refresh retry missing'
