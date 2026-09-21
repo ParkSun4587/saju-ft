@@ -2690,7 +2690,7 @@
                   </div>
                 </div>
 
-                <div class="mt-3.5 border-t border-slate-100 pt-3">
+                <div id="paywallPriceSummary" class="mt-3.5 border-t border-slate-100 pt-3">
                   <div class="flex items-center justify-between gap-3">
                     <div class="min-w-0">
                       <div
@@ -2728,7 +2728,7 @@
                     id="payBtnSubText"
                     class="text-[10.5px] font-bold text-white/88"
                   >
-                    990원 · NOTE2 다음부터 NOTE6까지
+                    NOTE2 다음부터 NOTE6까지
                   </span>
                 </button>
 
@@ -2773,7 +2773,7 @@
                     onclick="requestWidgetPayment()"
                     class="w-full py-3.5 px-4 mt-3 bg-[#e85d7f] text-white font-black text-sm rounded-2xl shadow-none active:scale-[0.98] transition-all"
                   >
-                    방금 보던 내용 이어보기 · 990원
+                    방금 보던 내용 이어보기
                   </button>
                   <div
                     id="finalNotePaymentHint"
@@ -3608,7 +3608,9 @@
         }
         const area = document.getElementById("paymentWidgetArea");
         const open = document.getElementById("directPaymentOpenButton");
+        const priceSummary = document.getElementById("paywallPriceSummary");
         if (area) area.style.display = "none";
+        if (priceSummary) priceSummary.style.display = "";
         if (open) {
           open.style.display = "flex";
           open.disabled = false;
@@ -6966,7 +6968,7 @@ currentResultData = {
             : "로아 언니, 이어서 봐줘";
         }
         if (payBtnSubText) {
-          payBtnSubText.textContent = "990원 · NOTE2 다음부터 NOTE6까지";
+          payBtnSubText.textContent = "NOTE2 다음부터 NOTE6까지";
         }
         if (paywallSisterAvatar) paywallSisterAvatar.src = isT ? "./서아.png" : "./로아.png";
         if (paywallSisterLabel) {
@@ -8020,8 +8022,10 @@ currentResultData = {
         }
         const area = document.getElementById("paymentWidgetArea");
         const open = document.getElementById("directPaymentOpenButton");
+        const priceSummary = document.getElementById("paywallPriceSummary");
         area.style.display = "block";
         open.style.display = "none";
+        if (priceSummary) priceSummary.style.display = "none";
         const generation = widgetGeneration;
         const version = viewVersion;
         const key = getUserUniqueKey(currentResultData);
