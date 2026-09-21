@@ -354,8 +354,8 @@ function norm(v) {
     assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
     assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-    assert(ui.fPaywallText.includes('로아 언니 · 여기서 조금 더 봐야겠어') && ui.fPaywallText.includes('어디서 끊으면 좋을지만 같이 보자') && ui.fPaywallText.includes('로아 언니, 이것도 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
-    assert(ui.tPaywallText.includes('서아 언니 · 여기서 더 볼 게 있어') && ui.tPaywallText.includes('어디서 끊어야 하는지만 보면 돼') && ui.tPaywallText.includes('서아 언니, 끝까지 봐줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
+    assert(ui.fPaywallText.includes('로아 언니 · 여기서부터가 진짜 중요해') && ui.fPaywallText.includes('무엇부터 덜어야') && ui.fPaywallText.includes('로아 언니, 이어서 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
+    assert(ui.tPaywallText.includes('서아 언니 · 이제 결론만 남았어') && ui.tPaywallText.includes('부하 제거') && ui.tPaywallText.includes('서아 언니, 끝까지 봐줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
     assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
     assert(ui.fPaywallText.includes('NOTE2 다음부터 NOTE6까지') && ui.tPaywallText.includes('NOTE2 다음부터 NOTE6까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), '990 won unlock scope or stale sale badge drift');
