@@ -1353,7 +1353,7 @@
     if (productId === "all_in_one") {
       return `
         <div style="font-size:12px;font-weight:900;margin-bottom:5px">${isT ? "6가지 고민의 지금 상황을 맞춰줘" : "6가지 고민의 지금 상황만 하나씩 알려줘"}</div>
-        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">${isT ? "각 고민을 네 실제 상황에 맞춰 나눠 보기 위한 마지막 설정이야." : "각 고민을 네 실제 상황에 맞춰서 이어서 보기 위한 마지막 설정이야."}</div>
+        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">${isT ? "각 고민을 네 상황에 맞게 보려면 이것만 맞춰주면 돼." : "각 고민을 네 상황에 맞게 보려면 이것만 골라주면 돼."}</div>
         <div id="unniAllInOneSituations" style="display:grid;gap:8px">
           ${Object.keys(CONCERNS).map((k) => {
             const selected = k === data?.concernKey ? data?.concernSituation || "" : "";
@@ -1409,7 +1409,7 @@
       const picked = [...root.querySelectorAll('#unniBundleChecks input:checked')].map((x) => x.value);
       if (picked.length !== 3)
         throw new Error(productVoice(data, {
-          F: "더 보고 싶은 고민을 딱 3개만 골라줘. 그 세 개를 같이 이어서 볼게.",
+          F: "더 보고 싶은 고민을 딱 3개만 골라줘. 그 세 개부터 같이 보자",
           T: "추가로 볼 고민을 정확히 3개 골라줘.",
         }));
       const situations = {};
