@@ -2745,7 +2745,7 @@
                         잠긴 내용 바로 이어서 보기
                       </div>
                     </div>
-                    <div id="paywallPriceBadge" class="shrink-0 rounded-full border border-rose-100 bg-rose-50 px-3 py-1.5 text-right">
+                    <div id="paywallPriceBadge" class="shrink-0 text-right">
                       <span id="paywallPriceAmount" class="text-[18px] font-black tracking-tight text-rose-600">990원</span>
                     </div>
                   </div>
@@ -5989,7 +5989,7 @@ function generateConcernNotes(data, mode) {
       }
 
       function showVoiceToast(copy, mode = currentVoiceMode()) {
-        showToast(voiceText(copy, mode));
+        showToast(voiceText(copy, mode), mode);
       }
 
       function analysisErrorText(error, mode = currentVoiceMode()) {
@@ -7089,9 +7089,7 @@ currentResultData = {
           paywallPriceTitle.textContent = paywallCopy.priceTitle;
         }
         if (paywallPriceBadge) {
-          paywallPriceBadge.className = isT
-            ? "shrink-0 rounded-full border border-sky-100 bg-sky-50 px-3 py-1.5 text-right"
-            : "shrink-0 rounded-full border border-rose-100 bg-rose-50 px-3 py-1.5 text-right";
+          paywallPriceBadge.className = "shrink-0 text-right";
         }
         if (paywallPriceAmount) {
           paywallPriceAmount.className = isT
@@ -8317,14 +8315,20 @@ currentResultData = {
         if (msg) showToast(msg);
       }
 
-      function showToast(message) {
+      function showToast(message, mode = currentVoiceMode()) {
         const existingToast = document.getElementById("customToast");
         if (existingToast) existingToast.remove();
         const toast = document.createElement("div");
         toast.id = "customToast";
         toast.innerText = message;
-        // font-size를 12px로 살짝 줄이고 white-space: nowrap을 주어 무조건 한 줄로 출력
-        toast.style.cssText = `position: fixed; top: calc(env(safe-area-inset-top, 0px) + 16px); left: 50%; transform: translateX(-50%) translateY(-20px); background: #ffffff; color: #e11d48; border: 1.5px solid #fecdd3; padding: 12px 18px; border-radius: 16px; font-size: 12px; font-weight: 700; box-shadow: 0 8px 24px rgba(225, 29, 72, 0.15); z-index: 99999; opacity: 0; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); text-align: center; white-space: normal; word-break: keep-all; max-width: calc(100vw - 48px); line-height: 1.5;`;
+        const isT = mode === "T";
+        const toastColor = isT ? "#287a9e" : "#e11d48";
+        const toastBorder = isT ? "#bfdfec" : "#fecdd3";
+        const toastShadow = isT
+          ? "rgba(40, 122, 158, 0.15)"
+          : "rgba(225, 29, 72, 0.15)";
+        // F는 로아 핑크, T는 서아 블루로 안내 토스트를 맞춘다.
+        toast.style.cssText = `position: fixed; top: calc(env(safe-area-inset-top, 0px) + 16px); left: 50%; transform: translateX(-50%) translateY(-20px); background: #ffffff; color: ${toastColor}; border: 1.5px solid ${toastBorder}; padding: 12px 18px; border-radius: 16px; font-size: 12px; font-weight: 700; box-shadow: 0 8px 24px ${toastShadow}; z-index: 99999; opacity: 0; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); text-align: center; white-space: normal; word-break: keep-all; max-width: calc(100vw - 48px); line-height: 1.5;`;
         document.body.appendChild(toast);
         setTimeout(() => {
           toast.style.opacity = "1";
@@ -9324,6 +9328,7 @@ currentResultData = {
         const inputCard = document.getElementById("sajuInputCardBox");
 
         if (inputCard) {
+          inputCard.dataset.consultMode = targetMode;
           inputCard.style.display = "block";
 
           while (inputCard.nextElementSibling) {
