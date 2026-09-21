@@ -826,13 +826,16 @@ function norm(v) {
   assert(html.includes('analysisErrorText(') && !html.includes('calcErr.message || {'), 'raw analysis-engine errors can still leak into user copy');
   assert(
     html.includes('똑같은 내 사주, 누구한테 먼저 털어놓을래?') &&
-    html.includes('말해주는 방식만 골라봐') &&
-    html.includes('마음부터 들어주는') &&
-    html.includes('핵심부터 짚어주는') &&
     html.includes('요즘 뭐가 제일 마음에 걸려?<br>언니한테 편하게 얘기해봐') &&
     html.includes('뭐가 제일 궁금해?<br>중요한 것부터 바로 보자') &&
     html.includes('언니한테 얘기해볼래') &&
     html.includes('좋아, 바로 봐줘') &&
+    !html.includes('말해주는 방식만 골라봐') &&
+    !html.includes('마음부터 들어주는') &&
+    !html.includes('핵심부터 짚어주는') &&
+    html.includes('id="centerDivider"') &&
+    html.includes('h-[2px]') &&
+    html.includes('linear-gradient(to bottom,rgba(255,230,238,.34),rgba(239,244,247,.16) 50%,rgba(211,235,246,.30))') &&
     !html.includes('선택한 언니의 말투로 결과 끝까지 이어져') &&
     !html.includes('응, 언니랑 천천히 풀어볼래') &&
     !html.includes('좋아, 핵심만 바로 알려줘') &&
