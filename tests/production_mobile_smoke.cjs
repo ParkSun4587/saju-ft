@@ -407,8 +407,8 @@ async function inspect(page, mode) {
     if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서 하나만 더 보자')&&r.paywall.includes('지금 연애에서 기준을 맞출 때 반복되는 흐름이 조금 보여')&&r.paywall.includes('언니, 그것도 봐줘'),'live F conversion paywall drift '+r.paywall);
     if(mode==='T') assert(r.paywall.includes('서아 언니 · 마지막 기준만 보면 돼')&&r.paywall.includes('부하 제거')&&r.paywall.includes('응, 끝까지 봐줘'),'T 990 paywall sister header should be restored '+r.paywall);
     assert(r.paywall.includes('990원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
-    if(mode==='F') assert(r.paywallPrice.text==='990원'&&r.paywallPrice.badge.includes('rounded-full')&&r.paywallPrice.badge.includes('rose-50')&&r.paywallPrice.amount.includes('rose-600'),'F 990 price badge drift '+JSON.stringify(r.paywallPrice));
-    if(mode==='T') assert(r.paywallPrice.text==='990원'&&r.paywallPrice.badge.includes('rounded-full')&&r.paywallPrice.badge.includes('sky-50')&&r.paywallPrice.amount.includes('sky-600'),'T 990 price should match F shape with blue palette '+JSON.stringify(r.paywallPrice));
+    if(mode==='F') assert(r.paywallPrice.text==='990원'&&r.paywallPrice.badge.trim()==='shrink-0 text-right'&&!/rounded|bg-|border/.test(r.paywallPrice.badge)&&r.paywallPrice.amount.includes('rose-600'),'F 990 simple price display drift '+JSON.stringify(r.paywallPrice));
+    if(mode==='T') assert(r.paywallPrice.text==='990원'&&r.paywallPrice.badge.trim()==='shrink-0 text-right'&&!/rounded|bg-|border/.test(r.paywallPrice.badge)&&r.paywallPrice.amount.includes('sky-600'),'T 990 simple price display drift '+JSON.stringify(r.paywallPrice));
     assert(
       r.paywallTurn &&
       r.paywallTurn.borderLeft>=3 &&
