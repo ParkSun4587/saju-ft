@@ -718,20 +718,20 @@ function norm(v) {
   for (const harsh of ['아이고 왔어?', '시간 낭비 말고', '똑바로 찍어', '똥고집', '미련 곰탱이', '팩트 꽂힌', '팩폭 모드', '징징대지 말고 와', '살인 충동 느낌', '상대방 사람 취급', '멍청한 질문 3번']) assert(!html.includes(harsh), `harsh/old sister copy remains: ${harsh}`);
   assert(
     html.includes('아, 왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
-    html.includes('언니가 하나씩 잘 봐줄게.') &&
+    html.includes('마음에 걸리는 건 언니가 같이 봐줄게.') &&
     html.includes('왔어. 이름이랑 생일부터 알려줘.') &&
-    html.includes('지금 고민에서 핵심부터 바로 볼게.') &&
-    html.includes('로아 언니, 내 얘기부터 같이 봐줘') &&
+    html.includes('중요한 것부터 정리해줄게.') &&
+    html.includes('로아 언니, 내 얘기 봐줘') &&
     html.includes('서아 언니, 핵심부터 정리해줘') &&
     html.includes('prompt.textContent = config.prompt;') &&
     !html.includes('CONCERN_CONVERSATION_PROMPTS') &&
     !html.includes('concernSituationAck') &&
-    html.includes('잠깐만. 언니가 네 사주랑 지금 고민을 같이 보고 있어.') &&
-    html.includes('사주 구조 확인 중이야. 고민과 연결되는 부분만 볼게.') &&
-    html.includes('응, 이제 좀 보여. 같이 보자.') &&
-    html.includes('정리됐어. 핵심부터 볼게.') &&
+    html.includes('잠깐만. 언니가 차근차근 보고 있어.') &&
+    html.includes('중요한 부분만 추리고 있어.') &&
+    html.includes('다 봤어. 이제 중요한 얘기부터 해줄게.') &&
+    html.includes('다 봤어. 중요한 것부터 정리해줄게.') &&
     html.includes('resultSisterHandoff') &&
-    html.includes('사주는 그대로 기억하고 있어.<br>이번엔 뭐가 마음에 걸려?') &&
+    html.includes('사주는 그대로 있어.<br>이번엔 뭐가 마음에 걸려?') &&
     html.includes('사주정보는 그대로 있어.<br>이번엔 다른 고민 하나만 골라줘.') &&
     !html.includes('note-bridge') &&
     !html.includes('bg-[#fee500]') &&
@@ -757,10 +757,10 @@ function norm(v) {
   );
   assert(/(?:const|let) FREE_LAUNCH_MODE\s*=\s*false/.test(html), 'FREE_LAUNCH_MODE must remain false');
   assert(
-    html.includes('가장 마음에 걸리는 고민 하나부터 골라줘. 그거부터 같이 볼게.') &&
-    html.includes('가장 궁금한 고민 하나부터 골라줘. 그 기준으로 바로 볼게.') &&
-    html.includes('이름부터 알려줘. 그다음은 언니가 이어서 볼게.') &&
-    html.includes('이름부터 입력해줘. 그다음 바로 이어갈게.'),
+    html.includes('마음에 걸리는 고민 하나만 골라줘. 언니가 그거부터 봐줄게.') &&
+    html.includes('가장 궁금한 고민 하나만 골라줘. 그거부터 정리할게.') &&
+    html.includes('이름부터 알려줘. 나머지는 언니가 볼게.') &&
+    html.includes('이름부터 입력해줘. 그다음 바로 볼게.'),
     'F/T validation voice handoff missing'
   );
   assert(
@@ -797,9 +797,9 @@ function norm(v) {
     html.includes('원하는 상담 스타일을 골라봐') &&
     html.includes('감정 공감형') &&
     html.includes('핵심 정리형') &&
-    html.includes('왜 자꾸 마음이 쓰이는지부터 같이 풀어볼게.') &&
-    html.includes('돌려 말 안 할게. 뭐가 핵심인지부터 딱 정리해줄게.') &&
-    html.includes('응, 내 얘기 좀 들어줘') &&
+    html.includes('뭐가 자꾸 마음에 걸리는지, 언니가 같이 봐줄게.') &&
+    html.includes('뭐가 중요한지부터 깔끔하게 정리해줄게.') &&
+    html.includes('내 얘기 좀 들어줘') &&
     html.includes('좋아, 핵심부터 알려줘') &&
     !html.includes('선택한 언니의 말투로 결과 끝까지 이어져') &&
     !html.includes('응, 언니랑 천천히 풀어볼래') &&
@@ -810,11 +810,11 @@ function norm(v) {
     assert(!html.includes(staleIntro), `stale first-screen copy remains: ${staleIntro}`);
   }
   assert(
-    html.includes('사주정보는 그대로 · 새 고민만 골라서 이어서 볼게') &&
-    html.includes('사주정보 유지 · 새 고민만 선택해서 바로 이어보기') &&
-    html.includes('이번엔 다른 사람 사주도 같이 볼까?') &&
+    html.includes('사주정보는 그대로 · 새 고민만 고르면 돼') &&
+    html.includes('사주정보는 그대로 · 새 고민만 고르면 돼') &&
+    html.includes('이번엔 다른 사람도 봐줄까?') &&
     html.includes('다른 사람 사주 새로 보기') &&
-    html.includes('필요하면 상담 기록을 한 장으로 남겨.') &&
+    html.includes('필요하면 상담 기록으로 남겨.') &&
     !html.includes('추가 처방전 990원 즉시 확인') &&
     !html.includes('사주도 까보기'),
     'post-consultation continuation slipped back into sales/report voice'
