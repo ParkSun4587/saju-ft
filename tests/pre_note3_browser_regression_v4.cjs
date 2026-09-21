@@ -462,7 +462,7 @@ async function load(page) {
     assert(report.paywallTeaser.includes(report.expectedPaywall.teaser), `${c.id}: paywall teaser not situation-specific`);
     assert(report.note2PreviewText.includes(report.expectedPaywall.preview), `${c.id}: NOTE2 preview not stopped at configured answer edge`);
     assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), `${c.id}: paid outcomes mismatch`);
-    assert(report.paywallSubcopy === '990원 · NOTE2 다음부터 NOTE6까지', `${c.id}: 990 won boundary copy drift`);
+    assert(report.paywallSubcopy === 'NOTE2 다음부터 NOTE6까지', `${c.id}: paid scope copy drift`);
     assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
     assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
     if (c.id === 'user-exact-love-F') {
