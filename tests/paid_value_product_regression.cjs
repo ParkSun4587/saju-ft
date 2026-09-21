@@ -649,7 +649,8 @@ function norm(v) {
 
   await page.evaluate(() => openUnniProduct('compatibility'));
   modal = await page.locator('#unniProductModal').innerText();
-  assert(modal.includes('자시 · 밤 11시~새벽 1시') && modal.includes('직접 입력 (예: 1330)') && modal.includes('태어난 시간을 몰라요'), 'branch-first partner time UI missing');
+  assert(modal.includes('자시 · 밤 11시~새벽 1시') && modal.includes('태어난 시간을 몰라요'), 'branch-first partner time UI missing');
+  assert((await page.locator('#partnerTimeInput').getAttribute('placeholder'))==='직접 입력 (예: 1330)','compatibility direct-time placeholder missing');
   assert(!modal.includes('오전/오후') && !modal.includes('몇 분') && !modal.includes('HH:MM'), 'old/technical compatibility time UI remains');
   assert(await page.locator('#partnerTimeBranch option').count()===13,'compatibility branch selector count');
   await page.fill('#partnerName', '상대');
