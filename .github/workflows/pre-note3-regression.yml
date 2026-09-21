@@ -54,3 +54,37 @@ jobs:
         run: node tests/premium_entitlement_ladder_regression.cjs
       - name: Run paid-value and product regression
         run: node tests/paid_value_product_regression.cjs
+      - name: Serve QA2 code for production mobile smoke
+        run: |
+          node - <<'NODE' >/tmp/saju-mobile-smoke.log 2>&1 &
+          const http=require('http');
+          const fs=require('fs');
+          const path=require('path');
+          const root=process.cwd();
+          const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.webp':'image/webp','.ico':'image/x-icon'};
+          http.createServer((req,res)=>{
+            const url=new URL(req.url,'http://127.0.0.1');
+            if(req.method==='POST'&&url.pathname==='/api/confirm-payment'){
+              let body=''; req.on('data',d=>body+=d); req.on('end',()=>{
+                res.writeHead(400,{'content-type':'application/json; charset=utf-8'});
+                res.end(JSON.stringify({ok:false,error:'local-smoke-entitlements'}));
+              });
+              return;
+            }
+            let rel=decodeURIComponent(url.pathname);
+            if(rel==='/'||rel==='') rel='/index.html';
+            const file=path.resolve(root,'.'+rel);
+            if(!file.startsWith(root)){res.writeHead(403);res.end('forbidden');return;}
+            fs.stat(file,(err,st)=>{
+              if(err||!st.isFile()){res.writeHead(404);res.end('not found');return;}
+              res.writeHead(200,{'content-type':types[path.extname(file).toLowerCase()]||'application/octet-stream','cache-control':'no-store'});
+              fs.createReadStream(file).pipe(res);
+            });
+          }).listen(4174,'127.0.0.1');
+          NODE
+          sleep 2
+          curl -f http://127.0.0.1:4174/index.html >/dev/null
+      - name: Run Production mobile smoke on QA2 final code
+        env:
+          PRODUCTION_BASE: http://127.0.0.1:4174/index.html
+        run: node tests/production_mobile_smoke.cjs
