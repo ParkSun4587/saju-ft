@@ -655,7 +655,7 @@ function norm(v) {
   assert(await page.locator('#partnerTimeInput').isHidden(),'compatibility direct-time field should default hidden');
   await page.check('#partnerTimeDirectToggle');
   assert(await page.locator('#partnerTimeInput').isVisible(),'compatibility direct-time field did not open');
-  assert((await page.locator('#partnerTimeInput').getAttribute('placeholder'))==='예: 1330','compatibility direct-time placeholder missing');
+  assert((await page.locator('#partnerTimeInput').getAttribute('placeholder'))==='예: 오후 1:30 → 1330','compatibility direct-time placeholder missing');
   await page.uncheck('#partnerTimeDirectToggle');
   await page.fill('#partnerName', '상대');
   await page.fill('#partnerBirth', '19990511');
