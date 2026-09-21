@@ -814,7 +814,8 @@ function norm(v) {
     html.includes('사주정보는 그대로 · 새 고민만 고르면 돼') &&
     html.includes('이번엔 다른 사람도 봐줄까?') &&
     html.includes('다른 사람 사주 새로 보기') &&
-    html.includes('필요하면 상담 기록으로 남겨.') &&
+    html.includes('필요한 내용은 상담 기록으로 남겨둘 수 있어.') &&
+    html.includes('마음에 남는 얘기가 있으면 상담 기록으로 남겨둬도 돼') &&
     !html.includes('추가 처방전 990원 즉시 확인') &&
     !html.includes('사주도 까보기'),
     'post-consultation continuation slipped back into sales/report voice'
