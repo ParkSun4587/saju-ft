@@ -354,8 +354,8 @@ function norm(v) {
     assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
     assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-    assert(ui.fPaywallText.includes('로아 언니 · 여기서부터가 진짜 중요해') && ui.fPaywallText.includes('무엇부터 덜어야') && ui.fPaywallText.includes('로아 언니, 이어서 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
-    assert(ui.tPaywallText.includes('서아 언니 · 이제 결론만 남았어') && ui.tPaywallText.includes('부하 제거') && ui.tPaywallText.includes('서아 언니, 끝까지 봐줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
+    assert(ui.fPaywallText.includes('로아 언니 · 여기서 하나만 더 보자') && ui.fPaywallText.includes('무엇부터 덜어야') && ui.fPaywallText.includes('언니, 그것도 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
+    assert(ui.tPaywallText.includes('서아 언니 · 마지막 기준만 보면 돼') && ui.tPaywallText.includes('부하 제거') && ui.tPaywallText.includes('응, 끝까지 봐줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
     assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
     assert(ui.fPaywallText.includes('NOTE2 다음부터 NOTE6까지') && ui.tPaywallText.includes('NOTE2 다음부터 NOTE6까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), '990 won unlock scope or stale sale badge drift');
@@ -365,8 +365,8 @@ function norm(v) {
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(ui.visibleProducts === 1 && ui.secondaryProducts === 3 && ui.otherToggle && ui.otherExpanded === 'false' && !ui.otherVisible, `premium catalog should show one recommendation first and keep three alternatives folded but discoverable: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherExpanded:ui.otherExpanded,otherVisible:ui.otherVisible})}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
-  assert(ui.fGreeting.includes('언니가 쭉 봤는데') && ui.fGreeting.includes('이런 쪽이 먼저 보여') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 90, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
-  assert(ui.tGreeting.includes('쭉 봤어') && ui.tGreeting.includes('먼저 눈에 들어오는 건 이거야') && ui.tGreeting.length <= 80, `T result intro should feel concise but caring: ${ui.tGreeting}`);
+  assert(ui.fGreeting.includes('언니가 보니까') && ui.fGreeting.includes('제일 먼저 눈에 들어오는 건 이거야') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 90, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
+  assert(ui.tGreeting.includes('먼저 봐야 할 건 이거야') && ui.tGreeting.length <= 80, `T result intro should feel concise but caring: ${ui.tGreeting}`);
   assert(
     ui.catalogReason.length >= 10 &&
     ui.catalogText.includes('다른 방향 3개도 보기') &&
@@ -717,22 +717,20 @@ function norm(v) {
   assert(!html.includes('팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐'), 'old generic harsh T greeting remains');
   for (const harsh of ['아이고 왔어?', '시간 낭비 말고', '똑바로 찍어', '똥고집', '미련 곰탱이', '팩트 꽂힌', '팩폭 모드', '징징대지 말고 와', '살인 충동 느낌', '상대방 사람 취급', '멍청한 질문 3번']) assert(!html.includes(harsh), `harsh/old sister copy remains: ${harsh}`);
   assert(
-    html.includes('아, 왔구나<br>이름이랑 생일부터 편하게 알려줘.') &&
-    html.includes('뭐가 마음에 걸리는지도 언니가 같이 봐줄게') &&
-    html.includes('왔어? 이름이랑 생일부터 알려줘.') &&
-    html.includes('뭐가 중요한지부터 바로 볼게') &&
+    html.includes('응, 좋아. 편하게 적어줘<br>언니가 사주랑 고민 같이 볼게') &&
+    html.includes('좋아, 바로 보자<br>사주랑 고민 적어주면 돼') &&
     html.includes('로아 언니, 내 얘기 들어줘') &&
     html.includes('서아 언니, 바로 봐줘') &&
     html.includes('prompt.textContent = config.prompt;') &&
     !html.includes('CONCERN_CONVERSATION_PROMPTS') &&
     !html.includes('concernSituationAck') &&
-    html.includes('잠깐만, 이건 조금 더 봐야겠다') &&
-    html.includes('잠깐만, 중요한 부분만 더 볼게') &&
-    html.includes('이제 좀 보이네. 먼저 이것부터 얘기해줄게') &&
-    html.includes('다 봤어. 먼저 핵심부터 말할게.') &&
+    html.includes('응 봤어. 잠깐만') &&
+    html.includes('확인했어. 잠깐만.') &&
+    html.includes('응, 이제 좀 잡혔어') &&
+    html.includes('됐어, 정리됐어.') &&
     html.includes('resultSisterHandoff') &&
-    html.includes('다시 왔네<br>이번엔 뭐가 마음에 걸려?') &&
-    html.includes('다시 왔네.<br>이번엔 뭐부터 볼까?') &&
+    html.includes('이번엔 뭐가 마음에 걸려?') &&
+    html.includes('좋아. 이번엔 뭐부터 볼까?') &&
     !html.includes('note-bridge') &&
     !html.includes('bg-[#fee500]') &&
     !html.includes('ㅎㅎ'),
@@ -834,7 +832,7 @@ function norm(v) {
     html.includes('#unniProductLadder [data-unni-product]{'),
     'result-screen containment system missing or regressed'
   );
-  assert(html.includes('note2PreviewCard') && html.includes('getPaywallConversionCopy(data, isT)') && html.includes('PAYWALL_CONVERSION_COPY') && html.includes('paywallNextTeaser') && html.includes('로아 언니, 이어서 봐줘') && html.includes('서아 언니, 끝까지 봐줘') && !html.includes('const previewParts = String(nextNote.desc || "")'), 'paid teaser must keep NOTE1 full, stop NOTE2 at the answer edge, and use situation-specific F/T 990 handoff');
+  assert(html.includes('note2PreviewCard') && html.includes('getPaywallConversionCopy(data, isT)') && html.includes('PAYWALL_CONVERSION_COPY') && html.includes('paywallNextTeaser') && html.includes('언니, 그것도 봐줘') && html.includes('응, 끝까지 봐줘') && !html.includes('const previewParts = String(nextNote.desc || "")'), 'paid teaser must keep NOTE1 full, stop NOTE2 at the answer edge, and use situation-specific F/T 990 handoff');
   assert(!html.includes('storyCaptureReturnTimer') && !html.includes('7000') && html.includes('storyCaptureCleanTimer'), 'capture should use delayed fullscreen-clean transition, not timed auto-return');
   const finalNotePaymentAt = html.indexOf('id="finalNotePaymentButton"');
   const finalNotePaymentSlice = finalNotePaymentAt >= 0 ? html.slice(finalNotePaymentAt, finalNotePaymentAt + 900) : '';
