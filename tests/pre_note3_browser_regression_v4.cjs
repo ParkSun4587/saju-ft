@@ -281,6 +281,58 @@ async function load(page) {
     await page.close();
   }
 
+  // B2. Every concern/situation must have a concrete conversion bridge in both voices.
+  {
+    const page = await context.newPage();
+    const errs = [];
+    page.on('pageerror', e => errs.push(e.stack || e.message));
+    page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+    await load(page);
+    const coverage = await page.evaluate(() => {
+      const situations = {
+        money:['saving','income','side','flow'],
+        career:['exam','jobsearch','move','current'],
+        love:['crush','relationship','breakup','new'],
+        path:['lost','current','switch','strength'],
+        people:['friend','work','family','distance'],
+        mental:['burnout','overthink','low','recover'],
+      };
+      const rows = [];
+      for (const [concernKey, keys] of Object.entries(situations)) {
+        for (const concernSituation of keys) {
+          for (const isT of [false, true]) {
+            const copy = getPaywallConversionCopy({concernKey, concernSituation}, isT);
+            rows.push({
+              id: concernKey + '/' + concernSituation + '/' + (isT ? 'T' : 'F'),
+              hook:copy?.hook || '',
+              sub:copy?.sub || '',
+              preview:copy?.preview || '',
+              teaser:copy?.teaser || '',
+              priceTitle:copy?.priceTitle || '',
+              features:Array.isArray(copy?.features) ? copy.features : [],
+            });
+          }
+        }
+      }
+      return rows;
+    });
+    assert(coverage.length === 48, `paywall coverage rows=${coverage.length}`);
+    for (const row of coverage) {
+      assert(row.hook.length >= 18, `${row.id}: hook too weak/missing`);
+      assert(row.sub.length >= 14, `${row.id}: sub missing`);
+      assert(row.preview.length >= 18, `${row.id}: preview missing`);
+      assert(row.teaser.length >= 14 && row.teaser.includes('…'), `${row.id}: cliffhanger missing`);
+      assert(row.priceTitle.length >= 8, `${row.id}: price title missing`);
+      assert(row.features.length === 3 && row.features.every(Boolean), `${row.id}: paid outcomes must be exactly 3`);
+    }
+    assert(new Set(coverage.filter(x => x.id.endsWith('/F')).map(x => x.teaser)).size === 24,
+      'F cliffhangers are not situation-specific across all 24 paths');
+    assert(new Set(coverage.filter(x => x.id.endsWith('/T')).map(x => x.teaser)).size === 24,
+      'T cliffhangers are not situation-specific across all 24 paths');
+    assert(errs.length === 0, `paywall coverage browser errors: ${errs.join(' | ')}`);
+    await page.close();
+    console.log('PAYWALL_CONVERSION_COVERAGE_PASS');
+  }
   // C. Full production-like UI path across all six concerns, F/T, solar/lunar/leap/time variants.
   const reports = [];
   for (const c of CASES) {
@@ -359,6 +411,17 @@ async function load(page) {
         failureToast:visible.includes('만세력 연산에 실패했습니다') || visible.includes('연산 중 오류가 발생했습니다'),
         resultVisible:document.getElementById('resultSection')?.style.display !== 'none',
         firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('NOTE 01'),
+        paywallHook:document.getElementById('payBoxHookMsg')?.innerText || '',
+        paywallTeaser:document.getElementById('paywallNextTeaser')?.innerText || '',
+        paywallFeatures:[...document.querySelectorAll('#payBoxFeatures > div')].map(x => x.querySelector('span:last-child')?.innerText.trim() || ''),
+        paywallSubcopy:document.getElementById('payBtnSubText')?.innerText || '',
+        note2PreviewText:document.getElementById('note2PreviewBody')?.innerText || '',
+        expectedPaywall:(() => {
+          const copy = getPaywallConversionCopy(data, c.mode === 'T');
+          return {hook:copy.hook, teaser:copy.teaser, preview:copy.preview, features:copy.features};
+        })(),
+        funExtrasDisplay:document.getElementById('resultFunExtras')?.style.display || '',
+        shareActionsDisplay:document.getElementById('resultShareActions')?.style.display || '',
         pillarText:[
           document.getElementById('pillarYear')?.innerText || '',
           document.getElementById('pillarMonth')?.innerText || '',
@@ -395,6 +458,13 @@ async function load(page) {
     assert(!report.failureToast, `${c.id}: calculation failure toast visible`);
     assert(report.resultVisible, `${c.id}: result section not visible`);
     assert(report.firstNoteRendered, `${c.id}: NOTE01 not rendered into result DOM`);
+    assert(report.paywallHook === report.expectedPaywall.hook, `${c.id}: paywall hook not situation-specific`);
+    assert(report.paywallTeaser.includes(report.expectedPaywall.teaser), `${c.id}: paywall teaser not situation-specific`);
+    assert(report.note2PreviewText.includes(report.expectedPaywall.preview), `${c.id}: NOTE2 preview not stopped at configured answer edge`);
+    assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), `${c.id}: paid outcomes mismatch`);
+    assert(report.paywallSubcopy === '990원 · NOTE2 다음부터 NOTE6까지', `${c.id}: 990 won boundary copy drift`);
+    assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
+    assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
     if (c.id === 'user-exact-love-F') {
       assert(report.pillarText.join(',') === '무인,갑인,기해,을축',
         `${c.id}: pillar UI drift ${report.pillarText.join(',')}`);
