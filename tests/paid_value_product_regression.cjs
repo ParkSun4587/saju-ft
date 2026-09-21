@@ -626,13 +626,12 @@ function norm(v) {
 
   await page.evaluate(() => openUnniProduct('compatibility'));
   modal = await page.locator('#unniProductModal').innerText();
-  assert(modal.includes('오전/오후') && modal.includes('몇 시') && modal.includes('몇 분') && modal.includes('태어난 시간을 몰라요'), 'human-readable partner time UI missing');
-  assert(!modal.includes('HH:MM'), 'technical HH:MM leaked into compatibility UI');
+  assert(modal.includes('자시 · 밤 11시~새벽 1시') && modal.includes('직접 입력 (예: 1330)') && modal.includes('태어난 시간을 몰라요'), 'branch-first partner time UI missing');
+  assert(!modal.includes('오전/오후') && !modal.includes('몇 분') && !modal.includes('HH:MM'), 'old/technical compatibility time UI remains');
+  assert(await page.locator('#partnerTimeBranch option').count()===13,'compatibility branch selector count');
   await page.fill('#partnerName', '상대');
   await page.fill('#partnerBirth', '19990511');
-  await page.selectOption('#partnerAmpm', 'pm');
-  await page.selectOption('#partnerHour12', '12');
-  await page.selectOption('#partnerMinute', '00');
+  await page.selectOption('#partnerTimeBranch', '午');
   await page.locator('#unniProductAction').click();
   modal = await page.locator('#unniProductModal').innerText();
   const compatibilitySections = await page.locator('#unniProductBody section').count();
@@ -765,8 +764,12 @@ function norm(v) {
     html.includes('응, 확인됐어. 그럼 아까 얘기부터 계속 볼게') &&
     html.includes('확인됐어. 바로 이어서 보자.') &&
     html.includes('결제가 잘 확인됐는지 보고 있어.') &&
-    html.includes('결제 완료 여부를 확인 중이야.'),
-    'F/T payment/recovery voice handoff missing'
+    html.includes('결제 완료 여부를 확인 중이야.') &&
+    html.includes('function preparePaymentFailureRetry(') &&
+    html.includes('새로고침하고 다시 결제') &&
+    html.includes('changeViewState("result")') &&
+    premium.includes('window.preparePaymentFailureRetry'),
+    'F/T payment/recovery voice handoff or refresh retry missing'
   );
   assert(
     premium.includes('로아 언니랑 이어서 본 내용') &&
@@ -789,6 +792,11 @@ function norm(v) {
     '사진 길게 눌러 저장하면 돼 ♡'
   ]) assert(!html.includes(staleGeneric), `generic/system voice remains: ${staleGeneric}`);
   assert(!html.includes('내 보관함 ♡') && !html.includes('내 사주 ♡'), 'vault copy still uses decorative heart as dialogue text');
+  assert(html.includes('id="birthTimeBranch"') && html.includes('자시 · 밤 11시~새벽 1시') && html.includes('해시 · 밤 9시~11시') && html.includes('직접 입력 (예: 1330)'), 'branch-first primary birth-time UI missing');
+  assert(html.includes('BIRTH_TIME_BRANCHES') && html.includes('BIRTH_TIME_BRANCH_LABELS'), 'branch-time parsing/restore support missing');
+  assert(html.includes('note-preview-continuation::before') && html.includes('여기서부터가 중요해') && html.includes('linear-gradient(135deg,#fff0f4'), 'NOTE2 conversion turn emphasis missing');
+  assert(html.includes('언니가 먼저 본 너') && html.includes('언니가 먼저 정리한 너') && html.includes('언니가 핵심만 적어둔 비밀 메모') && html.includes('언니가 너한테만 남기는 비밀 메모'), 'generic counselor editorial labels missing');
+  assert(!html.includes('로아 언니가 먼저 본 너') && !html.includes('서아 언니가 먼저 정리한 너') && !html.includes('로아 언니가 너한테만 남기는 비밀 메모') && !html.includes('서아 언니가 핵심만 적어둔 비밀 메모'), 'character name still leaks into final editorial labels');
   assert(html.includes('analysisErrorText(') && !html.includes('calcErr.message || {'), 'raw analysis-engine errors can still leak into user copy');
   assert(
     html.includes('똑같은 내 사주, 누구한테 먼저 털어놓을래?') &&
