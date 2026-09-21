@@ -834,7 +834,7 @@ function norm(v) {
     html.includes('#unniProductLadder [data-unni-product]{'),
     'result-screen containment system missing or regressed'
   );
-  assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 1)') && html.includes('paywallNextTeaser') && html.includes('teaserProbe') && html.includes('로아 언니, 이것도 봐줘') && html.includes('서아 언니, 끝까지 봐줘'), 'paid teaser must be NOTE1 full + short NOTE2 + actual locked-content teaser + distinct F/T 990 handoff');
+  assert(html.includes('note2PreviewCard') && html.includes('getPaywallConversionCopy(data, isT)') && html.includes('PAYWALL_CONVERSION_COPY') && html.includes('paywallNextTeaser') && html.includes('로아 언니, 이어서 봐줘') && html.includes('서아 언니, 끝까지 봐줘') && !html.includes('const previewParts = String(nextNote.desc || "")'), 'paid teaser must keep NOTE1 full, stop NOTE2 at the answer edge, and use situation-specific F/T 990 handoff');
   assert(!html.includes('storyCaptureReturnTimer') && !html.includes('7000') && html.includes('storyCaptureCleanTimer'), 'capture should use delayed fullscreen-clean transition, not timed auto-return');
   const finalNotePaymentAt = html.indexOf('id="finalNotePaymentButton"');
   const finalNotePaymentSlice = finalNotePaymentAt >= 0 ? html.slice(finalNotePaymentAt, finalNotePaymentAt + 900) : '';
