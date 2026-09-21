@@ -365,8 +365,8 @@ function norm(v) {
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(ui.visibleProducts === 1 && ui.secondaryProducts === 3 && ui.otherToggle && ui.otherExpanded === 'false' && !ui.otherVisible, `premium catalog should show one recommendation first and keep three alternatives folded but discoverable: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherExpanded:ui.otherExpanded,otherVisible:ui.otherVisible})}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
-  assert(ui.fGreeting.includes('왜 자꾸 마음이 남는지 보여') && ui.fGreeting.includes('먼저 핵심부터 같이 볼게') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 105, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
-  assert(ui.tGreeting.includes('먼저 볼 핵심이 잡혔어') && ui.tGreeting.includes('중요한 것부터 정리할게') && ui.tGreeting.length <= 105, `T result intro should feel concise but caring: ${ui.tGreeting}`);
+  assert(ui.fGreeting.includes('언니가 보니까 왜 자꾸 마음에 남는지 보여') && ui.fGreeting.includes('같이 볼게') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 90, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
+  assert(ui.tGreeting.includes('핵심이 잡혔어') && ui.tGreeting.includes('중요한 것부터 볼게') && ui.tGreeting.length <= 80, `T result intro should feel concise but caring: ${ui.tGreeting}`);
   assert(
     ui.catalogReason.length >= 10 &&
     ui.catalogText.includes('다른 방향 3개도 보기') &&
@@ -717,20 +717,22 @@ function norm(v) {
   assert(!html.includes('팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐'), 'old generic harsh T greeting remains');
   for (const harsh of ['아이고 왔어?', '시간 낭비 말고', '똑바로 찍어', '똥고집', '미련 곰탱이', '팩트 꽂힌', '팩폭 모드', '징징대지 말고 와', '살인 충동 느낌', '상대방 사람 취급', '멍청한 질문 3번']) assert(!html.includes(harsh), `harsh/old sister copy remains: ${harsh}`);
   assert(
-    html.includes('왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
-    html.includes('좋은 말만 골라 하진 않을게.') &&
-    html.includes('네가 놓치고 있는 지점까지 언니가 같이 짚어줄게.') &&
+    html.includes('아, 왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
+    html.includes('언니가 하나씩 잘 봐줄게.') &&
     html.includes('왔어. 이름이랑 생일부터 알려줘.') &&
-    html.includes('괜히 겁주거나 돌려 말하지 않을게.') &&
-    html.includes('원인·지금 할 일·움직일 타이밍까지 필요한 것만 정확히 정리해줄게.') &&
+    html.includes('지금 고민에서 핵심부터 바로 볼게.') &&
     html.includes('로아 언니, 내 얘기부터 같이 봐줘') &&
     html.includes('서아 언니, 핵심부터 정리해줘') &&
     html.includes('prompt.textContent = config.prompt;') &&
     !html.includes('CONCERN_CONVERSATION_PROMPTS') &&
     !html.includes('concernSituationAck') &&
-    html.includes('사주 전체부터 보고 있어. 지금 고민이 왜 여기서 반복되는지도 같이 연결해볼게.') &&
-    html.includes('사주 구조부터 확인할게. 지금 고민과 직접 연결되는 것만 추리는 중이야.') &&
+    html.includes('잠깐만. 언니가 네 사주랑 지금 고민을 같이 보고 있어.') &&
+    html.includes('사주 구조 확인 중이야. 고민과 연결되는 부분만 볼게.') &&
+    html.includes('응, 이제 좀 보여. 같이 보자.') &&
+    html.includes('정리됐어. 핵심부터 볼게.') &&
     html.includes('resultSisterHandoff') &&
+    html.includes('사주는 그대로 기억하고 있어.<br>이번엔 뭐가 마음에 걸려?') &&
+    html.includes('사주정보는 그대로 있어.<br>이번엔 다른 고민 하나만 골라줘.') &&
     !html.includes('note-bridge') &&
     !html.includes('bg-[#fee500]') &&
     !html.includes('ㅎㅎ'),
