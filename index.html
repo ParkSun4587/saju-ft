@@ -1245,6 +1245,358 @@
     #resultConcernHandoff,#postConsultationProductsSlot,#resultFunExtras,#resultShareActions{width:calc(100% - 8px)}
     #resultChemistryExtras{grid-template-columns:1fr!important}
   }
+
+  /* final result containment pass */
+  #resultSection{
+    --result-gutter:12px;
+    --result-axis-max:400px;
+    --result-space-xs:6px;
+    --result-space-sm:10px;
+    --result-space-md:16px;
+    --result-space-lg:22px;
+  }
+  #resultSection>div{
+    width:100%!important;
+    max-width:var(--result-axis-max)!important;
+    box-sizing:border-box!important;
+    padding-left:var(--result-gutter)!important;
+    padding-right:var(--result-gutter)!important;
+  }
+  #resultSisterHandoff,
+  #resultConsultationFlow,
+  #consultationNotesShell,
+  #resultConcernHandoff,
+  #resultFunExtras,
+  #resultShareActions,
+  #postConsultationProductsSlot{
+    width:100%!important;
+    max-width:none!important;
+    box-sizing:border-box!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+
+  #resultSisterHandoff{
+    margin:0 0 var(--result-space-sm)!important;
+    padding:4px 1px 8px!important;
+  }
+  #resultConsultationFlow{
+    margin:0!important;
+    padding:15px 14px 13px!important;
+    border-radius:20px!important;
+    box-shadow:0 5px 18px rgba(53,43,38,.028)!important;
+  }
+  #resultFirstLookLabel{
+    padding:0 0 9px!important;
+    margin:0!important;
+    font-size:9.75px!important;
+    font-weight:780!important;
+  }
+  #resultCoreCard,#resultPillarCard,#resultOhengCard{
+    padding:15px 0!important;
+  }
+  #resultCoreCard{padding-top:14px!important}
+  #sazuCharacterTitle{
+    max-width:100%!important;
+    margin:0 0 6px!important;
+    padding:0!important;
+    font-size:20.5px!important;
+    line-height:1.34!important;
+    font-weight:820!important;
+    letter-spacing:-.035em!important;
+    text-wrap:balance;
+    word-break:keep-all;
+    overflow-wrap:anywhere;
+  }
+  #characterHashTags{
+    gap:4px!important;
+    font-size:9.5px!important;
+    font-weight:690!important;
+  }
+  #coreThreeLineSummary{
+    margin-top:11px!important;
+    padding:11px 0 0!important;
+  }
+  #coreThreeLineSummary>div:first-child{
+    margin:0 0 5px!important;
+    padding:0!important;
+  }
+  #coreThreeLineSummary>div:first-child>span:first-child{
+    gap:0!important;
+    font-size:10.5px!important;
+    font-weight:780!important;
+  }
+  #coreThreeLineSummary>div:first-child>span:first-child>span:first-child{display:none!important}
+  #manualBulletList{
+    font-size:12.6px!important;
+    line-height:1.68!important;
+    font-weight:470!important;
+  }
+
+  #resultPillarCard>div:first-child,
+  #resultOhengCard>div:first-child{
+    min-height:18px;
+    margin:0 0 7px!important;
+  }
+  #resultPillarCard>div:first-child>span,
+  #resultOhengCard>div:first-child>span:first-child{
+    font-size:11.5px!important;
+    line-height:1.4!important;
+    font-weight:780!important;
+    letter-spacing:-.01em!important;
+  }
+  #resultPillarCard .grid{
+    gap:0!important;
+    padding:8px 0 2px!important;
+    border-top:1px solid #eee7e1;
+  }
+  #resultPillarCard .grid>div{
+    padding:4px 3px!important;
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+  }
+  #resultPillarCard .grid>div+div{border-left:1px solid #eee7e1!important}
+  #resultPillarCard .grid>div>div:first-child{
+    font-size:9px!important;
+    font-weight:680!important;
+    color:#969ba4!important;
+  }
+  #resultPillarCard .grid>div>div:last-child{
+    margin-top:4px!important;
+    font-size:13.5px!important;
+    font-weight:780!important;
+  }
+
+  #dayMasterTag{
+    max-width:48%;
+    font-size:9.5px!important;
+    line-height:1.4!important;
+    font-weight:680!important;
+    color:#8b929c!important;
+    text-align:right;
+  }
+  #ohengSummaryTxt{
+    padding:3px 0 10px!important;
+    font-size:12.5px!important;
+    line-height:1.68!important;
+  }
+  #ohengBarContainer{
+    gap:0!important;
+    padding:9px 0 1px!important;
+    border-top:1px solid #eee7e1;
+  }
+  #ohengBarContainer>div{
+    min-width:0;
+    padding:0 4px!important;
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+  }
+  #ohengBarContainer>div+div{border-left:1px solid #f0ebe6!important}
+  #ohengBarContainer>div>div:first-child{
+    order:2;
+    margin:6px 0 0!important;
+    gap:2px!important;
+    font-size:9.5px!important;
+    line-height:1.3!important;
+    font-weight:700!important;
+    color:#6b7280!important;
+  }
+  #ohengBarContainer>div>div:first-child span:last-child{
+    font-size:8.75px!important;
+    font-weight:620!important;
+    color:#9aa0a8!important;
+  }
+  #ohengBarContainer>div>div:nth-child(2){
+    order:1;
+    width:100%!important;
+    height:48px!important;
+    padding:0!important;
+    background:#f5f3f1!important;
+    border:0!important;
+    border-radius:6px!important;
+  }
+  #ohengBarContainer>div>div:nth-child(2)>div{border-radius:5px!important}
+  #ohengBarContainer>div>span{
+    order:3;
+    margin-top:3px!important;
+    font-size:9.25px!important;
+    font-weight:720!important;
+    color:#737b86!important;
+  }
+
+  #resultConcernHandoff{
+    gap:0!important;
+    margin:12px 0 0!important;
+    padding:10px 0 0!important;
+    border-top:1px solid #eee7e1;
+  }
+  #resultConcernHandoffAvatar,#resultConcernHandoffName{display:none!important}
+  #resultConcernHandoffText{
+    margin:0!important;
+    font-size:10.75px!important;
+    line-height:1.58!important;
+    font-weight:520!important;
+    color:#858b94!important;
+  }
+
+  #consultationNotesShell{
+    margin:var(--result-space-md) 0 0!important;
+    border-radius:20px!important;
+  }
+  #consultationNotesPaper{padding:15px 14px 16px!important}
+  #consultationNotesHeader>div:first-child{
+    justify-content:flex-start!important;
+    padding:0!important;
+    margin:0 0 6px!important;
+    border:0!important;
+    font-size:9.5px!important;
+    font-weight:760!important;
+  }
+  #consultationNotesHeader>div:first-child>span:first-child{gap:0!important}
+  #consultationNotesHeader>div:first-child>span:first-child>span:first-child,
+  #consultationNotesHeader>div:first-child>span:last-child{display:none!important}
+  #consultationNotesHeader>div:nth-child(2){
+    margin:0 0 7px!important;
+  }
+  #consultationNotesHeader>div:nth-child(2)>div:first-child{
+    gap:0!important;
+  }
+  #consultationNotesHeader>div:nth-child(2)>div:first-child>span:first-child{display:none!important}
+  #vipSectionMainTitle{
+    font-size:15.25px!important;
+    line-height:1.4!important;
+    font-weight:820!important;
+  }
+  #vipSectionSubTitle{
+    padding-left:0!important;
+    font-size:10.5px!important;
+    line-height:1.55!important;
+  }
+  .note-editorial{
+    padding:17px 0 18px!important;
+  }
+  .note-number{font-weight:810!important}
+  .note-role-label{font-weight:760!important}
+  .note-editorial-title{
+    font-size:15.25px!important;
+    line-height:1.46!important;
+    font-weight:800!important;
+  }
+  .note-body{font-weight:420!important}
+  .note-body b{font-weight:690!important}
+
+  #paywallCard{padding-left:0!important;padding-right:0!important}
+  #payBoxHookMsg{font-weight:800!important}
+  #paywallFeatureTitle,#paywallPriceTitle{font-weight:780!important}
+  #payBoxFeatures>div{font-weight:650!important}
+  #paywallCard div.rounded-full.border-rose-100{
+    padding:1px 0!important;
+    border:0!important;
+    background:transparent!important;
+  }
+  #paymentWidgetArea{padding-left:0!important;padding-right:0!important}
+
+  #reAnalyzeBox{padding-top:18px!important}
+  #reAnalyzeBox>button{
+    width:100%!important;
+    border-radius:14px!important;
+    box-shadow:none!important;
+  }
+  #consultationCloseout{
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+
+  #resultFunExtras{
+    margin:var(--result-space-md) 0 0!important;
+    padding:0!important;
+  }
+  #resultFunExtras>summary{padding:13px 0 10px!important}
+  #resultFunExtrasBody{padding:0 0 13px!important}
+  #resultFunExtrasEyebrow{font-weight:760!important}
+  #resultFunExtras #resultBigMbti{
+    font-size:26px!important;
+    font-weight:800!important;
+    letter-spacing:.1em!important;
+  }
+  #resultChemistryExtras{gap:0!important}
+  #chemBestCard,#chemWorstCard{
+    padding:10px 0!important;
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+  }
+  #chemWorstCard{
+    padding-left:10px!important;
+    margin-left:10px!important;
+    border-left:1px solid #eee7e1!important;
+  }
+  #chemBestHeader>span:first-child,#chemWorstHeader>span:first-child{display:none!important}
+  #chemBestHeader,#chemWorstHeader{font-weight:760!important}
+  #chemBestMbti,#chemWorstMbti{font-size:17px!important;font-weight:800!important}
+  #chemBestTag,#chemWorstTag{
+    padding:0!important;
+    background:transparent!important;
+    border-radius:0!important;
+    font-weight:650!important;
+  }
+
+  #resultShareActions{
+    margin:0!important;
+    padding:14px 0 2px!important;
+  }
+  #resultShareLead{
+    margin:0 0 9px!important;
+    text-align:left!important;
+    font-weight:520!important;
+  }
+  #mainShareBtn{
+    border-radius:14px!important;
+    font-weight:720!important;
+  }
+
+  #postConsultationProductsSlot{
+    margin:var(--result-space-md) 0 0!important;
+  }
+  #postConsultationProductsSlot #unniProductLadder{
+    margin:0!important;
+    padding:15px 0 0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  #unniProductLadder [data-unni-product]{
+    padding:12px 0!important;
+    border:0!important;
+    border-top:1px solid #e8e1db!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  #unniProductLadder #unniOtherProducts{gap:0!important}
+  #resultSection[data-consult-mode="T"] #unniProductLadder [style*="#b83e5c"]{color:#3f84a2!important}
+  #resultSection[data-consult-mode="T"] #paywallCard .text-rose-500,
+  #resultSection[data-consult-mode="T"] #paywallCard .text-rose-600{color:#3f84a2!important}
+  #resultSection[data-consult-mode="T"] #paywallCard .bg-rose-50{background:#eef7fb!important}
+  #resultSection[data-consult-mode="T"] #paywallCard .border-rose-100{border-color:#d8e9f0!important}
+
+  @media(max-width:370px){
+    #resultSection{--result-gutter:12px}
+    #sazuCharacterTitle{font-size:19.5px!important}
+    #consultationNotesPaper{padding-left:12px!important;padding-right:12px!important}
+    #resultChemistryExtras{grid-template-columns:1fr!important}
+    #chemWorstCard{
+      padding-left:0!important;
+      margin-left:0!important;
+      border-left:0!important;
+      border-top:1px solid #eee7e1!important;
+    }
+  }
+
 </style>
 </head>
   <body
