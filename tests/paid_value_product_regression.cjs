@@ -832,7 +832,7 @@ function norm(v) {
     html.includes('data-consult-mode="F"] #birthTimeDirectLabel') &&
     html.includes('data-consult-mode="T"] #birthTimeDirectLabel') &&
     html.includes('정확한 시간 직접 입력') &&
-    html.includes('placeholder="예: 1330"') &&
+    html.includes('placeholder="예: 오후 1:30 → 1330"') &&
     !html.includes('id="birthTimeUnknown"') &&
     !html.includes('정확한 분을 몰라도 시간대만 고르면 돼'),
     'exact manse primary birth-time UI missing'
