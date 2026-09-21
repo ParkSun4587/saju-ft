@@ -757,10 +757,10 @@ function norm(v) {
   );
   assert(/(?:const|let) FREE_LAUNCH_MODE\s*=\s*false/.test(html), 'FREE_LAUNCH_MODE must remain false');
   assert(
-    html.includes('마음에 걸리는 고민 하나만 골라줘. 언니가 그거부터 봐줄게.') &&
-    html.includes('가장 궁금한 고민 하나만 골라줘. 그거부터 정리할게.') &&
-    html.includes('이름부터 알려줘. 나머지는 언니가 볼게.') &&
-    html.includes('이름부터 입력해줘. 그다음 바로 볼게.'),
+    html.includes('어떤 고민인지 하나만 골라줄래? 그거부터 언니가 볼게') &&
+    html.includes('지금 제일 궁금한 고민 하나만 골라줘. 그거부터 볼게.') &&
+    html.includes('이름도 알려줘. 그래야 언니가 편하게 불러주지') &&
+    html.includes('이름도 입력해줘. 바로 볼게.'),
     'F/T validation voice handoff missing'
   );
   assert(
