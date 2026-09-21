@@ -133,7 +133,10 @@ async function enter(page, mode, concern, situation) {
   await page.waitForSelector('#concernSituationBox',{state:'visible'});
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.fill('#birthDateInput','19980221');
-  await page.fill('#birthTimeInput','0310');
+  assert(await page.locator('#birthTimeBranch option').count()===13,'12-branch primary birth-time selector missing');
+  assert(await page.locator('#birthTimeInput').isVisible(),'direct birth-time input should remain available below branch selector');
+  await page.selectOption('#birthTimeBranch','寅');
+  assert((await page.locator('#birthTimeInput').inputValue())==='','branch selection should clear direct birth-time input');
   await page.locator('#splitNextButton button').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
   const sourceFreeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
@@ -292,6 +295,19 @@ async function inspect(page, mode) {
       paywallNextTeaser:document.getElementById('paywallNextTeaser')?.innerText||'',
       paywallFeatureCount:document.querySelectorAll('#payBoxFeatures > div').length,
       paywallVisible:document.getElementById('lockedOverlay') ? getComputedStyle(document.getElementById('lockedOverlay')).display!=='none' : false,
+      paywallTurn:(()=>{
+        const el=document.querySelector('#note2PreviewCard .note-preview-continuation');
+        if(!el) return null;
+        const cs=getComputedStyle(el);
+        const before=getComputedStyle(el,'::before');
+        return {
+          radius:parseFloat(cs.borderRadius||'0'),
+          border:parseFloat(cs.borderTopWidth||'0'),
+          bg:cs.backgroundImage||cs.backgroundColor||'',
+          font:parseFloat(getComputedStyle(el.querySelector('p')).fontSize||'0'),
+          before:before.content||'',
+        };
+      })(),
       funExtrasDisplay:document.getElementById('resultFunExtras') ? getComputedStyle(document.getElementById('resultFunExtras')).display : '',
       shareActionsDisplay:document.getElementById('resultShareActions') ? getComputedStyle(document.getElementById('resultShareActions')).display : '',
       switchCount:document.querySelectorAll('#sisterSwitchCard').length,
@@ -364,6 +380,7 @@ async function inspect(page, mode) {
     if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서 하나만 더 보자')&&r.paywall.includes('같은 서운함이 반복되는지는 보여')&&r.paywall.includes('언니, 그것도 봐줘'),'live F conversion paywall drift '+r.paywall);
     if(mode==='T') assert(r.paywall.includes('서아 언니 · 마지막 기준만 보면 돼')&&r.paywall.includes('부하 제거')&&r.paywall.includes('응, 끝까지 봐줘'),'live T conversion paywall drift '+r.paywall);
     assert(r.paywall.includes('990원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
+    assert(r.paywallTurn&&r.paywallTurn.radius>=14&&r.paywallTurn.border>=1&&r.paywallTurn.font>=12.5&&r.paywallTurn.before.includes('여기서부터가 중요해'),'NOTE2 conversion turn is not visually emphasized '+JSON.stringify(r.paywallTurn));
     assert(r.paywall.includes('NOTE2 다음부터 NOTE6까지')&&!/오픈 체험가/.test(r.paywall),'990 won unlock scope or stale sale copy drift '+r.paywall);
     assert(r.funExtrasDisplay==='none'&&r.shareActionsDisplay==='none','locked 990 flow should hide MBTI/share diversions '+JSON.stringify({fun:r.funExtrasDisplay,share:r.shareActionsDisplay}));
   }
@@ -387,7 +404,7 @@ async function inspect(page, mode) {
     'consultation-first result hierarchy is wrong '+JSON.stringify(r.hierarchy)
   );
   if(mode==='F') assert(
-    r.hierarchy.firstLook.includes('로아 언니가 먼저 본 너') &&
+    r.hierarchy.firstLook.includes('언니가 먼저 본 너') &&
     r.hierarchy.concernHandoff.includes('아까 말한 고민 있지?') &&
     r.hierarchy.shareText.includes('인스타 스토리') &&
     r.hierarchy.shareLead.includes('상담 기록') &&
@@ -396,7 +413,7 @@ async function inspect(page, mode) {
     'F counseling handoff disappeared '+JSON.stringify(r.hierarchy)
   );
   if(mode==='T') assert(
-    r.hierarchy.firstLook.includes('서아 언니가 먼저 정리한 너') &&
+    r.hierarchy.firstLook.includes('언니가 먼저 정리한 너') &&
     r.hierarchy.concernHandoff.includes('아까 말한 고민에선 이 부분이 핵심이야') &&
     r.hierarchy.shareText.includes('인스타 스토리') &&
     r.hierarchy.shareLead.includes('상담 기록') &&
@@ -529,7 +546,10 @@ async function inspect(page, mode) {
   const compatibilitySetup=await page.locator('#unniProductModal').innerText();
   assert(compatibilitySetup.includes('이번엔 상대 사주도 같이 놓고 볼게.'),'F compatibility setup lost Roa voice');
   assert(compatibilitySetup.includes('양력')&&compatibilitySetup.includes('음력')&&!compatibilitySetup.includes('양력 생일')&&!compatibilitySetup.includes('음력 생일'),'live compatibility calendar labels are not simplified');
-  assert(!compatibilitySetup.includes('예: 오후 3시 20분이면'),'live compatibility time helper was not removed');
+  assert(compatibilitySetup.includes('자시 · 밤 11시~새벽 1시')&&compatibilitySetup.includes('직접 입력 (예: 1330)'),'live compatibility branch-first time UI missing');
+  assert(await page.locator('#partnerTimeBranch option').count()===13,'compatibility 12-branch selector missing');
+  assert(await page.locator('#partnerTimeInput').isVisible(),'compatibility direct-time fallback missing');
+  assert(!compatibilitySetup.includes('오전/오후')&&!compatibilitySetup.includes('몇 분'),'old minute-heavy compatibility time UI remains');
   assert(!(await page.locator('#partnerLeapWrap').isVisible()),'live leap-month UI must stay hidden for solar');
   await page.selectOption('#partnerCalendar','lunar');
   assert(await page.locator('#partnerLeapWrap').isVisible(),'live leap-month UI did not appear for lunar');
