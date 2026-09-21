@@ -75,7 +75,7 @@ async function enter(page, mode, concern, situation) {
     };
   });
   assert(intro.visible && intro.inViewport && intro.titleHeight<=82 && !intro.hintVisible,'first counselor-choice viewport layout broken '+JSON.stringify(intro));
-  for(const copy of ['똑같은 내 사주, 누구한테 먼저 털어놓을래?','원하는 상담 스타일을 골라봐','감정 공감형','핵심 정리형','왜 자꾸 마음이 쓰이는지부터 같이 풀어볼게.','돌려 말 안 할게. 뭐가 핵심인지부터 딱 정리해줄게.','응, 내 얘기 좀 들어줘','좋아, 핵심부터 알려줘']) {
+  for(const copy of ['똑같은 내 사주, 누구한테 먼저 털어놓을래?','원하는 상담 스타일을 골라봐','감정 공감형','핵심 정리형','뭐가 자꾸 마음에 걸리는지, 언니가 같이 봐줄게.','뭐가 중요한지부터 깔끔하게 정리해줄게.','내 얘기 좀 들어줘','좋아, 핵심부터 알려줘']) {
     assert(intro.bodyText.includes(copy),'first counselor-choice copy missing '+copy);
   }
   for(const removedCopy of ['선택한 언니의 말투로 결과 끝까지 이어져','응, 언니랑 천천히 풀어볼래','좋아, 핵심만 바로 알려줘']) {
@@ -380,19 +380,19 @@ async function inspect(page, mode) {
   );
   if(mode==='F') assert(
     r.hierarchy.firstLook.includes('로아 언니가 먼저 본 너') &&
-    r.hierarchy.concernHandoff.includes('이제 네가 물어본 고민으로 들어가볼게') &&
+    r.hierarchy.concernHandoff.includes('이제 네 고민 쪽으로 바로 봐줄게') &&
     r.hierarchy.shareText.includes('인스타 스토리') &&
     r.hierarchy.shareLead.includes('상담 기록') &&
-    r.hierarchy.reAnalyzeSub.includes('새 고민만 골라서 이어서 볼게') &&
-    r.hierarchy.freshAnalysisText.includes('다른 사람 사주도 같이 볼까'),
+    r.hierarchy.reAnalyzeSub.includes('새 고민만 고르면 돼') &&
+    r.hierarchy.freshAnalysisText.includes('다른 사람도 봐줄까'),
     'F counseling handoff disappeared '+JSON.stringify(r.hierarchy)
   );
   if(mode==='T') assert(
     r.hierarchy.firstLook.includes('서아 언니가 먼저 정리한 너') &&
-    r.hierarchy.concernHandoff.includes('네 고민에 직접 연결되는 부분만 볼게') &&
+    r.hierarchy.concernHandoff.includes('이제 네 고민이랑 연결해서 볼게') &&
     r.hierarchy.shareText.includes('인스타 스토리') &&
     r.hierarchy.shareLead.includes('상담 기록') &&
-    r.hierarchy.reAnalyzeSub.includes('새 고민만 선택해서 바로 이어보기') &&
+    r.hierarchy.reAnalyzeSub.includes('새 고민만 고르면 돼') &&
     r.hierarchy.freshAnalysisText.includes('다른 사람 사주 새로 보기'),
     'T counseling handoff disappeared '+JSON.stringify(r.hierarchy)
   );
