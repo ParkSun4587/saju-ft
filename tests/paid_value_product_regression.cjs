@@ -341,7 +341,6 @@ function norm(v) {
       visibleProducts:catalog ? [...catalog.querySelectorAll('[data-unni-product]')].filter((el) => el.offsetParent !== null).length : 0,
       secondaryProducts:catalog ? catalog.querySelectorAll('[data-secondary-product="1"]').length : 0,
       otherToggle:!!catalog?.querySelector('#unniShowOtherProducts'),
-      otherExpanded:catalog?.querySelector('#unniShowOtherProducts')?.getAttribute('aria-expanded') || '',
       otherVisible:catalog?.querySelector('#unniOtherProducts') ? getComputedStyle(catalog.querySelector('#unniOtherProducts')).display !== 'none' : false,
       mbtiInfo,
       fChem,
@@ -378,7 +377,7 @@ function norm(v) {
     assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
     assert(ui.fPaywallText.includes('로아 언니 · 여기서 하나만 더 보자') && ui.fPaywallText.includes('무엇부터 덜어야') && ui.fPaywallText.includes('언니, 그것도 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
-    assert(ui.tPaywallText.includes('서아 언니 · 마지막 기준만 보면 돼') && ui.tPaywallText.includes('부하 제거') && ui.tPaywallText.includes('응, 끝까지 봐줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
+    assert(!ui.tPaywallText.includes('서아 언니 · 마지막 기준만 보면 돼') && ui.tPaywallText.includes('부하 제거') && ui.tPaywallText.includes('응, 끝까지 봐줘') && ui.tPaywallText.includes('990원'), `T conversion paywall should omit the extra sister bubble: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
     assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
     assert(ui.fPaywallText.includes('NOTE2 다음부터 NOTE6까지') && ui.tPaywallText.includes('NOTE2 다음부터 NOTE6까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), '990 won unlock scope or stale sale badge drift');
@@ -386,13 +385,13 @@ function norm(v) {
   assert(ui.unlockedNoteCards === 6 && !ui.previewAfterUnlock, `unlock must replace teaser with all six full notes: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
-  assert(ui.visibleProducts === 1 && ui.secondaryProducts === 3 && ui.otherToggle && ui.otherExpanded === 'false' && !ui.otherVisible, `premium catalog should show one recommendation first and keep three alternatives folded but discoverable: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherExpanded:ui.otherExpanded,otherVisible:ui.otherVisible})}`);
+  assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3 && !ui.otherToggle && ui.otherVisible, `premium catalog should show all four products immediately: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherVisible:ui.otherVisible})}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
   assert(ui.fGreeting.includes('언니가 보니까') && ui.fGreeting.includes('제일 먼저 눈에 들어오는 건 이거야') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 90, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
   assert(ui.tGreeting.includes('먼저 봐야 할 건 이거야') && ui.tGreeting.length <= 80, `T result intro should feel concise but caring: ${ui.tGreeting}`);
   assert(
     ui.catalogReason.length >= 10 &&
-    ui.catalogText.includes('다른 방향 3개도 보기') &&
+    !ui.catalogText.includes('다른 방향 3개도 보기') &&
     (ui.catalogText.includes('상대 사주까지 겹쳐야 나오는') || ui.catalogText.includes('나 전체 구조 · 영역 연결 · 5년 흐름')) &&
     !ui.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아') &&
     !ui.catalogText.includes('다음으로 볼 가치는 이게 제일 커') &&
@@ -718,7 +717,7 @@ function norm(v) {
   assert(premium.includes('paidExportCache.clear()') && premium.includes('paidExportCache.set(key, prepared)'), 'paid PNG blob cache must stay bounded to the current report');
   assert(premium.includes('nativeSharePngFiles') && premium.includes('isMobileDevice'), 'one-action mobile multi-image share path missing');
   assert(premium.includes('recommendedProductId') && premium.includes('recommendationReason') && premium.includes('const unlocked = typeof isUnlocked') && premium.includes('if (!unlocked)') && premium.includes('data-secondary-product'), 'post-unlock personalized premium recommendation missing');
-  assert(premium.includes('unniShowOtherProducts') && premium.includes('unniOtherProducts') && premium.includes('다른 방향') && premium.includes('aria-expanded="false"'), 'recommended-first folded but discoverable alternatives missing');
+  assert(!premium.includes('unniShowOtherProducts') && premium.includes('unniOtherProducts') && premium.includes('display:grid;gap:14px;margin-top:10px'), 'premium alternatives should stay fully open under the recommendation');
   assert(!premium.includes('unniProductSavePdf') && !premium.includes('printPaidReport') && !premium.includes('unniPaidPrintHost') && !premium.includes('PDF로 한 파일 보관하기'), 'PDF save code must be fully removed');
   assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="concern"'), 'semantic paid-report grouping missing');
   assert(premium.includes('나를 이해하는 법') && premium.includes('대화하고 싸우고 화해하는 법') && premium.includes('어떻게 움직일지'), 'human-readable export group titles missing');
@@ -829,6 +828,9 @@ function norm(v) {
     html.includes('자시 · 23:30~01:29') &&
     html.includes('해시 · 21:30~23:29') &&
     html.includes('id="birthTimeDirectToggle"') &&
+    html.includes('id="birthTimeDirectLabel"') &&
+    html.includes('data-consult-mode="F"] #birthTimeDirectLabel') &&
+    html.includes('data-consult-mode="T"] #birthTimeDirectLabel') &&
     html.includes('정확한 시간 직접 입력') &&
     html.includes('placeholder="예: 1330"') &&
     !html.includes('id="birthTimeUnknown"') &&
@@ -836,7 +838,13 @@ function norm(v) {
     'exact manse primary birth-time UI missing'
   );
   assert(html.includes('BIRTH_TIME_BRANCHES') && html.includes('BIRTH_TIME_BRANCH_LABELS'), 'branch-time parsing/restore support missing');
-  assert(html.includes('note-preview-continuation::before') && html.includes('여기서부터가 중요해') && html.includes('linear-gradient(135deg,#fff0f4'), 'NOTE2 conversion turn emphasis missing');
+  assert(
+    html.includes('.note-preview-continuation::before{content:none!important}') &&
+    html.includes('border-left:3px solid #e77892') &&
+    html.includes('이제 중요한 건 하나야. 어디서 끊고, 뭘 바꿀지.') &&
+    html.includes('이제 핵심은 하나야. 어디서 끊고, 뭘 바꿀지.'),
+    'NOTE2 conversion turn should use one compact impact line'
+  );
   assert(html.includes('언니가 먼저 본 너') && html.includes('언니가 먼저 정리한 너') && html.includes('언니가 핵심만 적어둔 비밀 메모') && html.includes('언니가 너한테만 남기는 비밀 메모'), 'generic counselor editorial labels missing');
   assert(!html.includes('로아 언니가 먼저 본 너') && !html.includes('서아 언니가 먼저 정리한 너') && !html.includes('로아 언니가 너한테만 남기는 비밀 메모') && !html.includes('서아 언니가 핵심만 적어둔 비밀 메모'), 'character name still leaks into final editorial labels');
   assert(html.includes('analysisErrorText(') && !html.includes('calcErr.message || {'), 'raw analysis-engine errors can still leak into user copy');
