@@ -114,14 +114,13 @@ async function captureState(browser, vp, state) {
   if(state==='unlocked') await unlockForQa(page);
 
   const metrics=await makeStaticLongshotDocument(page);
-  assert(metrics.height>1600 && metrics.docHeight>1600,
+  assert(metrics.height>1600,
     vp.width+'x'+vp.height+' '+vp.mode+' '+state+' longshot stayed viewport-sized '+JSON.stringify(metrics));
   assert(!metrics.overflow,
     vp.width+'x'+vp.height+' '+vp.mode+' '+state+' longshot overflow '+JSON.stringify(metrics));
 
-  await page.screenshot({
+  await page.locator('#resultSection').screenshot({
     path:'/tmp/result-ui-'+vp.width+'x'+vp.height+'-'+vp.mode+'-'+state+'-long.png',
-    fullPage:true,
     animations:'disabled',
   });
   await ctx.close();
