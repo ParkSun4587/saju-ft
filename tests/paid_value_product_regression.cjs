@@ -354,8 +354,8 @@ function norm(v) {
     assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
     assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-    assert(ui.fPaywallText.includes('로아 언니 · 중요한 얘기가 더 있어') && ui.fPaywallText.includes('어디서 끊으면 되는지만 보면 돼') && ui.fPaywallText.includes('로아 언니, 더 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
-    assert(ui.tPaywallText.includes('서아 언니 · 중요한 얘기가 더 있어') && ui.tPaywallText.includes('원인과 끊을 지점') && ui.tPaywallText.includes('서아 언니, 답까지 정리해줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
+    assert(ui.fPaywallText.includes('로아 언니 · 여기서 조금 더 봐야겠어') && ui.fPaywallText.includes('어디서 끊으면 좋을지만 같이 보자') && ui.fPaywallText.includes('로아 언니, 이것도 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
+    assert(ui.tPaywallText.includes('서아 언니 · 여기서 더 볼 게 있어') && ui.tPaywallText.includes('어디서 끊어야 하는지만 보면 돼') && ui.tPaywallText.includes('서아 언니, 끝까지 봐줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
     assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
     assert(ui.fPaywallText.includes('NOTE2 다음부터 NOTE6까지') && ui.tPaywallText.includes('NOTE2 다음부터 NOTE6까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), '990 won unlock scope or stale sale badge drift');
@@ -365,8 +365,8 @@ function norm(v) {
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(ui.visibleProducts === 1 && ui.secondaryProducts === 3 && ui.otherToggle && ui.otherExpanded === 'false' && !ui.otherVisible, `premium catalog should show one recommendation first and keep three alternatives folded but discoverable: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherExpanded:ui.otherExpanded,otherVisible:ui.otherVisible})}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
-  assert(ui.fGreeting.includes('왜 마음에 걸렸는지 보여') && ui.fGreeting.includes('중요한 것부터 말해줄게') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 90, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
-  assert(ui.tGreeting.includes('다 봤어') && ui.tGreeting.includes('중요한 것부터 정리해줄게') && ui.tGreeting.length <= 80, `T result intro should feel concise but caring: ${ui.tGreeting}`);
+  assert(ui.fGreeting.includes('언니가 쭉 봤는데') && ui.fGreeting.includes('이런 쪽이 먼저 보여') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 90, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
+  assert(ui.tGreeting.includes('쭉 봤어') && ui.tGreeting.includes('먼저 눈에 들어오는 건 이거야') && ui.tGreeting.length <= 80, `T result intro should feel concise but caring: ${ui.tGreeting}`);
   assert(
     ui.catalogReason.length >= 10 &&
     ui.catalogText.includes('다른 방향 3개도 보기') &&
@@ -717,22 +717,22 @@ function norm(v) {
   assert(!html.includes('팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐'), 'old generic harsh T greeting remains');
   for (const harsh of ['아이고 왔어?', '시간 낭비 말고', '똑바로 찍어', '똥고집', '미련 곰탱이', '팩트 꽂힌', '팩폭 모드', '징징대지 말고 와', '살인 충동 느낌', '상대방 사람 취급', '멍청한 질문 3번']) assert(!html.includes(harsh), `harsh/old sister copy remains: ${harsh}`);
   assert(
-    html.includes('아, 왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
-    html.includes('마음에 걸리는 건 언니가 같이 봐줄게.') &&
-    html.includes('왔어. 이름이랑 생일부터 알려줘.') &&
-    html.includes('중요한 것부터 정리해줄게.') &&
-    html.includes('로아 언니, 내 얘기 봐줘') &&
-    html.includes('서아 언니, 핵심부터 정리해줘') &&
+    html.includes('아, 왔구나<br>이름이랑 생일부터 편하게 알려줘.') &&
+    html.includes('뭐가 마음에 걸리는지도 언니가 같이 봐줄게') &&
+    html.includes('왔어? 이름이랑 생일부터 알려줘.') &&
+    html.includes('뭐가 중요한지부터 바로 볼게') &&
+    html.includes('로아 언니, 내 얘기 들어줘') &&
+    html.includes('서아 언니, 바로 봐줘') &&
     html.includes('prompt.textContent = config.prompt;') &&
     !html.includes('CONCERN_CONVERSATION_PROMPTS') &&
     !html.includes('concernSituationAck') &&
-    html.includes('잠깐만. 언니가 차근차근 보고 있어.') &&
-    html.includes('중요한 부분만 추리고 있어.') &&
-    html.includes('다 봤어. 이제 중요한 얘기부터 해줄게.') &&
-    html.includes('다 봤어. 중요한 것부터 정리해줄게.') &&
+    html.includes('잠깐만, 이건 조금 더 봐야겠다') &&
+    html.includes('잠깐만, 중요한 부분만 더 볼게') &&
+    html.includes('이제 좀 보이네. 먼저 이것부터 얘기해줄게') &&
+    html.includes('다 봤어. 먼저 핵심부터 말할게.') &&
     html.includes('resultSisterHandoff') &&
-    html.includes('사주는 그대로 있어.<br>이번엔 뭐가 마음에 걸려?') &&
-    html.includes('사주정보는 그대로 있어.<br>이번엔 다른 고민 하나만 골라줘.') &&
+    html.includes('다시 왔네<br>이번엔 뭐가 마음에 걸려?') &&
+    html.includes('다시 왔네.<br>이번엔 뭐부터 볼까?') &&
     !html.includes('note-bridge') &&
     !html.includes('bg-[#fee500]') &&
     !html.includes('ㅎㅎ'),
@@ -797,10 +797,10 @@ function norm(v) {
     html.includes('원하는 상담 스타일을 골라봐') &&
     html.includes('감정 공감형') &&
     html.includes('핵심 정리형') &&
-    html.includes('뭐가 자꾸 마음에 걸리는지, 언니가 같이 봐줄게.') &&
-    html.includes('뭐가 중요한지부터 깔끔하게 정리해줄게.') &&
-    html.includes('내 얘기 좀 들어줘') &&
-    html.includes('좋아, 핵심부터 알려줘') &&
+    html.includes('왔어? 요즘 뭐가 제일 마음에 걸려<br>언니한테 편하게 얘기해봐') &&
+    html.includes('왔어? 뭐가 제일 궁금해<br>중요한 것부터 바로 보자') &&
+    html.includes('언니한테 얘기해볼래') &&
+    html.includes('좋아, 바로 봐줘') &&
     !html.includes('선택한 언니의 말투로 결과 끝까지 이어져') &&
     !html.includes('응, 언니랑 천천히 풀어볼래') &&
     !html.includes('좋아, 핵심만 바로 알려줘'),
