@@ -52,9 +52,9 @@ async function checkRestartCta(page, mode) {
   assert(!cta.className.includes('fee500')&&cta.background.includes('linear-gradient')&&cta.color==='rgb(255, 255, 255)',
     'other-concern CTA still uses legacy Kakao-yellow styling '+JSON.stringify(cta));
   const returnVoice=await page.locator('#welcomeSisterText').innerText();
-  if(mode==='F') assert(returnVoice.includes('다시 왔네')&&returnVoice.includes('이번엔 뭐가 마음에 걸려?'),
+  if(mode==='F') assert(returnVoice.includes('이번엔 뭐가 마음에 걸려?'),
     'F other-concern return lost warm continuity '+returnVoice);
-  else assert(returnVoice.includes('다시 왔네.')&&returnVoice.includes('이번엔 뭐부터 볼까?'),
+  else assert(returnVoice.includes('좋아. 이번엔 뭐부터 볼까?'),
     'T other-concern return lost concise continuity '+returnVoice);
 }
 
@@ -99,14 +99,14 @@ async function enter(page, mode, concern, situation) {
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
   if (mode==='F') assert(
-    firstState.sisterText.includes('아, 왔구나') &&
-    firstState.sisterText.includes('뭐가 마음에 걸리는지도 언니가 같이 봐줄게') &&
+    firstState.sisterText.includes('응, 좋아. 편하게 적어줘') &&
+    firstState.sisterText.includes('언니가 사주랑 고민 같이 볼게') &&
     !firstState.sisterText.includes('ㅎㅎ'),
     'F input lost warm pinpoint counselor voice '+firstState.sisterText
   );
   if (mode==='T') assert(
-    firstState.sisterText.includes('왔어? 이름이랑 생일부터 알려줘.') &&
-    firstState.sisterText.includes('뭐가 중요한지부터 바로 볼게') &&
+    firstState.sisterText.includes('좋아, 바로 보자') &&
+    firstState.sisterText.includes('사주랑 고민 적어주면 돼') &&
     !firstState.sisterText.includes('ㅎㅎ'),
     'T input lost precise direct-care counselor voice '+firstState.sisterText
   );
@@ -357,8 +357,8 @@ async function inspect(page, mode) {
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
     assert(/NOTE 0?2/.test(r.note2Preview)&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
-    if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서부터가 진짜 중요해')&&r.paywall.includes('같은 서운함이 반복되는지는 보여')&&r.paywall.includes('로아 언니, 이어서 봐줘'),'live F conversion paywall drift '+r.paywall);
-    if(mode==='T') assert(r.paywall.includes('서아 언니 · 이제 결론만 남았어')&&r.paywall.includes('부하 제거')&&r.paywall.includes('서아 언니, 끝까지 봐줘'),'live T conversion paywall drift '+r.paywall);
+    if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서 하나만 더 보자')&&r.paywall.includes('같은 서운함이 반복되는지는 보여')&&r.paywall.includes('언니, 그것도 봐줘'),'live F conversion paywall drift '+r.paywall);
+    if(mode==='T') assert(r.paywall.includes('서아 언니 · 마지막 기준만 보면 돼')&&r.paywall.includes('부하 제거')&&r.paywall.includes('응, 끝까지 봐줘'),'live T conversion paywall drift '+r.paywall);
     assert(r.paywall.includes('990원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
     assert(r.paywall.includes('NOTE2 다음부터 NOTE6까지')&&!/오픈 체험가/.test(r.paywall),'990 won unlock scope or stale sale copy drift '+r.paywall);
     assert(r.funExtrasDisplay==='none'&&r.shareActionsDisplay==='none','locked 990 flow should hide MBTI/share diversions '+JSON.stringify({fun:r.funExtrasDisplay,share:r.shareActionsDisplay}));
@@ -393,7 +393,7 @@ async function inspect(page, mode) {
   );
   if(mode==='T') assert(
     r.hierarchy.firstLook.includes('서아 언니가 먼저 정리한 너') &&
-    r.hierarchy.concernHandoff.includes('아까 말한 고민으로 보면 핵심이 더 분명해져') &&
+    r.hierarchy.concernHandoff.includes('아까 말한 고민에선 이 부분이 핵심이야') &&
     r.hierarchy.shareText.includes('인스타 스토리') &&
     r.hierarchy.shareLead.includes('상담 기록') &&
     r.hierarchy.reAnalyzeSub.includes('새 고민만 고르면 돼') &&
@@ -417,8 +417,8 @@ async function inspect(page, mode) {
   assert(!r.badges.some(x=>x.includes('·')||x.includes('사람 필터')||x.includes('7일 처방')||x.includes('놓친 포인트')),
     'old NOTE badge wording remains '+JSON.stringify(r.badges));
   assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
-  if (mode==='F') assert(r.resultGreeting.includes('언니가 쭉 봤는데')&&r.resultGreeting.includes('이런 쪽이 먼저 보여')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=90,'F result warm close-sister intro drift '+r.resultGreeting);
-  if (mode==='T') assert(r.resultGreeting.includes('쭉 봤어')&&r.resultGreeting.includes('먼저 눈에 들어오는 건 이거야')&&r.resultGreeting.length<=80,'T result concise direct-care intro drift '+r.resultGreeting);
+  if (mode==='F') assert(r.resultGreeting.includes('언니가 보니까')&&r.resultGreeting.includes('제일 먼저 눈에 들어오는 건 이거야')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=90,'F result warm close-sister intro drift '+r.resultGreeting);
+  if (mode==='T') assert(r.resultGreeting.includes('먼저 봐야 할 건 이거야')&&r.resultGreeting.length<=80,'T result concise direct-care intro drift '+r.resultGreeting);
   assert(!r.resultGreeting.includes('ㅎㅎ'),'repeated laughter remains in result '+r.resultGreeting);
   if (mode==='T') assert(!/징징|살인 충동|사람 취급|멍청한 질문/.test(r.resultGreeting+r.catalog),'harsh T voice leaked into live journey '+JSON.stringify({greeting:r.resultGreeting,catalog:r.catalog}));
   return r;
@@ -604,13 +604,13 @@ async function inspect(page, mode) {
     await small.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
     const voice=await small.locator('#welcomeSisterText').innerText();
     if(mode==='F') assert(
-      voice.includes('아, 왔구나') &&
-      voice.includes('뭐가 마음에 걸리는지도 언니가 같이 봐줄게'),
+      voice.includes('응, 좋아. 편하게 적어줘') &&
+      voice.includes('언니가 사주랑 고민 같이 볼게'),
       '360px F voice drift '+voice
     );
     else assert(
-      voice.includes('왔어? 이름이랑 생일부터 알려줘.') &&
-      voice.includes('뭐가 중요한지부터 바로 볼게'),
+      voice.includes('좋아, 바로 보자') &&
+      voice.includes('사주랑 고민 적어주면 돼'),
       '360px T voice drift '+voice
     );
     await small.close();
