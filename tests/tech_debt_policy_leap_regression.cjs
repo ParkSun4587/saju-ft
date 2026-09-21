@@ -37,6 +37,10 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(!/(화가 강하네|수가 강하네|목이 강하네|금이 강하네|토가 강하네|제일 강해|약한 편)/.test(rawCountCopy),'raw five-element count is still described as actual strength');
   assert(/겉으로|비중/.test(rawCountCopy),'raw five-element copy no longer explains visible count/share');
   assert(!noteSource.includes('${situation.object}이')&&!noteSource.includes('${situation.object}을'),'fixed Korean particles remain on dynamic situation.object');
+  for(const bad of ['힘 이야','환경 이야','느냐 야','것 .','것 을','것 이','하기 만','해야 해 언니','맞아 쉽게 풀면']){
+    assert(!noteSource.includes(bad),'forbidden Korean join remains in NOTE source: '+bad);
+  }
+  assert(!noteSource.includes('replace(/<[^>]+>/g," ")'),'stripHtml must not create spaces at inline tag boundaries');
   assert(noteSource.includes('function hasBatchim(value)')&&noteSource.includes('function withJosa(value, withBatchim, withoutBatchim)'),'Korean josa helper missing');
   assert(!noteSource.includes('손실과 과로를 먼저 줄여'),'generic NOTE6 caution copy remains');
   assert(!noteSource.includes('평소보다 20% 이상'),'unsupported 20% threshold remains in NOTE copy');
@@ -90,6 +94,24 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     const routes=[];
     const failures=[];
     let josaChecks=0;
+    let noteSurfaceChecks=0;
+    const forbiddenJoinPatterns=[
+      ['명사+이야/야 공백',/[가-힣]\s+(?:이야|야)(?=[.!?]|$)/],
+      ['느냐 야',/느냐\s+야\b/],
+      ['것 마침표 공백',/것\s+\./],
+      ['것+조사 공백',/것\s+(?:이|가|을|를)\b/],
+      ['하기 만',/하기\s+만\b/],
+      ['해야 해 언니',/해야 해\s+언니/],
+      ['맞아 쉽게 풀면',/맞아\s+쉽게 풀면/],
+      ['마침표 앞 공백',/\s+[.!?]/],
+      ['문장 경계 누락',/(?:해야 해|맞아|중요해|좋아|쉬워|커져|보여|않아|돼|있어|없어)\s+(?:언니가|쉽게 풀면|그래서|그리고|그다음)\b/],
+      ['모음 명사+을',/(?:연애|진로|관계)을 볼 때/],
+    ];
+    const visibleText=(html)=>{
+      const el=document.createElement('div');
+      el.innerHTML=String(html||'');
+      return String(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();
+    };
     const hasBatchim=(value)=>{
       const chars=Array.from(String(value||'').trim());
       for(let i=chars.length-1;i>=0;i-=1){
@@ -118,6 +140,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         structureFingerprint:d.noteV3Audit?.structureFingerprint||'',
         timingFingerprint:d.noteV3Audit?.timingFingerprint||'',
         claims:claimCore(d.noteV3Audit?.claims),
+        claimSentences:(d.noteV3Audit?.claims||[]).map((claim)=>String(claim?.noteSentence||'')),
       };
     };
     for(const [concern,config] of Object.entries(ui)){
@@ -155,6 +178,17 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           const visible=row.notes.map(n=>[n?.badge,n?.title,n?.desc,n?.checklist].join(' ')).join(' ');
           if(/\bundefined\b|\bnull\b/.test(visible)) failures.push(concern+'/'+key+'/'+mode+': undefined/null leaked');
           if(/20%|24시간|세 번/.test(visible)) failures.push(concern+'/'+key+'/'+mode+': unsupported precision leaked');
+          row.notes.forEach((note,noteIndex)=>{
+            const finalText=[String(note?.title||''),visibleText(note?.desc),String(note?.checklist||'')].join(' ').replace(/\s+/g,' ').trim();
+            const auditText=String(row.claimSentences?.[noteIndex]||'').replace(/\s+/g,' ').trim();
+            for(const [patternName,pattern] of forbiddenJoinPatterns){
+              if(pattern.test(finalText)) failures.push(concern+'/'+key+'/'+mode+'/NOTE'+(noteIndex+1)+': runtime '+patternName+' => '+finalText);
+              pattern.lastIndex=0;
+              if(pattern.test(auditText)) failures.push(concern+'/'+key+'/'+mode+'/NOTE'+(noteIndex+1)+': claim sentence '+patternName+' => '+auditText);
+              pattern.lastIndex=0;
+            }
+            noteSurfaceChecks+=1;
+          });
         }
         if(f.structureFingerprint!==t.structureFingerprint||f.timingFingerprint!==t.timingFingerprint) {
           failures.push(concern+'/'+key+': F/T factual fingerprint drift');
@@ -162,10 +196,11 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         if(JSON.stringify(f.claims)!==JSON.stringify(t.claims)) failures.push(concern+'/'+key+': F/T claim core drift');
       }
     }
-    return {routeCount:routes.length,josaChecks,concernKeys:Object.keys(ui),failures};
+    return {routeCount:routes.length,josaChecks,noteSurfaceChecks,concernKeys:Object.keys(ui),failures};
   });
   assert(copyQa.routeCount===24,'expected all 24 current concern/situation routes, got '+copyQa.routeCount);
   assert(copyQa.josaChecks===copyQa.routeCount*2,'dynamic 이/가·을/를 checks incomplete '+JSON.stringify(copyQa));
+  assert(copyQa.noteSurfaceChecks===24*2*6,'expected 24 situations × F/T × NOTE1~6 runtime sentence checks, got '+copyQa.noteSurfaceChecks);
   assert(copyQa.failures.length===0,'copy QA2 route regression: '+copyQa.failures.join(' | '));
   const cautionStart=noteSource.indexOf('const cautionAction = ({');
   const cautionEnd=noteSource.indexOf('})[situation.concern]',cautionStart);
