@@ -792,16 +792,21 @@ function norm(v) {
   assert(html.includes('analysisErrorText(') && !html.includes('calcErr.message || {'), 'raw analysis-engine errors can still leak into user copy');
   assert(
     html.includes('똑같은 내 사주, 누구한테 먼저 털어놓을래?') &&
-    html.includes('원하는 상담 스타일을 골라봐') &&
-    html.includes('감정 공감형') &&
-    html.includes('핵심 정리형') &&
-    html.includes('왔어? 요즘 뭐가 제일 마음에 걸려<br>언니한테 편하게 얘기해봐') &&
-    html.includes('왔어? 뭐가 제일 궁금해<br>중요한 것부터 바로 보자') &&
+    html.includes('말해주는 방식만 골라봐') &&
+    html.includes('마음부터 들어주는') &&
+    html.includes('핵심부터 짚어주는') &&
+    html.includes('요즘 뭐가 제일 마음에 걸려?<br>언니한테 편하게 얘기해봐') &&
+    html.includes('뭐가 제일 궁금해?<br>중요한 것부터 바로 보자') &&
     html.includes('언니한테 얘기해볼래') &&
     html.includes('좋아, 바로 봐줘') &&
     !html.includes('선택한 언니의 말투로 결과 끝까지 이어져') &&
     !html.includes('응, 언니랑 천천히 풀어볼래') &&
-    !html.includes('좋아, 핵심만 바로 알려줘'),
+    !html.includes('좋아, 핵심만 바로 알려줘') &&
+    !html.includes('원하는 상담 스타일을 골라봐') &&
+    !html.includes('감정 공감형') &&
+    !html.includes('핵심 정리형') &&
+    !html.includes('왔어? 요즘 뭐가 제일 마음에 걸려') &&
+    !html.includes('왔어? 뭐가 제일 궁금해'),
     'immersive first counselor-choice copy missing'
   );
   for (const staleIntro of ['응, 내 얘기부터 천천히 같이 봐줘','좋아. 돌려 말하지 말고 필요한 것만 알려줘','괜히 겁주거나 포장 안 해. 좋은 건 좋다, 아닌 건 아니다 말하고 지금 필요한 것만 정리해줄게.']) {
