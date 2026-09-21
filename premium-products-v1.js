@@ -1362,8 +1362,14 @@
         </div>`;
     }
     if (productId === "compatibility") {
-      const hourOpts = Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1}시</option>`).join("");
-      const minuteOpts = Array.from({ length: 60 }, (_, i) => `<option value="${String(i).padStart(2, "0")}">${String(i).padStart(2, "0")}분</option>`).join("");
+      const branchOpts = [
+        ["子","자시 · 밤 11시~새벽 1시"],["丑","축시 · 새벽 1시~3시"],
+        ["寅","인시 · 새벽 3시~5시"],["卯","묘시 · 새벽 5시~7시"],
+        ["辰","진시 · 오전 7시~9시"],["巳","사시 · 오전 9시~11시"],
+        ["午","오시 · 오전 11시~오후 1시"],["未","미시 · 오후 1시~3시"],
+        ["申","신시 · 오후 3시~5시"],["酉","유시 · 오후 5시~7시"],
+        ["戌","술시 · 저녁 7시~9시"],["亥","해시 · 밤 9시~11시"],
+      ].map(([value,label]) => `<option value="${value}">${label}</option>`).join("");
       return `<div style="display:grid;gap:10px">
         <div style="font-size:11px;line-height:1.6;color:#64748b;padding:10px 11px;border-radius:12px;background:#f8fafc">${isT ? "궁합은 상대 사주가 필요해. 아는 정보부터 입력해줘." : "이번엔 상대 사주도 같이 놓고 볼게. 아는 만큼만 편하게 알려줘."}</div>
         <div><div style="font-size:11px;font-weight:900;color:#475569;margin:0 0 5px">상대 이름</div><input id="partnerName" placeholder="이름 또는 별명" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-radius:12px"></div>
@@ -1374,12 +1380,10 @@
         </div>
         <div style="padding:12px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0">
           <div style="font-size:11px;font-weight:900;color:#334155;margin-bottom:7px">상대가 태어난 시간 <span style="font-weight:700;color:#94a3b8">(알면 선택)</span></div>
-          <div style="display:grid;grid-template-columns:.9fr 1fr 1fr;gap:6px">
-            <select id="partnerAmpm" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:10px;background:white"><option value="">오전/오후</option><option value="am">오전</option><option value="pm">오후</option></select>
-            <select id="partnerHour12" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:10px;background:white"><option value="">몇 시</option>${hourOpts}</select>
-            <select id="partnerMinute" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:10px;background:white"><option value="">몇 분</option>${minuteOpts}</select>
-          </div>
-          <label style="display:flex;align-items:center;gap:7px;margin-top:9px;font-size:11px;font-weight:800;color:#64748b;cursor:pointer"><input id="partnerTimeUnknown" type="checkbox"> 태어난 시간을 몰라요</label>
+          <select id="partnerTimeBranch" onchange="document.getElementById('partnerTimeInput').value='';document.getElementById('partnerTimeUnknown').checked=false" style="width:100%;padding:10px 9px;border:1px solid #cbd5e1;border-radius:10px;background:white;font-size:11px;font-weight:750;color:#475569"><option value="">자시·축시로 골라줘</option>${branchOpts}</select>
+          <div style="margin-top:5px;font-size:9.5px;font-weight:700;color:#94a3b8">정확한 분을 몰라도 시간대만 고르면 돼</div>
+          <input id="partnerTimeInput" inputmode="numeric" maxlength="5" placeholder="직접 입력 (예: 1330)" oninput="if(window.formatBirthTime)window.formatBirthTime(this);document.getElementById('partnerTimeBranch').value='';document.getElementById('partnerTimeUnknown').checked=false" style="width:100%;box-sizing:border-box;margin-top:7px;padding:10px 9px;border:1px solid #cbd5e1;border-radius:10px;background:white;font-size:11px;font-weight:750;color:#475569;text-align:center">
+          <label style="display:flex;align-items:center;gap:7px;margin-top:9px;font-size:11px;font-weight:800;color:#64748b;cursor:pointer"><input id="partnerTimeUnknown" type="checkbox" onchange="if(this.checked){document.getElementById('partnerTimeBranch').value='';document.getElementById('partnerTimeInput').value=''}"> 태어난 시간을 몰라요</label>
         </div>
       </div>`;
     }
@@ -1449,16 +1453,24 @@
       const unknown = !!root.querySelector("#partnerTimeUnknown")?.checked;
       let tRaw = "unknown";
       if (!unknown) {
-        const ampm = root.querySelector("#partnerAmpm")?.value || "";
-        const hour12 = Number(root.querySelector("#partnerHour12")?.value || 0);
-        const minute = root.querySelector("#partnerMinute")?.value || "";
-        if (!ampm || !hour12 || minute === "")
+        const branch = root.querySelector("#partnerTimeBranch")?.value || "";
+        const direct = root.querySelector("#partnerTimeInput")?.value || "";
+        const clean = direct.replace(/\D/g, "");
+        if (clean) {
+          if (clean.length !== 4 || Number(clean.slice(0,2)) > 23 || Number(clean.slice(2)) > 59)
+            throw new Error(productVoice(data, {
+              F: "상대 시간을 직접 적었다면 4자리만 한 번 확인해줘. 예: 1330",
+              T: "상대 직접 입력 시간은 4자리로 확인해줘. 예: 1330",
+            }));
+          tRaw = `${clean.slice(0,2)}:${clean.slice(2)}`;
+        } else if (/^[子丑寅卯辰巳午未申酉戌亥]$/.test(branch)) {
+          tRaw = branch;
+        } else {
           throw new Error(productVoice(data, {
-            F: "상대 태어난 시간을 아는 만큼 골라줘. 모르면 ‘태어난 시간을 몰라요’를 체크하면 돼.",
-            T: "상대 태어난 시간을 골라줘. 모르면 ‘태어난 시간을 몰라요’를 체크하면 돼.",
+            F: "상대 태어난 시간대만 골라줘. 자시·축시처럼 고르면 되고, 모르면 ‘태어난 시간을 몰라요’를 체크하면 돼.",
+            T: "상대 태어난 시간대를 골라줘. 모르면 ‘태어난 시간을 몰라요’를 체크하면 돼.",
           }));
-        const hour24 = (hour12 % 12) + (ampm === "pm" ? 12 : 0);
-        tRaw = `${String(hour24).padStart(2, "0")}:${minute}`;
+        }
       }
       const calendar = root.querySelector("#partnerCalendar")?.value || "solar";
       const leap = calendar === "lunar" && !!root.querySelector("#partnerLeapMonth")?.checked;
