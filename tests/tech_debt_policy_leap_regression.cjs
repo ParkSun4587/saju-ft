@@ -84,6 +84,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(runtime.timing.nearCount>=17&&runtime.timing.publicYears.length>=5&&runtime.timing.internalYears.length>=10,'rolling timing coverage missing '+JSON.stringify(runtime.timing));
 
 
+  // Dynamically verify all current concern/situation objects, including Korean particle selection.
   const copyQa=await page.evaluate(()=>{
     const ui=globalThis.__CONCERN_SITUATIONS__||{};
     const engine=globalThis.__CONCERN_NOTE_ENGINE_V2__?.situations||{};
