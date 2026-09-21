@@ -115,19 +115,19 @@
     const accessNote = root.querySelector("#unniProductAccessNote");
     if (paymentTitle) {
       paymentTitle.textContent = productVoice(data, {
-        F: "좋아, 여기서부터 이어서 볼게",
-        T: "결제수단만 선택해",
+        F: "응, 그럼 이걸로 더 보자",
+        T: "좋아. 결제수단만 고르면 돼",
       });
     }
     if (paymentSub) {
       paymentSub.textContent = productVoice(data, {
-        F: "결제수단만 골라주면 방금 보던 상담에서 그대로 이어갈게.",
-        T: "확인되면 방금 보던 데서 바로 이어서 정리할게.",
+        F: "원하는 결제수단만 골라줘. 확인되면 바로 이어서 볼게",
+        T: "결제수단만 고르면 돼. 확인되면 바로 이어서 보자.",
       });
     }
     if (actionHint) {
       actionHint.textContent = productVoice(data, {
-        F: "고른 결제수단으로 결제할게.",
+        F: "선택한 결제수단으로 결제돼.",
         T: "선택한 결제수단으로 결제돼.",
       });
     }
@@ -1060,8 +1060,8 @@
           T: `결과 읽는 동안 미리 준비 중 · ${current}/${total}장`,
         })
       : productVoice(getData(), {
-          F: "읽는 동안 저장용 사진도 같이 준비해둘게.",
-          T: "결과 읽는 동안 저장용 사진을 미리 준비해둘게.",
+          F: "읽는 동안 저장할 사진도 같이 준비해둘게",
+          T: "읽는 동안 저장할 사진도 준비해둘게.",
         });
   }
 
@@ -1487,8 +1487,8 @@
     const product = PRODUCTS[productId];
     applyProductModalVoice(root, data);
     root.querySelector("#unniProductBadge").textContent = productVoice(data, {
-      F: "로아 언니가 이어서 정리한 상담 기록",
-      T: "서아 언니가 이어서 정리한 상담 기록",
+      F: "로아 언니랑 이어서 본 내용",
+      T: "서아 언니랑 이어서 본 내용",
     });
     root.querySelector("#unniProductTitle").textContent = product.name;
     root.querySelector("#unniProductPrice").textContent = "";
@@ -1636,8 +1636,8 @@
     const body = root.querySelector("#unniProductBody");
     const unlockRows = String(valueCopy?.unlocks || "").split("·").map((x)=>x.trim()).filter(Boolean);
     body.innerHTML = `<div data-product-voice-intro="1" style="margin-bottom:10px;font-size:11px;line-height:1.65;color:#64748b">${productVoice(data, {
-      F: "아까 보던 상담에서 이어서, 여기서는 새로 볼 수 있는 것만 보여줄게.",
-      T: "앞에서 본 내용은 반복하지 않을게. 여기서 새로 확인할 정보만 정리해.",
+      F: "아까 본 얘기랑 겹치는 건 빼고, 여기서는 새로 볼 것만 볼게",
+      T: "앞에서 본 건 빼고, 여기서 새로 볼 것만 확인하자.",
     })}</div><div data-product-value-intro="${esc(productId)}" style="padding:10px 0 10px 11px;border-left:2px solid #dfb0bb"><div style="font-size:12.5px;font-weight:950;line-height:1.5;color:#8f334a">${esc(ux.value)}</div><p style="margin:5px 0 0;font-size:11.5px;line-height:1.65;color:#64748b">${esc(ux.difference)}</p></div>${unlockRows.length ? `<div style="margin-top:10px;padding:10px 0 0;border-top:1px solid #ebe5df"><div style="font-size:10.5px;font-weight:900;color:#59616c;margin-bottom:6px">여기서 새로 보게 되는 것</div><div style="display:grid;gap:4px">${unlockRows.map((row)=>`<div style="font-size:10.5px;line-height:1.55;font-weight:700;color:#707985">· ${esc(row)}</div>`).join("")}</div></div>` : ""}`;
     const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
     const accessNote = root.querySelector("#unniProductAccessNote");
@@ -1948,8 +1948,8 @@
           if (pending) {
             pending.querySelector("[data-entitlement-status]")?.replaceChildren(
               document.createTextNode(productVoice(data, {
-                F: "구매 내역 확인이 조금 늦어지고 있어. 중복 결제되지 않게 확인이 끝난 뒤 이어서 볼게.",
-                T: "구매 내역 확인이 지연되고 있어. 중복 결제를 막기 위해 확인이 끝난 뒤 이어갈게.",
+                F: "기존 구매 확인이 조금 늦어지고 있어. 구매 내역은 그대로 두고 확인 중이니까 걱정하지 않아도 돼. 중복 결제되지 않게 지금은 새 결제를 열지 않을게.",
+                T: "구매 확인이 지연 중이야. 중복 결제 방지를 위해 새 결제는 열지 않을게.",
               })),
             );
           }
@@ -1959,8 +1959,8 @@
       wrap.id = "unniProductLadder";
       wrap.style.cssText = "margin-top:20px;padding:15px 2px 0;border-top:1px solid #e8e1db;background:transparent";
       wrap.innerHTML = `<div data-entitlement-status style="font-size:11.5px;line-height:1.6;color:#64748b">${productVoice(data, {
-        F: "기존 구매 내역부터 확인하고 있어. 잠깐만 같이 보자.",
-        T: "기존 구매 내역 확인 중…",
+        F: "구매 내역 확인하고 있어. 잠깐만",
+        T: "구매 내역 확인 중…",
       })}</div>`;
       slot.replaceChildren(wrap);
       return;
@@ -1987,12 +1987,12 @@
       : (isT ? "더 볼 거면, 다음 정보는 여기야" : "더 궁금한 게 남았다면");
     const headline = allOwned
       ? "이제 둘 사이를 따로 볼 수 있어"
-      : (isT ? "다음으로 볼 가치는 이게 제일 커" : "언니라면 이걸 먼저 이어서 볼 것 같아");
+      : (isT ? "다음으로 볼 거면 이게 가장 연결돼" : "지금 얘기 다음으로는 이게 제일 자연스러워");
     const sub = allOwned
       ? "완전판에 포함된 1인 내용은 다시 권하지 않을게. 궁합만 상대 사주가 필요한 별도 계산이야."
       : (isT
-          ? "방금 본 내용과 겹치는 건 빼고, 새로 확인할 정보가 가장 많은 걸 먼저 뒀어."
-          : "방금 같이 본 얘기는 반복하지 않고, 여기서 새로 알 수 있는 게 가장 많은 걸 먼저 뒀어.");
+          ? "방금 본 내용과 겹치지 않게, 새로 볼 정보가 많은 걸 먼저 뒀어."
+          : "아까 본 얘기는 빼고, 여기서 새로 볼 게 많은 걸 먼저 뒀어.");
     const toggleHtml = others.length
       ? `<button id="unniShowOtherProducts" type="button" aria-expanded="false" style="width:100%;border:0;border-top:1px solid #e8e1db;background:transparent;padding:12px 2px 9px;font-size:10.8px;font-weight:760;color:#7d858f;cursor:pointer;text-align:left">다른 방향 ${others.length}개도 보기 <span style="float:right">＋</span></button><div id="unniOtherProducts" style="display:none;gap:8px">${foldedProductGroups(others,states)}</div>`
       : "";
@@ -2045,8 +2045,8 @@
     try { sessionStorage.removeItem("unni_pending_approval"); } catch (_) {}
     showReport(productId, restored, resume.data?.x || {});
     productToast(restored, {
-      F: "결제 확인됐어. 아까 보던 상담에서 그대로 이어갈게.",
-      T: "결제 확인됐어. 바로 이어서 정리할게.",
+      F: "응, 확인됐어. 그럼 여기서 계속 보자",
+      T: "확인됐어. 바로 이어서 보자.",
     });
     return true;
   };
