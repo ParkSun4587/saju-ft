@@ -4,6 +4,20 @@
   const VERSION = "3.2.1";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
+  function hasBatchim(value) {
+    const chars = Array.from(String(value || "").trim());
+    for (let i = chars.length - 1; i >= 0; i -= 1) {
+      const code = chars[i].charCodeAt(0);
+      if (code >= 0xAC00 && code <= 0xD7A3) return (code - 0xAC00) % 28 !== 0;
+    }
+    return false;
+  }
+
+  function withJosa(value, withBatchim, withoutBatchim) {
+    const text = String(value || "");
+    return text + (hasBatchim(text) ? withBatchim : withoutBatchim);
+  }
+
   const SITUATIONS = {
     money: {
       saving:{label:"돈이 잘 안 모여",object:"지출과 저축",cue:"돈이 들어와도 남는 금액을 만들기 위해 지출·저축 기준을 정해야 하는 순간",move:"돈이 남지 않는 장면 하나를 찾아 지출·저축 기준을 고정하기",metric:"7일 동안 계획 밖 지출과 그 이유를 적어보기"},
@@ -258,7 +272,7 @@
     else middle = "상황에 따라 받아낼 때와 밀려날 때가 달라서, 압박의 크기보다 대응 순서가 중요해";
     const end = zipingUser(reasoning);
     if (isT) return `<b>시작</b> — ${situation.cue}.<br><br><b>들어오는 힘</b> — ${p.pressure}이 가장 크게 작동해.<br><br><b>네가 받는 방식</b> — ${middle}.<br><br><b>갈림길</b> — ${end}.<br><br>그래서 ${situation.object}의 결과만 보지 말고, 이 순서가 시작되는 지점을 먼저 끊어야 해.`;
-    return `보통 <b>${situation.cue}</b>에서 시작돼. 그때 네 사주에서는 ${p.pressure}이 가장 먼저 커져.<br><br>그리고 ${middle}.<br><br>여기서 중요한 건 네가 약해서가 아니라, <b>그 힘을 어떤 순서로 받아내느냐</b>야. ${end}.<br><br>언니는 ${situation.object}이 꼬인 마지막 장면보다 이 첫 순서를 먼저 잡고 싶어.`;
+    return `보통 <b>${situation.cue}</b>에서 시작돼. 그때 네 사주에서는 ${p.pressure}이 가장 먼저 커져.<br><br>그리고 ${middle}.<br><br>여기서 중요한 건 네가 약해서가 아니라, <b>그 힘을 어떤 순서로 받아내느냐</b>야. ${end}.<br><br>언니는 ${withJosa(situation.object,"이","가")} 꼬인 마지막 장면보다 이 첫 순서를 먼저 잡고 싶어.`;
   }
 
   function corePortrait(reasoning, situation, isT) {
@@ -293,7 +307,7 @@
     if (isT) {
       return `원인은 단순 성격이 아니야. 태어난 계절에서 잡힌 중심 구조상 <b>${monthLine}</b>이고, 실제 성패를 보면 ${zipingUser(reasoning)}<br><br>${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "강약 판단과 구조 판단이 같은 방향이면 그 조건을 더 강하게 본다."} 그래서 ${situation.object}의 원인을 범용 성향 하나로 줄이면 안 돼.`;
     }
-    return `진짜 원인은 ‘원래 네 성격이 이래서’가 아니야. 네 사주 전체의 중심을 보면 <b>${monthLine}</b>이야. 그리고 그 구조가 실제로 잘 굴러가는지까지 보면, ${zipingUser(reasoning)}<br><br>쉽게 풀면 ${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "두 판단이 같은 방향을 가리킬 때는 그 조건을 더 중요하게 볼 수 있어."} 언니가 ${situation.object}을 볼 때 이 구조부터 보는 이유가 그거야.`;
+    return `진짜 원인은 ‘원래 네 성격이 이래서’가 아니야. 네 사주 전체의 중심을 보면 <b>${monthLine}</b>이야. 그리고 그 구조가 실제로 잘 굴러가는지까지 보면, ${zipingUser(reasoning)}<br><br>쉽게 풀면 ${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "두 판단이 같은 방향을 가리킬 때는 그 조건을 더 중요하게 볼 수 있어."} 언니가 ${withJosa(situation.object,"을","를")} 볼 때 이 구조부터 보는 이유가 그거야.`;
   }
 
   function changeOrder(reasoning, situation, isT) {
