@@ -341,6 +341,7 @@ function norm(v) {
       note6Text:note6?.desc || '',
       resultGreeting:document.getElementById('resultSisterGreeting')?.innerText || '',
       catalogText:catalog?.innerText || '',
+      catalogReason:catalog?.querySelector('[data-recommendation-reason="1"]')?.innerText || '',
       noteBadges:notes.map((n) => n.badge || ''),
       share,
     };
@@ -367,12 +368,14 @@ function norm(v) {
   assert(ui.fGreeting.includes('왜 자꾸 마음이 남는지 보여') && ui.fGreeting.includes('먼저 핵심부터 같이 볼게') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 105, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
   assert(ui.tGreeting.includes('먼저 볼 핵심이 잡혔어') && ui.tGreeting.includes('중요한 것부터 정리할게') && ui.tGreeting.length <= 105, `T result intro should feel concise but caring: ${ui.tGreeting}`);
   assert(
-    ui.catalogText.includes('더 궁금한 게 남았다면') &&
-    ui.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아') &&
-    ui.catalogText.includes('왜 이걸 먼저 보냐면') &&
+    ui.catalogReason.length >= 10 &&
     ui.catalogText.includes('다른 방향 3개도 보기') &&
-    (ui.catalogText.includes('상대 사주까지 겹쳐야 나오는') || ui.catalogText.includes('나 전체 구조 · 영역 연결 · 5년 흐름')),
-    'post-NOTE6 counselor-led continuation missing'
+    (ui.catalogText.includes('상대 사주까지 겹쳐야 나오는') || ui.catalogText.includes('나 전체 구조 · 영역 연결 · 5년 흐름')) &&
+    !ui.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아') &&
+    !ui.catalogText.includes('다음으로 볼 가치는 이게 제일 커') &&
+    !ui.catalogText.includes('방금 같이 본 얘기는 반복하지 않고') &&
+    !ui.catalogText.includes('방금 본 내용과 겹치는 건 빼고'),
+    'post-NOTE6 continuation is not compact enough'
   );
   assert(ui.mbtiInfo.gradeText.includes('재미로 보는 사주 MBTI 번역') && ui.mbtiInfo.gradeText.includes('실제 검사 MBTI와 다를 수 있어'), `MBTI risk framing missing: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.mbtiInfo.fontSize <= 38 && ui.mbtiInfo.oneLineBeforeThreeLine && ui.mbtiInfo.threeLineBeforeMbti && ui.mbtiInfo.mbtiBeforeChem, `result hierarchy must preserve one-line → 3-line and optional MBTI → chemistry order: ${JSON.stringify(ui.mbtiInfo)}`);
