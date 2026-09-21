@@ -551,7 +551,8 @@ async function inspect(page, mode) {
   const compatibilitySetup=await page.locator('#unniProductModal').innerText();
   assert(compatibilitySetup.includes('이번엔 상대 사주도 같이 놓고 볼게.'),'F compatibility setup lost Roa voice');
   assert(compatibilitySetup.includes('양력')&&compatibilitySetup.includes('음력')&&!compatibilitySetup.includes('양력 생일')&&!compatibilitySetup.includes('음력 생일'),'live compatibility calendar labels are not simplified');
-  assert(compatibilitySetup.includes('자시 · 밤 11시~새벽 1시')&&compatibilitySetup.includes('직접 입력 (예: 1330)'),'live compatibility branch-first time UI missing');
+  assert(compatibilitySetup.includes('자시 · 밤 11시~새벽 1시'),'live compatibility branch-first time UI missing');
+  assert((await page.locator('#partnerTimeInput').getAttribute('placeholder'))==='직접 입력 (예: 1330)','live compatibility direct-time placeholder missing');
   assert(await page.locator('#partnerTimeBranch option').count()===13,'compatibility 12-branch selector missing');
   assert(await page.locator('#partnerTimeInput').isVisible(),'compatibility direct-time fallback missing');
   assert(!compatibilitySetup.includes('오전/오후')&&!compatibilitySetup.includes('몇 분'),'old minute-heavy compatibility time UI remains');
