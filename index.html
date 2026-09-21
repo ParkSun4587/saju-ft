@@ -1259,27 +1259,30 @@
     width:100%!important;
     max-width:var(--result-axis-max)!important;
     box-sizing:border-box!important;
-    padding-left:var(--result-gutter)!important;
-    padding-right:var(--result-gutter)!important;
+    padding-left:0!important;
+    padding-right:0!important;
   }
-  #resultSisterHandoff,
+  #resultSection>div>div:first-child,
   #resultConsultationFlow,
   #consultationNotesShell,
-  #resultConcernHandoff,
   #resultFunExtras,
   #resultShareActions,
   #postConsultationProductsSlot{
+    width:calc(100% - 32px)!important;
+    max-width:360px!important;
+    box-sizing:border-box!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  #resultSisterHandoff{
     width:100%!important;
     max-width:none!important;
-    box-sizing:border-box!important;
     margin-left:0!important;
     margin-right:0!important;
-  }
-
-  #resultSisterHandoff{
-    margin:0 0 var(--result-space-sm)!important;
+    margin-bottom:var(--result-space-sm)!important;
     padding:4px 1px 8px!important;
   }
+  #resultConcernHandoff{display:none!important}
   #resultConsultationFlow{
     margin:0!important;
     padding:13px 12px 11px!important;
@@ -1586,6 +1589,12 @@
 
   @media(max-width:370px){
     #resultSection{--result-gutter:14px}
+    #resultSection>div>div:first-child,
+    #resultConsultationFlow,
+    #consultationNotesShell,
+    #resultFunExtras,
+    #resultShareActions,
+    #postConsultationProductsSlot{width:calc(100% - 28px)!important}
     #sazuCharacterTitle{font-size:16.75px!important}
     #consultationNotesPaper{padding-left:12px!important;padding-right:12px!important}
     #resultChemistryExtras{grid-template-columns:1fr!important}
