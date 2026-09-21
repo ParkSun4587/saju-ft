@@ -1597,17 +1597,19 @@
         });
       } catch (e) {
         action.disabled = false;
-        productToast(data,
-          e?.code === "USER_CANCEL"
-            ? {
-                F: "결제가 취소됐어. 지금 보던 결과는 그대로 있어.",
-                T: "결제가 취소됐어. 현재 결과는 그대로 유지돼.",
-              }
-            : {
-                F: "결제창을 열지 못했어. 지금 결과는 그대로니까 한 번만 다시 눌러줘.",
-                T: "결제창을 열지 못했어. 결과는 유지됐어. 다시 눌러줘.",
-              },
-        );
+        if (e?.code === "USER_CANCEL") {
+          productToast(data, {
+            F: "결제를 취소했어. 지금 보던 결과는 그대로 있어.",
+            T: "결제를 취소했어. 현재 결과는 그대로 유지돼.",
+          });
+        } else if (typeof window.preparePaymentFailureRetry === "function") {
+          window.preparePaymentFailureRetry(data, getMode(data));
+        } else {
+          productToast(data, {
+            F: "결제창을 열지 못했어. 새로고침을 한 번 누른 뒤 다시 결제해줘.",
+            T: "결제창을 열지 못했어. 새로고침 후 다시 결제해줘.",
+          });
+        }
       }
     };
   }
@@ -2018,10 +2020,14 @@
     const product = PRODUCTS[productId];
     if (!product) return false;
     if (params.get("payment") === "fail") {
-      productToast(restored, {
-        F: "결제가 취소됐거나 완료되지 않았어. 지금 결과는 그대로 있어.",
-        T: "결제가 취소됐거나 완료되지 않았어. 현재 결과는 그대로 유지돼.",
-      });
+      if (typeof window.preparePaymentFailureRetry === "function") {
+        window.preparePaymentFailureRetry(restored, getMode(restored));
+      } else {
+        productToast(restored, {
+          F: "결제가 완료되지 않았어. 새로고침을 한 번 누른 뒤 다시 결제해줘.",
+          T: "결제가 완료되지 않았어. 새로고침 후 다시 결제해줘.",
+        });
+      }
       return true;
     }
     if (params.get("payment") !== "success") return true;
