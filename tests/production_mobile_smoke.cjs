@@ -52,9 +52,9 @@ async function checkRestartCta(page, mode) {
   assert(!cta.className.includes('fee500')&&cta.background.includes('linear-gradient')&&cta.color==='rgb(255, 255, 255)',
     'other-concern CTA still uses legacy Kakao-yellow styling '+JSON.stringify(cta));
   const returnVoice=await page.locator('#welcomeSisterText').innerText();
-  if(mode==='F') assert(returnVoice.includes('사주는 그대로 있어')&&returnVoice.includes('이번엔 뭐가 마음에 걸려?'),
+  if(mode==='F') assert(returnVoice.includes('다시 왔네')&&returnVoice.includes('이번엔 뭐가 마음에 걸려?'),
     'F other-concern return lost warm continuity '+returnVoice);
-  else assert(returnVoice.includes('사주정보는 그대로 있어.')&&returnVoice.includes('이번엔 다른 고민 하나만 골라줘.'),
+  else assert(returnVoice.includes('다시 왔네.')&&returnVoice.includes('이번엔 뭐부터 볼까?'),
     'T other-concern return lost concise continuity '+returnVoice);
 }
 
@@ -75,7 +75,7 @@ async function enter(page, mode, concern, situation) {
     };
   });
   assert(intro.visible && intro.inViewport && intro.titleHeight<=82 && !intro.hintVisible,'first counselor-choice viewport layout broken '+JSON.stringify(intro));
-  for(const copy of ['똑같은 내 사주, 누구한테 먼저 털어놓을래?','원하는 상담 스타일을 골라봐','감정 공감형','핵심 정리형','뭐가 자꾸 마음에 걸리는지, 언니가 같이 봐줄게.','뭐가 중요한지부터 깔끔하게 정리해줄게.','내 얘기 좀 들어줘','좋아, 핵심부터 알려줘']) {
+  for(const copy of ['똑같은 내 사주, 누구한테 먼저 털어놓을래?','원하는 상담 스타일을 골라봐','감정 공감형','핵심 정리형','왔어? 요즘 뭐가 제일 마음에 걸려','언니한테 편하게 얘기해봐','왔어? 뭐가 제일 궁금해','중요한 것부터 바로 보자','언니한테 얘기해볼래','좋아, 바로 봐줘']) {
     assert(intro.bodyText.includes(copy),'first counselor-choice copy missing '+copy);
   }
   for(const removedCopy of ['선택한 언니의 말투로 결과 끝까지 이어져','응, 언니랑 천천히 풀어볼래','좋아, 핵심만 바로 알려줘']) {
@@ -99,14 +99,14 @@ async function enter(page, mode, concern, situation) {
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
   if (mode==='F') assert(
-    firstState.sisterText.includes('아, 왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
-    firstState.sisterText.includes('마음에 걸리는 건 언니가 같이 봐줄게.') &&
+    firstState.sisterText.includes('아, 왔구나') &&
+    firstState.sisterText.includes('뭐가 마음에 걸리는지도 언니가 같이 봐줄게') &&
     !firstState.sisterText.includes('ㅎㅎ'),
     'F input lost warm pinpoint counselor voice '+firstState.sisterText
   );
   if (mode==='T') assert(
-    firstState.sisterText.includes('왔어. 이름이랑 생일부터 알려줘.') &&
-    firstState.sisterText.includes('중요한 것부터 정리해줄게.') &&
+    firstState.sisterText.includes('왔어? 이름이랑 생일부터 알려줘.') &&
+    firstState.sisterText.includes('뭐가 중요한지부터 바로 볼게') &&
     !firstState.sisterText.includes('ㅎㅎ'),
     'T input lost precise direct-care counselor voice '+firstState.sisterText
   );
@@ -354,8 +354,8 @@ async function inspect(page, mode) {
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
     assert(/NOTE 0?2/.test(r.note2Preview)&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
-    if(mode==='F') assert(r.paywall.includes('로아 언니 · 중요한 얘기가 더 있어')&&r.paywall.includes('어디서 끊으면 되는지만 보면 돼')&&r.paywall.includes('로아 언니, 더 봐줘'),'live F conversion paywall drift '+r.paywall);
-    if(mode==='T') assert(r.paywall.includes('서아 언니 · 중요한 얘기가 더 있어')&&r.paywall.includes('원인과 끊을 지점')&&r.paywall.includes('서아 언니, 답까지 정리해줘'),'live T conversion paywall drift '+r.paywall);
+    if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서 조금 더 봐야겠어')&&r.paywall.includes('어디서 끊으면 좋을지만 같이 보자')&&r.paywall.includes('로아 언니, 이것도 봐줘'),'live F conversion paywall drift '+r.paywall);
+    if(mode==='T') assert(r.paywall.includes('서아 언니 · 여기서 더 볼 게 있어')&&r.paywall.includes('어디서 끊어야 하는지만 보면 돼')&&r.paywall.includes('서아 언니, 끝까지 봐줘'),'live T conversion paywall drift '+r.paywall);
     assert(r.paywall.includes('990원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
     assert(r.paywall.includes('NOTE2 다음부터 NOTE6까지')&&!/오픈 체험가/.test(r.paywall),'990 won unlock scope or stale sale copy drift '+r.paywall);
   }
@@ -380,7 +380,7 @@ async function inspect(page, mode) {
   );
   if(mode==='F') assert(
     r.hierarchy.firstLook.includes('로아 언니가 먼저 본 너') &&
-    r.hierarchy.concernHandoff.includes('이제 네 고민 쪽으로 바로 봐줄게') &&
+    r.hierarchy.concernHandoff.includes('아까 말한 고민 있지?') &&
     r.hierarchy.shareText.includes('인스타 스토리') &&
     r.hierarchy.shareLead.includes('상담 기록') &&
     r.hierarchy.reAnalyzeSub.includes('새 고민만 고르면 돼') &&
@@ -389,7 +389,7 @@ async function inspect(page, mode) {
   );
   if(mode==='T') assert(
     r.hierarchy.firstLook.includes('서아 언니가 먼저 정리한 너') &&
-    r.hierarchy.concernHandoff.includes('이제 네 고민이랑 연결해서 볼게') &&
+    r.hierarchy.concernHandoff.includes('아까 말한 고민으로 보면 핵심이 더 분명해져') &&
     r.hierarchy.shareText.includes('인스타 스토리') &&
     r.hierarchy.shareLead.includes('상담 기록') &&
     r.hierarchy.reAnalyzeSub.includes('새 고민만 고르면 돼') &&
@@ -413,8 +413,8 @@ async function inspect(page, mode) {
   assert(!r.badges.some(x=>x.includes('·')||x.includes('사람 필터')||x.includes('7일 처방')||x.includes('놓친 포인트')),
     'old NOTE badge wording remains '+JSON.stringify(r.badges));
   assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
-  if (mode==='F') assert(r.resultGreeting.includes('왜 마음에 걸렸는지 보여')&&r.resultGreeting.includes('중요한 것부터 말해줄게')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=90,'F result warm close-sister intro drift '+r.resultGreeting);
-  if (mode==='T') assert(r.resultGreeting.includes('다 봤어')&&r.resultGreeting.includes('중요한 것부터 정리해줄게')&&r.resultGreeting.length<=80,'T result concise direct-care intro drift '+r.resultGreeting);
+  if (mode==='F') assert(r.resultGreeting.includes('언니가 쭉 봤는데')&&r.resultGreeting.includes('이런 쪽이 먼저 보여')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=90,'F result warm close-sister intro drift '+r.resultGreeting);
+  if (mode==='T') assert(r.resultGreeting.includes('쭉 봤어')&&r.resultGreeting.includes('먼저 눈에 들어오는 건 이거야')&&r.resultGreeting.length<=80,'T result concise direct-care intro drift '+r.resultGreeting);
   assert(!r.resultGreeting.includes('ㅎㅎ'),'repeated laughter remains in result '+r.resultGreeting);
   if (mode==='T') assert(!/징징|살인 충동|사람 취급|멍청한 질문/.test(r.resultGreeting+r.catalog),'harsh T voice leaked into live journey '+JSON.stringify({greeting:r.resultGreeting,catalog:r.catalog}));
   return r;
@@ -593,13 +593,13 @@ async function inspect(page, mode) {
     await small.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
     const voice=await small.locator('#welcomeSisterText').innerText();
     if(mode==='F') assert(
-      voice.includes('아, 왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
-      voice.includes('마음에 걸리는 건 언니가 같이 봐줄게.'),
+      voice.includes('아, 왔구나') &&
+      voice.includes('뭐가 마음에 걸리는지도 언니가 같이 봐줄게'),
       '360px F voice drift '+voice
     );
     else assert(
-      voice.includes('왔어. 이름이랑 생일부터 알려줘.') &&
-      voice.includes('중요한 것부터 정리해줄게.'),
+      voice.includes('왔어? 이름이랑 생일부터 알려줘.') &&
+      voice.includes('뭐가 중요한지부터 바로 볼게'),
       '360px T voice drift '+voice
     );
     await small.close();
