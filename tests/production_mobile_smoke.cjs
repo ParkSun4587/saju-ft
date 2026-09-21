@@ -541,7 +541,7 @@ async function inspect(page, mode) {
   assert(
     sourceFreeLaunch
       ? productActionText.includes('무료 이벤트')
-      : productActionText.includes('내 전체 사주판 열기 · 4,900원'),
+      : productActionText.includes('내 전체 사주판 보기 · 4,900원'),
     'live free/paid product toggle mismatch: '+JSON.stringify({sourceFreeLaunch,productActionText})
   );
 
