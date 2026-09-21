@@ -51,6 +51,11 @@ async function checkRestartCta(page, mode) {
   );
   assert(!cta.className.includes('fee500')&&cta.background.includes('linear-gradient')&&cta.color==='rgb(255, 255, 255)',
     'other-concern CTA still uses legacy Kakao-yellow styling '+JSON.stringify(cta));
+  const returnVoice=await page.locator('#welcomeSisterText').innerText();
+  if(mode==='F') assert(returnVoice.includes('사주는 그대로 기억하고 있어')&&returnVoice.includes('이번엔 뭐가 마음에 걸려?'),
+    'F other-concern return lost warm continuity '+returnVoice);
+  else assert(returnVoice.includes('사주정보는 그대로 있어.')&&returnVoice.includes('이번엔 다른 고민 하나만 골라줘.'),
+    'T other-concern return lost concise continuity '+returnVoice);
 }
 
 async function enter(page, mode, concern, situation) {
@@ -94,16 +99,14 @@ async function enter(page, mode, concern, situation) {
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
   if (mode==='F') assert(
-    firstState.sisterText.includes('왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
-    firstState.sisterText.includes('좋은 말만 골라 하진 않을게.') &&
-    firstState.sisterText.includes('네가 놓치고 있는 지점까지 언니가 같이 짚어줄게.') &&
+    firstState.sisterText.includes('아, 왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
+    firstState.sisterText.includes('언니가 하나씩 잘 봐줄게.') &&
     !firstState.sisterText.includes('ㅎㅎ'),
     'F input lost warm pinpoint counselor voice '+firstState.sisterText
   );
   if (mode==='T') assert(
     firstState.sisterText.includes('왔어. 이름이랑 생일부터 알려줘.') &&
-    firstState.sisterText.includes('괜히 겁주거나 돌려 말하지 않을게.') &&
-    firstState.sisterText.includes('원인·지금 할 일·움직일 타이밍까지 필요한 것만 정확히 정리해줄게.') &&
+    firstState.sisterText.includes('지금 고민에서 핵심부터 바로 볼게.') &&
     !firstState.sisterText.includes('ㅎㅎ'),
     'T input lost precise direct-care counselor voice '+firstState.sisterText
   );
@@ -410,8 +413,8 @@ async function inspect(page, mode) {
   assert(!r.badges.some(x=>x.includes('·')||x.includes('사람 필터')||x.includes('7일 처방')||x.includes('놓친 포인트')),
     'old NOTE badge wording remains '+JSON.stringify(r.badges));
   assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
-  if (mode==='F') assert(r.resultGreeting.includes('왜 자꾸 마음이 남는지 보여')&&r.resultGreeting.includes('먼저 핵심부터 같이 볼게')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=105,'F result warm close-sister intro drift '+r.resultGreeting);
-  if (mode==='T') assert(r.resultGreeting.includes('먼저 볼 핵심이 잡혔어')&&r.resultGreeting.includes('중요한 것부터 정리할게')&&r.resultGreeting.length<=105,'T result concise direct-care intro drift '+r.resultGreeting);
+  if (mode==='F') assert(r.resultGreeting.includes('언니가 보니까 왜 자꾸 마음에 남는지 보여')&&r.resultGreeting.includes('같이 볼게')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=90,'F result warm close-sister intro drift '+r.resultGreeting);
+  if (mode==='T') assert(r.resultGreeting.includes('핵심이 잡혔어')&&r.resultGreeting.includes('중요한 것부터 볼게')&&r.resultGreeting.length<=80,'T result concise direct-care intro drift '+r.resultGreeting);
   assert(!r.resultGreeting.includes('ㅎㅎ'),'repeated laughter remains in result '+r.resultGreeting);
   if (mode==='T') assert(!/징징|살인 충동|사람 취급|멍청한 질문/.test(r.resultGreeting+r.catalog),'harsh T voice leaked into live journey '+JSON.stringify({greeting:r.resultGreeting,catalog:r.catalog}));
   return r;
@@ -590,15 +593,13 @@ async function inspect(page, mode) {
     await small.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
     const voice=await small.locator('#welcomeSisterText').innerText();
     if(mode==='F') assert(
-      voice.includes('왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
-      voice.includes('좋은 말만 골라 하진 않을게.') &&
-      voice.includes('같이 짚어줄게'),
+      voice.includes('아, 왔구나. 이름이랑 생일부터 편하게 알려줘.') &&
+      voice.includes('언니가 하나씩 잘 봐줄게.'),
       '360px F voice drift '+voice
     );
     else assert(
       voice.includes('왔어. 이름이랑 생일부터 알려줘.') &&
-      voice.includes('겁주거나 돌려 말하지 않을게.') &&
-      voice.includes('필요한 것만 정확히 정리해줄게'),
+      voice.includes('지금 고민에서 핵심부터 바로 볼게.'),
       '360px T voice drift '+voice
     );
     await small.close();

@@ -4298,7 +4298,7 @@
             if (senderTitle) senderTitle.textContent = "로아 언니 (F)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔구나. 이름이랑 생일부터 편하게 알려줘.<br>왜 자꾸 마음에 걸리는지 언니가 같이 볼게.";
+                "아, 왔구나. 이름이랑 생일부터 편하게 알려줘.<br>언니가 하나씩 잘 봐줄게.";
             }
           } else {
             if (sisterImg) sisterImg.src = "./서아.png";
@@ -4310,7 +4310,7 @@
             if (senderTitle) senderTitle.textContent = "서아 언니 (T)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔어. 이름이랑 생일부터 알려줘.<br>지금 네 고민에서 핵심부터 바로 짚어줄게.";
+                "왔어. 이름이랑 생일부터 알려줘.<br>지금 고민에서 핵심부터 바로 볼게.";
             }
           }
 
@@ -6229,7 +6229,7 @@ function generateConcernNotes(data, mode) {
             const ackText =
               mode === "T"
                 ? `${callVoc}, 확인했어. 바로 볼게.`
-                : `${callVoc}, 알겠어. 바로 같이 볼게.`;
+                : `${callVoc}, 왔구나. 언니가 지금부터 같이 볼게.`;
 
             const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up mt-1">
@@ -6347,8 +6347,8 @@ currentResultData = {
                 removeLiveTyping("liveT1");
                 appendSisterMsg(
                   isT
-                    ? `${callVoc}, 사주 구조 확인 중이야. 지금 고민과 연결되는 부분만 볼게.`
-                    : `${callVoc}, 사주 전체부터 보고 있어. 지금 고민과 연결되는 부분만 같이 볼게.`,
+                    ? `사주 구조 확인 중이야. 고민과 연결되는 부분만 볼게.`
+                    : `잠깐만. 언니가 네 사주랑 지금 고민을 같이 보고 있어.`,
                   false,
                 );
 
@@ -6397,8 +6397,8 @@ currentResultData = {
                     removeLiveTyping("liveT3");
                     appendSisterMsg(
                       isT
-                        ? `정리 끝. 핵심부터 바로 보여줄게.`
-                        : `다 봤어. 핵심부터 같이 볼게.`,
+                        ? `정리됐어. 핵심부터 볼게.`
+                        : `응, 이제 좀 보여. 같이 보자.`,
                       true,
                     );
 
@@ -6680,7 +6680,7 @@ currentResultData = {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
             const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
-            resGreeting.innerHTML = `<b>${callVoc}</b>, 핵심이 잡혔어. 중요한 것부터 정리할게.`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, 핵심이 잡혔어. 중요한 것부터 볼게.`;
           }
         } else {
           if (resultFirstLookLabel) resultFirstLookLabel.textContent = "로아 언니가 먼저 본 너";
@@ -6709,7 +6709,7 @@ currentResultData = {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
             const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
-            resGreeting.innerHTML = `<b>${callVoc}</b>, 왜 자꾸 마음에 남는지 보여. 핵심부터 같이 볼게.`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, 언니가 보니까 왜 자꾸 마음에 남는지 보여. 같이 볼게.`;
           }
         }
         // [추가] '다른 고민도 풀어보기' CTA 버튼 테마 컬러 실시간 동기화
@@ -8698,11 +8698,22 @@ currentResultData = {
         }
 
         const welcomeSisterText = document.getElementById("welcomeSisterText");
+        const savedRawName = String(savedData.name || savedData.userName || "").trim();
+        const savedDisplayName =
+          savedRawName.length >= 3 ? savedRawName.slice(1) : savedRawName;
+        const savedLastChar = savedDisplayName.charCodeAt(savedDisplayName.length - 1);
+        const savedHasBatchim =
+          savedLastChar >= 0xac00 && savedLastChar <= 0xd7a3
+            ? (savedLastChar - 0xac00) % 28 > 0
+            : false;
+        const savedWarmName = savedDisplayName
+          ? `우리 ${escapeHTML(savedDisplayName)}${savedHasBatchim ? "이" : ""}`
+          : "네";
 
         if (welcomeSisterText) {
           welcomeSisterText.innerHTML = isT
-            ? "사주정보는 그대로 있어.<br>이번엔 새 고민 하나만 골라줘. 앞에서 본 구조랑 어디가 이어지는지부터 빠르게 정리할게."
-            : "사주정보는 언니가 그대로 가지고 있어.<br>이번엔 새로 마음에 걸리는 고민 하나만 골라줘. 앞에서 본 흐름이랑 어디서 이어지는지도 같이 짚어볼게.";
+            ? "사주정보는 그대로 있어.<br>이번엔 다른 고민 하나만 골라줘."
+            : `${savedWarmName} 사주는 그대로 기억하고 있어.<br>이번엔 뭐가 마음에 걸려?`;
         }
 
         const nextBtn = document.getElementById("splitNextButton");
