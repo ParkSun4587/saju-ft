@@ -36,6 +36,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(sneakStart>=0&&sneakEnd>sneakStart&&rawResultStart>=0&&rawResultEnd>rawResultStart,'raw-count copy blocks not found');
   assert(!/(화가 강하네|수가 강하네|목이 강하네|금이 강하네|토가 강하네|제일 강해|약한 편)/.test(rawCountCopy),'raw five-element count is still described as actual strength');
   assert(/겉으로|비중/.test(rawCountCopy),'raw five-element copy no longer explains visible count/share');
+  assert(!noteSource.includes('${situation.object}이')&&!noteSource.includes('${situation.object}을'),'fixed Korean particles remain on dynamic situation.object');
+  assert(noteSource.includes('function hasBatchim(value)')&&noteSource.includes('function withJosa(value, withBatchim, withoutBatchim)'),'Korean josa helper missing');
   assert(!noteSource.includes('손실과 과로를 먼저 줄여'),'generic NOTE6 caution copy remains');
   assert(!noteSource.includes('평소보다 20% 이상'),'unsupported 20% threshold remains in NOTE copy');
   assert(!noteSource.includes('서운함 하나를 24시간'),'unsupported 24-hour relationship threshold remains in NOTE copy');
@@ -87,6 +89,16 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     const engine=globalThis.__CONCERN_NOTE_ENGINE_V2__?.situations||{};
     const routes=[];
     const failures=[];
+    let josaChecks=0;
+    const hasBatchim=(value)=>{
+      const chars=Array.from(String(value||'').trim());
+      for(let i=chars.length-1;i>=0;i-=1){
+        const code=chars[i].charCodeAt(0);
+        if(code>=0xAC00&&code<=0xD7A3) return (code-0xAC00)%28!==0;
+      }
+      return false;
+    };
+    const withJosa=(value,withBatchim,withoutBatchim)=>String(value||'')+(hasBatchim(value)?withBatchim:withoutBatchim);
     const claimCore=(claims)=>(claims||[]).map((claim)=>{
       const copy={...claim};
       delete copy.noteSentence;
@@ -120,6 +132,22 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         if(engineRow.label!==label) failures.push(concern+'/'+key+': label parity '+JSON.stringify({ui:label,engine:engineRow.label}));
         const f=renderRoute(concern,key,'F');
         const t=renderRoute(concern,key,'T');
+        const subjectGood=withJosa(engineRow.object,'이','가');
+        const subjectBad=withJosa(engineRow.object,'가','이');
+        const objectGood=withJosa(engineRow.object,'을','를');
+        const objectBad=withJosa(engineRow.object,'를','을');
+        const pressureText=String(f.notes?.[1]?.desc||'');
+        const causeText=String(f.notes?.[2]?.desc||'');
+        if(!pressureText.includes(subjectGood+' 꼬인')||pressureText.includes(subjectBad+' 꼬인')) {
+          failures.push(concern+'/'+key+': 이/가 조사 오류 '+JSON.stringify({object:engineRow.object,expected:subjectGood,bad:subjectBad,text:pressureText}));
+        } else {
+          josaChecks+=1;
+        }
+        if(!causeText.includes(objectGood+' 볼 때')||causeText.includes(objectBad+' 볼 때')) {
+          failures.push(concern+'/'+key+': 을/를 조사 오류 '+JSON.stringify({object:engineRow.object,expected:objectGood,bad:objectBad,text:causeText}));
+        } else {
+          josaChecks+=1;
+        }
         for(const [mode,row] of [['F',f],['T',t]]){
           if(row.situationKey!==key||row.label!==label) failures.push(concern+'/'+key+'/'+mode+': selected situation changed '+JSON.stringify({key:row.situationKey,label:row.label}));
           if(row.notes.length!==6) failures.push(concern+'/'+key+'/'+mode+': note count '+row.notes.length);
@@ -134,9 +162,10 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         if(JSON.stringify(f.claims)!==JSON.stringify(t.claims)) failures.push(concern+'/'+key+': F/T claim core drift');
       }
     }
-    return {routeCount:routes.length,concernKeys:Object.keys(ui),failures};
+    return {routeCount:routes.length,josaChecks,concernKeys:Object.keys(ui),failures};
   });
-  assert(copyQa.routeCount>0,'no current concern/situation routes discovered');
+  assert(copyQa.routeCount===24,'expected all 24 current concern/situation routes, got '+copyQa.routeCount);
+  assert(copyQa.josaChecks===copyQa.routeCount*2,'dynamic 이/가·을/를 checks incomplete '+JSON.stringify(copyQa));
   assert(copyQa.failures.length===0,'copy QA2 route regression: '+copyQa.failures.join(' | '));
   const cautionStart=noteSource.indexOf('const cautionAction = ({');
   const cautionEnd=noteSource.indexOf('})[situation.concern]',cautionStart);
