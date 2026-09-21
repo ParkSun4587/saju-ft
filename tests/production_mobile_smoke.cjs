@@ -21,12 +21,7 @@ async function deployed(page) {
 
 async function clickCatalogProduct(page, productId) {
   const target=page.locator(`#unniProductLadder [data-unni-product="${productId}"]`);
-  if(!(await target.isVisible())){
-    const toggle=page.locator('#unniShowOtherProducts');
-    assert(await toggle.isVisible(),'catalog alternative toggle missing before '+productId);
-    if((await toggle.getAttribute('aria-expanded'))!=='true') await toggle.click();
-    await page.waitForSelector('#unniOtherProducts',{state:'visible',timeout:5000});
-  }
+  assert(await target.isVisible(),'catalog product should be immediately visible '+productId);
   await target.click();
 }
 
@@ -89,6 +84,15 @@ async function enter(page, mode, concern, situation) {
   await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
   const firstState = await page.evaluate(() => ({
     concern:document.getElementById('selectedConcernKey')?.value || '',
+    timeChip:(()=>{
+      const label=document.getElementById('birthTimeDirectLabel');
+      const text=document.getElementById('birthTimeDirectLabelText');
+      return label&&text?{
+        bg:getComputedStyle(label).backgroundColor,
+        border:getComputedStyle(label).borderColor,
+        text:getComputedStyle(text).color,
+      }:null;
+    })(),
     selected:document.querySelectorAll('#concernGrid .concern-chip.selected').length,
     details:getComputedStyle(document.getElementById('concernSituationBox')).display,
     summary:getComputedStyle(document.getElementById('concernSituationSummary')).display,
@@ -102,6 +106,9 @@ async function enter(page, mode, concern, situation) {
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
+  assert(firstState.timeChip,'direct-time chip missing');
+  if(mode==='F') assert(firstState.timeChip.text.includes('184, 62, 92'),'F direct-time chip palette drift '+JSON.stringify(firstState.timeChip));
+  if(mode==='T') assert(firstState.timeChip.text.includes('63, 120, 146'),'T direct-time chip palette drift '+JSON.stringify(firstState.timeChip));
   if (mode==='F') assert(
     firstState.sisterText.includes('응, 좋아. 편하게 적어줘') &&
     firstState.sisterText.includes('언니가 사주랑 고민 같이 볼게') &&
@@ -290,7 +297,6 @@ async function inspect(page, mode) {
       catalog:document.getElementById('unniProductLadder')?.innerText||'',
       recommendedReason:document.querySelector('#unniProductLadder [data-recommendation-reason="1"]')?.innerText||'',
       otherToggle:!!document.getElementById('unniShowOtherProducts'),
-      otherExpanded:document.getElementById('unniShowOtherProducts')?.getAttribute('aria-expanded')||'',
       otherVisible:document.getElementById('unniOtherProducts') ? getComputedStyle(document.getElementById('unniOtherProducts')).display!=='none' : false,
       note2Preview:document.getElementById('note2PreviewCard')?.innerText||'',
       paywall:document.getElementById('lockedOverlay')?.innerText||'',
@@ -303,11 +309,12 @@ async function inspect(page, mode) {
         const cs=getComputedStyle(el);
         const before=getComputedStyle(el,'::before');
         return {
-          radius:parseFloat(cs.borderRadius||'0'),
-          border:parseFloat(cs.borderTopWidth||'0'),
+          radius:cs.borderRadius||'',
+          borderLeft:parseFloat(cs.borderLeftWidth||'0'),
           bg:cs.backgroundImage||cs.backgroundColor||'',
           font:parseFloat(getComputedStyle(el.querySelector('p')).fontSize||'0'),
           before:before.content||'',
+          text:el.innerText.trim(),
         };
       })(),
       funExtrasDisplay:document.getElementById('resultFunExtras') ? getComputedStyle(document.getElementById('resultFunExtras')).display : '',
@@ -375,19 +382,27 @@ async function inspect(page, mode) {
   if (mode==='T') assert(r.oheng.includes('중요한 건 이 차이가 지금 고민에서 어떤 반복을 만드는지야')&&r.oheng.includes('바로 아래 비밀 메모')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng secret-note teaser '+r.oheng);
   assert(!/[나무불흙쇠물]\)/.test(r.oheng+r.dayMasterTag),'old parenthetical five-element wording remains '+JSON.stringify({oheng:r.oheng,day:r.dayMasterTag}));
   if(r.sourceFreeLaunch){
-    assert(r.count===4&&r.visible===1&&r.otherToggle&&r.otherExpanded==='false'&&!r.otherVisible,'free-launch should show one recommended product and keep three discoverable alternatives folded '+JSON.stringify(r));
+    assert(r.count===4&&r.visible===4&&!r.otherToggle&&r.otherVisible,'free-launch should show all four premium products immediately '+JSON.stringify(r));
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
     assert(/NOTE 0?2/.test(r.note2Preview)&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
     if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서 하나만 더 보자')&&r.paywall.includes('같은 서운함이 반복되는지는 보여')&&r.paywall.includes('언니, 그것도 봐줘'),'live F conversion paywall drift '+r.paywall);
-    if(mode==='T') assert(r.paywall.includes('서아 언니 · 마지막 기준만 보면 돼')&&r.paywall.includes('부하 제거')&&r.paywall.includes('응, 끝까지 봐줘'),'live T conversion paywall drift '+r.paywall);
+    if(mode==='T') assert(!r.paywall.includes('서아 언니 · 마지막 기준만 보면 돼')&&r.paywall.includes('부하 제거')&&r.paywall.includes('응, 끝까지 봐줘'),'T 990 paywall should remove the extra sister bubble '+r.paywall);
     assert(r.paywall.includes('990원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
-    assert(r.paywallTurn&&r.paywallTurn.radius>=14&&r.paywallTurn.border>=1&&r.paywallTurn.font>=12.5&&r.paywallTurn.before.includes('여기서부터가 중요해'),'NOTE2 conversion turn is not visually emphasized '+JSON.stringify(r.paywallTurn));
+    assert(
+      r.paywallTurn &&
+      r.paywallTurn.borderLeft>=3 &&
+      r.paywallTurn.font>=12.5 &&
+      (!r.paywallTurn.before || r.paywallTurn.before==='none' || r.paywallTurn.before==='normal') &&
+      /이제 (중요한 건|핵심은) 하나야/.test(r.paywallTurn.text) &&
+      /어디서 끊고, 뭘 바꿀지/.test(r.paywallTurn.text),
+      'NOTE2 conversion turn should be one compact impact line '+JSON.stringify(r.paywallTurn)
+    );
     assert(r.paywall.includes('NOTE2 다음부터 NOTE6까지')&&!/오픈 체험가/.test(r.paywall),'990 won unlock scope or stale sale copy drift '+r.paywall);
     assert(r.funExtrasDisplay==='none'&&r.shareActionsDisplay==='none','locked 990 flow should hide MBTI/share diversions '+JSON.stringify({fun:r.funExtrasDisplay,share:r.shareActionsDisplay}));
   }
   if(r.catalog){
-    assert(r.recommendedReason.length>=10&&r.catalog.includes('다른 방향 3개도 보기'),'compact counselor-led recommendation reason missing');
+    assert(r.recommendedReason.length>=10&&r.visible===4&&!r.catalog.includes('다른 방향 3개도 보기'),'all premium products should stay visible under one recommendation '+JSON.stringify({visible:r.visible,catalog:r.catalog}));
     assert(r.catalog.includes('상대 사주까지 겹쳐야 나오는')||r.catalog.includes('나 전체 구조 · 영역 연결 · 5년 흐름'),'premium catalog does not explain product value boundary');
     assert(!r.catalog.includes('언니라면 이걸 먼저 이어서 볼 것 같아')&&!r.catalog.includes('다음으로 볼 가치는 이게 제일 커'),'premium catalog headline is still over-explaining');
     assert(!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
@@ -470,12 +485,10 @@ async function inspect(page, mode) {
   await enter(page,'F','love','relationship');
   const f=await inspect(page,'F');
   if(f.sourceFreeLaunch){
-    await page.locator('#unniShowOtherProducts').click();
-    assert(await page.locator('#unniShowOtherProducts').getAttribute('aria-expanded')==='true','live alternatives toggle did not expand');
-    assert(await page.locator('#unniOtherProducts').isVisible(),'live folded alternatives are not discoverable');
+    assert(await page.locator('#unniShowOtherProducts').count()===0,'folded alternatives toggle should be removed');
+    assert(await page.locator('#unniOtherProducts').isVisible(),'premium alternatives should be immediately visible');
     const visibleAlternatives=await page.locator('#unniOtherProducts [data-unni-product]').evaluateAll(els=>els.filter(el=>el.offsetParent!==null).length);
-    assert(visibleAlternatives===3,'live alternatives should reveal exactly three products, got '+visibleAlternatives);
-    await page.locator('#unniShowOtherProducts').click();
+    assert(visibleAlternatives===3,'all three alternative products should be visible, got '+visibleAlternatives);
   }
 
   if(!f.sourceFreeLaunch){
