@@ -236,7 +236,7 @@ async function resultLayoutSnapshot(page) {
 function assertResultLayout(layout, label) {
   const transparent=(v)=>v==='rgba(0, 0, 0, 0)'||v==='transparent';
   assert(!layout.overflow,label+' horizontal overflow '+JSON.stringify(layout));
-  assert(layout.axisCount===6 && layout.leftSpread<=1.5 && layout.rightSpread<=1.5 && layout.minSide>=14.5,
+  assert(layout.axisCount>=4 && layout.axisCount<=6 && layout.leftSpread<=1.5 && layout.rightSpread<=1.5 && layout.minSide>=14.5,
     label+' result reading axis/gutter drift '+JSON.stringify(layout));
   for(const [id,r] of Object.entries(layout.axis)) {
     assert(r && r.left>=-1 && r.right<=layout.viewport.width+1,label+' section escaped viewport '+id+' '+JSON.stringify(r));
@@ -251,8 +251,8 @@ function assertResultLayout(layout, label) {
     label+' four pillars look like independent cards '+JSON.stringify(layout.overview.pillarItems));
   assert(layout.overview.ohengItems.length===5 && layout.overview.ohengItems.every(x=>x.radius==='0px'&&transparent(x.bg)&&x.top==='0px'&&x.right==='0px'&&x.bottom==='0px') && layout.overview.graphFirst,
     label+' five elements lost single-graph hierarchy '+JSON.stringify(layout.overview));
-  assert(layout.memoMetaDisplay==='none' && layout.memoMetaText.includes('1:1 맞춤 상담 기록'),
-    label+' duplicate memo header metadata is visible '+JSON.stringify({display:layout.memoMetaDisplay,text:layout.memoMetaText}));
+  assert(layout.memoMetaDisplay!=='none' && layout.memoMetaText.includes('1:1 맞춤 상담 기록'),
+    label+' memo-book header metadata missing '+JSON.stringify({display:layout.memoMetaDisplay,text:layout.memoMetaText}));
   assert(layout.bridgeDisplay==='none',
     label+' concern handoff still interrupts the document '+JSON.stringify({bridge:layout.bridgeDisplay,avatar:layout.bridgeAvatarDisplay,name:layout.bridgeNameDisplay}));
   assert(layout.shareLeadDisplay==='none' && layout.funEyebrowDisplay==='none' && layout.closeoutSubDisplay==='none',
@@ -287,6 +287,8 @@ async function inspect(page, mode) {
       paywallNextTeaser:document.getElementById('paywallNextTeaser')?.innerText||'',
       paywallFeatureCount:document.querySelectorAll('#payBoxFeatures > div').length,
       paywallVisible:document.getElementById('lockedOverlay') ? getComputedStyle(document.getElementById('lockedOverlay')).display!=='none' : false,
+      funExtrasDisplay:document.getElementById('resultFunExtras') ? getComputedStyle(document.getElementById('resultFunExtras')).display : '',
+      shareActionsDisplay:document.getElementById('resultShareActions') ? getComputedStyle(document.getElementById('resultShareActions')).display : '',
       switchCount:document.querySelectorAll('#sisterSwitchCard').length,
       badges:notes.map(n=>n.badge||''),
       resultGreeting:document.getElementById('resultSisterGreeting')?.innerText||'',
@@ -354,10 +356,11 @@ async function inspect(page, mode) {
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
     assert(/NOTE 0?2/.test(r.note2Preview)&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
-    if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서 조금 더 봐야겠어')&&r.paywall.includes('어디서 끊으면 좋을지만 같이 보자')&&r.paywall.includes('로아 언니, 이것도 봐줘'),'live F conversion paywall drift '+r.paywall);
-    if(mode==='T') assert(r.paywall.includes('서아 언니 · 여기서 더 볼 게 있어')&&r.paywall.includes('어디서 끊어야 하는지만 보면 돼')&&r.paywall.includes('서아 언니, 끝까지 봐줘'),'live T conversion paywall drift '+r.paywall);
+    if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서부터가 진짜 중요해')&&r.paywall.includes('같은 서운함이 반복되는지는 보여')&&r.paywall.includes('로아 언니, 이어서 봐줘'),'live F conversion paywall drift '+r.paywall);
+    if(mode==='T') assert(r.paywall.includes('서아 언니 · 이제 결론만 남았어')&&r.paywall.includes('부하 제거')&&r.paywall.includes('서아 언니, 끝까지 봐줘'),'live T conversion paywall drift '+r.paywall);
     assert(r.paywall.includes('990원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
     assert(r.paywall.includes('NOTE2 다음부터 NOTE6까지')&&!/오픈 체험가/.test(r.paywall),'990 won unlock scope or stale sale copy drift '+r.paywall);
+    assert(r.funExtrasDisplay==='none'&&r.shareActionsDisplay==='none','locked 990 flow should hide MBTI/share diversions '+JSON.stringify({fun:r.funExtrasDisplay,share:r.shareActionsDisplay}));
   }
   if(r.catalog){
     assert(r.recommendedReason.length>=10&&r.catalog.includes('다른 방향 3개도 보기'),'compact counselor-led recommendation reason missing');
@@ -405,7 +408,7 @@ async function inspect(page, mode) {
     r.memoLayout.note.left>=r.memoLayout.paper.left-1 &&
     r.memoLayout.note.right<=r.memoLayout.paper.right+1 &&
     r.memoLayout.noteRadius==='0px' &&
-    r.memoLayout.metaRightDisplay==='none' &&
+    r.memoLayout.metaRightDisplay!=='none' &&
     r.memoLayout.metaRightText.includes('1:1 맞춤 상담 기록') &&
     !r.memoLayout.overflow,
     'consultation memo containment drift '+JSON.stringify(r.memoLayout)
@@ -437,6 +440,13 @@ async function inspect(page, mode) {
     const visibleAlternatives=await page.locator('#unniOtherProducts [data-unni-product]').evaluateAll(els=>els.filter(el=>el.offsetParent!==null).length);
     assert(visibleAlternatives===3,'live alternatives should reveal exactly three products, got '+visibleAlternatives);
     await page.locator('#unniShowOtherProducts').click();
+  }
+
+  if(!f.sourceFreeLaunch){
+    await page.evaluate(()=>unlockFullReport(null,true));
+    await page.waitForSelector('#resultShareActions',{state:'visible',timeout:5000});
+    assert(await page.locator('#resultFunExtras').isVisible(),'fun extras should return after 990 unlock');
+    assert(await page.locator('#resultShareActions').isVisible(),'share action should return after 990 unlock');
   }
 
   assert((await page.locator('#mainShareBtnText').innerText()).includes('인스타 스토리'),'main CTA should keep the story action explicit after counseling');
