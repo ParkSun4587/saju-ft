@@ -396,15 +396,15 @@ async function inspect(page, mode) {
   assert(/시작|보통/.test(r.n2)&&/갈림길|여기서|그리고/.test(r.n2),mode+' NOTE2 causal chain missing '+r.n2);
   assert(r.note6Timing?.concernSituation,mode+' NOTE6 situation metadata missing');
   assert(norm(r.note6Timing?.firstBody)!==norm(r.note6Timing?.secondBody),mode+' NOTE6 timing roles duplicated');
-  if (mode==='F') assert(r.oheng.includes('이 제일 강해')&&r.oheng.includes('같은 장면이 반복되는 부분이 보여')&&r.oheng.includes('바로 아래 비밀 메모')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng secret-note teaser '+r.oheng);
-  if (mode==='T') assert(r.oheng.includes('중요한 건 이 차이가 지금 고민에서 어떤 반복을 만드는지야')&&r.oheng.includes('바로 아래 비밀 메모')&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng secret-note teaser '+r.oheng);
+  if (mode==='F') assert(r.oheng.includes('겉으로 가장 많이 보여')&&r.oheng.includes('눈에 보이는 오행 분포')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('아래 비밀 메모')&&!/제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng raw-count wording '+r.oheng);
+  if (mode==='T') assert(r.oheng.includes('비중이 가장 커')&&r.oheng.includes('오행 개수 기준 분포')&&r.oheng.includes('실제 세력 강약')&&r.oheng.includes('아래 비밀 메모')&&!/제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng raw-count wording '+r.oheng);
   assert(!/[나무불흙쇠물]\)/.test(r.oheng+r.dayMasterTag),'old parenthetical five-element wording remains '+JSON.stringify({oheng:r.oheng,day:r.dayMasterTag}));
   if(r.sourceFreeLaunch){
     assert(r.count===4&&r.visible===4&&!r.otherToggle&&r.otherVisible,'free-launch should show all four premium products immediately '+JSON.stringify(r));
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
     assert(/NOTE 0?2/.test(r.note2Preview)&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
-    if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서 하나만 더 보자')&&r.paywall.includes('같은 서운함이 반복되는지는 보여')&&r.paywall.includes('언니, 그것도 봐줘'),'live F conversion paywall drift '+r.paywall);
+    if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서 하나만 더 보자')&&r.paywall.includes('지금 연애에서 기준을 맞출 때 반복되는 흐름이 조금 보여')&&r.paywall.includes('언니, 그것도 봐줘'),'live F conversion paywall drift '+r.paywall);
     if(mode==='T') assert(r.paywall.includes('서아 언니 · 마지막 기준만 보면 돼')&&r.paywall.includes('부하 제거')&&r.paywall.includes('응, 끝까지 봐줘'),'T 990 paywall sister header should be restored '+r.paywall);
     assert(r.paywall.includes('990원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
     if(mode==='F') assert(r.paywallPrice.text==='990원'&&r.paywallPrice.badge.includes('rounded-full')&&r.paywallPrice.badge.includes('rose-50')&&r.paywallPrice.amount.includes('rose-600'),'F 990 price badge drift '+JSON.stringify(r.paywallPrice));
@@ -636,7 +636,7 @@ async function inspect(page, mode) {
   assert(await page.locator('#partnerTimeInput').isHidden(),'compatibility direct-time field should be hidden by default');
   await page.check('#partnerTimeDirectToggle');
   assert(await page.locator('#partnerTimeInput').isVisible(),'compatibility direct-time field did not open');
-  assert((await page.locator('#partnerTimeInput').getAttribute('placeholder'))==='예: 1330','live compatibility direct-time placeholder missing');
+  assert((await page.locator('#partnerTimeInput').getAttribute('placeholder'))==='예: 오후 1:30 → 1330','live compatibility direct-time placeholder missing');
   await page.uncheck('#partnerTimeDirectToggle');
   assert(!compatibilitySetup.includes('태어난 시간을 몰라요')&&!compatibilitySetup.includes('정확한 분을 몰라도')&&!compatibilitySetup.includes('오전/오후')&&!compatibilitySetup.includes('몇 분'),'old compatibility time helper UI remains');
   assert(!(await page.locator('#partnerLeapWrap').isVisible()),'live leap-month UI must stay hidden for solar');
