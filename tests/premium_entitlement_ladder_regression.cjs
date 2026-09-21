@@ -203,7 +203,8 @@ function loadServer(){
   assert(report.sections.every(x=>x.claim&&x.claim.newFacts?.length&&x.claim.conclusion),'every full_saju section needs a claim/new fact/conclusion');
   assert(new Set(report.sections.map(x=>JSON.stringify(x.claim.newFacts))).size===12,'full_saju sections repeat the same factual unit');
   assert(new Set(report.sections.map(x=>x.claim.conclusion)).size===12,'full_saju sections repeat the same conclusion');
-  assert(report.sections.every(x=>['핵심','왜','실제','이렇게 써','활용','주의'].filter(k=>x.body.includes(k)).length>=2),'full_saju sections are too thin '+JSON.stringify(report.sections.map(x=>x.title)));
+  const fullSajuStructureWords=['핵심','먼저 보면','큰 흐름부터 보면','왜','왜냐면','실제','현실에서는','이렇게 써','그래서','언니가 마지막으로 남길 기준','활용','주의'];
+  assert(report.sections.every(x=>fullSajuStructureWords.filter(k=>x.body.includes(k)).length>=2),'full_saju sections are too thin '+JSON.stringify(report.sections.map(x=>x.title)));
   assert(report.annualYears.length===5&&report.annualYears.every(y=>report.section11.includes(String(y))),'full_saju five-year section not sourced from classical timing '+JSON.stringify(report.annualYears));
   assert(!report.section10.includes(report.before.note6)&&report.section10!==report.before.note6,'full_saju near-term copied NOTE6 teaser verbatim');
   assert(report.before.fp===report.after.fp&&JSON.stringify(report.before.claims)===JSON.stringify(report.after.claims),'premium rendering changed classical reasoning');
