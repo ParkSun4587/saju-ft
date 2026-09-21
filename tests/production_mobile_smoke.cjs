@@ -179,8 +179,12 @@ async function resultLayoutSnapshot(page) {
       return cs?{radius:cs.borderRadius,bg:cs.backgroundColor,top:cs.borderTopWidth,right:cs.borderRightWidth,bottom:cs.borderBottomWidth}:null;
     };
     const metaRight=document.querySelector('#consultationNotesHeader>div:first-child>span:last-child');
+    const bridge=document.getElementById('resultConcernHandoff');
     const bridgeAvatar=document.getElementById('resultConcernHandoffAvatar');
     const bridgeName=document.getElementById('resultConcernHandoffName');
+    const shareLead=document.getElementById('resultShareLead');
+    const funEyebrow=document.getElementById('resultFunExtrasEyebrow');
+    const closeoutSub=document.getElementById('consultationCloseoutSub');
     const share=document.getElementById('mainShareBtn')?.getBoundingClientRect();
     const shareWrap=document.getElementById('resultShareActions')?.getBoundingClientRect();
     const funCards=[document.getElementById('chemBestCard'),document.getElementById('chemWorstCard')].filter(Boolean).map(el=>{
@@ -201,6 +205,7 @@ async function resultLayoutSnapshot(page) {
       axisCount:active.length,
       leftSpread:lefts.length?Math.max(...lefts)-Math.min(...lefts):999,
       rightSpread:rights.length?Math.max(...rights)-Math.min(...rights):999,
+      minSide:active.length?Math.min(...active.map(r=>Math.min(r.left,document.documentElement.clientWidth-r.right))):0,
       titleFont:parseFloat(titleStyle?.fontSize||'0'),
       titleLines:titleRect?Math.ceil((titleRect.height+0.5)/lineHeight):99,
       overview:{
@@ -213,8 +218,12 @@ async function resultLayoutSnapshot(page) {
       },
       memoMetaDisplay:metaRight?getComputedStyle(metaRight).display:'',
       memoMetaText:metaRight?.innerText||'',
+      bridgeDisplay:bridge?getComputedStyle(bridge).display:'',
       bridgeAvatarDisplay:bridgeAvatar?getComputedStyle(bridgeAvatar).display:'',
       bridgeNameDisplay:bridgeName?getComputedStyle(bridgeName).display:'',
+      shareLeadDisplay:shareLead?getComputedStyle(shareLead).display:'',
+      funEyebrowDisplay:funEyebrow?getComputedStyle(funEyebrow).display:'',
+      closeoutSubDisplay:closeoutSub?getComputedStyle(closeoutSub).display:'',
       funCards,
       shareWidthDelta:share&&shareWrap?Math.abs(share.width-shareWrap.width):999,
     };
@@ -224,12 +233,12 @@ async function resultLayoutSnapshot(page) {
 function assertResultLayout(layout, label) {
   const transparent=(v)=>v==='rgba(0, 0, 0, 0)'||v==='transparent';
   assert(!layout.overflow,label+' horizontal overflow '+JSON.stringify(layout));
-  assert(layout.axisCount===6 && layout.leftSpread<=1.5 && layout.rightSpread<=1.5,
+  assert(layout.axisCount===6 && layout.leftSpread<=1.5 && layout.rightSpread<=1.5 && layout.minSide>=13.5,
     label+' result reading axis/gutter drift '+JSON.stringify(layout));
   for(const [id,r] of Object.entries(layout.axis)) {
     assert(r && r.left>=-1 && r.right<=layout.viewport.width+1,label+' section escaped viewport '+id+' '+JSON.stringify(r));
   }
-  assert(layout.titleFont<=21 && layout.titleLines<=3,label+' result title dominates mobile fold '+JSON.stringify({font:layout.titleFont,lines:layout.titleLines}));
+  assert(layout.titleFont<=18 && layout.titleLines<=3,label+' result title dominates mobile fold '+JSON.stringify({font:layout.titleFont,lines:layout.titleLines}));
   for(const key of ['core','pillars','oheng']) {
     const box=layout.overview[key];
     assert(box && box.radius==='0px' && transparent(box.bg) && box.top==='0px' && box.right==='0px' && box.bottom==='0px',
@@ -241,8 +250,10 @@ function assertResultLayout(layout, label) {
     label+' five elements lost single-graph hierarchy '+JSON.stringify(layout.overview));
   assert(layout.memoMetaDisplay==='none' && layout.memoMetaText.includes('1:1 맞춤 상담 기록'),
     label+' duplicate memo header metadata is visible '+JSON.stringify({display:layout.memoMetaDisplay,text:layout.memoMetaText}));
-  assert(layout.bridgeAvatarDisplay==='none' && layout.bridgeNameDisplay==='none',
-    label+' concern handoff still reads as a separate chat card '+JSON.stringify({avatar:layout.bridgeAvatarDisplay,name:layout.bridgeNameDisplay}));
+  assert(layout.bridgeDisplay==='none' && layout.bridgeAvatarDisplay==='none' && layout.bridgeNameDisplay==='none',
+    label+' concern handoff still interrupts the document '+JSON.stringify({bridge:layout.bridgeDisplay,avatar:layout.bridgeAvatarDisplay,name:layout.bridgeNameDisplay}));
+  assert(layout.shareLeadDisplay==='none' && layout.funEyebrowDisplay==='none' && layout.closeoutSubDisplay==='none',
+    label+' post-consultation helper copy is still visually competing '+JSON.stringify({shareLead:layout.shareLeadDisplay,funEyebrow:layout.funEyebrowDisplay,closeoutSub:layout.closeoutSubDisplay}));
   assert(layout.funCards.length===2 && layout.funCards.every(x=>x.radius==='0px'&&transparent(x.bg)),
     label+' secondary fun extras returned to flashy cards '+JSON.stringify(layout.funCards));
   assert(layout.shareWidthDelta<=1.5,label+' share CTA width left the reading axis '+layout.shareWidthDelta);
@@ -264,6 +275,7 @@ async function inspect(page, mode) {
       count:products.length,
       visible:products.filter(x=>x.offsetParent!==null).length,
       catalog:document.getElementById('unniProductLadder')?.innerText||'',
+      recommendedReason:document.querySelector('#unniProductLadder [data-recommendation-reason="1"]')?.innerText||'',
       otherToggle:!!document.getElementById('unniShowOtherProducts'),
       otherExpanded:document.getElementById('unniShowOtherProducts')?.getAttribute('aria-expanded')||'',
       otherVisible:document.getElementById('unniOtherProducts') ? getComputedStyle(document.getElementById('unniOtherProducts')).display!=='none' : false,
@@ -345,8 +357,9 @@ async function inspect(page, mode) {
     assert(r.paywall.includes('NOTE2 다음부터 NOTE6까지')&&!/오픈 체험가/.test(r.paywall),'990 won unlock scope or stale sale copy drift '+r.paywall);
   }
   if(r.catalog){
-    assert(r.catalog.includes('왜 이걸 먼저 보냐면')&&r.catalog.includes('다른 방향 3개도 보기'),'counselor-led next-step disclosure missing');
+    assert(r.recommendedReason.length>=10&&r.catalog.includes('다른 방향 3개도 보기'),'compact counselor-led recommendation reason missing');
     assert(r.catalog.includes('상대 사주까지 겹쳐야 나오는')||r.catalog.includes('나 전체 구조 · 영역 연결 · 5년 흐름'),'premium catalog does not explain product value boundary');
+    assert(!r.catalog.includes('언니라면 이걸 먼저 이어서 볼 것 같아')&&!r.catalog.includes('다음으로 볼 가치는 이게 제일 커'),'premium catalog headline is still over-explaining');
     assert(!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
   }
   assert(r.switchCount===0,'bottom F/T CTA remains');
@@ -483,8 +496,14 @@ async function inspect(page, mode) {
     cards:document.querySelectorAll('#notesListContainer > div').length,
     preview:!!document.getElementById('note2PreviewCard'),
     catalogAfterNotes:(document.getElementById('notesListContainer').compareDocumentPosition(document.getElementById('unniProductLadder')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
+    reasonCount:document.querySelectorAll('#unniProductLadder [data-recommendation-reason="1"]').length,
+    reasonText:document.querySelector('#unniProductLadder [data-recommendation-reason="1"]')?.innerText||'',
+    catalogText:document.getElementById('unniProductLadder')?.innerText||'',
   }));
   assert(postUnlock.cards===6&&!postUnlock.preview&&postUnlock.catalogAfterNotes,'990 unlock must reveal NOTE2-6 before post-report upsells '+JSON.stringify(postUnlock));
+  assert(postUnlock.reasonCount===1&&postUnlock.reasonText.length>=10,'premium recommendation should keep one compact reason '+JSON.stringify(postUnlock));
+  assert(!postUnlock.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아')&&!postUnlock.catalogText.includes('다음으로 볼 가치는 이게 제일 커')&&!postUnlock.catalogText.includes('방금 같이 본 얘기는 반복하지 않고')&&!postUnlock.catalogText.includes('방금 본 내용과 겹치는 건 빼고'),
+    'premium recommendation still renders marketing-style preamble '+postUnlock.catalogText);
 
   await clickCatalogProduct(page,'compatibility');
   await page.waitForSelector('#unniProductModal',{state:'visible'});
