@@ -1010,21 +1010,48 @@
   .note-tone-t .note-check-mark{color:#3f87a7}
   .note-check-label{font-weight:820;color:#354052}
   .note-preview-continuation{
-    margin-top:12px;
-    padding:9px 0 0!important;
-    border:0!important;
-    border-top:1px dashed #e3dcd6!important;
-    border-radius:0!important;
-    background:transparent!important;
-    text-align:left
+    margin:14px -4px 0;
+    padding:12px 13px 13px!important;
+    border:1px solid #f1c2ce!important;
+    border-radius:16px!important;
+    background:linear-gradient(135deg,#fff0f4 0%,#fff8f4 100%)!important;
+    box-shadow:0 8px 22px rgba(201,54,91,.09)!important;
+    text-align:left;
+    position:relative
+  }
+  .note-preview-continuation::before{
+    content:"여기서부터가 중요해";
+    display:inline-flex;
+    align-items:center;
+    margin-bottom:6px;
+    padding:3px 7px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid #f2cbd5;
+    color:#c9365b;
+    font-size:9.5px;
+    line-height:1.2;
+    font-weight:850;
+    letter-spacing:-.02em
   }
   .note-preview-continuation p{
     margin:0;
-    font-size:11.25px;
-    line-height:1.58;
-    font-weight:700;
-    color:#7b6b65
+    font-size:13px;
+    line-height:1.55;
+    font-weight:820;
+    letter-spacing:-.018em;
+    color:#7f2940
   }
+  .note-tone-t .note-preview-continuation{
+    border-color:#c9e1ec!important;
+    background:linear-gradient(135deg,#edf8fc 0%,#f8fbfd 100%)!important;
+    box-shadow:0 8px 22px rgba(47,143,184,.08)!important
+  }
+  .note-tone-t .note-preview-continuation::before{
+    border-color:#cfe5ee;
+    color:#2f7f9f
+  }
+  .note-tone-t .note-preview-continuation p{color:#28576b}
 
   /* paywall continuation */
   #lockedOverlay{padding-top:0!important}
@@ -2282,20 +2309,42 @@
                 </div>
               </div>
 
-              <!-- 태어난 시간 (모바일 폰트 크기 최적화) -->
+              <!-- 태어난 시간: 12시진을 먼저 고르고, 정확한 시간은 아래에서 직접 입력 -->
               <div>
                 <label
                   class="block text-[9.5px] font-bold text-slate-500 mb-0.5"
                   >태어난 시간</label
                 >
-                <div class="flex gap-1.5 items-center">
+                <select
+                  id="birthTimeBranch"
+                  onchange="selectBirthTimeBranch(this)"
+                  class="w-full h-[34px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[11px] text-slate-700 focus:bg-white focus:outline-none"
+                >
+                  <option value="">자시·축시로 골라줘</option>
+                  <option value="子">자시 · 밤 11시~새벽 1시</option>
+                  <option value="丑">축시 · 새벽 1시~3시</option>
+                  <option value="寅">인시 · 새벽 3시~5시</option>
+                  <option value="卯">묘시 · 새벽 5시~7시</option>
+                  <option value="辰">진시 · 오전 7시~9시</option>
+                  <option value="巳">사시 · 오전 9시~11시</option>
+                  <option value="午">오시 · 오전 11시~오후 1시</option>
+                  <option value="未">미시 · 오후 1시~3시</option>
+                  <option value="申">신시 · 오후 3시~5시</option>
+                  <option value="酉">유시 · 오후 5시~7시</option>
+                  <option value="戌">술시 · 저녁 7시~9시</option>
+                  <option value="亥">해시 · 밤 9시~11시</option>
+                </select>
+                <div class="mt-1 text-[9px] font-semibold text-slate-400">
+                  정확한 분을 몰라도 시간대만 고르면 돼
+                </div>
+                <div class="mt-1.5 flex gap-1.5 items-center">
                   <input
                     type="tel"
                     id="birthTimeInput"
                     maxlength="5"
                     inputmode="numeric"
-                    placeholder="4자리 (예: 1330)"
-                    oninput="formatBirthTime(this)"
+                    placeholder="직접 입력 (예: 1330)"
+                    oninput="formatBirthTime(this); selectDirectBirthTime(this)"
                     class="flex-1 min-w-0 h-[32px] px-2 rounded-xl border border-slate-200 bg-slate-50 font-bold placeholder-slate-400 text-[11px] text-center font-mono focus:bg-white focus:outline-none"
                   />
                   <label
@@ -2453,7 +2502,7 @@
 
         <!-- 언니가 먼저 보여주는 기본 사주 흐름 -->
         <section id="resultConsultationFlow">
-          <div id="resultFirstLookLabel">로아 언니가 먼저 본 너</div>
+          <div id="resultFirstLookLabel">언니가 먼저 본 너</div>
         <div
           id="resultCoreCard"
           class="card-box p-4 sm:p-6 rounded-3xl space-y-2 relative overflow-hidden text-center"
@@ -2585,7 +2634,7 @@
                     id="vipSectionMainTitle"
                     class="text-sm sm:text-base font-black text-slate-900 tracking-tight"
                   >
-                    로아 언니가 너한테만 남기는 비밀 메모
+                    언니가 너한테만 남기는 비밀 메모
                   </h3>
                 </div>
                 <p id="vipSectionSubTitle" class="text-[11px] text-slate-500 font-medium pl-6">
@@ -3814,6 +3863,40 @@
         document.body.append(box);
       }
 
+      function preparePaymentFailureRetry(data, mode = currentVoiceMode()) {
+        removeStore("unni_pending_approval", true);
+        if (data) {
+          currentResultData = data;
+          saveCurrentResult();
+          try {
+            removeStore("unni_pending_for_" + getUserUniqueKey(data));
+          } catch {}
+        }
+        resetPaymentWidgetUI();
+        changeViewState("result");
+
+        document.getElementById("paymentFailRefreshBox")?.remove();
+        const box = document.createElement("div");
+        box.id = "paymentFailRefreshBox";
+        box.style.cssText =
+          "position:fixed;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom));width:calc(100% - 28px);max-width:402px;z-index:99998;background:#fffdfa;border:1px solid #f2c7d1;border-radius:18px;padding:15px;box-shadow:0 16px 40px rgba(40,25,31,.16);text-align:left;";
+        const message = document.createElement("p");
+        message.style.cssText =
+          "margin:0;font-size:12px;line-height:1.65;font-weight:750;color:#3d4655;word-break:keep-all;";
+        message.textContent = voiceText({
+          F: "결제가 완료되지 않았어. 결과는 그대로 저장해뒀어. 새로고침을 한 번만 눌러주면 다시 결제할 수 있어. 나갔다 돌아온 경우에도 결제 전에 새로고침 한 번 해줘.",
+          T: "결제가 완료되지 않았어. 결과는 저장돼 있어. 새로고침 한 번 후 다시 결제하면 돼. 나갔다 돌아온 경우에도 먼저 새로고침해줘.",
+        }, mode);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = "새로고침하고 다시 결제";
+        button.style.cssText = recoveryActionButtonStyle(mode) + ";width:100%;margin-top:10px;";
+        button.onclick = () => location.reload();
+        box.append(message, button);
+        document.body.append(box);
+      }
+      window.preparePaymentFailureRetry = preparePaymentFailureRetry;
+
       function saveInputDraft() {
         if (readStore("unni_view_state", true) !== "input") return;
         const draft = {
@@ -3824,7 +3907,7 @@
             .value.replace(/\D/g, ""),
           userTimeKey: document.getElementById("birthTimeUnknown").checked
             ? "unknown"
-            : document.getElementById("birthTimeInput").value,
+            : (document.getElementById("birthTimeInput").value || document.getElementById("birthTimeBranch")?.value || ""),
           userGender: document.getElementById("genderValue").value,
           userCalendar: document.getElementById("calendarSelect").value,
           concernKey: document.getElementById("selectedConcernKey").value,
@@ -5407,8 +5490,7 @@ function generateConcernNotes(data, mode) {
 
       function calculateAccurateManse(year, month, day, birthTime, gender) {
         try {
-          // 신규 데이터는 "HH:MM"을 그대로 사용한다.
-          // 기존 테스트 데이터의 자시·축시 값도 복원되도록 임시 지원한다.
+          // 정확한 시각은 "HH:MM", 시간대 선택은 12시진(子~亥)을 그대로 사용한다.
           const legacyHourMap = {
             子: 0,
             丑: 2,
@@ -5831,18 +5913,49 @@ function generateConcernNotes(data, mode) {
         }
       }
 
+      const BIRTH_TIME_BRANCHES = new Set(["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"]);
+      const BIRTH_TIME_BRANCH_LABELS = {
+        子:"자시", 丑:"축시", 寅:"인시", 卯:"묘시", 辰:"진시", 巳:"사시",
+        午:"오시", 未:"미시", 申:"신시", 酉:"유시", 戌:"술시", 亥:"해시"
+      };
+
+      function selectBirthTimeBranch(select) {
+        const timeInput = document.getElementById("birthTimeInput");
+        const unknown = document.getElementById("birthTimeUnknown");
+        if (select?.value && BIRTH_TIME_BRANCHES.has(select.value)) {
+          if (timeInput) timeInput.value = "";
+          if (unknown) unknown.checked = false;
+        }
+        saveInputDraft();
+      }
+
+      function selectDirectBirthTime(input) {
+        const branch = document.getElementById("birthTimeBranch");
+        const unknown = document.getElementById("birthTimeUnknown");
+        if (input?.value) {
+          if (branch) branch.value = "";
+          if (unknown) unknown.checked = false;
+        }
+        saveInputDraft();
+      }
+
       function toggleBirthTimeUnknown(checkbox, focus = true) {
         const timeInput = document.getElementById("birthTimeInput");
-        if (!timeInput) return;
+        const branch = document.getElementById("birthTimeBranch");
+        if (!timeInput || !branch) return;
 
         timeInput.disabled = checkbox.checked;
+        branch.disabled = checkbox.checked;
         timeInput.classList.toggle("opacity-50", checkbox.checked);
+        branch.classList.toggle("opacity-50", checkbox.checked);
 
         if (checkbox.checked) {
           timeInput.value = "";
+          branch.value = "";
         } else if (focus) {
-          timeInput.focus();
+          branch.focus();
         }
+        saveInputDraft();
       }
 
       function setGender(gender) {
@@ -5977,31 +6090,44 @@ function generateConcernNotes(data, mode) {
           let birthStr = rawBirth.replace(/[^0-9]/g, "");
 
           const birthTimeInput = document.getElementById("birthTimeInput");
+          const birthTimeBranch = document.getElementById("birthTimeBranch");
           const birthTimeUnknown = document.getElementById("birthTimeUnknown");
 
           const isTimeUnknown = !!(
             birthTimeUnknown && birthTimeUnknown.checked
           );
 
-          // 🚀 4자리 숫자(14:30) 완성 확인
+          // 정확한 시각을 적었으면 그 값을 우선하고, 아니면 자시~해시 선택값을 사용한다.
           let birthTime = "unknown";
           if (!isTimeUnknown) {
             const rawT = birthTimeInput ? birthTimeInput.value.trim() : "";
             const cleanTime = rawT.replace(/[^0-9]/g, "");
-            if (
-              cleanTime.length !== 4 ||
-              Number(cleanTime.slice(0, 2)) > 23 ||
-              Number(cleanTime.slice(2)) > 59
-            ) {
+            const branchTime = birthTimeBranch?.value || "";
+            if (cleanTime) {
+              if (
+                cleanTime.length !== 4 ||
+                Number(cleanTime.slice(0, 2)) > 23 ||
+                Number(cleanTime.slice(2)) > 59
+              ) {
+                showVoiceToast({
+                  F: "직접 입력한 시간만 한 번 봐줄래? 예를 들면 오후 1시 30분은 1330이야.",
+                  T: "직접 입력 시간은 4자리로 적어줘. 예: 1330",
+                }, mode);
+                if (birthTimeInput) birthTimeInput.focus();
+                return;
+              }
+              birthTime =
+                cleanTime.substring(0, 2) + ":" + cleanTime.substring(2, 4);
+            } else if (BIRTH_TIME_BRANCHES.has(branchTime)) {
+              birthTime = branchTime;
+            } else {
               showVoiceToast({
-                F: "태어난 시간을 4자리로 적어줘. 모르면 ‘시간 모름’을 체크하면 돼.",
-                T: "태어난 시간을 4자리로 입력해줘. 모르면 ‘시간 모름’을 체크하면 돼.",
+                F: "태어난 시간대만 골라줘. 자시·축시처럼 고르면 되고, 정확한 시간을 알면 아래에 직접 적어도 돼.",
+                T: "태어난 시간대를 골라줘. 정확한 시간을 알면 아래에 직접 입력하면 돼.",
               }, mode);
-              if (birthTimeInput) birthTimeInput.focus();
+              birthTimeBranch?.focus();
               return;
             }
-            birthTime =
-              cleanTime.substring(0, 2) + ":" + cleanTime.substring(2, 4);
           }
 
           const isLunar =
@@ -6146,7 +6272,9 @@ function generateConcernNotes(data, mode) {
               : birthStr;
 
           const formattedBirthTime =
-            birthTime === "unknown" ? "시간 모름" : birthTime;
+            birthTime === "unknown"
+              ? "시간 모름"
+              : BIRTH_TIME_BRANCH_LABELS[birthTime] || birthTime;
 
           const calendarLabel = isLunar
             ? isLeapMonth
@@ -7045,8 +7173,8 @@ currentResultData = {
         }
         if (vipSectionMainTitle) {
           vipSectionMainTitle.textContent = isT
-            ? "서아 언니가 핵심만 적어둔 비밀 메모"
-            : "로아 언니가 너한테만 남기는 비밀 메모";
+            ? "언니가 핵심만 적어둔 비밀 메모"
+            : "언니가 너한테만 남기는 비밀 메모";
         }
         if (vipSectionSubTitle) {
           vipSectionSubTitle.textContent = isT
@@ -7118,7 +7246,7 @@ currentResultData = {
           : displayName;
 
         if (isT) {
-          if (resultFirstLookLabel) resultFirstLookLabel.textContent = "서아 언니가 먼저 정리한 너";
+          if (resultFirstLookLabel) resultFirstLookLabel.textContent = "언니가 먼저 정리한 너";
           if (resultConcernHandoffAvatar) resultConcernHandoffAvatar.src = "./서아.png";
           if (resultConcernHandoffName) resultConcernHandoffName.textContent = "서아 언니";
           if (resultConcernHandoffText) resultConcernHandoffText.textContent = "아까 말한 고민에선 이 부분이 핵심이야.";
@@ -7144,7 +7272,7 @@ currentResultData = {
             resGreeting.innerHTML = `<b>${callVoc}</b>, 먼저 봐야 할 건 이거야.`;
           }
         } else {
-          if (resultFirstLookLabel) resultFirstLookLabel.textContent = "로아 언니가 먼저 본 너";
+          if (resultFirstLookLabel) resultFirstLookLabel.textContent = "언니가 먼저 본 너";
           if (resultConcernHandoffAvatar) resultConcernHandoffAvatar.src = "./로아.png";
           if (resultConcernHandoffName) resultConcernHandoffName.textContent = "로아 언니";
           if (resultConcernHandoffText) resultConcernHandoffText.textContent = "그리고 아까 말한 고민 있지? 거기선 이 부분이 제일 중요해";
@@ -7810,8 +7938,8 @@ currentResultData = {
         const modeBadge = document.getElementById("cardModeBadge");
         if (modeBadge) {
           modeBadge.innerHTML = isT
-            ? `서아 언니가 딱 정리한 결과`
-            : `로아 언니랑 같이 풀어본 결과`;
+            ? `언니가 딱 정리한 결과`
+            : `언니가 같이 풀어본 결과`;
           modeBadge.style.color = isT ? "#0284c7" : "#e11d48";
           modeBadge.style.borderColor = isT
             ? "rgba(56,189,248,.32)"
@@ -8116,19 +8244,16 @@ currentResultData = {
             failUrl: `${base}?payment=fail&state=${ticket}`,
           });
         } catch (error) {
-          if (visibleResult(key, version))
-            showVoiceToast(
-              error.code === "USER_CANCEL"
-                ? {
-                    F: "결제가 취소됐어. 지금 결과는 그대로 있어.",
-                    T: "결제가 취소됐어. 현재 결과는 그대로 유지돼.",
-                  }
-                : {
-                    F: "결제 요청을 확인하지 못했어. 다시 결제하기 전에 한 번만 다시 눌러줘.",
-                    T: "결제 요청을 확인하지 못했어. 재결제 전에 다시 확인해줘.",
-                  },
-              data.currentMode,
-            );
+          if (visibleResult(key, version)) {
+            if (error.code === "USER_CANCEL") {
+              showVoiceToast({
+                F: "결제를 취소했어. 지금 결과는 그대로 있어.",
+                T: "결제를 취소했어. 현재 결과는 그대로 유지돼.",
+              }, data.currentMode);
+            } else {
+              preparePaymentFailureRetry(data, data.currentMode);
+            }
+          }
         } finally {
           paymentSubmitting = false;
           if (button) button.disabled = false;
@@ -8915,11 +9040,7 @@ currentResultData = {
             return;
           }
           if (params.get("payment") === "fail") {
-            removeStore("unni_pending_approval", true);
-            showVoiceToast({
-              F: "결제가 취소됐거나 완료되지 않았어. 입력은 그대로 뒀으니 여기서 다시 확인하면 돼.",
-              T: "결제가 취소됐거나 완료되지 않았어. 입력 정보는 유지됐어.",
-            }, restored.currentMode);
+            preparePaymentFailureRetry(restored, restored.currentMode);
             return;
           }
           if (params.get("payment") !== "success") return;
@@ -9003,11 +9124,13 @@ currentResultData = {
           handlePaymentReturn(new URLSearchParams(pending));
           return;
         }
-        if (params.get("payment") === "fail")
+        if (params.get("payment") === "fail") {
+          try { history.replaceState({ view: "result" }, "", location.pathname); } catch {}
           showVoiceToast({
-            F: "결제가 취소됐거나 완료되지 않았어. 지금 결과는 그대로 있어.",
-            T: "결제가 취소됐거나 완료되지 않았어. 현재 결과는 그대로 유지돼.",
+            F: "결제가 완료되지 않았어. 결과 화면으로 돌아온 뒤 새로고침을 한 번 눌러주면 다시 결제할 수 있어.",
+            T: "결제가 완료되지 않았어. 결과 화면에서 새로고침 한 번 후 다시 결제하면 돼.",
           });
+        }
         if (view === "input") {
           try {
             const draft = JSON.parse(readStore("unni_input_draft", true));
@@ -9212,6 +9335,8 @@ currentResultData = {
 
         const birthTimeInput = document.getElementById("birthTimeInput");
 
+        const birthTimeBranch = document.getElementById("birthTimeBranch");
+
         const birthTimeUnknown = document.getElementById("birthTimeUnknown");
 
         const leapMonthCheck = document.getElementById("leapMonthCheck");
@@ -9247,13 +9372,19 @@ currentResultData = {
           birthTimeUnknown.checked = isTimeUnknown;
         }
 
-        if (birthTimeInput) {
-          birthTimeInput.value = isTimeUnknown ? "" : savedData.userTimeKey;
+        const savedTimeKey = String(savedData.userTimeKey || "");
+        const savedAsBranch = BIRTH_TIME_BRANCHES.has(savedTimeKey);
+
+        if (birthTimeBranch) {
+          birthTimeBranch.value = !isTimeUnknown && savedAsBranch ? savedTimeKey : "";
+          birthTimeBranch.disabled = isTimeUnknown;
+          birthTimeBranch.classList.toggle("opacity-50", isTimeUnknown);
         }
 
         if (birthTimeInput) {
+          birthTimeInput.value =
+            !isTimeUnknown && !savedAsBranch ? savedTimeKey : "";
           birthTimeInput.disabled = isTimeUnknown;
-
           birthTimeInput.classList.toggle("opacity-50", isTimeUnknown);
         }
 
