@@ -1959,14 +1959,27 @@
           renderCatalog();
         }).catch(() => {
           const pending = document.getElementById("unniProductLadder");
-          if (pending) {
-            pending.querySelector("[data-entitlement-status]")?.replaceChildren(
-              document.createTextNode(productVoice(data, {
-                F: "기존 구매 확인이 조금 늦어지고 있어. 구매 내역은 그대로 두고 확인 중이니까 걱정하지 않아도 돼. 중복 결제되지 않게 지금은 새 결제를 열지 않을게.",
-                T: "구매 확인이 지연 중이야. 중복 결제 방지를 위해 새 결제는 열지 않을게.",
-              })),
-            );
-          }
+          pending?.querySelector("[data-entitlement-status]")?.replaceChildren(
+            document.createTextNode(productVoice(data, {
+              F: "구매 내역 확인이 조금 늦네. 언니가 한 번만 더 확인해볼게.",
+              T: "구매 내역 확인이 늦어지고 있어. 한 번 더 확인할게.",
+            })),
+          );
+          setTimeout(async () => {
+            try {
+              await resolveVerifiedEntitlements(data, { force:true });
+              document.getElementById("unniProductLadder")?.remove();
+              renderCatalog();
+            } catch (_) {
+              const stillPending = document.getElementById("unniProductLadder");
+              stillPending?.querySelector("[data-entitlement-status]")?.replaceChildren(
+                document.createTextNode(productVoice(data, {
+                  F: "기존 구매 확인이 조금 늦어지고 있어. 구매 내역은 그대로 두고 확인 중이니까 걱정하지 않아도 돼. 중복 결제되지 않게 지금은 새 결제를 열지 않을게.",
+                  T: "구매 확인이 지연 중이야. 중복 결제 방지를 위해 새 결제는 열지 않을게.",
+                })),
+              );
+            }
+          }, 1200);
         });
       }
       const wrap = document.createElement("section");
