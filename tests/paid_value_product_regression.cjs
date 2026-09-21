@@ -814,6 +814,17 @@ function norm(v) {
     !html.includes('사주도 까보기'),
     'post-consultation continuation slipped back into sales/report voice'
   );
+  assert(
+    html.includes('/* final result containment pass */') &&
+    html.includes('--result-gutter:12px') &&
+    html.includes('--result-axis-max:400px') &&
+    html.includes('#resultPillarCard .grid>div+div{border-left:1px solid #eee7e1!important}') &&
+    html.includes('#ohengBarContainer>div>div:nth-child(2){') &&
+    html.includes('#resultConcernHandoffAvatar,#resultConcernHandoffName{display:none!important}') &&
+    html.includes('#consultationNotesHeader>div:first-child>span:last-child{display:none!important}') &&
+    html.includes('#unniProductLadder [data-unni-product]{'),
+    'result-screen containment system missing or regressed'
+  );
   assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 1)') && html.includes('paywallNextTeaser') && html.includes('teaserProbe') && html.includes('로아 언니, 나머지도 같이 봐줘') && html.includes('서아 언니, 답까지 정리해줘'), 'paid teaser must be NOTE1 full + short NOTE2 + actual locked-content teaser + distinct F/T 990 handoff');
   assert(!html.includes('storyCaptureReturnTimer') && !html.includes('7000') && html.includes('storyCaptureCleanTimer'), 'capture should use delayed fullscreen-clean transition, not timed auto-return');
   const finalNotePaymentAt = html.indexOf('id="finalNotePaymentButton"');

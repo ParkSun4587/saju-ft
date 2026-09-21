@@ -138,6 +138,116 @@ async function enter(page, mode, concern, situation) {
   }
 }
 
+
+async function resultLayoutSnapshot(page) {
+  return page.evaluate(() => {
+    const rect = (id) => {
+      const el=document.getElementById(id);
+      if(!el) return null;
+      const cs=getComputedStyle(el);
+      if(cs.display==='none') return null;
+      const r=el.getBoundingClientRect();
+      return {left:r.left,right:r.right,width:r.width,top:r.top,bottom:r.bottom};
+    };
+    const axisIds=[
+      'resultSisterHandoff',
+      'resultConsultationFlow',
+      'consultationNotesShell',
+      'resultFunExtras',
+      'resultShareActions',
+      'postConsultationProductsSlot',
+    ];
+    const axis=Object.fromEntries(axisIds.map(id=>[id,rect(id)]));
+    const active=Object.values(axis).filter(Boolean);
+    const lefts=active.map(r=>r.left);
+    const rights=active.map(r=>r.right);
+    const title=document.getElementById('sazuCharacterTitle');
+    const titleRect=title?.getBoundingClientRect();
+    const titleStyle=title?getComputedStyle(title):null;
+    const lineHeight=parseFloat(titleStyle?.lineHeight||'0')||1;
+    const pillarItems=[...document.querySelectorAll('#resultPillarCard .grid>div')].map(el=>{
+      const cs=getComputedStyle(el);
+      return {radius:cs.borderRadius,bg:cs.backgroundColor,top:cs.borderTopWidth,right:cs.borderRightWidth,bottom:cs.borderBottomWidth};
+    });
+    const ohengItems=[...document.querySelectorAll('#ohengBarContainer>div')].map(el=>{
+      const cs=getComputedStyle(el);
+      return {radius:cs.borderRadius,bg:cs.backgroundColor,top:cs.borderTopWidth,right:cs.borderRightWidth,bottom:cs.borderBottomWidth};
+    });
+    const flat=(id)=>{
+      const el=document.getElementById(id);
+      const cs=el?getComputedStyle(el):null;
+      return cs?{radius:cs.borderRadius,bg:cs.backgroundColor,top:cs.borderTopWidth,right:cs.borderRightWidth,bottom:cs.borderBottomWidth}:null;
+    };
+    const metaRight=document.querySelector('#consultationNotesHeader>div:first-child>span:last-child');
+    const bridgeAvatar=document.getElementById('resultConcernHandoffAvatar');
+    const bridgeName=document.getElementById('resultConcernHandoffName');
+    const share=document.getElementById('mainShareBtn')?.getBoundingClientRect();
+    const shareWrap=document.getElementById('resultShareActions')?.getBoundingClientRect();
+    const funCards=[document.getElementById('chemBestCard'),document.getElementById('chemWorstCard')].filter(Boolean).map(el=>{
+      const cs=getComputedStyle(el);
+      return {radius:cs.borderRadius,bg:cs.backgroundColor,top:cs.borderTopWidth,right:cs.borderRightWidth,bottom:cs.borderBottomWidth};
+    });
+    const graphFirst=(()=>{
+      const first=document.querySelector('#ohengBarContainer>div');
+      if(!first) return false;
+      const label=first.children[0], graph=first.children[1], pct=first.children[2];
+      return Number(getComputedStyle(graph).order) < Number(getComputedStyle(label).order) &&
+        Number(getComputedStyle(graph).order) < Number(getComputedStyle(pct).order);
+    })();
+    return {
+      viewport:{width:document.documentElement.clientWidth,height:innerHeight},
+      overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth,
+      axis,
+      axisCount:active.length,
+      leftSpread:lefts.length?Math.max(...lefts)-Math.min(...lefts):999,
+      rightSpread:rights.length?Math.max(...rights)-Math.min(...rights):999,
+      titleFont:parseFloat(titleStyle?.fontSize||'0'),
+      titleLines:titleRect?Math.ceil((titleRect.height+0.5)/lineHeight):99,
+      overview:{
+        core:flat('resultCoreCard'),
+        pillars:flat('resultPillarCard'),
+        oheng:flat('resultOhengCard'),
+        pillarItems,
+        ohengItems,
+        graphFirst,
+      },
+      memoMetaDisplay:metaRight?getComputedStyle(metaRight).display:'',
+      memoMetaText:metaRight?.innerText||'',
+      bridgeAvatarDisplay:bridgeAvatar?getComputedStyle(bridgeAvatar).display:'',
+      bridgeNameDisplay:bridgeName?getComputedStyle(bridgeName).display:'',
+      funCards,
+      shareWidthDelta:share&&shareWrap?Math.abs(share.width-shareWrap.width):999,
+    };
+  });
+}
+
+function assertResultLayout(layout, label) {
+  const transparent=(v)=>v==='rgba(0, 0, 0, 0)'||v==='transparent';
+  assert(!layout.overflow,label+' horizontal overflow '+JSON.stringify(layout));
+  assert(layout.axisCount===6 && layout.leftSpread<=1.5 && layout.rightSpread<=1.5,
+    label+' result reading axis/gutter drift '+JSON.stringify(layout));
+  for(const [id,r] of Object.entries(layout.axis)) {
+    assert(r && r.left>=-1 && r.right<=layout.viewport.width+1,label+' section escaped viewport '+id+' '+JSON.stringify(r));
+  }
+  assert(layout.titleFont<=21 && layout.titleLines<=3,label+' result title dominates mobile fold '+JSON.stringify({font:layout.titleFont,lines:layout.titleLines}));
+  for(const key of ['core','pillars','oheng']) {
+    const box=layout.overview[key];
+    assert(box && box.radius==='0px' && transparent(box.bg) && box.top==='0px' && box.right==='0px' && box.bottom==='0px',
+      label+' nested overview card returned '+key+' '+JSON.stringify(box));
+  }
+  assert(layout.overview.pillarItems.length===4 && layout.overview.pillarItems.every(x=>x.radius==='0px'&&transparent(x.bg)&&x.top==='0px'&&x.right==='0px'&&x.bottom==='0px'),
+    label+' four pillars look like independent cards '+JSON.stringify(layout.overview.pillarItems));
+  assert(layout.overview.ohengItems.length===5 && layout.overview.ohengItems.every(x=>x.radius==='0px'&&transparent(x.bg)&&x.top==='0px'&&x.right==='0px'&&x.bottom==='0px') && layout.overview.graphFirst,
+    label+' five elements lost single-graph hierarchy '+JSON.stringify(layout.overview));
+  assert(layout.memoMetaDisplay==='none' && layout.memoMetaText.includes('1:1 맞춤 상담 기록'),
+    label+' duplicate memo header metadata is visible '+JSON.stringify({display:layout.memoMetaDisplay,text:layout.memoMetaText}));
+  assert(layout.bridgeAvatarDisplay==='none' && layout.bridgeNameDisplay==='none',
+    label+' concern handoff still reads as a separate chat card '+JSON.stringify({avatar:layout.bridgeAvatarDisplay,name:layout.bridgeNameDisplay}));
+  assert(layout.funCards.length===2 && layout.funCards.every(x=>x.radius==='0px'&&transparent(x.bg)),
+    label+' secondary fun extras returned to flashy cards '+JSON.stringify(layout.funCards));
+  assert(layout.shareWidthDelta<=1.5,label+' share CTA width left the reading axis '+layout.shareWidthDelta);
+}
+
 async function inspect(page, mode) {
   const r = await page.evaluate((mode) => {
     const plain = v => String(v||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
@@ -208,6 +318,8 @@ async function inspect(page, mode) {
       })(),
     };
   },mode);
+  r.resultLayout=await resultLayoutSnapshot(page);
+  assertResultLayout(r.resultLayout,mode+' primary result');
   assert(r.noteV2Audit?.version==='3.2.1'&&r.noteV2Audit?.structureFingerprint,mode+' NOTE v3 audit missing');
   assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
   assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six causal claims missing');
@@ -277,7 +389,7 @@ async function inspect(page, mode) {
     r.memoLayout.note.left>=r.memoLayout.paper.left-1 &&
     r.memoLayout.note.right<=r.memoLayout.paper.right+1 &&
     r.memoLayout.noteRadius==='0px' &&
-    r.memoLayout.metaRightDisplay!=='none' &&
+    r.memoLayout.metaRightDisplay==='none' &&
     r.memoLayout.metaRightText.includes('1:1 맞춤 상담 기록') &&
     !r.memoLayout.overflow,
     'consultation memo containment drift '+JSON.stringify(r.memoLayout)
@@ -473,6 +585,24 @@ async function inspect(page, mode) {
     await small.close();
   }
   await smallCtx.close();
+
+  const resultViewports=[
+    {width:360,height:800,mode:'F'},
+    {width:375,height:812,mode:'T'},
+    {width:390,height:844,mode:'F'},
+    {width:393,height:852,mode:'T'},
+    {width:430,height:932,mode:'F'},
+  ];
+  for(const vp of resultViewports){
+    const vctx=await browser.newContext({viewport:{width:vp.width,height:vp.height}});
+    const vpage=await vctx.newPage();
+    await deployed(vpage);
+    await enter(vpage,vp.mode,vp.mode==='F'?'love':'mental',vp.mode==='F'?'relationship':'burnout');
+    const layout=await resultLayoutSnapshot(vpage);
+    assertResultLayout(layout,vp.width+'x'+vp.height+' '+vp.mode);
+    await vpage.screenshot({path:'/tmp/result-ui-'+vp.width+'x'+vp.height+'-'+vp.mode+'.png',fullPage:true,animations:'disabled'});
+    await vctx.close();
+  }
 
   assert(errors.length===0,'F browser errors '+errors.join(' | '));
   assert(terr.length===0,'T browser errors '+terr.join(' | '));
