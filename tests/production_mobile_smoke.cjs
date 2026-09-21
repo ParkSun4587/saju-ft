@@ -450,8 +450,20 @@ async function inspect(page, mode) {
   const ctx=await browser.newContext({viewport:{width:390,height:844}});
   const page=await ctx.newPage();
   const errors=[];
+  const httpErrors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  page.on('console',m=>{if(m.type()==='error') errors.push(m.text());});
+  page.on('console',m=>{
+    if(m.type()!=='error') return;
+    const msg=m.text();
+    if(!/Failed to load resource: the server responded with a status of 400/.test(msg)) errors.push(msg);
+  });
+  page.on('response',res=>{
+    if(res.status()<400) return;
+    const req=res.request();
+    let action='';
+    try { action=req.postDataJSON()?.action||''; } catch {}
+    httpErrors.push({status:res.status(),url:res.url(),action});
+  });
   await deployed(page);
   await enter(page,'F','love','relationship');
   const f=await inspect(page,'F');
@@ -626,8 +638,20 @@ async function inspect(page, mode) {
 
   const t=await ctx.newPage();
   const terr=[];
+  const thttpErrors=[];
   t.on('pageerror',e=>terr.push(e.message));
-  t.on('console',m=>{if(m.type()==='error') terr.push(m.text());});
+  t.on('console',m=>{
+    if(m.type()!=='error') return;
+    const msg=m.text();
+    if(!/Failed to load resource: the server responded with a status of 400/.test(msg)) terr.push(msg);
+  });
+  t.on('response',res=>{
+    if(res.status()<400) return;
+    const req=res.request();
+    let action='';
+    try { action=req.postDataJSON()?.action||''; } catch {}
+    thttpErrors.push({status:res.status(),url:res.url(),action});
+  });
   await deployed(t);
   await enter(t,'T','mental','burnout');
   const tr=await inspect(t,'T');
@@ -697,8 +721,19 @@ async function inspect(page, mode) {
     await vctx.close();
   }
 
+  const expectedEntitlementFailure=(x)=>
+    x.status===400 &&
+    x.url.includes('/api/confirm-payment') &&
+    x.action==='entitlements';
   assert(errors.length===0,'F browser errors '+errors.join(' | '));
   assert(terr.length===0,'T browser errors '+terr.join(' | '));
-  console.log('PRODUCTION_MOBILE_SMOKE_PASS',JSON.stringify({f:[f.n1.length,f.n2.length,f.n4.length,f.n5.length],t:[tr.n1.length,tr.n2.length,tr.n4.length,tr.n5.length],pdfRemoved:true}));
+  assert(httpErrors.every(expectedEntitlementFailure),'F unexpected HTTP errors '+JSON.stringify(httpErrors));
+  assert(thttpErrors.every(expectedEntitlementFailure),'T unexpected HTTP errors '+JSON.stringify(thttpErrors));
+  console.log('PRODUCTION_MOBILE_SMOKE_PASS',JSON.stringify({
+    f:[f.n1.length,f.n2.length,f.n4.length,f.n5.length],
+    t:[tr.n1.length,tr.n2.length,tr.n4.length,tr.n5.length],
+    expectedEntitlement400s:httpErrors.filter(expectedEntitlementFailure).length+thttpErrors.filter(expectedEntitlementFailure).length,
+    pdfRemoved:true
+  }));
   await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});
