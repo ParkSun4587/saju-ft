@@ -41,6 +41,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(!noteSource.includes('서운함 하나를 24시간'),'unsupported 24-hour relationship threshold remains in NOTE copy');
   assert(!productSource.includes('서운함은 24시간 안에'),'unsupported 24-hour compatibility threshold remains');
   assert(!productSource.includes('같은 싸움이 세 번 반복되면'),'unsupported three-fights compatibility threshold remains');
+  assert(!productSource.includes('표현 강도는 맞기 쉽다')&&!productSource.includes('마음을 쓰는 속도가 비슷해서'),'sameStrength still overclaims affection expression');
+  assert(!productSource.includes('서로의 강점을 빠르게 이해하는 조합')&&!productSource.includes('시간이 지나면 서로 왜 그렇게 행동하는지 더 빨리'),'strong-element match still overclaims relationship behavior');
+  assert(!productSource.includes('연애 감정보다 생활 규칙에서 갈등이 오래 간다'),'fixed compatibility conflict claim remains');
   assert(!productSource.includes('classical reasoning'),'internal classical reasoning phrase leaked to product copy');
   assert(!productSource.includes('같은 원판')&&!productSource.includes('사주 원판'),'internal plate metaphor remains in product copy');
   assert(!productSource.includes('다음 정보 가치')&&!productSource.includes('1인 분석 대표'),'internal product-planning language remains');
