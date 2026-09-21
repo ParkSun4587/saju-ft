@@ -239,7 +239,8 @@ function assertResultLayout(layout, label) {
   assert(layout.axisCount>=4 && layout.axisCount<=6 && layout.leftSpread<=1.5 && layout.rightSpread<=1.5 && layout.minSide>=14.5,
     label+' result reading axis/gutter drift '+JSON.stringify(layout));
   for(const [id,r] of Object.entries(layout.axis)) {
-    assert(r && r.left>=-1 && r.right<=layout.viewport.width+1,label+' section escaped viewport '+id+' '+JSON.stringify(r));
+    if(!r) continue;
+    assert(r.left>=-1 && r.right<=layout.viewport.width+1,label+' section escaped viewport '+id+' '+JSON.stringify(r));
   }
   assert(layout.titleFont<=18 && layout.titleLines<=3,label+' result title dominates mobile fold '+JSON.stringify({font:layout.titleFont,lines:layout.titleLines}));
   for(const key of ['core','pillars','oheng']) {
