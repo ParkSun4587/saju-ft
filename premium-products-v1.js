@@ -1895,11 +1895,20 @@
       : resolvedState.kind === "included" ? "완전판에 포함 · 바로 이어보기"
         : resolvedState.kind === "upgrade" ? `완전판으로 이어보기 · +${won(resolvedState.amount)}`
           : "이어서 보기 →";
-    const topLabel = recommended ? "다음으로 이어볼 것" : ux.eyebrow;
-    const description = recommended ? ux.difference : productShort(p.id);
+    const topLabel = ux.eyebrow;
+    const description = productShort(p.id);
     const stateColor = ["purchased","included"].includes(resolvedState.kind) ? "#047857" : resolvedState.kind === "upgrade" ? "#b83e5c" : "#657080";
     const stateBg = ["purchased","included"].includes(resolvedState.kind) ? "#ecfdf5" : resolvedState.kind === "upgrade" ? "#fff2f5" : "#f7f5f2";
-    return `<button data-unni-product="${p.id}" data-product-state="${resolvedState.kind}" ${secondary ? 'data-secondary-product="1"' : ""} style="text-align:left;width:100%;padding:${pad};border:${recommended ? `1px solid ${border}` : "0"};border-top:${recommended ? "none" : `1px solid ${border}`};border-radius:${recommended ? "16px" : "0"};background:${bg};cursor:pointer;box-shadow:none"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="min-width:0"><div style="font-size:9.5px;font-weight:800;color:${recommended ? "#b83e5c" : "#969ba4"};margin-bottom:5px">${topLabel}</div><div style="font-size:${recommended ? "16px" : "14px"};line-height:1.35;font-weight:850;letter-spacing:-.02em;color:#172033">${p.name}</div></div><div style="flex:none;padding:2px 0;font-size:11px;font-weight:820;color:${recommended ? "#b83e5c" : "#66707d"};white-space:nowrap">${priceLabel}</div></div><div style="margin-top:8px;font-size:${recommended ? "12px" : "11.5px"};line-height:1.55;font-weight:740;color:#354052">${ux.value}</div><div style="font-size:11px;line-height:1.65;color:#76808d;margin-top:4px">${description}</div><div style="display:inline-flex;margin-top:8px;font-size:10px;font-weight:780;color:${stateColor}">${stateCopy}</div>${recommended && reason ? `<div style="margin-top:10px;padding:9px 0 0;border-top:1px dashed #e7ded8;font-size:10.8px;line-height:1.62;font-weight:600;color:#675b60"><span style="font-weight:820;color:#b83e5c">왜 이걸 먼저 보냐면</span> · ${reason}</div>` : ""}</button>`;
+    const reasonLine = recommended && reason
+      ? `<div data-recommendation-reason="1" style="font-size:10.8px;line-height:1.55;font-weight:600;color:#7a7175;margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${reason}</div>`
+      : "";
+    const labelLine = secondary
+      ? `<div style="font-size:9.5px;font-weight:760;color:#969ba4;margin-bottom:4px">${topLabel}</div>`
+      : "";
+    const detailLine = recommended
+      ? `<div style="margin-top:7px;font-size:11.5px;line-height:1.55;font-weight:650;color:#48515f">${ux.value}</div>`
+      : `<div style="font-size:11px;line-height:1.6;color:#76808d;margin-top:5px">${description}</div>`;
+    return `<button data-unni-product="${p.id}" data-product-state="${resolvedState.kind}" ${secondary ? 'data-secondary-product="1"' : ""} style="text-align:left;width:100%;padding:${pad};border:${recommended ? `1px solid ${border}` : "0"};border-top:${recommended ? "none" : `1px solid ${border}`};border-radius:${recommended ? "16px" : "0"};background:${bg};cursor:pointer;box-shadow:none">${reasonLine}<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="min-width:0">${labelLine}<div style="font-size:${recommended ? "15px" : "14px"};line-height:1.35;font-weight:820;letter-spacing:-.02em;color:#172033">${p.name}</div></div><div style="flex:none;padding:2px 0;font-size:11px;font-weight:800;color:${recommended ? "#b83e5c" : "#66707d"};white-space:nowrap">${priceLabel}</div></div>${detailLine}<div style="display:inline-flex;margin-top:7px;font-size:10px;font-weight:760;color:${stateColor}">${stateCopy}</div></button>`;
   }
 
   function foldedProductGroups(products, states) {
@@ -1987,7 +1996,7 @@
     const toggleHtml = others.length
       ? `<button id="unniShowOtherProducts" type="button" aria-expanded="false" style="width:100%;border:0;border-top:1px solid #e8e1db;background:transparent;padding:12px 2px 9px;font-size:10.8px;font-weight:760;color:#7d858f;cursor:pointer;text-align:left">다른 방향 ${others.length}개도 보기 <span style="float:right">＋</span></button><div id="unniOtherProducts" style="display:none;gap:8px">${foldedProductGroups(others,states)}</div>`
       : "";
-    wrap.innerHTML = `<div style="font-size:10px;font-weight:800;color:${isT ? "#4c879f" : "#b84a64"}">${eyebrow}</div><h3 style="font-size:17px;line-height:1.4;font-weight:850;letter-spacing:-.025em;color:#172033;margin:5px 0 5px">${headline}</h3><p style="font-size:11.5px;line-height:1.65;color:#7c8490;margin:0 0 12px">${sub}</p><div style="display:grid;gap:8px">${productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})}${toggleHtml}</div>`;
+    wrap.innerHTML = `<div style="display:grid;gap:0">${productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})}${toggleHtml}</div>`;
     slot.replaceChildren(wrap);
 
     const toggle = wrap.querySelector("#unniShowOtherProducts");
