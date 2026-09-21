@@ -527,6 +527,11 @@ async function inspect(page, mode) {
     });
     await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
   }
+  await page.waitForFunction(
+    ()=>!!document.querySelector('#unniProductLadder [data-recommendation-reason="1"]'),
+    null,
+    {timeout:15000},
+  );
   const postUnlock=await page.evaluate(()=>({
     cards:document.querySelectorAll('#notesListContainer > div').length,
     preview:!!document.getElementById('note2PreviewCard'),
