@@ -13,9 +13,13 @@
     return false;
   }
 
+  function josaSuffix(value, withBatchim, withoutBatchim) {
+    return hasBatchim(value) ? withBatchim : withoutBatchim;
+  }
+
   function withJosa(value, withBatchim, withoutBatchim) {
     const text = String(value || "");
-    return text + (hasBatchim(text) ? withBatchim : withoutBatchim);
+    return text + josaSuffix(text, withBatchim, withoutBatchim);
   }
 
   const SITUATIONS = {
@@ -180,7 +184,7 @@
   };
 
   function stripHtml(v) {
-    return String(v || "").replace(/<br\s*\/?\s*>/gi," ").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
+    return String(v || "").replace(/<br\s*\/?\s*>/gi," ").replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim();
   }
 
   function situationFor(data) {
@@ -272,7 +276,7 @@
     else middle = "상황에 따라 받아낼 때와 밀려날 때가 달라서, 압박의 크기보다 대응 순서가 중요해";
     const end = zipingUser(reasoning);
     if (isT) return `<b>시작</b> — ${situation.cue}.<br><br><b>들어오는 힘</b> — ${p.pressure}이 가장 크게 작동해.<br><br><b>네가 받는 방식</b> — ${middle}.<br><br><b>갈림길</b> — ${end}.<br><br>그래서 ${situation.object}의 결과만 보지 말고, 이 순서가 시작되는 지점을 먼저 끊어야 해.`;
-    return `보통 <b>${situation.cue}</b>에서 시작돼. 그때 네 사주에서는 ${p.pressure}이 가장 먼저 커져.<br><br>그리고 ${middle}.<br><br>여기서 중요한 건 네가 약해서가 아니라, <b>그 힘을 어떤 순서로 받아내느냐</b>야. ${end}.<br><br>언니는 ${withJosa(situation.object,"이","가")} 꼬인 마지막 장면보다 이 첫 순서를 먼저 잡고 싶어.`;
+    return `보통 <b>${situation.cue}</b>에서 시작돼. 그때 네 사주에서는 ${p.pressure}이 가장 먼저 커져.<br><br>그리고 ${middle}.<br><br>네가 약해서가 아니야. <b>그 힘을 어떤 순서로 받아내느냐가 중요해.</b> ${end}.<br><br>언니는 ${withJosa(situation.object,"이","가")} 꼬인 마지막 장면보다 이 첫 순서를 먼저 잡고 싶어.`;
   }
 
   function corePortrait(reasoning, situation, isT) {
@@ -283,9 +287,9 @@
     const rootLine = rootUser(root);
     const strengthLine = strengthUser(reasoning);
     if (isT) {
-      return `네 사주의 중심은 <b>${base}</b>이야. 그런데 실제 힘의 배분을 보면 ${strengthLine}. 지금 가장 크게 걸리는 건 <b>${p.pressure}</b>이고, ${rootLine}.<br><br>즉 ${situation.object}만 따로 떼서 볼 게 아니라, <b>이 압력을 네가 감당할 수 있는 형태로 바꾸는 구조</b>를 먼저 봐야 해.`;
+      return `네 사주의 중심은 <b>${base}</b>${josaSuffix(base,"이야","야")}. 그런데 실제 힘의 배분을 보면 ${strengthLine}. 지금 가장 크게 걸리는 건 <b>${p.pressure}</b>이고, ${rootLine}.<br><br>즉 ${situation.object}만 따로 떼서 볼 게 아니라, <b>이 압력을 네가 감당할 수 있는 형태로 바꾸는 구조</b>를 먼저 봐야 해.`;
     }
-    return `언니가 네 사주 전체에서 먼저 보는 건 <b>${base}</b>이야. 그런데 이 힘이 그냥 편하게 쓰이는 건 아니고, 실제로는 ${strengthLine}. 지금 가장 크게 걸리는 건 <b>${p.pressure}</b>이야.<br><br>${rootLine}. 그래서 ${situation.object} 때문에 힘들 때도 ‘내가 왜 이것도 못 하지?’로 끝내면 핵심을 놓쳐. <b>어떤 압력을 받고, 그걸 무엇으로 받아내느냐</b>가 먼저야.`;
+    return `언니가 네 사주 전체에서 먼저 보는 건 <b>${base}</b>${josaSuffix(base,"이야","야")}. 그런데 이 힘이 그냥 편하게 쓰이는 건 아니고, 실제로는 ${strengthLine}. 지금 가장 크게 걸리는 건 <b>${p.pressure}</b>${josaSuffix(p.pressure,"이야","야")}.<br><br>${rootLine}. 그래서 ${situation.object} 때문에 힘들 때도 ‘내가 왜 이것도 못 하지?’로 끝내면 핵심을 놓쳐. <b>어떤 압력을 받고, 그걸 무엇으로 받아내느냐</b>가 먼저야.`;
   }
 
   function deepCause(reasoning, situation, isT) {
@@ -302,12 +306,12 @@
     const harmLine = harmful.length ? `반대로 ${harmful.join("·")}이 과해지면 중심 흐름이 깨질 수 있어` : "뚜렷한 방해 신호가 하나로 고정되진 않아";
     const bridgeLine = bridge ? `그리고 서로 부딪히는 힘 사이에서는 <b>${bridge}</b> 기운이 중간 연결 역할을 할 수 있어.` : "";
     const conflictLine = conflict
-      ? "두 판단이 완전히 같은 방향은 아니라서, 먼저 버틸 힘이나 이어주는 조건을 만든 뒤 그다음 행동으로 옮겨야 해"
+      ? "두 판단이 완전히 같은 방향은 아니라서, 먼저 버틸 힘이나 이어주는 조건을 만든 뒤 그다음 행동으로 옮겨야 해."
       : "";
     if (isT) {
-      return `원인은 단순 성격이 아니야. 태어난 계절에서 잡힌 중심 구조상 <b>${monthLine}</b>이고, 실제 성패를 보면 ${zipingUser(reasoning)}<br><br>${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "강약 판단과 구조 판단이 같은 방향이면 그 조건을 더 강하게 본다."} 그래서 ${situation.object}의 원인을 범용 성향 하나로 줄이면 안 돼.`;
+      return `원인은 단순 성격이 아니야. 태어난 계절에서 잡힌 중심 구조상 <b>${monthLine}</b>이고, 실제 성패를 보면 ${zipingUser(reasoning)}.<br><br>${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "강약 판단과 구조 판단이 같은 방향이면 그 조건을 더 강하게 본다."} 그래서 ${situation.object}의 원인을 범용 성향 하나로 줄이면 안 돼.`;
     }
-    return `진짜 원인은 ‘원래 네 성격이 이래서’가 아니야. 네 사주 전체의 중심을 보면 <b>${monthLine}</b>이야. 그리고 그 구조가 실제로 잘 굴러가는지까지 보면, ${zipingUser(reasoning)}<br><br>쉽게 풀면 ${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "두 판단이 같은 방향을 가리킬 때는 그 조건을 더 중요하게 볼 수 있어."} 언니가 ${withJosa(situation.object,"을","를")} 볼 때 이 구조부터 보는 이유가 그거야.`;
+    return `진짜 원인은 ‘원래 네 성격이 이래서’가 아니야. 네 사주 전체의 중심을 보면 <b>${monthLine}</b>${josaSuffix(monthLine,"이야","야")}. 그리고 그 구조가 실제로 잘 굴러가는지까지 보면, ${zipingUser(reasoning)}.<br><br>쉽게 풀면 ${supportLine}. ${harmLine}. ${bridgeLine}<br><br>${conflictLine || "두 판단이 같은 방향을 가리킬 때는 그 조건을 더 중요하게 볼 수 있어."} 언니가 ${withJosa(situation.object,"을","를")} 볼 때 이 구조부터 보는 이유가 그거야.`;
   }
 
   function changeOrder(reasoning, situation, isT) {
@@ -360,7 +364,8 @@
     if (isT) {
       return `<b>${domain.name}에서 맞는 쪽</b> — ${good.join(" / ")}.<br><br><b>피할 쪽</b> — ${bad.join(" / ")}.<br><br><b>판별법</b> — ${stateLine}`;
     }
-    return `네 사주에서 ${domain.name}을 볼 때 잘 맞는 쪽은 <b>${good.join(" / ")}</b>이야.<br><br>반대로 오래 두면 소모가 커지는 쪽은 <b>${bad.join(" / ")}</b>이고.<br><br>${stateLine} ‘좋아 보이는가’보다 <b>내 사주의 좋은 힘이 여기서 실제로 잘 쓰이는가</b>를 보는 게 더 정확해.`;
+    const goodText = good.join(" / ");
+    return `네 사주에서 ${withJosa(domain.name,"을","를")} 볼 때 잘 맞는 쪽은 <b>${goodText}</b>${josaSuffix(goodText,"이야","야")}.<br><br>반대로 오래 두면 소모가 커지는 쪽은 <b>${bad.join(" / ")}</b>이고.<br><br>${stateLine} ‘좋아 보이는가’보다 <b>내 사주의 좋은 힘이 여기서 실제로 잘 쓰이는가</b>를 보는 게 더 정확해.`;
   }
 
   function formatMonth(row) {
