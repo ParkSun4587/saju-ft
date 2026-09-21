@@ -181,7 +181,7 @@
   function policyBlockedHtml(productId, gate) {
     const reason = (gate?.errors || []).join(",");
     const blockedKind = productId === "compatibility" ? "compatibility" : "policy";
-    return `<p data-content-blocked="${blockedKind}" data-policy-blocked="1" data-product-contract="${esc(productId)}" data-policy-errors="${esc(reason)}" style="font-size:13px;line-height:1.8;color:#475569">이 상품에서 허용되지 않은 정보 요청이 감지돼서 결과를 열지 않았어.</p>`;
+    return `<p data-content-blocked="${blockedKind}" data-policy-blocked="1" data-product-contract="${esc(productId)}" data-policy-errors="${esc(reason)}" style="font-size:13px;line-height:1.8;color:#475569">이 내용은 지금 선택한 상품 범위에서는 보여줄 수 없어.</p>`;
   }
 
   function policyTiming(productId, timing) {
@@ -551,7 +551,19 @@
       },
     ];
 
-    return sections;
+    if (isT) return sections;
+    const roaBody = (body) => String(body || "")
+      .replace(/<b>핵심<\/b> ·/g, "<b>먼저 보면</b> ·")
+      .replace(/<b>왜<\/b> ·/g, "<b>왜냐면</b> ·")
+      .replace(/<b>실제<\/b> ·/g, "<b>현실에서는</b> ·")
+      .replace(/<b>이렇게 써<\/b> ·/g, "<b>그래서</b> ·")
+      .replace(/<b>핵심 · 큰 흐름<\/b>/g, "<b>큰 흐름부터 보면</b>")
+      .replace(/<b>이렇게 써 · 반복해서 가져갈 사용법<\/b>/g, "<b>언니가 마지막으로 남길 기준</b>")
+      .replace("기준으로 볼게.", "기준으로 같이 볼게.")
+      .replace("지금 과제가 네 기본 버팀보다 큰지부터 확인해.", "지금 과제가 네 기본 버팀보다 큰지부터 확인해보자.")
+      .replace("실제 행동으로 하나 넣어.", "실제 행동으로 하나 넣어보자.")
+      .replace("무엇이 먼저 깨졌는지부터 찾아.", "무엇이 먼저 흔들렸는지부터 같이 보자.");
+    return sections.map((section) => ({ ...section, body:roaBody(section.body) }));
   }
 
   function noteCards(notes) {
@@ -566,7 +578,7 @@
     const contract = contentPolicy("full_saju");
     const intro = isT
       ? "방금 본 고민 하나를 길게 반복하는 결과가 아니야. 한 사람의 전체 구조, 삶의 여러 영역이 이어지는 이유, 가까운 핵심 시기와 5년 큰 흐름까지 한 장으로 묶어."
-      : "이건 지금 고민 하나를 또 풀어쓰는 결과가 아니야. 언니가 네 사주 전체를 펼쳐놓고, 돈·일·관계·마음이 왜 같은 원판에서 다르게 나타나는지와 앞으로 5년 큰 흐름까지 이어서 보는 전체 지도야.";
+      : "이건 지금 고민 하나를 또 풀어쓰는 결과가 아니야. 언니가 네 사주 전체를 펼쳐놓고, 돈·일·관계·마음이 왜 같은 사주 구조에서 다르게 나타나는지와 앞으로 5년 큰 흐름까지 이어서 보는 전체 지도야.";
     const sections = fullSajuSections(data, mode);
     const fp = reasoning?.structureFingerprint || "";
     const tfp = reasoning?.timingFingerprint || "";
@@ -589,7 +601,7 @@
     const firstAction = ELEMENT_WORD[firstActionEl] || "작게 확인하고 다음 행동을 고르는 힘";
     const sharedFp = firstR?.structureFingerprint || "";
     const shared = runs.length
-      ? `<div data-product-exclusive="concern_bundle3" data-product-contract="concern_bundle3" data-structure-fingerprint="${esc(sharedFp)}" style="padding:14px 15px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0;margin-bottom:18px;font-size:12.5px;line-height:1.8;color:#475569"><b>세 고민을 같이 보면 보이는 공통축</b><br>세 고민에서 사주 원판 자체는 바뀌지 않아. 공통으로 먼저 걸리는 건 <b>${esc(pressure)}</b>이고, 풀 때는 <b>${esc(firstAction)}</b> 쪽을 먼저 만드는 흐름이 반복돼. 아래에서는 그 같은 구조가 돈·일·관계 같은 서로 다른 고민에서 어떻게 다르게 나타나는지만 각각 깊게 풀어.</div>`
+      ? `<div data-product-exclusive="concern_bundle3" data-product-contract="concern_bundle3" data-structure-fingerprint="${esc(sharedFp)}" style="padding:14px 15px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0;margin-bottom:18px;font-size:12.5px;line-height:1.8;color:#475569"><b>세 고민을 같이 보면 보이는 공통축</b><br>세 고민에서 사주 전체 구조 자체는 바뀌지 않아. 공통으로 먼저 걸리는 건 <b>${esc(pressure)}</b>이고, 풀 때는 <b>${esc(firstAction)}</b> 쪽을 먼저 만드는 흐름이 반복돼. 아래에서는 그 같은 구조가 돈·일·관계 같은 서로 다른 고민에서 어떻게 다르게 나타나는지만 각각 깊게 풀어.</div>`
       : "";
     const body = runs.map(({key,concernSituation,notes}) => {
       const situLabel = situationLabel(key, concernSituation);
@@ -618,11 +630,11 @@
     const secondAction = actions[1] || "확인된 선택만 다음 단계로 확정하는 것";
     const domains = Object.keys(CONCERNS).map((key) => CONCERNS[key]).join(" · ");
 
-    const crossDomain = `<div data-product-exclusive="all_in_one" data-product-contract="all_in_one" data-structure-fingerprint="${esc(baseReasoning?.structureFingerprint || "")}" style="padding:15px;border-radius:18px;background:#fff1f2;border:1px solid #fecdd3;margin:22px 0;font-size:12.5px;line-height:1.85;color:#881337"><b>6개 고민을 가로지르는 공통 구조</b><br>${domains}은 서로 다른 문제처럼 보여도 <b>${esc(commonPressure)}</b>이 커질 때 비슷한 반응이 반복돼. 완전판에서는 같은 사주 원판이 각 고민에서 어디서 다르게 나타나는지까지 나란히 비교해.<br><span style="font-size:10.5px;color:#be123c">이 완전판은 나 한 사람 전체 분석이야. 두 사람 궁합은 포함하지 않아.</span></div>`;
+    const crossDomain = `<div data-product-exclusive="all_in_one" data-product-contract="all_in_one" data-structure-fingerprint="${esc(baseReasoning?.structureFingerprint || "")}" style="padding:15px;border-radius:18px;background:#fff1f2;border:1px solid #fecdd3;margin:22px 0;font-size:12.5px;line-height:1.85;color:#881337"><b>6개 고민을 가로지르는 공통 구조</b><br>${domains}은 서로 다른 문제처럼 보여도 <b>${esc(commonPressure)}</b>이 커질 때 비슷한 반응이 반복돼. 완전판에서는 같은 사주 구조가 각 고민에서 어디서 다르게 나타나는지까지 나란히 비교해.<br><span style="font-size:10.5px;color:#be123c">이 완전판은 나 한 사람 전체 분석이야. 두 사람 궁합은 포함하지 않아.</span></div>`;
 
     const simultaneous = `<div data-product-exclusive="all_in_one-timing" style="padding:15px;border-radius:18px;background:#f8fafc;border:1px solid #e2e8f0;margin:14px 0;font-size:12.5px;line-height:1.85;color:#334155"><b>여러 영역이 같이 움직이는 시점</b><br>${pivots.length ? `현재 5년 계산에서 공통으로 강하게 잡힌 변곡점은 <b>${esc(pivotText)}</b>이야. 같은 시기라도 돈은 조건 조정, 일은 역할 선택, 관계는 거리·약속 조정처럼 적용 방식이 달라져. 그래서 한 영역의 변화만 보고 인생 전체가 좋아지거나 나빠진다고 단정하지 않아.` : "5년 안에서 여러 영역을 동시에 크게 흔드는 강한 변곡점이 따로 잡히지 않아. 없는 변곡점을 만들지 않고 각 고민의 가까운 시기를 따로 쓰는 편이 맞아."}</div>`;
 
-    const strategy = `<div data-product-exclusive="all_in_one-strategy" style="padding:15px;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;margin:14px 0 22px;font-size:12.5px;line-height:1.85;color:#7c2d12"><b>마지막 종합 행동 전략</b><br><b>1.</b> 먼저 ${esc(firstAction)}.<br><b>2.</b> 그다음 ${esc(secondAction)}.<br><b>3.</b> 좋은 시기에도 6개 영역을 한꺼번에 바꾸지 말고 실제 반응이 먼저 오는 영역부터 확정해.<br>이 순서는 새로운 명리 판정을 만든 게 아니라, 같은 classical reasoning의 처방 순서를 6개 고민에 공통 적용한 거야.</div>`;
+    const strategy = `<div data-product-exclusive="all_in_one-strategy" style="padding:15px;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;margin:14px 0 22px;font-size:12.5px;line-height:1.85;color:#7c2d12"><b>마지막 종합 행동 전략</b><br><b>1.</b> 먼저 ${esc(firstAction)}.<br><b>2.</b> 그다음 ${esc(secondAction)}.<br><b>3.</b> 좋은 시기에도 6개 영역을 한꺼번에 바꾸지 말고 실제 반응이 먼저 오는 영역부터 확정해.<br>이건 새로운 판단을 덧붙인 게 아니라, 같은 사주 판단에서 나온 행동 순서를 6개 고민에 공통으로 적용한 거야.</div>`;
 
     const all = allRuns.map(({key,concernSituation,notes}) => {
       const situLabel = situationLabel(key, concernSituation);
@@ -789,8 +801,8 @@
       {
         title: "09 · 애정 표현이 어긋나는 순간",
         body: isT
-          ? `${sameStrength ? "둘의 에너지 운용 방식이 비슷해서 표현 강도는 맞기 쉽다." : "에너지 운용 방식이 달라 한쪽은 충분히 표현했다고 느끼는데 다른 쪽은 부족하다고 느낄 수 있다."} 말, 연락, 행동 중 무엇을 애정의 증거로 보는지 직접 맞춰.`
-          : `${sameStrength ? "둘은 마음을 쓰는 속도가 비슷해서 어느 정도 리듬을 맞추기 쉬운 편이야." : "한 사람은 충분히 하고 있다고 생각하는데 다른 사람은 ‘왜 이렇게 멀지?’ 하고 느끼는 순간이 생길 수 있어."} 그래서 “난 연락이 이 정도면 안심돼”, “난 말보다 행동이 더 중요해”처럼 사랑받는 느낌이 드는 방식을 구체적으로 말해주는 게 좋아.`
+          ? `${sameStrength ? "둘의 기본적인 힘 쓰는 방식은 비슷하게 잡혀 있어. 다만 이게 애정 표현 방식까지 같다는 뜻은 아니야." : "둘의 기본적인 힘 쓰는 방식은 다르게 잡혀 있어. 이 차이만으로 애정 표현 방식까지 다르다고 단정할 수는 없어."} 말, 연락, 행동 중 무엇을 애정의 증거로 보는지 직접 맞춰.`
+          : `${sameStrength ? "둘은 기본적인 힘 쓰는 방식이 비슷하게 잡혀 있어. 그렇다고 마음을 표현하는 속도까지 같다고 보진 않을게." : "둘은 기본적인 힘 쓰는 방식이 다르게 잡혀 있어. 그렇다고 애정 표현이 꼭 어긋난다고 단정하진 않을게."} 그래서 “난 연락이 이 정도면 안심돼”, “난 말보다 행동이 더 중요해”처럼 사랑받는 느낌이 드는 방식을 구체적으로 말해주는 게 좋아.`
       },
       {
         title: "10 · 연락과 혼자 있는 시간",
@@ -801,7 +813,7 @@
       {
         title: "11 · 일상에서 같이 살기 편하려면",
         body: isT
-          ? `연애 감정보다 생활 규칙에서 갈등이 오래 간다. 일정, 약속시간, 집안일, 휴식 방식 중 반복 충돌하는 항목은 담당과 기준을 명확히 해. 추측 대신 규칙이 낫다.`
+          ? `일정, 약속시간, 집안일, 휴식 방식처럼 생활 기준은 감정과 별개로 미리 맞춰두는 편이 안전해. 실제로 반복해서 부딪히는 항목이 있다면 담당과 기준을 명확히 해.`
           : `좋아하는 마음이 커도 생활 리듬이 계속 안 맞으면 사소한 일로 지치기 쉬워. 약속시간, 쉬는 방식, 집안일, 주말 계획 같은 건 “사랑하면 알아서 맞겠지” 하지 말고 둘만의 기준을 만들어두는 게 훨씬 편해.`
       },
       {
@@ -831,7 +843,7 @@
       {
         title: "16 · 둘이 실제로 지키면 좋은 약속",
         body: isT
-          ? `<b>1.</b> 서운함은 24시간 안에 말하기.<br><b>2.</b> 싸울 때 관계 전체를 평가하지 않기.<br><b>3.</b> 연락·돈·개인시간 기준을 미리 합의하기.<br><b>4.</b> 너는 ${myNeed}, ${safeName}은 ${partnerNeed}을 존중하기.<br><b>5.</b> 같은 싸움이 세 번 반복되면 감정이 아니라 규칙을 바꾸기.`
+          ? `<b>1.</b> 서운함은 너무 오래 묵히지 말고 말하기.<br><b>2.</b> 싸울 때 관계 전체를 평가하지 않기.<br><b>3.</b> 연락·돈·개인시간 기준을 미리 합의하기.<br><b>4.</b> 너는 ${myNeed}, ${safeName}은 ${partnerNeed}을 존중하기.<br><b>5.</b> 같은 싸움이 반복되면 감정보다 둘의 규칙을 먼저 바꾸기.`
           : `언니가 마지막으로 둘한테 약속 다섯 개만 남겨줄게.<br><br><b>1.</b> 서운한 건 너무 오래 묵히지 않기.<br><b>2.</b> 싸운 날 “우리 원래 안 맞아”까지 가지 않기.<br><b>3.</b> 연락·돈·혼자 있는 시간은 미리 기준 맞추기.<br><b>4.</b> 너한테 필요한 <b>${myNeed}</b>과 ${safeName}에게 필요한 <b>${partnerNeed}</b>을 서로 존중하기.<br><b>5.</b> 같은 싸움이 반복되면 사랑을 의심하기 전에 둘의 방식부터 바꿔보기.<br><br>궁합은 둘 사이를 결정하는 판정표라기보다, 잘 맞는 부분은 더 잘 쓰고 부딪히는 부분은 덜 다치게 만드는 지도처럼 봐주면 돼.`
       },
     ];
@@ -1318,7 +1330,7 @@
     root = document.createElement("div");
     root.id = "unniProductModal";
     root.style.cssText = "display:none;position:fixed;inset:0;z-index:99999;background:rgba(24,21,25,.36);padding:10px;overflow:auto;-webkit-overflow-scrolling:touch;backdrop-filter:blur(5px)";
-    root.innerHTML = `<div data-premium-modal-card="1" style="max-width:520px;margin:max(8px,env(safe-area-inset-top)) auto max(14px,env(safe-area-inset-bottom));background:#fffdfa;border:1px solid #e8e2dc;border-radius:25px;padding:0 16px 20px;box-shadow:0 22px 58px rgba(38,30,28,.14);overflow:visible"><div id="unniProductStickyHead" style="position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin:0 -16px;padding:16px 16px 13px;background:rgba(255,253,250,.97);backdrop-filter:blur(14px);border-radius:25px 25px 15px 15px;border-bottom:1px solid #e8e2dc"><div style="min-width:0;flex:1"><div id="unniProductBadge" style="font-size:9.5px;font-weight:800;color:#c9365b"></div><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:5px"><h2 id="unniProductTitle" style="min-width:0;font-size:21px;line-height:1.28;font-weight:850;letter-spacing:-.025em;margin:0;color:#172033"></h2><div id="unniProductPrice" style="flex:none;padding:2px 0;font-size:11px;font-weight:820;color:#b83e5c;white-space:nowrap"></div></div></div><button id="unniProductClose" style="flex:none;border:1px solid #e8e2dc;background:#f8f6f3;border-radius:999px;width:38px;height:38px;font-size:18px;color:#697181;cursor:pointer">×</button></div><div id="unniProductBody" style="margin-top:14px"></div><div id="unniProductSetup" style="margin-top:14px"></div><div id="unniProductPayment" style="display:none;margin-top:14px;padding:13px 0 0;border-radius:0;background:transparent;border:0;border-top:1px solid #e8e2dc"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px"><div><div id="unniProductPaymentTitle" style="font-size:12px;font-weight:820;color:#354052">결제수단 선택</div><div id="unniProductPaymentSub" style="margin-top:2px;font-size:10px;font-weight:600;color:#8a9099">원하는 수단을 고른 뒤 아래에서 이어봐</div></div><div id="unniProductPaymentAmount" style="font-size:11px;font-weight:820;color:#c9365b"></div></div><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:13px;font-weight:820;cursor:pointer;box-shadow:0 8px 20px rgba(205,68,101,.13)">이 결과 사진으로 남기기</button><div id="unniProductSaveHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">결과 읽는 동안 저장용 사진을 미리 준비해둘게.</div><button id="unniProductAction" style="width:100%;margin-top:14px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:14px;font-weight:830;cursor:pointer;box-shadow:0 9px 22px rgba(205,68,101,.15)"></button><div id="unniProductActionHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">선택한 결제수단으로 결제됩니다</div><div id="unniProductAccessNote" style="display:none;margin-top:8px;text-align:center;font-size:10.5px;font-weight:650;line-height:1.6;color:#7d8490">한 번 결제하면 이 브라우저에서 추가 결제 없이 다시 볼 수 있어요.</div></div>`;
+    root.innerHTML = `<div data-premium-modal-card="1" style="max-width:520px;margin:max(8px,env(safe-area-inset-top)) auto max(14px,env(safe-area-inset-bottom));background:#fffdfa;border:1px solid #e8e2dc;border-radius:25px;padding:0 16px 20px;box-shadow:0 22px 58px rgba(38,30,28,.14);overflow:visible"><div id="unniProductStickyHead" style="position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin:0 -16px;padding:16px 16px 13px;background:rgba(255,253,250,.97);backdrop-filter:blur(14px);border-radius:25px 25px 15px 15px;border-bottom:1px solid #e8e2dc"><div style="min-width:0;flex:1"><div id="unniProductBadge" style="font-size:9.5px;font-weight:800;color:#c9365b"></div><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:5px"><h2 id="unniProductTitle" style="min-width:0;font-size:21px;line-height:1.28;font-weight:850;letter-spacing:-.025em;margin:0;color:#172033"></h2><div id="unniProductPrice" style="flex:none;padding:2px 0;font-size:11px;font-weight:820;color:#b83e5c;white-space:nowrap"></div></div></div><button id="unniProductClose" style="flex:none;border:1px solid #e8e2dc;background:#f8f6f3;border-radius:999px;width:38px;height:38px;font-size:18px;color:#697181;cursor:pointer">×</button></div><div id="unniProductBody" style="margin-top:14px"></div><div id="unniProductSetup" style="margin-top:14px"></div><div id="unniProductPayment" style="display:none;margin-top:14px;padding:13px 0 0;border-radius:0;background:transparent;border:0;border-top:1px solid #e8e2dc"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px"><div><div id="unniProductPaymentTitle" style="font-size:12px;font-weight:820;color:#354052">결제수단 선택</div><div id="unniProductPaymentSub" style="margin-top:2px;font-size:10px;font-weight:600;color:#8a9099">원하는 수단을 고른 뒤 아래에서 이어봐</div></div><div id="unniProductPaymentAmount" style="font-size:11px;font-weight:820;color:#c9365b"></div></div><div id="unniProductPaymentMethod"></div><div id="unniProductPaymentAgreement"></div></div><button id="unniProductSaveAll" type="button" style="display:none;width:100%;margin-top:22px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:13px;font-weight:820;cursor:pointer;box-shadow:0 8px 20px rgba(205,68,101,.13)">이 결과 사진으로 남기기</button><div id="unniProductSaveHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">결과 읽는 동안 저장용 사진을 미리 준비해둘게.</div><button id="unniProductAction" style="width:100%;margin-top:14px;border:0;border-radius:15px;background:linear-gradient(90deg,#e94f72,#ed6a87);color:white;padding:14px 16px;font-size:14px;font-weight:830;cursor:pointer;box-shadow:0 9px 22px rgba(205,68,101,.15)"></button><div id="unniProductActionHint" style="display:none;margin-top:7px;text-align:center;font-size:10px;font-weight:650;line-height:1.55;color:#969ba4">선택한 결제수단으로 결제돼</div><div id="unniProductAccessNote" style="display:none;margin-top:8px;text-align:center;font-size:10.5px;font-weight:650;line-height:1.6;color:#7d8490">한 번 결제하면 이 브라우저에서 추가 결제 없이 다시 볼 수 있어.</div></div>`;
     document.body.appendChild(root);
     root.querySelector("#unniProductClose").onclick = () => { root.style.display = "none"; document.body.style.overflow = ""; };
     root.addEventListener("click", (e) => { if (e.target === root) root.querySelector("#unniProductClose").click(); });
@@ -1384,7 +1396,7 @@
             <label style="display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:#fff1f2;border:1px solid #fecdd3;font-size:9.5px;font-weight:850;color:#be123c;cursor:pointer"><input id="partnerTimeDirectToggle" type="checkbox"> 정확한 시간 직접 입력</label>
           </div>
           <div id="partnerTimeBranchWrap"><select id="partnerTimeBranch" style="width:100%;padding:10px 9px;border:1px solid #cbd5e1;border-radius:10px;background:white;font-size:11px;font-weight:750;color:#475569"><option value="">(시간 모름)</option>${branchOpts}</select></div>
-          <div id="partnerTimeDirectWrap" style="display:none"><input id="partnerTimeInput" inputmode="numeric" maxlength="5" placeholder="예: 1330" oninput="if(window.formatBirthTime)window.formatBirthTime(this)" style="width:100%;box-sizing:border-box;padding:10px 9px;border:1px solid #fecdd3;border-radius:10px;background:#fff7f8;font-size:11px;font-weight:750;color:#475569;text-align:center"></div>
+          <div id="partnerTimeDirectWrap" style="display:none"><input id="partnerTimeInput" inputmode="numeric" maxlength="5" placeholder="예: 오후 1:30 → 1330" oninput="if(window.formatBirthTime)window.formatBirthTime(this)" style="width:100%;box-sizing:border-box;padding:10px 9px;border:1px solid #fecdd3;border-radius:10px;background:#fff7f8;font-size:11px;font-weight:750;color:#475569;text-align:center"></div>
         </div>
       </div>`;
     }
@@ -1838,7 +1850,7 @@
       cta:"고민 3개 더 깊게 보기",
     },
     full_saju: {
-      eyebrow:"1인 분석 대표",
+      eyebrow:"내 사주 전체판",
       value:"나 전체 구조 · 영역 연결 · 5년 흐름",
       difference:"방금 본 고민 하나를 반복하지 않고, 돈·일·연애·관계가 왜 같이 움직이는지 한 판으로 연결해.",
       cta:"내 전체 사주판 보기",
@@ -1888,14 +1900,14 @@
     }
     if (productId === "full_saju") {
       return direct.includes("concern_bundle3")
-        ? "다른 고민 3개는 이미 깊게 봤으니까, 이제 새로 열리는 가치는 네 전체 구조와 5년 흐름이야."
+        ? "다른 고민 3개는 이미 깊게 봤으니까, 이제 새로 볼 건 네 전체 구조와 5년 흐름이야."
         : isT
-          ? "기본 NOTE에서 가까운 시기는 충분히 봤어. 다음 정보 가치는 5년 전체 흐름과 여러 영역이 같이 바뀌는 이유에 있어."
+          ? "기본 NOTE에서 가까운 시기는 충분히 봤어. 다음엔 5년 전체 흐름과 여러 영역이 같이 바뀌는 이유를 보면 돼."
           : "지금 고민 하나의 가까운 시기는 이미 충분히 봤으니까, 다음에는 네 인생 전체 구조와 5년 큰 흐름을 이어서 보는 게 새 정보가 제일 많아.";
     }
     if (productId === "concern_bundle3") {
       return isT
-        ? "지금 고민은 여기서 닫고, 다른 고민 3개에 같은 원판이 어떻게 다르게 적용되는지 보는 게 중복이 적어."
+        ? "지금 고민은 여기서 닫고, 다른 고민 3개에 같은 사주 구조가 어떻게 다르게 나타나는지 보는 게 중복이 적어."
         : "지금 고민 하나는 충분히 풀었으니까, 아직 마음에 남은 다른 고민 3개를 같은 깊이로 보는 게 새 정보가 많아.";
     }
     const quote = entitlementApi()?.calculateUpgradeQuote?.({ targetProduct:"all_in_one", verifiedEntitlements:direct });
