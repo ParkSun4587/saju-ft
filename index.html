@@ -681,6 +681,10 @@
   #landingFrame>header,#loadingFrame>header{background:rgba(255,253,250,.94)!important;border-color:var(--unni-line)!important;backdrop-filter:blur(16px)!important;padding-left:16px!important;padding-right:16px!important}
   #chatStreamArea,#loadingChatStream{background:var(--unni-bg)!important;padding-left:14px!important;padding-right:14px!important}
   #welcomeSisterBubble{background:var(--unni-surface)!important;border:1px solid var(--unni-line)!important;box-shadow:none!important;padding:11px 13px!important;border-radius:17px!important}
+  #welcomeSisterBubble[data-consult-mode="F"]{background:#fff5f7!important;border-color:#f3c9d3!important}
+  #welcomeSisterBubble[data-consult-mode="F"] #welcomeSisterText{color:#7b3145!important}
+  #welcomeSisterBubble[data-consult-mode="T"]{background:#f2f8fb!important;border-color:#cfe3ec!important}
+  #welcomeSisterBubble[data-consult-mode="T"] #welcomeSisterText{color:#315d70!important}
   #welcomeSisterText{font-size:13px!important;line-height:1.62!important;color:#364152!important;font-weight:520!important}
   #sajuInputCardBox{background:var(--unni-paper)!important;border:1px solid var(--unni-line)!important;border-radius:22px!important;box-shadow:var(--unni-shadow)!important;padding:15px!important;margin-top:4px!important}
   #sajuForm{display:grid!important;gap:12px!important}
@@ -1730,7 +1734,7 @@
         <!-- 중앙 구분선 -->
         <div
           id="centerDivider"
-          class="absolute top-1/2 left-0 w-full h-[14px] z-[80] pointer-events-none -translate-y-1/2 transition-opacity duration-200"
+          class="absolute top-1/2 left-0 w-full h-[5px] z-[80] pointer-events-none -translate-y-1/2 transition-opacity duration-200"
         ></div>
 
         <!-- 첫 상담자 선택 헤더 -->
@@ -2741,8 +2745,8 @@
                         NOTE2 다음 내용부터 바로 열려
                       </div>
                     </div>
-                    <div class="shrink-0 rounded-full border border-rose-100 bg-rose-50 px-3 py-1.5 text-right">
-                      <span class="text-[18px] font-black tracking-tight text-rose-600">990원</span>
+                    <div id="paywallPriceBadge" class="shrink-0 rounded-full border border-rose-100 bg-rose-50 px-3 py-1.5 text-right">
+                      <span id="paywallPriceAmount" class="text-[18px] font-black tracking-tight text-rose-600">990원</span>
                     </div>
                   </div>
                 </div>
@@ -4349,8 +4353,10 @@
 
           const typingInd = document.getElementById("chatTypingIndicator");
           const realBubble = document.getElementById("chatRealBubbleBox");
+          const welcomeBubble = document.getElementById("welcomeSisterBubble");
           const inputCardBox = document.getElementById("sajuInputCardBox");
           if (inputCardBox) inputCardBox.dataset.consultMode = mode;
+          if (welcomeBubble) welcomeBubble.dataset.consultMode = mode;
 
           if (typingInd) typingInd.style.display = "flex";
           if (realBubble) realBubble.style.display = "none";
@@ -7031,6 +7037,8 @@ currentResultData = {
         const paywallNextLabel = document.getElementById("paywallNextLabel");
         const paywallLockedBadge = document.getElementById("paywallLockedBadge");
         const paywallPriceTitle = document.getElementById("paywallPriceTitle");
+        const paywallPriceBadge = document.getElementById("paywallPriceBadge");
+        const paywallPriceAmount = document.getElementById("paywallPriceAmount");
         const paymentContinueTitle = document.getElementById("paymentContinueTitle");
         const paymentContinueSub = document.getElementById("paymentContinueSub");
         const vipSectionMainTitle = document.getElementById("vipSectionMainTitle");
@@ -7051,7 +7059,7 @@ currentResultData = {
         if (payBtnSubText) {
           payBtnSubText.textContent = "NOTE2 다음부터 NOTE6까지";
         }
-        if (paywallSisterHeader) paywallSisterHeader.style.display = isT ? "none" : "flex";
+        if (paywallSisterHeader) paywallSisterHeader.style.display = "flex";
         if (paywallSisterAvatar) paywallSisterAvatar.src = isT ? "./서아.png" : "./로아.png";
         if (paywallSisterLabel) {
           paywallSisterLabel.textContent = isT
@@ -7079,6 +7087,16 @@ currentResultData = {
         }
         if (paywallPriceTitle) {
           paywallPriceTitle.textContent = paywallCopy.priceTitle;
+        }
+        if (paywallPriceBadge) {
+          paywallPriceBadge.className = isT
+            ? "shrink-0 rounded-full border border-sky-100 bg-sky-50 px-3 py-1.5 text-right"
+            : "shrink-0 rounded-full border border-rose-100 bg-rose-50 px-3 py-1.5 text-right";
+        }
+        if (paywallPriceAmount) {
+          paywallPriceAmount.className = isT
+            ? "text-[18px] font-black tracking-tight text-sky-600"
+            : "text-[18px] font-black tracking-tight text-rose-600";
         }
         if (paywallUnlockHint) {
           paywallUnlockHint.textContent = "NOTE2 다음 내용부터 바로 열려";
@@ -9250,6 +9268,8 @@ currentResultData = {
         const typingInd = document.getElementById("chatTypingIndicator");
 
         const realBubble = document.getElementById("chatRealBubbleBox");
+        const welcomeBubble = document.getElementById("welcomeSisterBubble");
+        if (welcomeBubble) welcomeBubble.dataset.consultMode = targetMode;
 
         if (typingInd) {
           typingInd.style.display = "none";
