@@ -819,7 +819,7 @@ function norm(v) {
   );
   assert(
     html.includes('/* final result containment pass */') &&
-    html.includes('--result-gutter:16px') &&
+    html.includes('--result-gutter:18px') &&
     html.includes('--result-axis-max:392px') &&
     html.includes('#resultPillarCard .grid>div+div{border-left:1px solid #eee7e1!important}') &&
     html.includes('#ohengBarContainer>div>div:nth-child(2){') &&
