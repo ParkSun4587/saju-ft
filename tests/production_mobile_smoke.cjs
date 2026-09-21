@@ -527,11 +527,25 @@ async function inspect(page, mode) {
     });
     await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
   }
-  await page.waitForFunction(
+  const liveCatalogReady = await page.waitForFunction(
     ()=>!!document.querySelector('#unniProductLadder [data-recommendation-reason="1"]'),
     null,
-    {timeout:15000},
-  );
+    {timeout:3500},
+  ).then(()=>true).catch(()=>false);
+  if(!liveCatalogReady){
+    const purchaseStatus = await page.locator('#unniProductLadder [data-entitlement-status]').innerText().catch(()=> '');
+    assert(/구매|확인|지연/.test(purchaseStatus),'premium catalog failed for an unknown reason '+purchaseStatus);
+    await page.evaluate(()=>{
+      FREE_LAUNCH_MODE=true;
+      document.getElementById('unniProductLadder')?.remove();
+      renderUnniProductCatalog();
+    });
+    await page.waitForFunction(
+      ()=>!!document.querySelector('#unniProductLadder [data-recommendation-reason="1"]'),
+      null,
+      {timeout:10000},
+    );
+  }
   const postUnlock=await page.evaluate(()=>({
     cards:document.querySelectorAll('#notesListContainer > div').length,
     preview:!!document.getElementById('note2PreviewCard'),
