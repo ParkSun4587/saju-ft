@@ -79,10 +79,10 @@ async function enter(page, mode, concern, situation) {
     };
   });
   assert(intro.visible && intro.inViewport && intro.titleHeight<=82 && !intro.hintVisible && intro.panelHeightDelta<=2 && intro.ctaHeightDelta<=2,'first counselor-choice viewport/layout balance broken '+JSON.stringify(intro));
-  for(const copy of ['똑같은 내 사주, 누구한테 먼저 털어놓을래?','말해주는 방식만 골라봐','마음부터 들어주는','핵심부터 짚어주는','요즘 뭐가 제일 마음에 걸려?','언니한테 편하게 얘기해봐','뭐가 제일 궁금해?','중요한 것부터 바로 보자','언니한테 얘기해볼래','좋아, 바로 봐줘']) {
+  for(const copy of ['똑같은 내 사주, 누구한테 먼저 털어놓을래?','요즘 뭐가 제일 마음에 걸려?','언니한테 편하게 얘기해봐','뭐가 제일 궁금해?','중요한 것부터 바로 보자','언니한테 얘기해볼래','좋아, 바로 봐줘']) {
     assert(intro.bodyText.includes(copy),'first counselor-choice copy missing '+copy);
   }
-  for(const removedCopy of ['선택한 언니의 말투로 결과 끝까지 이어져','응, 언니랑 천천히 풀어볼래','좋아, 핵심만 바로 알려줘','원하는 상담 스타일을 골라봐','감정 공감형','핵심 정리형','왔어? 요즘 뭐가 제일 마음에 걸려','왔어? 뭐가 제일 궁금해']) {
+  for(const removedCopy of ['말해주는 방식만 골라봐','마음부터 들어주는','핵심부터 짚어주는','선택한 언니의 말투로 결과 끝까지 이어져','응, 언니랑 천천히 풀어볼래','좋아, 핵심만 바로 알려줘','원하는 상담 스타일을 골라봐','감정 공감형','핵심 정리형','왔어? 요즘 뭐가 제일 마음에 걸려','왔어? 뭐가 제일 궁금해']) {
     assert(!intro.bodyText.includes(removedCopy),'removed first counselor-choice copy remains '+removedCopy);
   }
   await page.locator(mode === 'F' ? '#panelRoa' : '#panelSeoa').click();
