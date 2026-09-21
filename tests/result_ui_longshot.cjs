@@ -7,7 +7,7 @@ const sleep = ms => new Promise(r=>setTimeout(r,ms));
 async function deployed(page) {
   for (let i=0;i<36;i++) {
     try {
-      await page.goto(BASE + '?longshot=v1-' + i, {waitUntil:'domcontentloaded',timeout:30000});
+      await page.goto(BASE + '?longshot=v2-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() => {
         const flow=document.getElementById('resultConsultationFlow');
         const core=document.getElementById('resultCoreCard');
@@ -43,31 +43,88 @@ async function enter(page, mode) {
   await page.waitForSelector('#note2PreviewCard',{state:'visible',timeout:10000});
 }
 
-async function expandResultForShot(page) {
+async function unlockForQa(page) {
+  await page.evaluate(()=>{
+    FREE_LAUNCH_MODE=true;
+    unlockFullReport(null,true);
+    renderUnniProductCatalog();
+  });
+  await page.waitForSelector('#reAnalyzeBox',{state:'visible',timeout:10000});
+  await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
+  const state=await page.evaluate(()=>({
+    notes:document.querySelectorAll('#notesListContainer > div').length,
+    preview:!!document.getElementById('note2PreviewCard'),
+    products:document.querySelectorAll('#unniProductLadder [data-unni-product]').length,
+  }));
+  assert(state.notes===6 && !state.preview && state.products===4,
+    'unlocked longshot state drift '+JSON.stringify(state));
+}
+
+async function makeStaticLongshotDocument(page) {
   return page.evaluate(() => {
-    const result=document.getElementById('resultSection');
-    if(!result) return 0;
-    result.scrollTop=0;
-    const h=Math.max(result.scrollHeight,result.getBoundingClientRect().height);
-    result.style.position='relative';
-    result.style.inset='auto';
-    result.style.height=h+'px';
-    result.style.minHeight=h+'px';
-    result.style.overflow='visible';
-    document.documentElement.style.height='auto';
-    document.body.style.height='auto';
-    document.body.style.minHeight=h+'px';
+    const source=document.querySelector('#resultSection > div');
+    const original=document.getElementById('resultSection');
+    if(!source || !original) return {height:0,docHeight:0,overflow:true};
+
+    const shot=document.createElement('main');
+    shot.id='resultSection';
+    shot.dataset.consultMode=original.dataset.consultMode || 'F';
+    shot.style.setProperty('display','block','important');
+    shot.style.setProperty('position','relative','important');
+    shot.style.setProperty('inset','auto','important');
+    shot.style.setProperty('width','100%','important');
+    shot.style.setProperty('height','auto','important');
+    shot.style.setProperty('min-height','0','important');
+    shot.style.setProperty('overflow','visible','important');
+    shot.style.setProperty('background','#fcfaf7','important');
+
+    const inner=source.cloneNode(true);
+    shot.appendChild(inner);
+
+    document.body.replaceChildren(shot);
+    document.body.className='';
+    document.body.style.setProperty('display','block','important');
+    document.body.style.setProperty('width','100%','important');
+    document.body.style.setProperty('height','auto','important');
+    document.body.style.setProperty('min-height','0','important');
+    document.body.style.setProperty('overflow','visible','important');
+    document.body.style.setProperty('margin','0','important');
+    document.body.style.setProperty('padding','0','important');
+    document.body.style.setProperty('background','#fcfaf7','important');
+
+    document.documentElement.style.setProperty('height','auto','important');
+    document.documentElement.style.setProperty('min-height','0','important');
+    document.documentElement.style.setProperty('overflow','visible','important');
+    document.documentElement.style.setProperty('background','#fcfaf7','important');
+
     window.scrollTo(0,0);
-    return h;
+    return {
+      height:shot.getBoundingClientRect().height,
+      docHeight:document.documentElement.scrollHeight,
+      overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth,
+    };
   });
 }
 
-async function captureLong(page, path, label) {
-  const h=await expandResultForShot(page);
-  assert(h>1600,label+' result did not expand: '+h);
-  const fullHeight=await page.evaluate(()=>document.documentElement.scrollHeight);
-  assert(fullHeight>1600,label+' document did not become long: '+fullHeight);
-  await page.screenshot({path,fullPage:true,animations:'disabled'});
+async function captureState(browser, vp, state) {
+  const ctx=await browser.newContext({viewport:{width:vp.width,height:vp.height}});
+  const page=await ctx.newPage();
+  await deployed(page);
+  await enter(page,vp.mode);
+  if(state==='unlocked') await unlockForQa(page);
+
+  const metrics=await makeStaticLongshotDocument(page);
+  assert(metrics.height>1600 && metrics.docHeight>1600,
+    vp.width+'x'+vp.height+' '+vp.mode+' '+state+' longshot stayed viewport-sized '+JSON.stringify(metrics));
+  assert(!metrics.overflow,
+    vp.width+'x'+vp.height+' '+vp.mode+' '+state+' longshot overflow '+JSON.stringify(metrics));
+
+  await page.screenshot({
+    path:'/tmp/result-ui-'+vp.width+'x'+vp.height+'-'+vp.mode+'-'+state+'-long.png',
+    fullPage:true,
+    animations:'disabled',
+  });
+  await ctx.close();
 }
 
 (async()=>{
@@ -81,40 +138,8 @@ async function captureLong(page, path, label) {
   ];
 
   for(const vp of viewports){
-    const ctx=await browser.newContext({viewport:{width:vp.width,height:vp.height}});
-    const page=await ctx.newPage();
-    await deployed(page);
-    await enter(page,vp.mode);
-
-    await captureLong(
-      page,
-      '/tmp/result-ui-'+vp.width+'x'+vp.height+'-'+vp.mode+'-locked-long.png',
-      vp.width+'x'+vp.height+' '+vp.mode+' locked'
-    );
-
-    await page.evaluate(()=>{
-      FREE_LAUNCH_MODE=true;
-      unlockFullReport(null,true);
-      renderUnniProductCatalog();
-    });
-    await page.waitForSelector('#reAnalyzeBox',{state:'visible',timeout:10000});
-    await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
-
-    const unlocked=await page.evaluate(()=>({
-      notes:document.querySelectorAll('#notesListContainer > div').length,
-      preview:!!document.getElementById('note2PreviewCard'),
-      products:document.querySelectorAll('#unniProductLadder [data-unni-product]').length,
-      overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth,
-    }));
-    assert(unlocked.notes===6 && !unlocked.preview && unlocked.products===4 && !unlocked.overflow,
-      'unlocked longshot state drift '+JSON.stringify({vp,unlocked}));
-
-    await captureLong(
-      page,
-      '/tmp/result-ui-'+vp.width+'x'+vp.height+'-'+vp.mode+'-unlocked-long.png',
-      vp.width+'x'+vp.height+' '+vp.mode+' unlocked'
-    );
-    await ctx.close();
+    await captureState(browser,vp,'locked');
+    await captureState(browser,vp,'unlocked');
   }
 
   console.log('RESULT_UI_LONGSHOT_PASS');
