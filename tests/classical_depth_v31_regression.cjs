@@ -20,7 +20,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     const E=globalThis.__CLASSICAL_ENGINE_V2__;
     const POS=['year','month','day','hour'];
     const DAY_ELEMENT={甲:'mok',乙:'mok',丙:'hwa',丁:'hwa',戊:'to',己:'to',庚:'geum',辛:'geum',壬:'su',癸:'su'};
-    const plain=v=>String(v||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    const plain=v=>String(v||'').replace(/<br\s*\/?\s*>/gi,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
     const clone=v=>JSON.parse(JSON.stringify(v));
 
     function sipsinData(pillars){
