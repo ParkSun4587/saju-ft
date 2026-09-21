@@ -4298,7 +4298,7 @@
             if (senderTitle) senderTitle.textContent = "로아 언니 (F)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔구나. 이름이랑 생일부터 편하게 알려줘.<br>좋은 말만 골라 하진 않을게. 왜 이 고민이 자꾸 마음에 걸리는지부터 보고, 네가 놓치고 있는 지점까지 언니가 같이 짚어줄게.";
+                "왔구나. 이름이랑 생일부터 편하게 알려줘.<br>왜 자꾸 마음에 걸리는지 언니가 같이 볼게.";
             }
           } else {
             if (sisterImg) sisterImg.src = "./서아.png";
@@ -4310,7 +4310,7 @@
             if (senderTitle) senderTitle.textContent = "서아 언니 (T)";
             if (sisterText) {
               sisterText.innerHTML =
-                "왔어. 이름이랑 생일부터 알려줘.<br>괜히 겁주거나 돌려 말하지 않을게. 지금 상황에서 뭐가 핵심인지 먼저 가르고, 원인·지금 할 일·움직일 타이밍까지 필요한 것만 정확히 정리해줄게.";
+                "왔어. 이름이랑 생일부터 알려줘.<br>지금 네 고민에서 핵심부터 바로 짚어줄게.";
             }
           }
 
@@ -6228,8 +6228,8 @@ function generateConcernNotes(data, mode) {
 
             const ackText =
               mode === "T"
-                ? `${callVoc}, 확인했어. ${selectedSituationText} 기준으로 판단할게.`
-                : `${callVoc}, 응. ${selectedSituationText} 쪽이구나. 이 상황 기준으로 같이 볼게.`;
+                ? `${callVoc}, 확인했어. 바로 볼게.`
+                : `${callVoc}, 알겠어. 바로 같이 볼게.`;
 
             const sisterAckHTML = `
                         <div class="flex items-start gap-1.5 fade-in-up mt-1">
@@ -6347,8 +6347,8 @@ currentResultData = {
                 removeLiveTyping("liveT1");
                 appendSisterMsg(
                   isT
-                    ? `${callVoc}, 사주 구조부터 확인할게. 지금 고민과 직접 연결되는 것만 추리는 중이야.`
-                    : `${callVoc}, 사주 전체부터 보고 있어. 지금 고민이 왜 여기서 반복되는지도 같이 연결해볼게.`,
+                    ? `${callVoc}, 사주 구조 확인 중이야. 지금 고민과 연결되는 부분만 볼게.`
+                    : `${callVoc}, 사주 전체부터 보고 있어. 지금 고민과 연결되는 부분만 같이 볼게.`,
                   false,
                 );
 
@@ -6397,8 +6397,8 @@ currentResultData = {
                     removeLiveTyping("liveT3");
                     appendSisterMsg(
                       isT
-                        ? `정리 끝. 먼저 볼 핵심이 잡혔어. 중요한 것부터 바로 보여줄게.`
-                        : `다 봤어. 왜 이 상황이 자꾸 마음에 남는지 연결됐어. 핵심부터 하나씩 같이 볼게.`,
+                        ? `정리 끝. 핵심부터 바로 보여줄게.`
+                        : `다 봤어. 핵심부터 같이 볼게.`,
                       true,
                     );
 
@@ -6680,7 +6680,7 @@ currentResultData = {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
             const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
-            resGreeting.innerHTML = `<b>${callVoc}</b>, 봤어. ‘${escapeHTML(situationText)}’ 상황에서 먼저 볼 핵심이 잡혔어. 중요한 것부터 정리할게.`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, 핵심이 잡혔어. 중요한 것부터 정리할게.`;
           }
         } else {
           if (resultFirstLookLabel) resultFirstLookLabel.textContent = "로아 언니가 먼저 본 너";
@@ -6709,7 +6709,7 @@ currentResultData = {
             const situationText =
               getConcernSituationLabel(data.concernKey, data.concernSituation) || "지금 상황";
             const callVoc = hasBatchim ? `${escapeHTML(displayName)}아` : `${escapeHTML(displayName)}야`;
-            resGreeting.innerHTML = `<b>${callVoc}</b>, 응. ‘${escapeHTML(situationText)}’ 상황에서 왜 자꾸 마음이 남는지 보여. 먼저 핵심부터 같이 볼게.`;
+            resGreeting.innerHTML = `<b>${callVoc}</b>, 왜 자꾸 마음에 남는지 보여. 핵심부터 같이 볼게.`;
           }
         }
         // [추가] '다른 고민도 풀어보기' CTA 버튼 테마 컬러 실시간 동기화
