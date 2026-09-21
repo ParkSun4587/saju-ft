@@ -2033,23 +2033,12 @@
       : (isT
           ? "방금 본 내용과 겹치지 않게, 새로 볼 정보가 많은 걸 먼저 뒀어."
           : "아까 본 얘기는 빼고, 여기서 새로 볼 게 많은 걸 먼저 뒀어.");
-    const toggleHtml = others.length
-      ? `<button id="unniShowOtherProducts" type="button" aria-expanded="false" style="width:100%;border:0;border-top:1px solid #e8e1db;background:transparent;padding:12px 2px 9px;font-size:10.8px;font-weight:760;color:#7d858f;cursor:pointer;text-align:left">다른 방향 ${others.length}개도 보기 <span style="float:right">＋</span></button><div id="unniOtherProducts" style="display:none;gap:8px">${foldedProductGroups(others,states)}</div>`
+    const otherHtml = others.length
+      ? `<div id="unniOtherProducts" style="display:grid;gap:14px;margin-top:10px">${foldedProductGroups(others,states)}</div>`
       : "";
-    wrap.innerHTML = `<div style="display:grid;gap:0">${productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})}${toggleHtml}</div>`;
+    wrap.innerHTML = `<div style="display:grid;gap:0">${productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})}${otherHtml}</div>`;
     slot.replaceChildren(wrap);
 
-    const toggle = wrap.querySelector("#unniShowOtherProducts");
-    const otherWrap = wrap.querySelector("#unniOtherProducts");
-    toggle?.addEventListener("click",() => {
-      const open = toggle.getAttribute("aria-expanded") !== "true";
-      toggle.setAttribute("aria-expanded",open ? "true" : "false");
-      toggle.innerHTML = open ? '다른 방향 접기 <span style="float:right">－</span>' : `다른 방향 ${others.length}개도 보기 <span style="float:right">＋</span>`;
-      if (otherWrap) {
-        otherWrap.style.display = open ? "grid" : "none";
-        otherWrap.style.gap = "14px";
-      }
-    });
     wrap.querySelectorAll("[data-unni-product]").forEach((btn)=>btn.addEventListener("click",()=>openProduct(btn.dataset.unniProduct)));
   }
 
