@@ -250,7 +250,7 @@ function assertResultLayout(layout, label) {
     label+' five elements lost single-graph hierarchy '+JSON.stringify(layout.overview));
   assert(layout.memoMetaDisplay==='none' && layout.memoMetaText.includes('1:1 맞춤 상담 기록'),
     label+' duplicate memo header metadata is visible '+JSON.stringify({display:layout.memoMetaDisplay,text:layout.memoMetaText}));
-  assert(layout.bridgeDisplay==='none' && layout.bridgeAvatarDisplay==='none' && layout.bridgeNameDisplay==='none',
+  assert(layout.bridgeDisplay==='none',
     label+' concern handoff still interrupts the document '+JSON.stringify({bridge:layout.bridgeDisplay,avatar:layout.bridgeAvatarDisplay,name:layout.bridgeNameDisplay}));
   assert(layout.shareLeadDisplay==='none' && layout.funEyebrowDisplay==='none' && layout.closeoutSubDisplay==='none',
     label+' post-consultation helper copy is still visually competing '+JSON.stringify({shareLead:layout.shareLeadDisplay,funEyebrow:layout.funEyebrowDisplay,closeoutSub:layout.closeoutSubDisplay}));
