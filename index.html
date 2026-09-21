@@ -3873,6 +3873,7 @@
           } catch {}
         }
         resetPaymentWidgetUI();
+        writeStore("unni_payment_retry_after_refresh", "1", true);
         changeViewState("result");
 
         document.getElementById("paymentFailRefreshBox")?.remove();
@@ -9147,7 +9148,24 @@ currentResultData = {
         try {
           const last = readStore("sazu_last_unique_key");
           const data = JSON.parse(readStore("sazu_last_result_data_" + last));
-          if (data) renderResultView(data);
+          if (data) {
+            renderResultView(data);
+            if (readStore("unni_payment_retry_after_refresh", true) === "1") {
+              removeStore("unni_payment_retry_after_refresh", true);
+              runSafeTimeout(() => {
+                const locked = document.getElementById("lockedOverlay");
+                const target =
+                  locked && getComputedStyle(locked).display !== "none"
+                    ? document.getElementById("paywallCard")
+                    : document.getElementById("postConsultationProductsSlot");
+                if (target) scrollResultTo(target, false);
+                showVoiceToast({
+                  F: "응, 이제 다시 결제할 수 있어. 아래 결제 버튼만 다시 눌러줘.",
+                  T: "이제 다시 결제할 수 있어. 아래 결제 버튼을 눌러줘.",
+                }, data.currentMode);
+              }, 700);
+            }
+          }
         } catch {
           showVoiceToast({
             F: "저장한 결과를 불러오지 못했어. 번거롭겠지만 한 번만 새로 알려줘.",
