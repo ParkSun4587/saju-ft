@@ -362,10 +362,10 @@ async function load(page) {
       document.getElementById('genderValue').value = c.gender;
       const unknown = c.time === 'unknown';
       const time = document.getElementById('birthTimeInput');
-      const ub = document.getElementById('birthTimeUnknown');
-      ub.checked = unknown;
+      const directToggle = document.getElementById('birthTimeDirectToggle');
+      directToggle.checked = !unknown;
+      toggleDirectBirthTime(directToggle, false);
       time.value = unknown ? '' : c.time;
-      toggleBirthTimeUnknown(ub, false);
       const leap = document.getElementById('leapMonthCheck');
       if (leap) leap.checked = !!c.leap;
 
@@ -497,8 +497,10 @@ async function load(page) {
       document.getElementById('calendarSelect').value = 'lunar';
       document.getElementById('genderValue').value = 'female';
       document.getElementById('birthDateInput').value = '20170301';
+      const directToggle = document.getElementById('birthTimeDirectToggle');
+      directToggle.checked = true;
+      toggleDirectBirthTime(directToggle, false);
       document.getElementById('birthTimeInput').value = '1200';
-      document.getElementById('birthTimeUnknown').checked = false;
       document.getElementById('leapMonthCheck').checked = true;
       startAnalysis('F');
       return {noResult:currentResultData === null};
