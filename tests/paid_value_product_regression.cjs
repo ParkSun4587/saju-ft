@@ -377,7 +377,7 @@ function norm(v) {
     assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
     assert(ui.fPaywallText.includes('로아 언니 · 여기서 하나만 더 보자') && ui.fPaywallText.includes('무엇부터 덜어야') && ui.fPaywallText.includes('언니, 그것도 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
-    assert(!ui.tPaywallText.includes('서아 언니 · 마지막 기준만 보면 돼') && ui.tPaywallText.includes('부하 제거') && ui.tPaywallText.includes('응, 끝까지 봐줘') && ui.tPaywallText.includes('990원'), `T conversion paywall should omit the extra sister bubble: ${ui.tPaywallText}`);
+    assert(ui.tPaywallText.includes('서아 언니 · 마지막 기준만 보면 돼') && ui.tPaywallText.includes('부하 제거') && ui.tPaywallText.includes('응, 끝까지 봐줘') && ui.tPaywallText.includes('990원'), `T conversion paywall sister header should be restored: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
     assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
     assert(ui.fPaywallText.includes('NOTE2 다음부터 NOTE6까지') && ui.tPaywallText.includes('NOTE2 다음부터 NOTE6까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), '990 won unlock scope or stale sale badge drift');
@@ -839,6 +839,13 @@ function norm(v) {
   );
   assert(html.includes('BIRTH_TIME_BRANCHES') && html.includes('BIRTH_TIME_BRANCH_LABELS'), 'branch-time parsing/restore support missing');
   assert(
+    html.includes('id="paywallPriceBadge"') &&
+    html.includes('id="paywallPriceAmount"') &&
+    html.includes('rounded-full border border-sky-100 bg-sky-50 px-3 py-1.5 text-right') &&
+    html.includes('text-[18px] font-black tracking-tight text-sky-600') &&
+    html.includes('if (paywallSisterHeader) paywallSisterHeader.style.display = "flex";') &&
+    html.includes('#welcomeSisterBubble[data-consult-mode="T"]') &&
+    html.includes('color:#315d70!important') &&
     html.includes('.note-preview-continuation::before{content:none!important}') &&
     html.includes('border-left:3px solid #e77892') &&
     html.includes('이제 중요한 건 하나야. 어디서 끊고, 뭘 바꿀지.') &&
@@ -858,7 +865,7 @@ function norm(v) {
     !html.includes('마음부터 들어주는') &&
     !html.includes('핵심부터 짚어주는') &&
     html.includes('id="centerDivider"') &&
-    html.includes('h-[14px]') &&
+    html.includes('h-[5px]') &&
     html.includes('backdrop-filter:blur(4px)') &&
     html.includes('linear-gradient(to bottom,rgba(248,196,216,.24) 0%,rgba(224,213,238,.20) 50%,rgba(190,211,244,.24) 100%)') &&
     !html.includes('선택한 언니의 말투로 결과 끝까지 이어져') &&
