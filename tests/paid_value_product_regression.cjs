@@ -546,7 +546,7 @@ function norm(v) {
   const oppositeActionText = await page.locator('#unniProductAction').innerText();
   assert(
     sourceFreeLaunch
-      ? oppositeActionText.includes('내 전체 사주판 열기 · 4,900원')
+      ? oppositeActionText.includes('내 전체 사주판 보기 · 4,900원')
       : oppositeActionText.includes('무료 이벤트'),
     `opposite free/paid toggle UI mismatch: sourceFreeLaunch=${sourceFreeLaunch}, action=${oppositeActionText}`
   );
@@ -850,7 +850,7 @@ function norm(v) {
     premium.includes('data-recommendation-reason="1"') &&
     premium.includes('wrap.innerHTML = `<div style="display:grid;gap:0">') &&
     !premium.includes('왜 이걸 먼저 보냐면</span>') &&
-    premium.includes('내 전체 사주판 열기') &&
+    premium.includes('내 전체 사주판 보기') &&
     premium.includes('완전판으로 이어보기'),
     'young-user outcome-led product copy missing'
   );
