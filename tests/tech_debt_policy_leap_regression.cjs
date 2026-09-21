@@ -256,6 +256,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.waitForFunction(()=>document.querySelector('#unniProductAction')?.textContent?.includes('우리 둘 궁합 보기'),null,{timeout:10000});
   await page.fill('#partnerBirth','19990511');
   await page.selectOption('#partnerCalendar','solar');
+  await page.check('#partnerTimeDirectToggle');
   await page.fill('#partnerTimeInput','1520');
   await page.click('#unniProductAction');
   await page.waitForSelector('#unniProductPayment',{state:'visible',timeout:10000});
