@@ -1734,7 +1734,8 @@
         <!-- 중앙 구분선 -->
         <div
           id="centerDivider"
-          class="absolute top-1/2 left-0 w-full h-px bg-white/35 z-[80] pointer-events-none shadow-[0_0_6px_rgba(255,255,255,0.45)] transition-opacity duration-200"
+          class="absolute top-1/2 left-0 w-full h-[2px] z-[80] pointer-events-none -translate-y-1/2 transition-opacity duration-200"
+          style="background:linear-gradient(to bottom,rgba(255,230,238,.34),rgba(239,244,247,.16) 50%,rgba(211,235,246,.30));"
         ></div>
 
         <!-- 첫 상담자 선택 헤더 -->
@@ -1752,11 +1753,6 @@
             >
               똑같은 내 사주, 누구한테 먼저 털어놓을래?
             </p>
-            <p
-              class="mt-[3px] text-[9px] sm:text-[9.5px] font-bold text-slate-500 tracking-tight text-center"
-            >
-              말해주는 방식만 골라봐
-            </p>
           </div>
         </div>
 
@@ -1765,7 +1761,7 @@
           id="panelRoa"
           role="button"
           tabindex="0"
-          aria-label="마음부터 들어주는 로아 언니와 상담 시작"
+          aria-label="로아 언니와 상담 시작"
           onclick="selectSplitMode('F')"
           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectSplitMode('F')}"
           class="char-panel relative w-full h-1/2 cursor-pointer bg-rose-50/30 overflow-hidden flex flex-col justify-end active:scale-[0.98] transition-transform duration-100"
@@ -1788,10 +1784,6 @@
               <span
                 class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]"
                 >로아</span
-              >
-              <span
-                class="ml-0.5 bg-white/92 backdrop-blur-sm text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[9px] font-black shadow-sm"
-                >마음부터 들어주는</span
               >
             </div>
 
@@ -1836,7 +1828,7 @@
           id="panelSeoa"
           role="button"
           tabindex="0"
-          aria-label="핵심부터 짚어주는 서아 언니와 상담 시작"
+          aria-label="서아 언니와 상담 시작"
           onclick="selectSplitMode('T')"
           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectSplitMode('T')}"
           class="char-panel relative w-full h-1/2 cursor-pointer bg-slate-900 overflow-hidden flex flex-col justify-end active:scale-[0.98] transition-transform duration-100"
@@ -1859,10 +1851,6 @@
               <span
                 class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]"
                 >서아</span
-              >
-              <span
-                class="ml-0.5 bg-sky-400/20 backdrop-blur-sm text-sky-100 border border-sky-300/40 px-2 py-0.5 rounded-full text-[9px] font-black shadow-sm"
-                >핵심부터 짚어주는</span
               >
             </div>
 
