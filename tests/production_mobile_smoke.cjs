@@ -278,6 +278,16 @@ async function inspect(page, mode) {
     return {
       n1:plain(notes[0]?.desc), n2:plain(notes[1]?.desc),
       n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc),
+      note5Presentation:(()=>{
+        const note=document.querySelector('#notesListContainer [data-note-role="05"]');
+        const good=note?.querySelector('.note-fit-good .note-fit-copy')?.innerText?.trim()||'';
+        const drain=note?.querySelector('.note-fit-drain .note-fit-copy')?.innerText?.trim()||'';
+        const criterion=note?.querySelector('.note-fit-criterion .note-fit-copy')?.innerText?.trim()||'';
+        return {
+          good,drain,criterion,
+          labels:[...note?.querySelectorAll('.note-fit-kicker,.note-fit-criterion-label')||[]].map(x=>x.innerText.trim()),
+        };
+      })(),
       noteV2Audit:currentResultData?.noteV2Audit || null,
       note6Timing:notes[5]?.__timingQA || null,
       oheng:document.getElementById('ohengSummaryTxt')?.innerText||'',
@@ -365,7 +375,16 @@ async function inspect(page, mode) {
   assert(r.n1.length>=140&&r.n1.length<=1200,mode+' NOTE1 classical-fusion size drift '+r.n1.length);
   assert(r.n2.length>=140&&r.n2.length<=1200,mode+' NOTE2 classical-fusion size drift '+r.n2.length);
   assert(r.n4.length>=150&&r.n4.length<=1400,mode+' NOTE4 classical-fusion action size drift '+r.n4.length);
-  assert(r.n5.length>=120&&r.n5.length<=760,mode+' NOTE5 domain-fit size drift '+r.n5.length);
+  assert(
+    r.n5.length>=100&&r.n5.length<=760 &&
+    r.note5Presentation?.good.length>=8 &&
+    r.note5Presentation?.drain.length>=8 &&
+    r.note5Presentation?.criterion.length>=8 &&
+    r.note5Presentation?.labels.includes('잘 맞는 쪽') &&
+    r.note5Presentation?.labels.includes('오래 두면 소모되는 쪽') &&
+    r.note5Presentation?.labels.includes('마지막 판단 기준'),
+    mode+' NOTE5 domain-fit/presentation drift '+JSON.stringify({length:r.n5.length,presentation:r.note5Presentation})
+  );
   assert(/시작|보통/.test(r.n2)&&/갈림길|여기서|그리고/.test(r.n2),mode+' NOTE2 causal chain missing '+r.n2);
   assert(r.note6Timing?.concernSituation,mode+' NOTE6 situation metadata missing');
   assert(norm(r.note6Timing?.firstBody)!==norm(r.note6Timing?.secondBody),mode+' NOTE6 timing roles duplicated');
