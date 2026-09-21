@@ -137,7 +137,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     });
     const BRIDGE=note(bridgeData,'career','current');
 
-    const plain=v=>String(v||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    const plain=v=>String(v||'').replace(/<br\s*\/?\s*>/gi,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
 
     return {
       A:{
