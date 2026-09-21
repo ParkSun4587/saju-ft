@@ -1047,7 +1047,7 @@
     border-radius:0!important;
     box-shadow:none!important
   }
-  #directPaymentOpenButton,#finalNotePaymentButton{background:linear-gradient(90deg,#e94f72,#ed6a87)!important;box-shadow:0 9px 22px rgba(205,68,101,.16)!important;border-radius:15px!important;min-height:50px!important}
+  #directPaymentOpenButton,#finalNotePaymentButton{background:#e85d7f!important;box-shadow:none!important;border-radius:15px!important;min-height:50px!important}
   #paymentWidgetArea{background:#faf7f6!important;border-color:#eee1e1!important;border-radius:17px!important}
   #mainFooter{margin-top:52px!important;padding-top:22px!important}
 
@@ -1181,12 +1181,12 @@
   #resultSection[data-consult-mode="T"] #directPaymentOpenButton,
   #resultSection[data-consult-mode="T"] #finalNotePaymentButton{
     background:#3297bd!important;
-    box-shadow:0 9px 22px rgba(50,151,189,.16)!important
+    box-shadow:none!important
   }
   #resultSection[data-consult-mode="F"] #directPaymentOpenButton,
   #resultSection[data-consult-mode="F"] #finalNotePaymentButton{
-    background:linear-gradient(90deg,#e94f72,#ed6a87)!important;
-    box-shadow:0 9px 22px rgba(205,68,101,.16)!important
+    background:#e85d7f!important;
+    box-shadow:none!important
   }
   #consultationCloseout{
     text-align:left;
@@ -2716,7 +2716,7 @@
                   id="directPaymentOpenButton"
                   type="button"
                   onclick="startDirectPayment()"
-                  class="mt-3 w-full rounded-2xl border-0 bg-gradient-to-r from-rose-500 to-pink-500 px-4 py-3.5 text-white shadow-[0_10px_24px_rgba(244,63,94,0.22)] transition-all active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center gap-0.5"
+                  class="mt-3 w-full rounded-2xl border-0 bg-[#e85d7f] px-4 py-3.5 text-white shadow-none transition-all active:scale-[0.98] cursor-pointer flex flex-col items-center justify-center gap-0.5"
                 >
                   <span
                     id="payBtnActionText"
@@ -2771,9 +2771,9 @@
                     id="finalNotePaymentButton"
                     type="button"
                     onclick="requestWidgetPayment()"
-                    class="w-full py-3.5 px-4 mt-3 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-black text-sm rounded-2xl shadow-[0_10px_24px_rgba(244,63,94,0.20)] active:scale-[0.98] transition-all"
+                    class="w-full py-3.5 px-4 mt-3 bg-[#e85d7f] text-white font-black text-sm rounded-2xl shadow-none active:scale-[0.98] transition-all"
                   >
-                    990원 결제하고 이어보기
+                    방금 보던 내용 이어보기 · 990원
                   </button>
                   <div
                     id="finalNotePaymentHint"
