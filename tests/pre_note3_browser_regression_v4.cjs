@@ -413,7 +413,7 @@ async function load(page) {
         firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('NOTE 01'),
         paywallHook:document.getElementById('payBoxHookMsg')?.innerText || '',
         paywallTeaser:document.getElementById('paywallNextTeaser')?.innerText || '',
-        paywallFeatures:[...document.querySelectorAll('#payBoxFeatures > div')].map(x => x.innerText.trim()),
+        paywallFeatures:[...document.querySelectorAll('#payBoxFeatures > div')].map(x => x.querySelector('span:last-child')?.innerText.trim() || ''),
         paywallSubcopy:document.getElementById('payBtnSubText')?.innerText || '',
         note2PreviewText:document.getElementById('note2PreviewBody')?.innerText || '',
         expectedPaywall:(() => {
