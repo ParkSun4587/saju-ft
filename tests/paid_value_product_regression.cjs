@@ -354,8 +354,8 @@ function norm(v) {
     assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
     assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-    assert(ui.fPaywallText.includes('로아 언니 · 여기서부터 같이 보자') && ui.fPaywallText.includes('이제 어떻게 끊을지가 남아 있어') && ui.fPaywallText.includes('로아 언니, 나머지도 같이 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
-    assert(ui.tPaywallText.includes('서아 언니 · 여기서부터 정리할게') && ui.tPaywallText.includes('원인과 끊을 지점') && ui.tPaywallText.includes('서아 언니, 답까지 정리해줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
+    assert(ui.fPaywallText.includes('로아 언니 · 중요한 얘기가 더 있어') && ui.fPaywallText.includes('어디서 끊으면 되는지만 보면 돼') && ui.fPaywallText.includes('로아 언니, 더 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
+    assert(ui.tPaywallText.includes('서아 언니 · 중요한 얘기가 더 있어') && ui.tPaywallText.includes('원인과 끊을 지점') && ui.tPaywallText.includes('서아 언니, 답까지 정리해줘') && ui.tPaywallText.includes('990원'), `T conversion paywall handoff missing: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
     assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
     assert(ui.fPaywallText.includes('NOTE2 다음부터 NOTE6까지') && ui.tPaywallText.includes('NOTE2 다음부터 NOTE6까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), '990 won unlock scope or stale sale badge drift');
@@ -365,8 +365,8 @@ function norm(v) {
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(ui.visibleProducts === 1 && ui.secondaryProducts === 3 && ui.otherToggle && ui.otherExpanded === 'false' && !ui.otherVisible, `premium catalog should show one recommendation first and keep three alternatives folded but discoverable: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherExpanded:ui.otherExpanded,otherVisible:ui.otherVisible})}`);
   assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
-  assert(ui.fGreeting.includes('언니가 보니까 왜 자꾸 마음에 남는지 보여') && ui.fGreeting.includes('같이 볼게') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 90, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
-  assert(ui.tGreeting.includes('핵심이 잡혔어') && ui.tGreeting.includes('중요한 것부터 볼게') && ui.tGreeting.length <= 80, `T result intro should feel concise but caring: ${ui.tGreeting}`);
+  assert(ui.fGreeting.includes('왜 마음에 걸렸는지 보여') && ui.fGreeting.includes('중요한 것부터 말해줄게') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 90, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
+  assert(ui.tGreeting.includes('다 봤어') && ui.tGreeting.includes('중요한 것부터 정리해줄게') && ui.tGreeting.length <= 80, `T result intro should feel concise but caring: ${ui.tGreeting}`);
   assert(
     ui.catalogReason.length >= 10 &&
     ui.catalogText.includes('다른 방향 3개도 보기') &&
@@ -833,7 +833,7 @@ function norm(v) {
     html.includes('#unniProductLadder [data-unni-product]{'),
     'result-screen containment system missing or regressed'
   );
-  assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 1)') && html.includes('paywallNextTeaser') && html.includes('teaserProbe') && html.includes('로아 언니, 나머지도 같이 봐줘') && html.includes('서아 언니, 답까지 정리해줘'), 'paid teaser must be NOTE1 full + short NOTE2 + actual locked-content teaser + distinct F/T 990 handoff');
+  assert(html.includes('note2PreviewCard') && html.includes('previewParts.slice(0, 1)') && html.includes('paywallNextTeaser') && html.includes('teaserProbe') && html.includes('로아 언니, 더 봐줘') && html.includes('서아 언니, 답까지 정리해줘'), 'paid teaser must be NOTE1 full + short NOTE2 + actual locked-content teaser + distinct F/T 990 handoff');
   assert(!html.includes('storyCaptureReturnTimer') && !html.includes('7000') && html.includes('storyCaptureCleanTimer'), 'capture should use delayed fullscreen-clean transition, not timed auto-return');
   const finalNotePaymentAt = html.indexOf('id="finalNotePaymentButton"');
   const finalNotePaymentSlice = finalNotePaymentAt >= 0 ? html.slice(finalNotePaymentAt, finalNotePaymentAt + 900) : '';
