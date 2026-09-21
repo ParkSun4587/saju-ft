@@ -816,11 +816,14 @@ function norm(v) {
   );
   assert(
     html.includes('/* final result containment pass */') &&
-    html.includes('--result-gutter:12px') &&
-    html.includes('--result-axis-max:400px') &&
+    html.includes('--result-gutter:16px') &&
+    html.includes('--result-axis-max:392px') &&
     html.includes('#resultPillarCard .grid>div+div{border-left:1px solid #eee7e1!important}') &&
     html.includes('#ohengBarContainer>div>div:nth-child(2){') &&
-    html.includes('#resultConcernHandoffAvatar,#resultConcernHandoffName{display:none!important}') &&
+    html.includes('#resultConcernHandoff{display:none!important}') &&
+    html.includes('#consultationCloseoutSub{display:none!important}') &&
+    html.includes('#resultShareLead{display:none!important}') &&
+    html.includes('#resultFunExtrasEyebrow{display:none!important}') &&
     html.includes('#consultationNotesHeader>div:first-child>span:last-child{display:none!important}') &&
     html.includes('#unniProductLadder [data-unni-product]{'),
     'result-screen containment system missing or regressed'
@@ -838,7 +841,9 @@ function norm(v) {
     contentPolicySource.includes('내 사주 전체 구조와 앞으로 5년의 큰 흐름 보기') &&
     contentPolicySource.includes('두 사람 사주를 겹쳐 관계의 이유와 시기 보기') &&
     contentPolicySource.includes('나 한 사람의 전체 사주판과 6개 고민을 한 번에 열기') &&
-    premium.includes('왜 이걸 먼저 보냐면') &&
+    premium.includes('data-recommendation-reason="1"') &&
+    premium.includes('wrap.innerHTML = `<div style="display:grid;gap:0">') &&
+    !premium.includes('왜 이걸 먼저 보냐면</span>') &&
     premium.includes('내 전체 사주판 열기') &&
     premium.includes('완전판으로 이어보기'),
     'young-user outcome-led product copy missing'
