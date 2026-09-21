@@ -670,7 +670,7 @@ function norm(v) {
   }));
   assert(pairFps.a&&pairFps.b&&pairFps.a!==pairFps.b,'compatibility must contain two distinct person fingerprints '+JSON.stringify(pairFps));
   assert(modal.includes('우리 둘 관계를 깊게 보는 궁합') && !modal.includes('16개 챕터'), 'compatibility intro should explain the outcome, not chapter volume');
-  assert(modal.includes('처음 서로에게 끌리는 이유') && modal.includes('싸움이 커지는 순서') && modal.includes('싸운 뒤 화해하는 법') && modal.includes('돈과 현실 문제를 같이 다룰 때') && modal.includes('둘이 실제로 지키면 좋은 약속'), 'compatibility deep content missing');
+  assert(modal.includes('서로에게 먼저 보이는 강점') && modal.includes('갈등이 생겼을 때 확인할 신호') && modal.includes('싸운 뒤 화해하는 법') && modal.includes('돈과 현실 문제를 같이 다룰 때') && modal.includes('둘이 실제로 지키면 좋은 약속'), 'compatibility deep content missing');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'compatibility full-report save missing');
   await page.locator('#unniProductClose').click();
 
