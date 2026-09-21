@@ -236,7 +236,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.selectOption('#partnerCalendar','lunar');
   await page.check('#partnerLeapMonth');
   await page.fill('#partnerBirth','20200401');
-  await page.check('#partnerTimeUnknown');
+  assert((await page.locator('#partnerTimeBranch').inputValue())==='','compatibility unknown-time default should stay selected');
+  assert(await page.locator('#partnerTimeInput').isHidden(),'compatibility direct-time input should stay hidden until requested');
   await page.click('#unniProductAction');
   await page.waitForSelector('#unniProductPayment',{state:'visible',timeout:10000});
   const uiLeap=await page.evaluate(()=>{
