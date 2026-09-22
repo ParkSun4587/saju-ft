@@ -54,7 +54,7 @@ jobs:
         run: node tests/premium_entitlement_ladder_regression.cjs
       - name: Run paid-value and product regression
         run: node tests/paid_value_product_regression.cjs
-      - name: Serve QA2 code for production mobile smoke
+      - name: Serve local code for mobile UI smoke
         run: |
           node - <<'NODE' >/tmp/saju-mobile-smoke.log 2>&1 &
           const http=require('http');
@@ -84,7 +84,11 @@ jobs:
           NODE
           sleep 2
           curl -f http://127.0.0.1:4174/index.html >/dev/null
-      - name: Run Production mobile smoke on QA2 final code
+      - name: Run local mobile UI smoke
         env:
           PRODUCTION_BASE: http://127.0.0.1:4174/index.html
+        run: node tests/production_mobile_smoke.cjs
+      - name: Run deployed production Chromium smoke
+        env:
+          PRODUCTION_BASE: https://sajuft.com/index.html
         run: node tests/production_mobile_smoke.cjs
