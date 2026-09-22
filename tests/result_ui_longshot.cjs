@@ -37,8 +37,7 @@ async function enter(page, mode) {
   await page.waitForSelector('#concernSituationBox',{state:'visible'});
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.fill('#birthDateInput','19980221');
-  await page.check('#birthTimeDirectToggle');
-  await page.fill('#birthTimeInput','0310');
+  await page.selectOption('#birthTimeBranch','丑');
   await page.locator('#splitNextButton button').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
   await page.waitForSelector('#note2PreviewCard',{state:'visible',timeout:10000});
