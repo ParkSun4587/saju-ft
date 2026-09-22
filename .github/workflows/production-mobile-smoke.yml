@@ -3,7 +3,7 @@ name: Production mobile smoke
 on:
   push:
     branches:
-      - main
+      - copy-freeze-production-smoke-20260922
 
 jobs:
   production-mobile-smoke:
@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: 8c482752316665b78558f84aa0ca5342fe25e53b
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -19,13 +21,18 @@ jobs:
           npm init -y >/dev/null 2>&1
           npm install --no-save playwright >/dev/null
           npx playwright install --with-deps chromium >/dev/null
-      - name: Test live mobile journey
+      - name: Serve final candidate
+        run: |
+          python3 -m http.server 4174 >/tmp/saju-final-smoke.log 2>&1 &
+          sleep 2
+          curl -f http://127.0.0.1:4174/index.html >/dev/null
+      - name: Test final candidate mobile journey
         env:
-          PRODUCTION_BASE: https://sajuft.com/index.html
+          PRODUCTION_BASE: http://127.0.0.1:4174/index.html
         run: node tests/production_mobile_smoke.cjs
-      - name: Capture full result longshots
+      - name: Capture final candidate result longshots
         env:
-          PRODUCTION_BASE: https://sajuft.com/index.html
+          PRODUCTION_BASE: http://127.0.0.1:4174/index.html
         run: node tests/result_ui_longshot.cjs
       - name: Upload result UI screenshots
         if: always()
