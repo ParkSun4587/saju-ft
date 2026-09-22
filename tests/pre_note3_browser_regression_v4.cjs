@@ -17,14 +17,14 @@ function isExpectedBoundaryDiagnostic(text) {
 }
 
 const CASES = [
-  { id:'user-exact-love-F', birth:'19980221', time:'0310', gender:'male', calendar:'solar', leap:false, concern:'love', mode:'F', viewport:{width:390,height:844} },
+  { id:'user-branch-love-F', birth:'19980221', time:'丑', gender:'male', calendar:'solar', leap:false, concern:'love', mode:'F', viewport:{width:390,height:844} },
   { id:'user-unknown-love-T', birth:'19980221', time:'unknown', gender:'male', calendar:'solar', leap:false, concern:'love', mode:'T', viewport:{width:390,height:844} },
-  { id:'money-female-F', birth:'19991231', time:'2359', gender:'female', calendar:'solar', leap:false, concern:'money', mode:'F', viewport:{width:390,height:844} },
-  { id:'career-female-T', birth:'20010506', time:'1430', gender:'female', calendar:'solar', leap:false, concern:'career', mode:'T', viewport:{width:1280,height:900} },
-  { id:'path-lunar-regular-F', birth:'19560121', time:'1200', gender:'male', calendar:'lunar', leap:false, concern:'path', mode:'F', viewport:{width:390,height:844} },
-  { id:'people-lunar-leap-T', birth:'20170501', time:'2300', gender:'female', calendar:'lunar', leap:true, concern:'people', mode:'T', viewport:{width:390,height:844} },
-  { id:'mental-dst-F', birth:'19880701', time:'1200', gender:'male', calendar:'solar', leap:false, concern:'mental', mode:'F', viewport:{width:390,height:844} },
-  { id:'love-female-T', birth:'19940517', time:'0815', gender:'female', calendar:'solar', leap:false, concern:'love', mode:'T', viewport:{width:390,height:844} },
+  { id:'money-female-F', birth:'19991231', time:'子', gender:'female', calendar:'solar', leap:false, concern:'money', mode:'F', viewport:{width:390,height:844} },
+  { id:'career-female-T', birth:'20010506', time:'未', gender:'female', calendar:'solar', leap:false, concern:'career', mode:'T', viewport:{width:1280,height:900} },
+  { id:'path-lunar-regular-F', birth:'19560121', time:'午', gender:'male', calendar:'lunar', leap:false, concern:'path', mode:'F', viewport:{width:390,height:844} },
+  { id:'people-lunar-leap-T', birth:'20170501', time:'亥', gender:'female', calendar:'lunar', leap:true, concern:'people', mode:'T', viewport:{width:390,height:844} },
+  { id:'mental-dst-F', birth:'19880701', time:'午', gender:'male', calendar:'solar', leap:false, concern:'mental', mode:'F', viewport:{width:390,height:844} },
+  { id:'love-female-T', birth:'19940517', time:'辰', gender:'female', calendar:'solar', leap:false, concern:'love', mode:'T', viewport:{width:390,height:844} },
 ];
 
 async function load(page) {
@@ -360,12 +360,8 @@ async function load(page) {
       document.getElementById('birthDateInput').value = c.birth;
       document.getElementById('calendarSelect').value = c.calendar;
       document.getElementById('genderValue').value = c.gender;
-      const unknown = c.time === 'unknown';
-      const time = document.getElementById('birthTimeInput');
-      const directToggle = document.getElementById('birthTimeDirectToggle');
-      directToggle.checked = !unknown;
-      toggleDirectBirthTime(directToggle, false);
-      time.value = unknown ? '' : c.time;
+      const branch = document.getElementById('birthTimeBranch');
+      branch.value = c.time === 'unknown' ? '' : c.time;
       const leap = document.getElementById('leapMonthCheck');
       if (leap) leap.checked = !!c.leap;
 
@@ -465,7 +461,7 @@ async function load(page) {
     assert(report.paywallSubcopy === 'NOTE2 다음부터 NOTE6까지', `${c.id}: paid scope copy drift`);
     assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
     assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
-    if (c.id === 'user-exact-love-F') {
+    if (c.id === 'user-branch-love-F') {
       assert(report.pillarText.join(',') === '무인,갑인,기해,을축',
         `${c.id}: pillar UI drift ${report.pillarText.join(',')}`);
       assert(!report.pillarBasisExists,
@@ -497,10 +493,7 @@ async function load(page) {
       document.getElementById('calendarSelect').value = 'lunar';
       document.getElementById('genderValue').value = 'female';
       document.getElementById('birthDateInput').value = '20170301';
-      const directToggle = document.getElementById('birthTimeDirectToggle');
-      directToggle.checked = true;
-      toggleDirectBirthTime(directToggle, false);
-      document.getElementById('birthTimeInput').value = '1200';
+      document.getElementById('birthTimeBranch').value = '午';
       document.getElementById('leapMonthCheck').checked = true;
       startAnalysis('F');
       return {noResult:currentResultData === null};
