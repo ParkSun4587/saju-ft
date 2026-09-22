@@ -93,15 +93,12 @@ async function enter(page, mode, concern, situation) {
   await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
   const firstState = await page.evaluate(() => ({
     concern:document.getElementById('selectedConcernKey')?.value || '',
-    timeChip:(()=>{
-      const label=document.getElementById('birthTimeDirectLabel');
-      const text=document.getElementById('birthTimeDirectLabelText');
-      return label&&text?{
-        bg:getComputedStyle(label).backgroundColor,
-        border:getComputedStyle(label).borderColor,
-        borderWidth:getComputedStyle(label).borderWidth,
-        radius:getComputedStyle(label).borderRadius,
-        text:getComputedStyle(text).color,
+    timeSelect:(()=>{
+      const el=document.getElementById('birthTimeBranch');
+      return el?{
+        value:el.value,
+        text:el.options[el.selectedIndex]?.text || '',
+        color:getComputedStyle(el).color,
       }:null;
     })(),
     selected:document.querySelectorAll('#concernGrid .concern-chip.selected').length,
@@ -119,12 +116,11 @@ async function enter(page, mode, concern, situation) {
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
-  assert(firstState.timeChip,'direct-time control missing');
-  assert(firstState.timeChip.bg==='rgba(0, 0, 0, 0)' && firstState.timeChip.borderWidth==='0px' && firstState.timeChip.radius==='0px',
-    'direct-time control still looks like a pill/bubble '+JSON.stringify(firstState.timeChip));
+  assert(firstState.timeSelect && firstState.timeSelect.value==='' && firstState.timeSelect.text==='(선택)',
+    'birth-time selector should open in neutral selection state '+JSON.stringify(firstState.timeSelect));
+  assert(firstState.timeSelect.color.includes('176, 180, 188'),
+    'birth-time selection placeholder color drift '+JSON.stringify(firstState.timeSelect));
   assert(firstState.submitOpacity<=0.4,'disabled consultation CTA is still too visually active '+JSON.stringify(firstState));
-  if(mode==='F') assert(firstState.timeChip.text.includes('184, 62, 92'),'F direct-time text palette drift '+JSON.stringify(firstState.timeChip));
-  if(mode==='T') assert(firstState.timeChip.text.includes('63, 120, 146'),'T direct-time text palette drift '+JSON.stringify(firstState.timeChip));
   if (mode==='F') assert(
     firstState.sisterText.includes('아, 왔구나. 편하게 적어줘.') &&
     firstState.sisterText.includes('언니가 하나씩 잘 봐줄게.') &&
@@ -159,10 +155,10 @@ async function enter(page, mode, concern, situation) {
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.fill('#birthDateInput','19980221');
   assert(await page.locator('#birthTimeBranch option').count()===13,'12-branch primary birth-time selector missing');
-  assert((await page.locator('#birthTimeBranch option').first().innerText())==='(모름)','birth-time unknown default missing');
+  assert((await page.locator('#birthTimeBranch option').first().innerText())==='(선택)','birth-time selection default missing');
   assert((await page.locator('#birthTimeBranch option[value="子"]').innerText()).includes('23:30~01:29'),'manse-corrected 子 range missing');
-  assert(await page.locator('#birthTimeDirectToggle').isVisible(),'direct-time checkbox missing');
-  assert(await page.locator('#birthTimeInput').isHidden(),'direct-time field should stay hidden until checkbox is selected');
+  assert(await page.locator('#birthTimeDirectToggle').count()===0,'removed direct-time checkbox returned');
+  assert(await page.locator('#birthTimeInput').count()===0,'removed direct-time field returned');
   await page.selectOption('#birthTimeBranch','寅');
   await page.locator('#splitNextButton button').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
