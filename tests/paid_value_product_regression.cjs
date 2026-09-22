@@ -202,10 +202,35 @@ function norm(v) {
   }
 
   const loveF=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='love'&&r.mode==='F').map(r=>[r.situation,r]));
+  const loveT=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='love'&&r.mode==='T').map(r=>[r.situation,r]));
   assert(/연락|서운|현재 연애/.test(loveF.relationship?.allText||''), 'relationship path lost current-relationship context');
+  assert((loveF.relationship?.allText||'').includes('현재 연애를 볼 때도') && (loveF.relationship?.allText||'').includes('현재 연애에서 반복되는 장면보다'),
+    'F current-relationship copy must stay neutral without inventing a problem');
+  assert(!(loveF.relationship?.allText||'').includes('현재 연애 때문에 힘들 때도') && !(loveF.relationship?.allText||'').includes('현재 연애가 꼬인 마지막 장면보다'),
+    'F current-relationship copy still presumes distress');
+  assert(
+    JSON.stringify((loveF.relationship?.noteAudit?.claims||[]).map(x=>({rawFacts:x.rawFacts,conclusion:x.conclusion}))) ===
+    JSON.stringify((loveT.relationship?.noteAudit?.claims||[]).map(x=>({rawFacts:x.rawFacts,conclusion:x.conclusion}))),
+    'same chart/concern/situation must keep identical factual judgment across F/T'
+  );
+  assert(norm(loveF.relationship?.allText||'') !== norm(loveT.relationship?.allText||''),
+    'same factual judgment should still render distinct F/T counselor voice');
   assert(/새 인연|새 사람/.test(loveF.new?.allText||'') && !/헤어진 이유/.test(loveF.new?.allText||''), 'new-person path mixed another love situation');
   assert(/이별|재회|헤어진/.test(loveF.breakup?.allText||''), 'breakup path lacks breakup context');
   assert(/썸|상대 반응/.test(loveF.crush?.allText||''), 'crush path lacks crush context');
+
+  const finalCopyForbidden=[
+    '순간에서','확정 규칙이 없는 특수한 구조나 묶임은 결과에 억지로 끼워 넣지 않았어.',
+    '확인하기처럼','덜어내기처럼','큰 주의 근거가 맞서지 않아',
+    '실제 계산에서 잡혀 있어','여기서는 시점만 남기고',
+    '신호만 주고 설명은 하지 않는 관계이고.'
+  ];
+  for(const row of qa.situationRows){
+    for(const bad of finalCopyForbidden) assert(!row.allText.includes(bad), `${row.concern}/${row.situation}/${row.mode}: final copy QA leak ${bad}`);
+  }
+  assert(qa.situationRows.some(r=>r.mode==='F'&&r.allText.includes('확실하지 않은 부분은 억지로 단정하지 않았어.')) ||
+         qa.situationRows.every(r=>!r.allText.includes('특수한 구조')),
+    'unsupported-structure notice should stay in user language only');
 
   assert(qa.chartCompare.diagA.structureFingerprint !== qa.chartCompare.diagB.structureFingerprint, 'different charts share NOTE v3 structure fingerprint');
   assert(qa.chartCompare.diffs.filter(Boolean).length >= 4, 'different charts do not materially change enough NOTE outputs');
@@ -268,6 +293,8 @@ function norm(v) {
     const previewBodyPlain = document.getElementById('note2PreviewBody')?.innerText || '';
     updateResultContentByMode('T');
     const tPaywallText = document.getElementById('lockedOverlay')?.innerText || '';
+    const tPaywallSisterSub = document.getElementById('paywallSisterSub')?.innerText || '';
+    const tPaywallPriceTitle = document.getElementById('paywallPriceTitle')?.innerText || '';
     const tNextTeaser = document.getElementById('paywallNextTeaser')?.innerText || '';
     const tFeatureCount = document.querySelectorAll('#payBoxFeatures > div').length;
     updateResultContentByMode('F');
@@ -330,6 +357,8 @@ function norm(v) {
       fullNote2Plain:String(notes[1]?.desc || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),
       fPaywallText,
       tPaywallText,
+      tPaywallSisterSub,
+      tPaywallPriceTitle,
       fNextTeaser,
       tNextTeaser,
       fFeatureCount,
@@ -378,6 +407,8 @@ function norm(v) {
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
     assert(ui.fPaywallText.includes('로아 언니 · 여기서 하나만 더 보자') && ui.fPaywallText.includes('무엇부터 덜어야') && ui.fPaywallText.includes('언니, 그것도 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
     assert(ui.tPaywallText.includes('서아 언니 · 마지막 기준만 보면 돼') && ui.tPaywallText.includes('부하 제거') && ui.tPaywallText.includes('응, 끝까지 봐줘') && ui.tPaywallText.includes('990원'), `T conversion paywall sister header should be restored: ${ui.tPaywallText}`);
+    assert(ui.tPaywallSisterSub==='번아웃 같다고 느낄 때, 이제 행동 기준만 보면 돼', `T burnout uncertainty drift: ${ui.tPaywallSisterSub}`);
+    assert(ui.tPaywallPriceTitle==='지금 컨디션·과부하 회복 기준 끝까지 정리하기' && !ui.tPaywallText.includes('번아웃 회복 기준'), `T burnout paywall must not hard-diagnose: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
     assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
     assert(ui.fPaywallText.includes('NOTE2 다음부터 NOTE6까지') && ui.tPaywallText.includes('NOTE2 다음부터 NOTE6까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), '990 won unlock scope or stale sale badge drift');
@@ -392,7 +423,7 @@ function norm(v) {
   assert(
     ui.catalogReason.length >= 10 &&
     !ui.catalogText.includes('다른 방향 3개도 보기') &&
-    (ui.catalogText.includes('상대 사주까지 겹쳐야 나오는') || ui.catalogText.includes('나 전체 구조 · 영역 연결 · 5년 흐름')) &&
+    (ui.catalogText.includes('두 사람을 같이 봐야 보이는 관계 흐름') || ui.catalogText.includes('나 전체 구조 · 영역 연결 · 5년 흐름')) &&
     !ui.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아') &&
     !ui.catalogText.includes('다음으로 볼 가치는 이게 제일 커') &&
     !ui.catalogText.includes('방금 같이 본 얘기는 반복하지 않고') &&
@@ -688,9 +719,23 @@ function norm(v) {
   const allInOneArticles = await page.locator('#unniProductBody article').count();
   assert(allInOneArticles === 36, `all-in-one NOTE card count ${allInOneArticles}`);
   assert(await page.locator('#unniProductBody [data-product-exclusive="all_in_one"]').count()===1,'all-in-one cross-domain exclusive block missing');
+  assert(!modal.includes('마음·스트레스은') && modal.includes('이 6개 고민은 서로 다른 문제처럼 보여도'), 'all-in-one dynamic domain join is unnatural');
   assert(await page.locator('#unniProductBody [data-export-compat-timing]').count()===0,'all-in-one must not include compatibility timeline');
   assert(await page.locator('#unniProductBody [data-product-exclusive="compatibility"]').count()===0,'all-in-one swallowed compatibility content');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'all-in-one full-report save missing');
+  await page.locator('#unniProductClose').click();
+
+  await page.evaluate(() => { selectedSplitMode='F'; openUnniProduct('full_saju'); });
+  await page.waitForSelector('#unniProductModal',{state:'visible'});
+  const fullActionText=await page.locator('#unniProductAction').innerText();
+  if(!fullActionText.includes('다시 보기') && !fullActionText.includes('포함됨')){
+    if(!FREE_LAUNCH_MODE) await page.evaluate(()=>{FREE_LAUNCH_MODE=true;});
+    await page.locator('#unniProductAction').click();
+    await page.waitForFunction(()=>document.querySelectorAll('#unniProductBody [data-export-kind="full"]').length===12,null,{timeout:10000});
+  }
+  const fullFText=await page.locator('#unniProductModal').innerText();
+  assert(fullFText.includes('삶 전체에 영향을 주는 가까운 구간까지 같이 볼게') && !fullFText.includes('삶 전체에 영향을 주는 가까운 구간을 본다'),
+    'F full_saju report voice returned to report-form ending');
   await page.locator('#unniProductClose').click();
 
   const html = fs.readFileSync('index.html','utf8');
@@ -712,6 +757,8 @@ function norm(v) {
   assert(premium.includes('어떤언니 상담 기록') && !premium.includes('어떤언니 리포트'), 'paid native-share title slipped back into report voice');
   assert(!premium.includes('다른 브라우저') && !premium.includes('외부 브라우저'), 'paid image save should not tell users to switch browsers');
   assert(premium.includes('prewarmPaidExport') && premium.includes('preparePaidExportAssets') && premium.includes('저장 준비 완료'), 'background paid-export preparation missing');
+  assert(!premium.includes('둘 사이 이유') && !premium.includes('둘 사이 계산') && premium.includes('두 사람을 같이 봐야 보이는 관계 흐름'),
+    'premium recommendation still exposes engine-like pair wording');
   assert(premium.includes('requiresFreshShareGesture') && premium.includes('setPaidExportButtonReady(root, false)') && premium.includes('setPaidExportButtonReady(root, true)'), 'mobile save must wait for prewarm before fresh-tap multi-share');
   assert(premium.includes('isCurrentPaidExport') && premium.includes('EXPORT_IDLE_CANCELLED'), 'stale paid-export jobs must stop when the report changes');
   assert(premium.includes('paidExportCache.clear()') && premium.includes('paidExportCache.set(key, prepared)'), 'paid PNG blob cache must stay bounded to the current report');
