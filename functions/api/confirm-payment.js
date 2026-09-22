@@ -19,6 +19,10 @@ const situations = Object.freeze({
   people:["friend","work","family","distance"],
   mental:["burnout","overthink","low","recover"],
 });
+const BIRTH_TIME_BRANCH_RE = /^[子丑寅卯辰巳午未申酉戌亥]$/;
+function validBirthTime(value) {
+  return value === "unknown" || /^([01]\d|2[0-3]):[0-5]\d$/.test(value) || BIRTH_TIME_BRANCH_RE.test(value);
+}
 
 function reply(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -56,7 +60,7 @@ function validatePartner(input) {
   const p = { n:cleanName(input.n,"상대"), b:input.b, t:input.t, g:input.g, c:input.c, l:input.l === true };
   if (
     !/^\d{8}$/.test(p.b) ||
-    !(p.t === "unknown" || /^([01]\d|2[0-3]):[0-5]\d$/.test(p.t)) ||
+    !validBirthTime(p.t) ||
     !["female","male"].includes(p.g) ||
     !["solar","lunar"].includes(p.c) ||
     (p.c === "solar" && p.l)
@@ -91,16 +95,17 @@ function snapshot(input) {
   if (!input || typeof input !== "object") throw new Error("INPUT");
   const productId = typeof input.p === "string" && PRODUCTS[input.p] ? input.p : "concern_single";
   const d = {
-    n:input.n, b:input.b, t:input.t, g:input.g, c:input.c, k:input.k, m:input.m,
+    n:input.n, b:input.b, t:input.t, g:input.g, c:input.c, k:input.k, q:input.q || "", m:input.m,
     l:input.l === true, p:productId, x:validateExtra(productId,input.x),
   };
   if (
     typeof d.n !== "string" || !d.n.trim() || d.n.length > 40 || /[\x00-\x1f]/.test(d.n) ||
     !/^\d{8}$/.test(d.b) ||
-    !(d.t === "unknown" || /^([01]\d|2[0-3]):[0-5]\d$/.test(d.t)) ||
+    !validBirthTime(d.t) ||
     !["female","male"].includes(d.g) ||
     !["solar","lunar"].includes(d.c) ||
     !concerns.includes(d.k) ||
+    (d.q && !situations[d.k]?.includes(d.q)) ||
     !["F","T"].includes(d.m) ||
     (d.c === "solar" && d.l)
   ) throw new Error("INPUT");
