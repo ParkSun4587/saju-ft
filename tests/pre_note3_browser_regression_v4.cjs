@@ -361,7 +361,7 @@ async function load(page) {
       document.getElementById('calendarSelect').value = c.calendar;
       document.getElementById('genderValue').value = c.gender;
       const branch = document.getElementById('birthTimeBranch');
-      branch.value = c.time === 'unknown' ? '' : c.time;
+      branch.value = c.time;
       const leap = document.getElementById('leapMonthCheck');
       if (leap) leap.checked = !!c.leap;
 
