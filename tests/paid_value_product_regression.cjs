@@ -1000,8 +1000,8 @@ function norm(v) {
     html.includes('똑같은 내 사주, 누구한테 먼저 털어놓을래?') &&
     html.includes('요즘 뭐가 제일 마음에 걸려?<br>언니한테 편하게 얘기해봐') &&
     html.includes('뭐가 제일 궁금해?<br>중요한 것부터 바로 보자') &&
-    html.includes('언니한테 얘기해볼래') &&
-    html.includes('좋아, 바로 봐줘') &&
+    html.includes('내 얘기부터 들어줘') &&
+    html.includes('핵심부터 바로 봐줘') &&
     !html.includes('말해주는 방식만 골라봐') &&
     !html.includes('마음부터 들어주는') &&
     !html.includes('핵심부터 짚어주는') &&
@@ -1025,14 +1025,14 @@ function norm(v) {
     !html.includes('응, 언니랑 천천히 풀어볼래') &&
     !html.includes('좋아, 핵심만 바로 알려줘') &&
     !html.includes('원하는 상담 스타일을 골라봐') &&
-    html.includes('로아 · 감정 공감형') &&
-    html.includes('서아 · 핵심 정리형') &&
+    html.includes('로아 · F 감정 공감형') &&
+    html.includes('서아 · T 핵심 정리형') &&
     html.includes('max-width:81%!important') &&
     html.includes('.split-choice-name-tag{') &&
     html.includes('class="split-choice-tail absolute -left-[5px] top-0 w-3 h-3 bg-white"') &&
     html.includes('class="split-choice-tail absolute -left-[5px] top-0 w-3 h-3 bg-slate-700"') &&
-    html.includes('<span class="split-choice-name-tag">로아 · 감정 공감형</span>') &&
-    html.includes('<span class="split-choice-name-tag">서아 · 핵심 정리형</span>') &&
+    html.includes('<span class="split-choice-name-tag">로아 · F 감정 공감형</span>') &&
+    html.includes('<span class="split-choice-name-tag">서아 · T 핵심 정리형</span>') &&
     !html.includes('왔어? 요즘 뭐가 제일 마음에 걸려') &&
     !html.includes('왔어? 뭐가 제일 궁금해'),
     'immersive first counselor-choice copy missing'
