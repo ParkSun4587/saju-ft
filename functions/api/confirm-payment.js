@@ -362,19 +362,38 @@ export async function onRequestPost({ request, env }) {
         return reply({ ok:false,message:"주문과 분석 결과가 일치하지 않아요." },400);
       }
       let payment;
+      let confirmFailure = null;
       try {
         payment = await toss("confirm",secret,{
           method:"POST",
           headers:{ "Idempotency-Key":order.orderId },
           body:JSON.stringify({ paymentKey:body.paymentKey,orderId:order.orderId,amount:expectedAmount }),
         });
+        if (!payment.ok) confirmFailure = {
+          status: payment.status,
+          code: typeof payment.data?.code === "string" ? payment.data.code : "",
+          message: typeof payment.data?.message === "string" ? payment.data.message : "",
+        };
       } catch {
-        payment = { ok:false,data:{} };
+        payment = { ok:false,status:0,data:{} };
       }
-      if (!payment.ok) payment = await toss(encodeURIComponent(body.paymentKey),secret);
-      if (!payment.ok) return reply({ ok:false,message:"결제 승인을 확인하지 못했어요. 같은 주문으로 다시 확인해주세요." },503);
+      if (!payment.ok) {
+        const lookup = await toss(encodeURIComponent(body.paymentKey),secret);
+        if (lookup.ok && paid(lookup.data,body.paymentKey,order.orderId,expectedAmount)) {
+          payment = lookup;
+        } else if (confirmFailure && confirmFailure.status >= 400 && confirmFailure.status < 500) {
+          return reply({
+            ok:false,
+            paymentFailed:true,
+            code:confirmFailure.code,
+            message:confirmFailure.message || "결제가 승인되지 않았어요. 다른 결제수단으로 다시 시도해주세요.",
+          },409);
+        } else {
+          return reply({ ok:false,message:"결제 승인을 확인하지 못했어요. 같은 주문으로 다시 확인해주세요." },503);
+        }
+      }
       if (!paid(payment.data,body.paymentKey,order.orderId,expectedAmount)) {
-        return reply({ ok:false,message:"결제 완료 상태가 아니에요. 입금 대기·취소 여부를 확인해주세요." },409);
+        return reply({ ok:false,message:"결제 완료 상태가 아니에요. 같은 주문으로 다시 확인해주세요." },409);
       }
       const grant = {
         userKey, ownerKey:ownerKey(order.data), orderId:order.orderId, paymentKey:body.paymentKey,
