@@ -154,8 +154,10 @@ async function enter(page, mode, concern, situation) {
   await page.waitForSelector('#concernSituationBox',{state:'visible'});
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.fill('#birthDateInput','19980221');
-  assert(await page.locator('#birthTimeBranch option').count()===13,'12-branch primary birth-time selector missing');
+  assert(await page.locator('#birthTimeBranch option').count()===14,'birth-time selector should include placeholder, unknown, and 12 branches');
   assert((await page.locator('#birthTimeBranch option').first().innerText())==='(선택)','birth-time selection default missing');
+  assert(await page.locator('#birthTimeBranch option').first().getAttribute('hidden')!==null,'birth-time placeholder must stay hidden once menu opens');
+  assert((await page.locator('#birthTimeBranch option').nth(1).innerText())==='모름','birth-time unknown choice must be first visible option');
   assert((await page.locator('#birthTimeBranch option[value="子"]').innerText()).includes('23:30~01:29'),'manse-corrected 子 range missing');
   assert(await page.locator('#birthTimeDirectToggle').count()===0,'removed direct-time checkbox returned');
   assert(await page.locator('#birthTimeInput').count()===0,'removed direct-time field returned');
