@@ -116,8 +116,8 @@ async function enter(page, mode, concern, situation) {
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
-  assert(firstState.timeSelect && firstState.timeSelect.value==='' && firstState.timeSelect.text==='(선택)',
-    'birth-time selector should open in neutral selection state '+JSON.stringify(firstState.timeSelect));
+  assert(firstState.timeSelect && firstState.timeSelect.value==='unknown' && firstState.timeSelect.text==='(모름)',
+    'birth-time selector should default to unknown '+JSON.stringify(firstState.timeSelect));
   assert(firstState.timeSelect.color.includes('176, 180, 188'),
     'birth-time selection placeholder color drift '+JSON.stringify(firstState.timeSelect));
   assert(firstState.submitOpacity<=0.4,'disabled consultation CTA is still too visually active '+JSON.stringify(firstState));
@@ -154,10 +154,9 @@ async function enter(page, mode, concern, situation) {
   await page.waitForSelector('#concernSituationBox',{state:'visible'});
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.fill('#birthDateInput','19980221');
-  assert(await page.locator('#birthTimeBranch option').count()===14,'birth-time selector should include placeholder, unknown, and 12 branches');
-  assert((await page.locator('#birthTimeBranch option').first().innerText())==='(선택)','birth-time selection default missing');
-  assert(await page.locator('#birthTimeBranch option').first().getAttribute('hidden')!==null,'birth-time placeholder must stay hidden once menu opens');
-  assert((await page.locator('#birthTimeBranch option').nth(1).innerText())==='모름','birth-time unknown choice must be first visible option');
+  assert(await page.locator('#birthTimeBranch option').count()===13,'birth-time selector should include unknown and 12 branches');
+  assert((await page.locator('#birthTimeBranch option').first().innerText())==='(모름)','birth-time unknown default missing');
+  assert((await page.locator('#birthTimeBranch').inputValue())==='unknown','birth-time unknown default value missing');
   assert((await page.locator('#birthTimeBranch option[value="子"]').innerText()).includes('23:30~01:29'),'manse-corrected 子 range missing');
   assert(await page.locator('#birthTimeDirectToggle').count()===0,'removed direct-time checkbox returned');
   assert(await page.locator('#birthTimeInput').count()===0,'removed direct-time field returned');
@@ -511,6 +510,23 @@ async function inspect(page, mode) {
   await deployed(page);
   await enter(page,'F','love','relationship');
   const f=await inspect(page,'F');
+
+  // 결과 화면에서 첫 뒤로가기는 입력 화면으로 튕기지 않고 결과를 유지해야 한다.
+  await page.evaluate(()=>history.back());
+  await sleep(180);
+  const backGuard=await page.evaluate(()=>({
+    state:history.state||null,
+    resultVisible:getComputedStyle(document.getElementById('resultSection')).display!=='none',
+    inputVisible:getComputedStyle(document.getElementById('splitIntroSection')).display!=='none',
+  }));
+  assert(
+    backGuard.resultVisible &&
+    !backGuard.inputVisible &&
+    backGuard.state?.view==='result' &&
+    !backGuard.state?.resultGuard,
+    'first back from result should stay on result '+JSON.stringify(backGuard)
+  );
+
   if(f.sourceFreeLaunch){
     assert(await page.locator('#unniShowOtherProducts').count()===0,'folded alternatives toggle should be removed');
     assert(await page.locator('#unniOtherProducts').isVisible(),'premium alternatives should be immediately visible');
@@ -637,15 +653,12 @@ async function inspect(page, mode) {
   const compatibilitySetup=await page.locator('#unniProductModal').innerText();
   assert(compatibilitySetup.includes('이번엔 상대 사주도 같이 놓고 볼게.'),'F compatibility setup lost Roa voice');
   assert(compatibilitySetup.includes('양력')&&compatibilitySetup.includes('음력')&&!compatibilitySetup.includes('양력 생일')&&!compatibilitySetup.includes('음력 생일'),'live compatibility calendar labels are not simplified');
-  assert(compatibilitySetup.includes('자시 · 23:30~01:29')&&compatibilitySetup.includes('(시간 모름)'),'live compatibility manse-corrected time UI missing');
-  assert(await page.locator('#partnerTimeBranch option').count()===13,'compatibility 12-branch selector missing');
-  assert(await page.locator('#partnerTimeDirectToggle').isVisible(),'compatibility direct-time checkbox missing');
-  assert(await page.locator('#partnerTimeInput').isHidden(),'compatibility direct-time field should be hidden by default');
-  await page.check('#partnerTimeDirectToggle');
-  assert(await page.locator('#partnerTimeInput').isVisible(),'compatibility direct-time field did not open');
-  assert((await page.locator('#partnerTimeInput').getAttribute('placeholder'))==='예: 오후 1:30 → 1330','live compatibility direct-time placeholder missing');
-  await page.uncheck('#partnerTimeDirectToggle');
-  assert(!compatibilitySetup.includes('태어난 시간을 몰라요')&&!compatibilitySetup.includes('정확한 분을 몰라도')&&!compatibilitySetup.includes('오전/오후')&&!compatibilitySetup.includes('몇 분'),'old compatibility time helper UI remains');
+  assert(compatibilitySetup.includes('자시 · 23:30~01:29')&&compatibilitySetup.includes('(모름)'),'live compatibility manse-corrected time UI missing');
+  assert(await page.locator('#partnerTimeBranch option').count()===13,'compatibility unknown + 12-branch selector missing');
+  assert((await page.locator('#partnerTimeBranch').inputValue())==='unknown','compatibility unknown-time default missing');
+  assert(await page.locator('#partnerTimeDirectToggle').count()===0,'removed compatibility direct-time checkbox returned');
+  assert(await page.locator('#partnerTimeInput').count()===0,'removed compatibility direct-time field returned');
+  assert(!compatibilitySetup.includes('태어난 시간을 몰라요')&&!compatibilitySetup.includes('정확한 분을 몰라도')&&!compatibilitySetup.includes('오전/오후')&&!compatibilitySetup.includes('몇 분')&&!compatibilitySetup.includes('정확한 시간 직접 입력'),'old/technical compatibility time UI remains');
   assert(!(await page.locator('#partnerLeapWrap').isVisible()),'live leap-month UI must stay hidden for solar');
   await page.selectOption('#partnerCalendar','lunar');
   assert(await page.locator('#partnerLeapWrap').isVisible(),'live leap-month UI did not appear for lunar');
