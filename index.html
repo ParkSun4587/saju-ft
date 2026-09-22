@@ -651,30 +651,34 @@
   /* first choice */
   #splitIntroSection{background:#17161b!important}
   #splitIntroSection>div{background:#17161b!important;box-shadow:none!important}
-  #topTitleBox{width:max-content!important;max-width:calc(100% - 56px)!important;padding:5px 11px 4px!important;border-radius:14px!important;background:rgba(255,253,250,.91)!important;border:1px solid rgba(255,255,255,.72)!important;box-shadow:0 4px 12px rgba(15,23,42,.05)!important}
+  #topTitleBox{width:max-content!important;max-width:calc(100% - 56px)!important;padding:6px 12px 5px!important;border-radius:15px!important;background:rgba(255,253,250,.93)!important;border:1px solid rgba(255,255,255,.76)!important;box-shadow:0 4px 12px rgba(15,23,42,.045)!important}
   #topTitleBox p:first-child{font-size:14.5px!important;line-height:1.18!important;font-weight:830!important;letter-spacing:-.035em!important;max-width:305px}
   #topTitleBox p:nth-child(2){font-size:8.5px!important;margin-top:1px!important;color:#707784!important;font-weight:700!important}
   #centerDivider{
-    background:linear-gradient(to bottom,rgba(248,196,216,.24) 0%,rgba(224,213,238,.20) 50%,rgba(190,211,244,.24) 100%)!important;
+    background:linear-gradient(to bottom,rgba(248,196,216,.18) 0%,rgba(224,213,238,.12) 50%,rgba(190,211,244,.18) 100%)!important;
     box-shadow:none!important;
-    backdrop-filter:blur(4px);
-    -webkit-backdrop-filter:blur(4px)
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important
   }
   #imgRoa{
-    filter:saturate(.87) brightness(.99);
+    filter:none;
     scale:1.06;
-    translate:0 3%;
+    translate:0 4%;
     transform-origin:center center;
   }
   #imgSeoa{
-    filter:saturate(.84) brightness(.99) contrast(.96);
-    scale:1.14;
-    translate:0 2%;
-    transform-origin:center 35%;
+    filter:none;
+    scale:1.17;
+    translate:0 -1%;
+    transform-origin:center 32%;
   }
-  #panelSeoa{background:#1f2937!important}
-  #panelSeoa>div:nth-of-type(1){opacity:.84}
+  #panelSeoa{background:#243142!important}
+  #panelSeoa>div:nth-of-type(1){opacity:.70}
+  #panelRoa>div.relative{padding-bottom:28px!important}
+  #panelSeoa>div.relative{padding-bottom:24px!important}
   .split-choice-bubble{max-width:86%!important;border-width:1px!important;box-shadow:0 4px 12px rgba(15,23,42,.07)!important;padding:8px 11px!important;border-radius:15px!important}
+  #panelSeoa .split-choice-bubble{background:rgba(51,65,85,.84)!important;border-color:rgba(148,163,184,.48)!important;box-shadow:0 4px 12px rgba(15,23,42,.055)!important}
+  #panelSeoa .split-choice-bubble>span{background:rgba(51,65,85,.90)!important}
   .split-choice-bubble p{font-size:11.5px!important;line-height:1.4!important;font-weight:590!important;letter-spacing:-.012em!important}
   .split-choice-cta{min-height:34px!important;border-width:1px!important;box-shadow:0 3px 10px rgba(15,23,42,.065)!important;padding:7px 11px!important;border-radius:14px!important}
   .split-choice-cta span:first-child{font-size:10.75px!important;font-weight:760!important}
@@ -1113,7 +1117,8 @@
     .split-choice-bubble p{font-size:10.85px!important;line-height:1.36!important}
     .split-choice-cta{min-height:32px!important;padding:6px 10px!important}
     .split-choice-cta span:first-child{font-size:10.15px!important}
-    #panelRoa>div.relative,#panelSeoa>div.relative{padding-bottom:10px!important;gap:5px!important}
+    #panelRoa>div.relative{padding-bottom:18px!important;gap:5px!important}
+    #panelSeoa>div.relative{padding-bottom:16px!important;gap:5px!important}
     #sajuInputCardBox{padding:13px!important}
     #sajuForm{gap:10px!important}
     #sajuInputCardBox input[type="text"],#sajuInputCardBox input[type="tel"],#sajuInputCardBox select{min-height:40px!important;height:40px!important}
@@ -1761,7 +1766,7 @@
         <!-- 중앙 구분선 -->
         <div
           id="centerDivider"
-          class="absolute top-1/2 left-0 w-full h-[5px] z-[80] pointer-events-none -translate-y-1/2 transition-opacity duration-200"
+          class="absolute top-1/2 left-0 w-full h-[3px] z-[80] pointer-events-none -translate-y-1/2 transition-opacity duration-200"
         ></div>
 
         <!-- 첫 상담자 선택 헤더 -->
