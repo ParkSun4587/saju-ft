@@ -964,7 +964,8 @@ function norm(v) {
   assert(!html.includes('내 보관함 ♡') && !html.includes('내 사주 ♡'), 'vault copy still uses decorative heart as dialogue text');
   assert(
     html.includes('id="birthTimeBranch"') &&
-    html.includes('<option value="">(선택)</option>') &&
+    html.includes('<option value="" selected hidden>(선택)</option>') &&
+    html.includes('<option value="unknown">모름</option>') &&
     html.includes('자시 · 23:30~01:29') &&
     html.includes('해시 · 21:30~23:29') &&
     html.includes('function birthTimeKeyToBranch(value)') &&
