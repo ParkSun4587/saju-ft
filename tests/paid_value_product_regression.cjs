@@ -1006,21 +1006,23 @@ function norm(v) {
     !html.includes('마음부터 들어주는') &&
     !html.includes('핵심부터 짚어주는') &&
     html.includes('id="centerDivider"') &&
-    html.includes('h-[2px]') &&
-    html.includes('background:rgba(255,255,255,.80)!important') &&
-    html.includes('border-radius:11px!important') &&
+    html.includes('h-[8px]') &&
+    html.includes('background:rgba(255,255,255,.74)!important') &&
+    html.includes('border-radius:10px!important') &&
     html.includes('min-height:40px!important') &&
-    html.includes('margin-right:6px!important') &&
+    html.includes('margin-right:8px!important') &&
     html.includes('filter:none!important') &&
     html.includes('translate:0 0') &&
     html.includes('object-position:center 14%!important') &&
-    html.includes('linear-gradient(to bottom,rgba(248,196,216,.14) 0%,rgba(226,220,237,.10) 50%,rgba(190,211,244,.14) 100%)') &&
+    html.includes('linear-gradient(to bottom,rgba(248,244,238,0) 0%,rgba(248,244,238,.78) 35%,rgba(248,244,238,.86) 50%,rgba(248,244,238,.78) 65%,rgba(248,244,238,0) 100%)') &&
     !html.includes('선택한 언니의 말투로 결과 끝까지 이어져') &&
     !html.includes('응, 언니랑 천천히 풀어볼래') &&
     !html.includes('좋아, 핵심만 바로 알려줘') &&
     !html.includes('원하는 상담 스타일을 골라봐') &&
-    !html.includes('감정 공감형') &&
-    !html.includes('핵심 정리형') &&
+    html.includes('로아 · 감정 공감형') &&
+    html.includes('서아 · 핵심 정리형') &&
+    html.includes('max-width:80%!important') &&
+    html.includes('.split-choice-name-tag{') &&
     !html.includes('왔어? 요즘 뭐가 제일 마음에 걸려') &&
     !html.includes('왔어? 뭐가 제일 궁금해'),
     'immersive first counselor-choice copy missing'
