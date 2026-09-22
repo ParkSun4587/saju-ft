@@ -558,6 +558,66 @@ function norm(v) {
   await page.evaluate(() => openUnniVault());
   assert(await page.locator('#unniVaultModal').evaluate((el) => getComputedStyle(el).display) === 'none', 'paused vault must not open');
 
+  // Final copy freeze: render the exact same chart + concern + situation once in F and once in T.
+  const ftScreen = await page.evaluate(() => {
+    const seed = {
+      ...currentResultData,
+      concernKey:'love',
+      concernSituation:'relationship',
+      userBirthStr:'19980221',
+      userTimeKey:'03:10',
+      userGender:'female',
+      userCalendar:'solar',
+    };
+    const claimCore=(data)=>(data?.noteV2Audit?.claims||[]).map((x)=>({
+      rawFacts:x.rawFacts,
+      conclusion:x.conclusion,
+      ditianRuleIds:x.ditianRuleIds,
+      zipingRuleIds:x.zipingRuleIds,
+    }));
+    const render=(mode)=>{
+      const data={...seed,currentMode:mode};
+      isUnlocked=true;
+      renderResultView(data,{resumeApproval:false});
+      unlockFullReport(null,true);
+      const diagnosis=buildConcernDiagnosisV2(data);
+      generateConcernNotes(data,mode);
+      return {
+        mode,
+        greeting:document.getElementById('resultSisterGreeting')?.innerText || '',
+        notes:document.getElementById('notesListContainer')?.innerText || '',
+        structureFingerprint:diagnosis.structureFingerprint,
+        timingFingerprint:diagnosis.timingFingerprint,
+        claims:claimCore(data),
+      };
+    };
+    const f=render('F');
+    const t=render('T');
+    return {f,t};
+  });
+  assert(ftScreen.f.structureFingerprint===ftScreen.t.structureFingerprint &&
+         ftScreen.f.timingFingerprint===ftScreen.t.timingFingerprint &&
+         JSON.stringify(ftScreen.f.claims)===JSON.stringify(ftScreen.t.claims),
+    'final F/T screen comparison changed factual judgment');
+  assert(ftScreen.f.notes!==ftScreen.t.notes &&
+         ftScreen.f.notes.includes('언니랑 약속') &&
+         ftScreen.t.notes.includes('실전 룰') &&
+         ftScreen.f.greeting.includes('언니가 보니까') &&
+         ftScreen.t.greeting.includes('먼저 봐야 할 건 이거야'),
+    'final F/T screen comparison lost counselor voice distinction');
+  for(const bad of [
+    '현재 연애 때문에 힘들 때도','현재 연애가 꼬인 마지막 장면보다','순간에서',
+    '확정 규칙이 없는 특수한 구조나 묶임은 결과에 억지로 끼워 넣지 않았어.',
+    '확인하기처럼','덜어내기처럼','큰 주의 근거가 맞서지 않아',
+    '실제 계산에서 잡혀 있어','여기서는 시점만 남기고',
+    '신호만 주고 설명은 하지 않는 관계이고.'
+  ]){
+    assert(!ftScreen.f.notes.includes(bad)&&!ftScreen.t.notes.includes(bad), 'final rendered F/T screen still contains approved issue: '+bad);
+  }
+  assert(ftScreen.f.notes.includes('현재 연애를 볼 때도') &&
+         ftScreen.f.notes.includes('현재 연애에서 반복되는 장면보다'),
+    'final rendered F relationship screen lost neutral situation wording');
+
   await page.evaluate(() => openUnniProduct('full_saju'));
   await page.waitForSelector('#unniProductModal', { state:'visible' });
   let modal = await page.locator('#unniProductModal').innerText();
