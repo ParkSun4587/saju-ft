@@ -29,6 +29,7 @@ function loadServer(){
   const signing='test-signing-secret';
   const secret='test-toss-secret';
   const base={n:'테스트',b:'19980221',t:'03:10',g:'female',c:'solar',k:'money',m:'F',l:false};
+  const branchBase={...base,t:'寅',q:'saving'};
   const allSituations={money:'saving',career:'current',love:'relationship',path:'current',people:'friend',mental:'burnout'};
   const bundleExtra={concerns:['career','love','mental'],situations:{career:'current',love:'relationship',mental:'burnout'}};
   const paymentRows={};
@@ -78,6 +79,15 @@ function loadServer(){
   }
 
   const entitlementData={...base};
+  const branchSnapshot=server.__test.snapshot(branchBase);
+  assert(branchSnapshot.t==='寅'&&branchSnapshot.q==='saving','server must preserve selected 12-branch birth time and concern situation');
+  const branchPrepare=await call({action:'prepare',data:branchBase,entitlementTokens:[]});
+  assert(branchPrepare.status===200&&branchPrepare.json.ok&&branchPrepare.json.amount===990,'12-branch birth time must reach payment prepare');
+  const branchResume=await call({action:'resume',ticket:branchPrepare.json.ticket});
+  assert(branchResume.status===200&&branchResume.json.data.t==='寅'&&branchResume.json.data.q==='saving','payment ticket resume lost branch time or concern situation');
+  const branchCompat=server.__test.snapshot({...base,p:'compatibility',x:{partner:{n:'상대',b:'19990511',t:'子',g:'female',c:'solar',l:false}}});
+  assert(branchCompat.x.partner.t==='子','compatibility partner 12-branch birth time must be accepted');
+
   const none=(await call({action:'entitlements',data:entitlementData,tokens:[]})).json;
   assert(none.allInOneQuote.amount===9900&&none.verifiedPurchases.length===0,'empty entitlement server quote drift');
 
