@@ -64,6 +64,17 @@ function loadServer(){
   const compat=await purchaseRecord('compatibility',5900,'pay_compat',{partner:{n:'상대',b:'19990511',t:'12:00',g:'female',c:'solar',l:false}});
   const all=await purchaseRecord('all_in_one',9900,'pay_all',{situations:allSituations});
 
+  const verifiedFull=await call({action:'verify',userKey:full.userKey,token:full.token,expectedProductId:'full_saju'});
+  assert(verifiedFull.status===200&&verifiedFull.json.ok===true,'matching premium grant verification failed');
+  const crossFullToAll=await call({action:'verify',userKey:full.userKey,token:full.token,expectedProductId:'all_in_one'});
+  assert(crossFullToAll.status===200&&crossFullToAll.json.ok===false,'full_saju grant unlocked all_in_one');
+  const crossCompatToFull=await call({action:'verify',userKey:compat.userKey,token:compat.token,expectedProductId:'full_saju'});
+  assert(crossCompatToFull.status===200&&crossCompatToFull.json.ok===false,'compatibility grant unlocked full_saju');
+  const includedAllToFull=await call({action:'verify',userKey:all.userKey,token:all.token,expectedProductId:'full_saju'});
+  assert(includedAllToFull.status===200&&includedAllToFull.json.ok===true,'all_in_one should include full_saju access');
+  const crossAllToCompat=await call({action:'verify',userKey:all.userKey,token:all.token,expectedProductId:'compatibility'});
+  assert(crossAllToCompat.status===200&&crossAllToCompat.json.ok===false,'all_in_one incorrectly unlocked compatibility');
+
   const q=server.__test.calculateUpgradeQuote;
   assert(q('all_in_one',[]).amount===9900,'no-purchase quote must be 9900');
   assert(q('all_in_one',[{productId:'full_saju'}]).amount===5000,'full_saju credit must yield 5000');
@@ -267,8 +278,11 @@ function loadServer(){
   assert(
     premiumSrc.includes('renderPaymentMethods("#unniProductPaymentMethod", { value:order.amount') &&
     serverSrc.includes('body:JSON.stringify({ paymentKey:body.paymentKey,orderId:order.orderId,amount:expectedAmount })') &&
-    serverSrc.includes('Number(body.amount) !== expectedAmount'),
-    'checkout/server amount binding missing'
+    serverSrc.includes('Number(body.amount) !== expectedAmount') &&
+    premiumSrc.includes('verifyAccessToken(directStoredGrant.userKey,directStoredGrant.token,productId)') &&
+    serverSrc.includes('expectedProductId') &&
+    serverSrc.includes('grant.productId === expectedProductId'),
+    'checkout/server amount or product-bound grant binding missing'
   );
 
   console.log('PREMIUM_ENTITLEMENT_LADDER_PASS',JSON.stringify({

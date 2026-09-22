@@ -774,9 +774,9 @@
   #sajuInputCardBox label{font-size:11px!important;line-height:1.3!important;font-weight:700!important;color:#727985!important;margin-bottom:5px!important}
   #sajuInputCardBox input[type="text"],#sajuInputCardBox input[type="tel"],#sajuInputCardBox select{min-height:42px!important;height:42px!important;font-size:16px!important;line-height:1!important;border-radius:13px!important;background:#fbfaf8!important;border:1px solid var(--unni-line-strong)!important;color:#253044!important;box-shadow:none!important}
   #sajuInputCardBox #birthTimeBranch{text-align:center!important;text-align-last:center!important;padding-left:34px!important;padding-right:34px!important;color:#b0b4bc!important}
-  #sajuInputCardBox #birthTimeBranch:has(option:not([value=""]):checked){color:#253044!important}
+  #sajuInputCardBox #birthTimeBranch:has(option:not([value="unknown"]):checked){color:#253044!important}
   #birthTimeBranch option{text-align:center;color:#253044}
-  #birthTimeBranch option[value=""]{color:#b0b4bc}
+  #birthTimeBranch option[value="unknown"]{color:#b0b4bc}
   #sajuInputCardBox input::placeholder{font-size:13px!important;color:#b0b4bc!important}
   #sajuInputCardBox .concern-chip{min-height:42px!important;border-radius:13px!important;background:#fff!important;border:1px solid var(--unni-line-strong)!important;font-size:12px!important;font-weight:720!important;box-shadow:none!important}
   #concernSituationBox{background:#faf7f4!important;border:1px solid var(--unni-line)!important;border-radius:17px!important;padding:12px!important}
@@ -2388,8 +2388,7 @@
                     onchange="selectBirthTimeBranch(this)"
                     class="w-full h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[11px] text-slate-700 focus:bg-white focus:outline-none"
                   >
-                    <option value="" selected hidden>(선택)</option>
-                    <option value="unknown">모름</option>
+                    <option value="unknown" selected>(모름)</option>
                     <option value="子">자시 · 23:30~01:29</option>
                     <option value="丑">축시 · 01:30~03:29</option>
                     <option value="寅">인시 · 03:30~05:29</option>
@@ -3671,6 +3670,23 @@
         try {
           const method = push ? "pushState" : "replaceState";
           history[method]({ view }, "", location.pathname);
+        } catch {}
+      }
+
+      // 결과 화면에서는 첫 번째 브라우저 뒤로가기를 실수 방지용으로 한 번 흡수한다.
+      // 입력 화면 기록은 결과로 교체하고, 결과 가드 1개만 추가해 두 번째 뒤로가기는 정상 이동하게 한다.
+      function armResultBackGuard() {
+        try {
+          if (history.state?.view !== "result") {
+            history.replaceState({ view: "result" }, "", location.pathname);
+          }
+          if (!history.state?.resultGuard) {
+            history.pushState(
+              { ...(history.state || {}), view: "result", resultGuard: true },
+              "",
+              location.pathname,
+            );
+          }
         } catch {}
       }
 
@@ -6051,7 +6067,7 @@ function generateConcernNotes(data, mode) {
       function birthTimeKeyToBranch(value) {
         const key = String(value || "").trim();
         if (BIRTH_TIME_BRANCHES.has(key)) return key;
-        if (!key) return "";
+        if (!key) return "unknown";
         if (key === "unknown") return "unknown";
 
         const normalized = key.includes(":")
@@ -6466,7 +6482,7 @@ function generateConcernNotes(data, mode) {
               streamArea.scrollTop = streamArea.scrollHeight;
             }
 
-            changeViewState("result", true);
+            changeViewState("result");
 
             mode = mode || selectedSplitMode || "F";
             const isT = mode === "T";
@@ -7868,13 +7884,17 @@ currentResultData = {
         }
       }
 
-            function renderResultView(data, { resumeApproval = true } = {}) {
+            function renderResultView(
+        data,
+        { resumeApproval = true, armBackGuard = true } = {},
+      ) {
         invalidateResultView();
         isAnalyzing = false;
         currentResultData = data;
         selectedSplitMode = data.currentMode || "F";
         saveCurrentResult();
         changeViewState("result");
+        if (armBackGuard) armResultBackGuard();
         for (const id of [
           "landingSection",
           "loadingSection",
@@ -8192,14 +8212,19 @@ currentResultData = {
       }
 
       // 'valid'(정상) / 'invalid'(위조) / 'error'(서버·네트워크 장애) 3단 분기
-      async function verifyAccessToken(userKey, token) {
+      async function verifyAccessToken(userKey, token, expectedProductId = "") {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 15000);
         try {
           const res = await fetch(CONFIRM_API, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "verify", userKey, token }),
+            body: JSON.stringify({
+              action: "verify",
+              userKey,
+              token,
+              expectedProductId,
+            }),
             signal: controller.signal,
           });
           if (!res.ok) return "error";
@@ -9618,7 +9643,7 @@ currentResultData = {
         closeShareModal(true);
         closePolicyModal();
         if (event.state?.view === "result" && currentResultData?.stats) {
-          renderResultView(currentResultData);
+          renderResultView(currentResultData, { armBackGuard: false });
         } else if (event.state?.view === "input") {
           try {
             const draft = JSON.parse(readStore("unni_input_draft", true));
