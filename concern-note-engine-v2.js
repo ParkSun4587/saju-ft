@@ -22,6 +22,16 @@
     return text + josaSuffix(text, withBatchim, withoutBatchim);
   }
 
+  function actionExample(value) {
+    const text = String(value || "").trim();
+    return /기$/.test(text) ? text.replace(/기$/, "는 식으로") : text;
+  }
+
+  function cueAt(value) {
+    const text = String(value || "").trim();
+    return /순간$/.test(text) ? text.replace(/순간$/, "순간에") : text;
+  }
+
   const SITUATIONS = {
     money: {
       saving:{label:"돈이 잘 안 모여",object:"지출과 저축",cue:"돈이 들어와도 남는 금액을 만들기 위해 지출·저축 기준을 정해야 하는 순간",move:"돈이 남지 않는 장면 하나를 찾아 지출·저축 기준을 고정하기",metric:"7일 동안 계획 밖 지출과 그 이유를 적어보기"},
@@ -276,7 +286,11 @@
     else middle = "상황에 따라 받아낼 때와 밀려날 때가 달라서, 압박의 크기보다 대응 순서가 중요해";
     const end = zipingUser(reasoning);
     if (isT) return `<b>시작</b> — ${situation.cue}.<br><br><b>들어오는 힘</b> — ${p.pressure}이 가장 크게 작동해.<br><br><b>네가 받는 방식</b> — ${middle}.<br><br><b>갈림길</b> — ${end}.<br><br>그래서 ${situation.object}의 결과만 보지 말고, 이 순서가 시작되는 지점을 먼저 끊어야 해.`;
-    return `보통 <b>${situation.cue}</b>에서 시작돼. 그때 네 사주에서는 ${p.pressure}이 가장 먼저 커져.<br><br>그리고 ${middle}.<br><br>네가 약해서가 아니야. <b>그 힘을 어떤 순서로 받아내느냐가 중요해.</b> ${end}.<br><br>언니는 ${withJosa(situation.object,"이","가")} 꼬인 마지막 장면보다 이 첫 순서를 먼저 잡고 싶어.`;
+    const cueStart = /순간$/.test(situation.cue) ? situation.cue.replace(/순간$/, "순간부터") : situation.cue;
+    const lastScene = situation.concern === "love" && situation.key === "relationship"
+      ? `${situation.object}에서 반복되는 장면보다`
+      : `${withJosa(situation.object,"이","가")} 꼬인 마지막 장면보다`;
+    return `보통 <b>${cueStart}</b> 시작돼. 그때 네 사주에서는 ${p.pressure}이 가장 먼저 커져.<br><br>그리고 ${middle}.<br><br>네가 약해서가 아니야. <b>그 힘을 어떤 순서로 받아내느냐가 중요해.</b> ${end}.<br><br>언니는 ${lastScene} 이 첫 순서를 먼저 잡고 싶어.`;
   }
 
   function corePortrait(reasoning, situation, isT) {
@@ -289,7 +303,10 @@
     if (isT) {
       return `네 사주의 중심은 <b>${base}</b>${josaSuffix(base,"이야","야")}. 그런데 실제 힘의 배분을 보면 ${strengthLine}. 지금 가장 크게 걸리는 건 <b>${p.pressure}</b>이고, ${rootLine}.<br><br>즉 ${situation.object}만 따로 떼서 볼 게 아니라, <b>이 압력을 네가 감당할 수 있는 형태로 바꾸는 구조</b>를 먼저 봐야 해.`;
     }
-    return `언니가 네 사주 전체에서 먼저 보는 건 <b>${base}</b>${josaSuffix(base,"이야","야")}. 그런데 이 힘이 그냥 편하게 쓰이는 건 아니고, 실제로는 ${strengthLine}. 지금 가장 크게 걸리는 건 <b>${p.pressure}</b>${josaSuffix(p.pressure,"이야","야")}.<br><br>${rootLine}. 그래서 ${situation.object} 때문에 힘들 때도 ‘내가 왜 이것도 못 하지?’로 끝내면 핵심을 놓쳐. <b>어떤 압력을 받고, 그걸 무엇으로 받아내느냐</b>가 먼저야.`;
+    const situationLead = situation.concern === "love" && situation.key === "relationship"
+      ? `${situation.object}를 볼 때도`
+      : `${situation.object} 때문에 힘들 때도`;
+    return `언니가 네 사주 전체에서 먼저 보는 건 <b>${base}</b>${josaSuffix(base,"이야","야")}. 그런데 이 힘이 그냥 편하게 쓰이는 건 아니고, 실제로는 ${strengthLine}. 지금 가장 크게 걸리는 건 <b>${p.pressure}</b>${josaSuffix(p.pressure,"이야","야")}.<br><br>${rootLine}. 그래서 ${situationLead} ‘내가 왜 이것도 못 하지?’로 끝내면 핵심을 놓쳐. <b>어떤 압력을 받고, 그걸 무엇으로 받아내느냐</b>가 먼저야.`;
   }
 
   function deepCause(reasoning, situation, isT) {
@@ -333,7 +350,7 @@
       ? "두 방향이 겹치지 않는 부분은 한꺼번에 밀지 않고, 먼저 네가 감당할 힘을 만들고 그다음 결과 쪽으로 쓰는 순서가 중요해."
       : "";
     const caution = special.length
-      ? "다만 아직 확정 규칙이 없는 특수한 구조나 묶임은 결과에 억지로 끼워 넣지 않았어."
+      ? "확실하지 않은 부분은 억지로 단정하지 않았어."
       : "";
     if (isT) {
       return `<b>첫 순서</b> — ${firstAction}.<br><br><b>그다음</b> — ${secondAction}.<br><br><b>지금 고민에 적용</b> — ${situation.move}.<br><br><b>7일 검증</b> — ${situation.metric}.<br><br>${harmful.length ? `특히 ${harmful.join("·")}이 과해지는 선택은 줄여.` : "한 번에 변수 여러 개를 바꾸지 마."} ${conflictLine} ${caution}`;
@@ -365,7 +382,8 @@
       return `<b>${domain.name}에서 맞는 쪽</b> — ${good.join(" / ")}.<br><br><b>피할 쪽</b> — ${bad.join(" / ")}.<br><br><b>판별법</b> — ${stateLine}`;
     }
     const goodText = good.join(" / ");
-    return `네 사주에서 ${withJosa(domain.name,"을","를")} 볼 때 잘 맞는 쪽은 <b>${goodText}</b>${josaSuffix(goodText,"이야","야")}.<br><br>반대로 오래 두면 소모가 커지는 쪽은 <b>${bad.join(" / ")}</b>이고.<br><br>${stateLine} ‘좋아 보이는가’보다 <b>내 사주의 좋은 힘이 여기서 실제로 잘 쓰이는가</b>를 보는 게 더 정확해.`;
+    const badText = bad.join(" / ");
+    return `네 사주에서 ${withJosa(domain.name,"을","를")} 볼 때 잘 맞는 쪽은 <b>${goodText}</b>${josaSuffix(goodText,"이야","야")}.<br><br>반대로 오래 두면 소모가 커지는 쪽은 <b>${badText}</b>${josaSuffix(badText,"이야","야")}.<br><br>${stateLine} ‘좋아 보이는가’보다 <b>내 사주의 좋은 힘이 여기서 실제로 잘 쓰이는가</b>를 보는 게 더 정확해.`;
   }
 
   function formatMonth(row) {
@@ -461,7 +479,7 @@
       const when = formatMonth(row);
       const supportWhy = timingReasonPhrase(row, true);
       const cautionWhy = timingReasonPhrase(row, false);
-      if (row.class==="supportive") return `<b>${when}</b> — ${supportWhy || "중요한 도움 근거가"} 뚜렷하고 큰 주의 근거가 맞서지 않아. ${situation.move}처럼 실제 반응을 확인하는 행동을 넣기 좋아.`;
+      if (row.class==="supportive") return `<b>${when}</b> — ${supportWhy || "중요한 도움 근거가"} 뚜렷해. 크게 조심할 신호는 같이 잡히지 않아. ${actionExample(situation.move)} 실제 반응을 확인해보기 좋아.`;
       if (row.class==="mild-support") return `<b>${when}</b> — ${supportWhy || "보조 도움 근거가"} 잡혀 있어. 크게 벌리기보다 ${situation.move}를 한 번 시험해보기 좋아.`;
       if (row.class==="caution") return `<b>${when}</b> — ${cautionWhy || "중요한 주의 근거가"} 뚜렷해. ${cautionAction}`;
       if (row.class==="mild-caution") return `<b>${when}</b> — ${cautionWhy || "보조 주의 근거가"} 있어. 속도를 줄이고 한 번 더 확인하는 편이 좋아.`;
@@ -477,9 +495,9 @@
       const year = pivot?.year || String(pivot?.date||"").slice(0,4);
       if(!year)return "";
       if(pivot.class==="supportive"){
-        return `<b>${year}년 전후</b> — ${situation.object}에서 지금보다 판을 넓혀볼 만한 큰 변곡점이 실제 계산에서 잡혀 있어. 여기서는 시점만 남기고, 그때 왜 힘이 붙는지와 월별 세부 흐름·다른 영역과의 연결은 펼치지 않을게.`;
+        return `<b>${year}년 전후</b> — ${situation.object}에서 지금보다 판을 넓혀볼 만한 큰 변곡점이 보여. 지금 메모에서는 시기만 먼저 짚을게.`;
       }
-      return `<b>${year}년 전후</b> — ${situation.object}에서 방식이나 속도를 한 번 크게 조정해야 할 변곡점이 실제 계산에서 잡혀 있어. 여기서는 시점만 남기고, 구체 원인·월별 흐름·다른 영역과의 연결은 풀어놓지 않을게.`;
+      return `<b>${year}년 전후</b> — ${situation.object}에서 방식이나 속도를 한 번 크게 조정해야 할 변곡점이 보여. 지금 메모에서는 시기만 먼저 짚을게.`;
     }
 
     const pivotBody = longTermPivots.map(pivotSentence).filter(Boolean).join("<br><br>");
@@ -571,7 +589,7 @@
         badge:badgeFor(s.concern,0),
         title:titleFor(s,0,isT),
         desc:corePortrait(r,s,isT),
-        checklist:isT ? `검증: ${s.cue}에서 실제로 어떤 압박이 먼저 커지는지 한 번만 기록해.` : `언니 말이 맞는지 확인해보자. ${s.cue}에서 네가 제일 먼저 부담스러워지는 게 뭔지만 적어봐.`,
+        checklist:isT ? `검증: ${cueAt(s.cue)} 실제로 어떤 압박이 먼저 커지는지 한 번만 기록해.` : `언니 말이 맞는지 확인해보자. ${cueAt(s.cue)} 네가 제일 먼저 부담스러워지는 게 뭔지만 적어봐.`,
       },
       {
         badge:badgeFor(s.concern,1),
