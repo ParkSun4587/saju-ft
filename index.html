@@ -660,8 +660,18 @@
     backdrop-filter:blur(4px);
     -webkit-backdrop-filter:blur(4px)
   }
-  #imgRoa{filter:saturate(.87) brightness(.99)}
-  #imgSeoa{filter:saturate(.84) brightness(.99) contrast(.96)}
+  #imgRoa{
+    filter:saturate(.87) brightness(.99);
+    scale:1.06;
+    translate:0 3%;
+    transform-origin:center center;
+  }
+  #imgSeoa{
+    filter:saturate(.84) brightness(.99) contrast(.96);
+    scale:1.14;
+    translate:0 2%;
+    transform-origin:center 35%;
+  }
   #panelSeoa{background:#1f2937!important}
   #panelSeoa>div:nth-of-type(1){opacity:.84}
   .split-choice-bubble{max-width:86%!important;border-width:1px!important;box-shadow:0 4px 12px rgba(15,23,42,.07)!important;padding:8px 11px!important;border-radius:15px!important}
