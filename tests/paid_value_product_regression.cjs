@@ -262,10 +262,7 @@ function norm(v) {
     document.getElementById('birthDateInput').value = '19980221';
     document.getElementById('calendarSelect').value = 'solar';
     document.getElementById('genderValue').value = 'female';
-    const directToggle = document.getElementById('birthTimeDirectToggle');
-    directToggle.checked = true;
-    toggleDirectBirthTime(directToggle, false);
-    document.getElementById('birthTimeInput').value = '0310';
+    document.getElementById('birthTimeBranch').value = '丑';
     startAnalysis('F');
 
     history.replaceState({},'',location.pathname+'?payment=fail&state=fake');
@@ -967,21 +964,17 @@ function norm(v) {
   assert(!html.includes('내 보관함 ♡') && !html.includes('내 사주 ♡'), 'vault copy still uses decorative heart as dialogue text');
   assert(
     html.includes('id="birthTimeBranch"') &&
-    html.includes('<option value="">(모름)</option>') &&
+    html.includes('<option value="">(선택)</option>') &&
     html.includes('자시 · 23:30~01:29') &&
     html.includes('해시 · 21:30~23:29') &&
-    html.includes('id="birthTimeDirectToggle"') &&
-    html.includes('id="birthTimeDirectLabel"') &&
-    html.includes('#birthTimeDirectLabel{') &&
-    html.includes('background:transparent!important') &&
-    html.includes('border-radius:0!important') &&
-    !html.includes('data-consult-mode="F"] #birthTimeDirectLabel{background:') &&
-    !html.includes('data-consult-mode="T"] #birthTimeDirectLabel{background:') &&
-    html.includes('정확한 시간 직접 입력') &&
-    html.includes('placeholder="예: 오후 1:30 → 1330"') &&
-    !html.includes('id="birthTimeUnknown"') &&
-    !html.includes('정확한 분을 몰라도 시간대만 고르면 돼'),
-    'exact manse primary birth-time UI missing'
+    html.includes('function birthTimeKeyToBranch(value)') &&
+    !html.includes('id="birthTimeDirectToggle"') &&
+    !html.includes('id="birthTimeDirectLabel"') &&
+    !html.includes('id="birthTimeDirectWrap"') &&
+    !html.includes('id="birthTimeInput"') &&
+    !html.includes('정확한 시간 직접 입력') &&
+    !html.includes('placeholder="예: 오후 1:30 → 1330"'),
+    'simplified branch-only birth-time UI missing'
   );
   assert(html.includes('BIRTH_TIME_BRANCHES') && html.includes('BIRTH_TIME_BRANCH_LABELS'), 'branch-time parsing/restore support missing');
   assert(
