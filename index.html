@@ -747,8 +747,10 @@
   #sajuForm>*+*{margin-top:0!important}
   #sajuInputCardBox label{font-size:11px!important;line-height:1.3!important;font-weight:700!important;color:#727985!important;margin-bottom:5px!important}
   #sajuInputCardBox input[type="text"],#sajuInputCardBox input[type="tel"],#sajuInputCardBox select{min-height:42px!important;height:42px!important;font-size:16px!important;line-height:1!important;border-radius:13px!important;background:#fbfaf8!important;border:1px solid var(--unni-line-strong)!important;color:#253044!important;box-shadow:none!important}
-  #birthTimeBranch{text-align:center!important;text-align-last:center!important;padding-left:34px!important;padding-right:34px!important}
-  #birthTimeBranch option{text-align:center}
+  #birthTimeBranch{text-align:center!important;text-align-last:center!important;padding-left:34px!important;padding-right:34px!important;color:#b0b4bc!important}
+  #birthTimeBranch:has(option:not([value=""]):checked){color:#253044!important}
+  #birthTimeBranch option{text-align:center;color:#253044}
+  #birthTimeBranch option[value=""]{color:#b0b4bc}
   #birthTimeDirectLabel{
     background:transparent!important;
     border:0!important;
