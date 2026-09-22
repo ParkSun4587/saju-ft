@@ -99,6 +99,8 @@ async function enter(page, mode, concern, situation) {
       return label&&text?{
         bg:getComputedStyle(label).backgroundColor,
         border:getComputedStyle(label).borderColor,
+        borderWidth:getComputedStyle(label).borderWidth,
+        radius:getComputedStyle(label).borderRadius,
         text:getComputedStyle(text).color,
       }:null;
     })(),
@@ -106,6 +108,8 @@ async function enter(page, mode, concern, situation) {
     details:getComputedStyle(document.getElementById('concernSituationBox')).display,
     summary:getComputedStyle(document.getElementById('concernSituationSummary')).display,
     submitDisabled:!!document.getElementById('analysisSubmitButton')?.disabled,
+    submitOpacity:parseFloat(getComputedStyle(document.getElementById('analysisSubmitButton')).opacity||'1'),
+    concernPrompt:document.getElementById('concernPickerPrompt')?.innerText||'',
     oldManseCopy:document.body.innerText.includes('정확한 만세력 조회를 위해 적어줘'),
     oldTimeHint:document.body.innerText.includes('출생기록에 적힌 시각을 입력하면 더 정확해'),
     timeHintExists:!!document.getElementById('birthTimeHint'),
@@ -115,20 +119,25 @@ async function enter(page, mode, concern, situation) {
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
-  assert(firstState.timeChip,'direct-time chip missing');
-  if(mode==='F') assert(firstState.timeChip.text.includes('184, 62, 92'),'F direct-time chip palette drift '+JSON.stringify(firstState.timeChip));
-  if(mode==='T') assert(firstState.timeChip.text.includes('63, 120, 146'),'T direct-time chip palette drift '+JSON.stringify(firstState.timeChip));
+  assert(firstState.timeChip,'direct-time control missing');
+  assert(firstState.timeChip.bg==='rgba(0, 0, 0, 0)' && firstState.timeChip.borderWidth==='0px' && firstState.timeChip.radius==='0px',
+    'direct-time control still looks like a pill/bubble '+JSON.stringify(firstState.timeChip));
+  assert(firstState.submitOpacity<=0.4,'disabled consultation CTA is still too visually active '+JSON.stringify(firstState));
+  if(mode==='F') assert(firstState.timeChip.text.includes('184, 62, 92'),'F direct-time text palette drift '+JSON.stringify(firstState.timeChip));
+  if(mode==='T') assert(firstState.timeChip.text.includes('63, 120, 146'),'T direct-time text palette drift '+JSON.stringify(firstState.timeChip));
   if (mode==='F') assert(
-    firstState.sisterText.includes('응, 좋아. 편하게 적어줘') &&
-    firstState.sisterText.includes('언니가 사주랑 고민 같이 볼게') &&
+    firstState.sisterText.includes('아, 왔구나. 편하게 적어줘.') &&
+    firstState.sisterText.includes('언니가 하나씩 잘 봐줄게.') &&
+    firstState.concernPrompt==='요즘 제일 마음에 걸리는 건?' &&
     !firstState.sisterText.includes('ㅎㅎ'),
-    'F input lost warm pinpoint counselor voice '+firstState.sisterText
+    'F input lost warm concise counselor voice '+JSON.stringify(firstState)
   );
   if (mode==='T') assert(
-    firstState.sisterText.includes('좋아, 바로 보자') &&
-    firstState.sisterText.includes('사주랑 고민 적어주면 돼') &&
+    firstState.sisterText.includes('왔어. 적어줘.') &&
+    firstState.sisterText.includes('핵심부터 바로 볼게.') &&
+    firstState.concernPrompt==='지금 제일 궁금한 건?' &&
     !firstState.sisterText.includes('ㅎㅎ'),
-    'T input lost precise direct-care counselor voice '+firstState.sisterText
+    'T input lost concise counselor voice '+JSON.stringify(firstState)
   );
   await page.fill('#nameInput','테스트');
   const label = concern === 'love' ? '연애 · 썸' : '마음 · 스트레스';
@@ -150,7 +159,7 @@ async function enter(page, mode, concern, situation) {
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.fill('#birthDateInput','19980221');
   assert(await page.locator('#birthTimeBranch option').count()===13,'12-branch primary birth-time selector missing');
-  assert((await page.locator('#birthTimeBranch option').first().innerText())==='(시간 모름)','birth-time unknown default missing');
+  assert((await page.locator('#birthTimeBranch option').first().innerText())==='(모름)','birth-time unknown default missing');
   assert((await page.locator('#birthTimeBranch option[value="子"]').innerText()).includes('23:30~01:29'),'manse-corrected 子 range missing');
   assert(await page.locator('#birthTimeDirectToggle').isVisible(),'direct-time checkbox missing');
   assert(await page.locator('#birthTimeInput').isHidden(),'direct-time field should stay hidden until checkbox is selected');
@@ -729,13 +738,13 @@ async function inspect(page, mode) {
     await small.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
     const voice=await small.locator('#welcomeSisterText').innerText();
     if(mode==='F') assert(
-      voice.includes('응, 좋아. 편하게 적어줘') &&
-      voice.includes('언니가 사주랑 고민 같이 볼게'),
+      voice.includes('아, 왔구나. 편하게 적어줘.') &&
+      voice.includes('언니가 하나씩 잘 봐줄게.'),
       '360px F voice drift '+voice
     );
     else assert(
-      voice.includes('좋아, 바로 보자') &&
-      voice.includes('사주랑 고민 적어주면 돼'),
+      voice.includes('왔어. 적어줘.') &&
+      voice.includes('핵심부터 바로 볼게.'),
       '360px T voice drift '+voice
     );
     await small.close();
