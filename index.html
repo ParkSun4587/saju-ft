@@ -8310,7 +8310,11 @@ currentResultData = {
                 T: "결제를 취소했어. 현재 결과는 그대로 유지돼.",
               }, data.currentMode);
             } else {
-              preparePaymentFailureRetry(data, data.currentMode);
+              document.getElementById("paymentFailRefreshBox")?.remove();
+              showVoiceToast({
+                F: "결제창을 열지 못했어. 지금 결과는 그대로 있으니 잠시 후 다시 눌러줘.",
+                T: "결제창을 열지 못했어. 현재 결과는 유지돼. 잠시 후 다시 눌러줘.",
+              }, data.currentMode);
             }
           }
         } finally {
