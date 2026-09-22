@@ -337,16 +337,42 @@ export async function onRequestPost({ request, env }) {
 
     if (body.action === "verify") {
       const { userKey, token } = body;
-      if (typeof userKey !== "string" || userKey.length > 3000 || typeof token !== "string" || token.length > 8192) return reply({ ok:false },400);
+      const expectedProductId = typeof body.expectedProductId === "string" ? body.expectedProductId : "";
+      if (
+        typeof userKey !== "string" ||
+        userKey.length > 3000 ||
+        typeof token !== "string" ||
+        token.length > 8192 ||
+        (expectedProductId && !PRODUCTS[expectedProductId])
+      ) return reply({ ok:false },400);
+
+      // 구형 HMAC 토큰은 990원 concern_single 전용이다. 프리미엄 상품 재열람에는 사용하지 않는다.
       if (!token.startsWith("v2.") && !token.startsWith("v3.")) {
+        if (expectedProductId && expectedProductId !== "concern_single") return reply({ ok:false });
         return reply({ ok:equal(token,await hmac(userKey,signing)) });
       }
+
       const grant = await parseSignedGrant(token,signing);
       if (!grant || grant.userKey !== userKey) return reply({ ok:false });
+
+      const entitlesExpectedProduct =
+        !expectedProductId ||
+        grant.productId === expectedProductId ||
+        (
+          grant.productId === "all_in_one" &&
+          ["full_saju","concern_bundle3"].includes(expectedProductId)
+        );
+      if (!entitlesExpectedProduct) {
+        return reply({ ok:false, productId:grant.productId || "" });
+      }
+
       const expected = Number(grant.amount || PRODUCTS[grant.productId || "concern_single"].amount || 990);
       const payment = await toss(encodeURIComponent(grant.paymentKey),secret);
       if (!payment.ok) return reply({ ok:false,message:"구매 확인 서버에 연결하지 못했어요." },503);
-      return reply({ ok:paid(payment.data,grant.paymentKey,grant.orderId,expected) });
+      return reply({
+        ok:paid(payment.data,grant.paymentKey,grant.orderId,expected),
+        productId:grant.productId || "",
+      });
     }
 
     if (body.action === "confirm") {
