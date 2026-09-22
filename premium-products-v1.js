@@ -1409,12 +1409,8 @@
           <label style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:850;color:#9a3412;cursor:pointer"><input id="partnerLeapMonth" type="checkbox"> 윤달이에요</label>
         </div>
         <div style="padding:12px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px">
-            <div style="font-size:11px;font-weight:900;color:#334155">상대가 태어난 시간</div>
-            <label style="display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:#fff1f2;border:1px solid #fecdd3;font-size:9.5px;font-weight:850;color:#be123c;cursor:pointer"><input id="partnerTimeDirectToggle" type="checkbox"> 정확한 시간 직접 입력</label>
-          </div>
-          <div id="partnerTimeBranchWrap"><select id="partnerTimeBranch" style="width:100%;padding:10px 9px;border:1px solid #cbd5e1;border-radius:10px;background:white;font-size:11px;font-weight:750;color:#475569"><option value="">(시간 모름)</option>${branchOpts}</select></div>
-          <div id="partnerTimeDirectWrap" style="display:none"><input id="partnerTimeInput" inputmode="numeric" maxlength="5" placeholder="예: 오후 1:30 → 1330" oninput="if(window.formatBirthTime)window.formatBirthTime(this)" style="width:100%;box-sizing:border-box;padding:10px 9px;border:1px solid #fecdd3;border-radius:10px;background:#fff7f8;font-size:11px;font-weight:750;color:#475569;text-align:center"></div>
+          <div style="font-size:11px;font-weight:900;color:#334155;margin-bottom:7px">상대가 태어난 시간</div>
+          <div id="partnerTimeBranchWrap"><select id="partnerTimeBranch" style="width:100%;padding:10px 9px;border:1px solid #cbd5e1;border-radius:10px;background:white;font-size:11px;font-weight:750;color:#475569"><option value="unknown" selected>(모름)</option>${branchOpts}</select></div>
         </div>
       </div>`;
     }
@@ -1437,25 +1433,6 @@
     if (!calendar) return;
     calendar.addEventListener("change", () => syncPartnerLeapUi(root));
     syncPartnerLeapUi(root);
-
-    const directToggle = root.querySelector("#partnerTimeDirectToggle");
-    const branchWrap = root.querySelector("#partnerTimeBranchWrap");
-    const directWrap = root.querySelector("#partnerTimeDirectWrap");
-    const branch = root.querySelector("#partnerTimeBranch");
-    const input = root.querySelector("#partnerTimeInput");
-    directToggle?.addEventListener("change", () => {
-      const direct = !!directToggle.checked;
-      if (direct) {
-        if (branch) branch.value = "";
-        if (branchWrap) branchWrap.style.display = "none";
-        if (directWrap) directWrap.style.display = "block";
-        input?.focus();
-      } else {
-        if (input) input.value = "";
-        if (directWrap) directWrap.style.display = "none";
-        if (branchWrap) branchWrap.style.display = "block";
-      }
-    });
   }
 
   function collectExtra(productId, data, root) {
@@ -1500,21 +1477,8 @@
           F: "상대 생년월일을 8자리로 한 번만 확인해줘.",
           T: "상대 생년월일을 8자리로 입력해줘.",
         }));
-      const directEnabled = !!root.querySelector("#partnerTimeDirectToggle")?.checked;
-      let tRaw = "unknown";
-      if (directEnabled) {
-        const direct = root.querySelector("#partnerTimeInput")?.value || "";
-        const clean = direct.replace(/\D/g, "");
-        if (clean.length !== 4 || Number(clean.slice(0,2)) > 23 || Number(clean.slice(2)) > 59)
-          throw new Error(productVoice(data, {
-            F: "상대 시간을 직접 입력하려면 4자리로 적어줘. 예: 1330",
-            T: "상대 직접 입력 시간은 4자리로 적어줘. 예: 1330",
-          }));
-        tRaw = `${clean.slice(0,2)}:${clean.slice(2)}`;
-      } else {
-        const branch = root.querySelector("#partnerTimeBranch")?.value || "";
-        if (/^[子丑寅卯辰巳午未申酉戌亥]$/.test(branch)) tRaw = branch;
-      }
+      const branch = root.querySelector("#partnerTimeBranch")?.value || "unknown";
+      const tRaw = /^[子丑寅卯辰巳午未申酉戌亥]$/.test(branch) ? branch : "unknown";
       const calendar = root.querySelector("#partnerCalendar")?.value || "solar";
       const leap = calendar === "lunar" && !!root.querySelector("#partnerLeapMonth")?.checked;
       return { partner: { n: root.querySelector("#partnerName")?.value.trim() || "상대", b, t: tRaw, g: root.querySelector("#partnerGender")?.value || "female", c: calendar, l: leap } };
@@ -1713,7 +1677,7 @@
     const directStoredGrant = readGrant(data,productId);
     let directGrantVerified = false;
     if (directStoredGrant?.token && directStoredGrant?.userKey && typeof verifyAccessToken === "function") {
-      try { directGrantVerified = (await verifyAccessToken(directStoredGrant.userKey,directStoredGrant.token)) === "valid"; }
+      try { directGrantVerified = (await verifyAccessToken(directStoredGrant.userKey,directStoredGrant.token,productId)) === "valid"; }
       catch (_) { directGrantVerified = false; }
     }
 
