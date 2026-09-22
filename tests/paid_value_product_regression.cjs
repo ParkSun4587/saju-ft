@@ -1012,9 +1012,15 @@ function norm(v) {
     !html.includes('마음부터 들어주는') &&
     !html.includes('핵심부터 짚어주는') &&
     html.includes('id="centerDivider"') &&
-    html.includes('h-[5px]') &&
-    html.includes('backdrop-filter:blur(4px)') &&
-    html.includes('linear-gradient(to bottom,rgba(248,196,216,.24) 0%,rgba(224,213,238,.20) 50%,rgba(190,211,244,.24) 100%)') &&
+    html.includes('h-[2px]') &&
+    html.includes('background:rgba(255,255,255,.80)!important') &&
+    html.includes('border-radius:11px!important') &&
+    html.includes('min-height:40px!important') &&
+    html.includes('margin-right:6px!important') &&
+    html.includes('filter:none!important') &&
+    html.includes('translate:0 0') &&
+    html.includes('object-position:center 14%!important') &&
+    html.includes('linear-gradient(to bottom,rgba(248,196,216,.14) 0%,rgba(226,220,237,.10) 50%,rgba(190,211,244,.14) 100%)') &&
     !html.includes('선택한 언니의 말투로 결과 끝까지 이어져') &&
     !html.includes('응, 언니랑 천천히 풀어볼래') &&
     !html.includes('좋아, 핵심만 바로 알려줘') &&
