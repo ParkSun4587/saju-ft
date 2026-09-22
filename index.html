@@ -3691,14 +3691,19 @@
             signal: controller.signal,
           });
           const json = await response.json();
-          if (!response.ok || !json.ok)
-            throw new Error(
+          if (!response.ok || !json.ok) {
+            const error = new Error(
               json.message ||
                 voiceText({
                   F: "확인이 잠깐 늦어지고 있어. 지금 화면은 그대로 두고 한 번만 다시 눌러줘.",
                   T: "서버 확인이 지연되고 있어. 현재 화면은 유지됐어. 다시 눌러줘.",
                 }),
             );
+            error.paymentFailed = json.paymentFailed === true;
+            error.paymentCode = typeof json.code === "string" ? json.code : "";
+            error.httpStatus = response.status;
+            throw error;
+          }
           return json;
         } finally {
           clearTimeout(timeout);
@@ -3811,11 +3816,16 @@
                 }) + context.orderId,
           );
         } catch (error) {
-          if (visibleResult(context.userKey, version))
-            showVoiceToast({
-              F: "결제 승인이 조금 늦어지고 있어. 다시 결제하지 말고 같은 주문을 한 번 더 확인해줘.",
-              T: "결제 승인 확인이 지연되고 있어. 재결제하지 말고 같은 주문을 다시 확인해줘.",
-            });
+          if (visibleResult(context.userKey, version)) {
+            if (error?.paymentFailed) {
+              showDefinitivePaymentFailure(currentResultData, error, context);
+            } else {
+              showVoiceToast({
+                F: "결제 승인이 조금 늦어지고 있어. 다시 결제하지 말고 같은 주문을 한 번 더 확인해줘.",
+                T: "결제 승인 확인이 지연되고 있어. 재결제하지 말고 같은 주문을 다시 확인해줘.",
+              });
+            }
+          }
         } finally {
           context.busy = false;
           if (button?.isConnected) {
@@ -3850,6 +3860,69 @@
         box.append(text, button);
         document.body.append(box);
       }
+
+      function paymentDeclineMessage(error, mode = currentVoiceMode()) {
+        const raw = String(error?.message || "");
+        const code = String(error?.paymentCode || "");
+        const key = (code + " " + raw).toLowerCase();
+        if (/잔액|balance/.test(key)) {
+          return voiceText({
+            F: "잔액이 부족해서 결제가 완료되지 않았어. 잔액을 확인하거나 다른 결제수단으로 다시 시도해줘.",
+            T: "잔액 부족으로 결제가 완료되지 않았어. 잔액을 확인하거나 다른 결제수단으로 다시 시도해줘.",
+          }, mode);
+        }
+        if (/한도|limit|exceed/.test(key)) {
+          return voiceText({
+            F: "결제 한도 때문에 완료되지 않았어. 한도를 확인하거나 다른 결제수단으로 다시 시도해줘.",
+            T: "결제 한도 때문에 완료되지 않았어. 한도를 확인하거나 다른 결제수단으로 다시 시도해줘.",
+          }, mode);
+        }
+        if (/취소|cancel/.test(key)) {
+          return voiceText({
+            F: "결제가 취소됐어. 지금 결과는 그대로 있어. 다시 결제하려면 아래에서 이어가면 돼.",
+            T: "결제가 취소됐어. 현재 결과는 그대로 유지돼. 다시 결제하려면 아래에서 이어가면 돼.",
+          }, mode);
+        }
+        return voiceText({
+          F: "결제가 승인되지 않았어. 다른 결제수단으로 다시 시도해줘.",
+          T: "결제가 승인되지 않았어. 다른 결제수단으로 다시 시도해줘.",
+        }, mode);
+      }
+
+      function showDefinitivePaymentFailure(data, error, context = null) {
+        const mode = data?.currentMode || currentVoiceMode();
+        removeStore("unni_pending_approval", true);
+        if (context?.userKey) removeStore("unni_pending_for_" + context.userKey);
+        if (context?.orderId) removeStore("unni_order_" + context.orderId);
+        if (pendingApproval && (!context?.orderId || pendingApproval.orderId === context.orderId))
+          pendingApproval = null;
+        if (data) {
+          currentResultData = data;
+          saveCurrentResult();
+        }
+        resetPaymentWidgetUI();
+        writeStore("unni_payment_retry_after_refresh", "1", true);
+        changeViewState("result");
+
+        document.getElementById("payRetryBox")?.remove();
+        document.getElementById("paymentFailRefreshBox")?.remove();
+        const box = document.createElement("div");
+        box.id = "paymentFailRefreshBox";
+        box.style.cssText =
+          "position:fixed;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom));width:calc(100% - 28px);max-width:402px;z-index:99998;background:#fffdfa;border:1px solid #f2c7d1;border-radius:18px;padding:15px;box-shadow:0 16px 40px rgba(40,25,31,.16);text-align:left;";
+        const message = document.createElement("p");
+        message.style.cssText =
+          "margin:0;font-size:12px;line-height:1.65;font-weight:750;color:#3d4655;word-break:keep-all;";
+        message.textContent = paymentDeclineMessage(error, mode);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = "새로고침하고 다시 결제";
+        button.style.cssText = recoveryActionButtonStyle(mode) + ";width:100%;margin-top:10px;";
+        button.onclick = () => location.reload();
+        box.append(message, button);
+        document.body.append(box);
+      }
+      window.showDefinitivePaymentFailure = showDefinitivePaymentFailure;
 
       function preparePaymentFailureRetry(data, mode = currentVoiceMode()) {
         removeStore("unni_pending_approval", true);
@@ -9010,6 +9083,7 @@ currentResultData = {
         const returnedOrder = params.get("orderId");
         const amount = Number(params.get("amount"));
         let versionBefore = viewVersion;
+        let restored = null;
         if (!ticket) {
           showVoiceToast({
             F: "예전 결제 정보로 돌아왔어. 이미 결제했다면 다시 결제하지 말고 주문번호로 문의해줘.",
@@ -9021,7 +9095,7 @@ currentResultData = {
         try {
           const resume = await paymentAPI({ action: "resume", ticket });
           if (viewVersion !== versionBefore) return;
-          const restored = resultFromSnapshot(resume.data);
+          restored = resultFromSnapshot(resume.data);
           renderResultView(restored, { resumeApproval: false });
           versionBefore = viewVersion;
           if (
@@ -9033,7 +9107,10 @@ currentResultData = {
             return;
           }
           if (params.get("payment") === "fail") {
-            preparePaymentFailureRetry(restored, restored.currentMode);
+            const failError = new Error(params.get("message") || "결제가 완료되지 않았어.");
+            failError.paymentFailed = true;
+            failError.paymentCode = params.get("code") || "";
+            showDefinitivePaymentFailure(restored, failError);
             return;
           }
           if (params.get("payment") !== "success") return;
@@ -9065,6 +9142,10 @@ currentResultData = {
           await approveCurrentOrder(context);
         } catch (error) {
           if (versionBefore !== viewVersion) return;
+          if (error?.paymentFailed && restored) {
+            showDefinitivePaymentFailure(restored, error);
+            return;
+          }
           showVoiceToast({
             F: "결제 결과를 다시 불러오는 중에 문제가 생겼어. 이미 결제했다면 다시 결제하지 말고 같은 주문부터 확인해보자.",
             T: "결제 결과 복원에 실패했어. 이미 결제했다면 재결제하지 말고 같은 주문부터 확인해줘.",
