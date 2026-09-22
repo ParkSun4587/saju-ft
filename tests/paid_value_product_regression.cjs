@@ -729,7 +729,8 @@ function norm(v) {
   await page.waitForSelector('#unniProductModal',{state:'visible'});
   const fullActionText=await page.locator('#unniProductAction').innerText();
   if(!fullActionText.includes('다시 보기') && !fullActionText.includes('포함됨')){
-    if(!FREE_LAUNCH_MODE) await page.evaluate(()=>{FREE_LAUNCH_MODE=true;});
+    const freeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
+    if(!freeLaunch) await page.evaluate(()=>{FREE_LAUNCH_MODE=true;});
     await page.locator('#unniProductAction').click();
     await page.waitForFunction(()=>document.querySelectorAll('#unniProductBody [data-export-kind="full"]').length===12,null,{timeout:10000});
   }
