@@ -764,15 +764,12 @@ function norm(v) {
 
   await page.evaluate(() => openUnniProduct('compatibility'));
   modal = await page.locator('#unniProductModal').innerText();
-  assert(modal.includes('자시 · 23:30~01:29') && modal.includes('(시간 모름)'), 'manse-corrected partner time UI missing');
-  assert(!modal.includes('태어난 시간을 몰라요') && !modal.includes('정확한 분을 몰라도') && !modal.includes('오전/오후') && !modal.includes('몇 분') && !modal.includes('HH:MM'), 'old/technical compatibility time UI remains');
-  assert(await page.locator('#partnerTimeBranch option').count()===13,'compatibility branch selector count');
-  assert(await page.locator('#partnerTimeDirectToggle').isVisible(),'compatibility direct-time checkbox missing');
-  assert(await page.locator('#partnerTimeInput').isHidden(),'compatibility direct-time field should default hidden');
-  await page.check('#partnerTimeDirectToggle');
-  assert(await page.locator('#partnerTimeInput').isVisible(),'compatibility direct-time field did not open');
-  assert((await page.locator('#partnerTimeInput').getAttribute('placeholder'))==='예: 오후 1:30 → 1330','compatibility direct-time placeholder missing');
-  await page.uncheck('#partnerTimeDirectToggle');
+  assert(modal.includes('자시 · 23:30~01:29') && modal.includes('(모름)'), 'manse-corrected partner time UI missing');
+  assert(!modal.includes('태어난 시간을 몰라요') && !modal.includes('정확한 분을 몰라도') && !modal.includes('오전/오후') && !modal.includes('몇 분') && !modal.includes('HH:MM') && !modal.includes('정확한 시간 직접 입력'), 'old/technical compatibility time UI remains');
+  assert(await page.locator('#partnerTimeBranch option').count()===13,'compatibility unknown + 12-branch selector count');
+  assert((await page.locator('#partnerTimeBranch').inputValue())==='unknown','compatibility unknown-time default missing');
+  assert(await page.locator('#partnerTimeDirectToggle').count()===0,'removed compatibility direct-time checkbox returned');
+  assert(await page.locator('#partnerTimeInput').count()===0,'removed compatibility direct-time field returned');
   await page.fill('#partnerName', '상대');
   await page.fill('#partnerBirth', '19990511');
   await page.selectOption('#partnerTimeBranch', '午');
@@ -964,8 +961,7 @@ function norm(v) {
   assert(!html.includes('내 보관함 ♡') && !html.includes('내 사주 ♡'), 'vault copy still uses decorative heart as dialogue text');
   assert(
     html.includes('id="birthTimeBranch"') &&
-    html.includes('<option value="" selected hidden>(선택)</option>') &&
-    html.includes('<option value="unknown">모름</option>') &&
+    html.includes('<option value="unknown" selected>(모름)</option>') &&
     html.includes('자시 · 23:30~01:29') &&
     html.includes('해시 · 21:30~23:29') &&
     html.includes('function birthTimeKeyToBranch(value)') &&
@@ -974,7 +970,11 @@ function norm(v) {
     !html.includes('id="birthTimeDirectWrap"') &&
     !html.includes('id="birthTimeInput"') &&
     !html.includes('정확한 시간 직접 입력') &&
-    !html.includes('placeholder="예: 오후 1:30 → 1330"'),
+    !html.includes('placeholder="예: 오후 1:30 → 1330"') &&
+    !premium.includes('partnerTimeDirectToggle') &&
+    !premium.includes('partnerTimeDirectWrap') &&
+    !premium.includes('id="partnerTimeInput"') &&
+    premium.includes('<option value="unknown" selected>(모름)</option>'),
     'simplified branch-only birth-time UI missing'
   );
   assert(html.includes('BIRTH_TIME_BRANCHES') && html.includes('BIRTH_TIME_BRANCH_LABELS'), 'branch-time parsing/restore support missing');
