@@ -574,6 +574,7 @@
       .replace("의료 진단이 아니라", "여기서는 의료 진단을 하는 게 아니라")
       .replace("기본 버팀보다 압력이 큰지, 쌓인 힘을 밖으로 빼는 통로가 있는지를 같이 확인했어.", "언니는 네가 버틸 수 있는 힘보다 압박이 큰지, 쌓인 힘을 밖으로 뺄 길이 있는지 같이 봤어.")
       .replace("기본 NOTE6는 지금 고른 고민에 필요한 달만 골랐다면, 전체판에서는", "NOTE6에서는 지금 고른 고민에 필요한 달만 봤지. 여기서는")
+      .replace("삶 전체에 영향을 주는 가까운 구간</b>을 본다.", "삶 전체에 영향을 주는 가까운 구간</b>까지 같이 볼게.")
       .replace("여기부터는 기본 NOTE6에서 전부 공개하지 않았던 연도별 큰 흐름이야.", "NOTE6에서는 다 보여주지 않았던 연도별 큰 흐름도 여기서는 이어서 볼게.")
       .replace("실제 흐름이 결과 단계까지 이어지는지를 함께 봤어.", "실제 흐름이 결과까지 이어지는지도 같이 봤어.")
       .replace(/네 기준을 지키는 힘은 <b>(\d+)개<\/b>, 관계에서 밖으로 표현하는 힘은 <b>(\d+)개<\/b>로 잡혀 있어\./g, "네 기준을 지키는 힘은 <b>$1개</b>, 관계에서 표현하는 힘은 <b>$2개</b> 보여.")
@@ -647,7 +648,7 @@
     const secondAction = actions[1] || "확인된 선택만 다음 단계로 확정하는 것";
     const domains = Object.keys(CONCERNS).map((key) => CONCERNS[key]).join(" · ");
 
-    const crossDomain = `<div data-product-exclusive="all_in_one" data-product-contract="all_in_one" data-structure-fingerprint="${esc(baseReasoning?.structureFingerprint || "")}" style="padding:15px;border-radius:18px;background:#fff1f2;border:1px solid #fecdd3;margin:22px 0;font-size:12.5px;line-height:1.85;color:#881337"><b>6개 고민을 가로지르는 공통 구조</b><br>${domains}은 서로 다른 문제처럼 보여도 <b>${esc(commonPressure)}</b>이 커질 때 비슷한 반응이 반복돼. 완전판에서는 같은 사주 구조가 각 고민에서 어디서 다르게 나타나는지까지 나란히 비교해.<br><span style="font-size:10.5px;color:#be123c">이 완전판은 나 한 사람 전체 분석이야. 두 사람 궁합은 포함하지 않아.</span></div>`;
+    const crossDomain = `<div data-product-exclusive="all_in_one" data-product-contract="all_in_one" data-structure-fingerprint="${esc(baseReasoning?.structureFingerprint || "")}" style="padding:15px;border-radius:18px;background:#fff1f2;border:1px solid #fecdd3;margin:22px 0;font-size:12.5px;line-height:1.85;color:#881337"><b>6개 고민을 가로지르는 공통 구조</b><br>${domains}. 이 6개 고민은 서로 다른 문제처럼 보여도 <b>${esc(commonPressure)}</b>이 커질 때 비슷한 반응이 반복돼. 완전판에서는 같은 사주 구조가 각 고민에서 어디서 다르게 나타나는지까지 나란히 비교해.<br><span style="font-size:10.5px;color:#be123c">이 완전판은 나 한 사람 전체 분석이야. 두 사람 궁합은 포함하지 않아.</span></div>`;
 
     const simultaneous = `<div data-product-exclusive="all_in_one-timing" style="padding:15px;border-radius:18px;background:#f8fafc;border:1px solid #e2e8f0;margin:14px 0;font-size:12.5px;line-height:1.85;color:#334155"><b>여러 영역이 같이 움직이는 시점</b><br>${pivots.length ? `현재 5년 계산에서 공통으로 강하게 잡힌 변곡점은 <b>${esc(pivotText)}</b>이야. 같은 시기라도 돈은 조건 조정, 일은 역할 선택, 관계는 거리·약속 조정처럼 적용 방식이 달라져. 그래서 한 영역의 변화만 보고 인생 전체가 좋아지거나 나빠진다고 단정하지 않아.` : "5년 안에서 여러 영역을 동시에 크게 흔드는 강한 변곡점이 따로 잡히지 않아. 없는 변곡점을 만들지 않고 각 고민의 가까운 시기를 따로 쓰는 편이 맞아."}</div>`;
 
@@ -1874,8 +1875,8 @@
     },
     compatibility: {
       eyebrow:"두 사람 사주 교차",
-      value:"상대 사주까지 겹쳐야 나오는 둘 사이 계산",
-      difference:"내 사주를 더 길게 보는 게 아니라, 상대 사주를 실제로 겹쳐 둘 사이를 계산해.",
+      value:"두 사람을 같이 봐야 보이는 관계 흐름",
+      difference:"내 사주를 더 길게 보는 게 아니라, 상대 사주를 같이 놓고 두 사람 사이의 관계 흐름을 봐.",
       cta:"우리 둘 궁합 보기",
     },
     all_in_one: {
@@ -1910,10 +1911,10 @@
     const situation = situationLabel(data?.concernKey, data?.concernSituation);
     if (productId === "compatibility") {
       return direct.includes("all_in_one")
-        ? "나 한 사람에 대한 건 완전판에 이미 들어 있어. 여기서 새로 열 수 있는 건 특정 상대와 둘 사이 계산이야."
+        ? "나 한 사람에 대한 건 완전판에 이미 들어 있어. 여기서 새로 열 수 있는 건 특정 상대와 두 사람을 같이 봐야 보이는 관계 흐름이야."
         : isT
           ? "지금 질문에는 네 사주만 더 보는 것보다 상대 사주까지 겹쳐야 새로 알 수 있는 정보가 많아."
-          : `${situation ? "방금 말한 ‘" + situation + "’라면 " : ""}상대 사주까지 같이 놓고 둘 사이 이유를 보는 게 완전히 다른 답을 줄 수 있어.`;
+          : `${situation ? "방금 말한 ‘" + situation + "’라면 " : ""}상대 사주까지 같이 놓고 둘 사이가 왜 이렇게 흘러가는지 보는 게 완전히 다른 답을 줄 수 있어.`;
     }
     if (productId === "full_saju") {
       return direct.includes("concern_bundle3")

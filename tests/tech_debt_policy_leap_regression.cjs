@@ -161,7 +161,16 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         const objectBad=withJosa(engineRow.object,'를','을');
         const pressureText=String(f.notes?.[1]?.desc||'');
         const causeText=String(f.notes?.[2]?.desc||'');
-        if(!pressureText.includes(subjectGood+' 꼬인')||pressureText.includes(subjectBad+' 꼬인')) {
+        const neutralCurrentRelationship = concern==='love' && key==='relationship';
+        if (neutralCurrentRelationship) {
+          if(!pressureText.includes(engineRow.object+'에서 반복되는 장면보다') ||
+             pressureText.includes(subjectGood+' 꼬인') ||
+             pressureText.includes(subjectBad+' 꼬인')) {
+            failures.push(concern+'/'+key+': 현재 연애 중립 문구 오류 '+JSON.stringify({object:engineRow.object,text:pressureText}));
+          } else {
+            josaChecks+=1;
+          }
+        } else if(!pressureText.includes(subjectGood+' 꼬인')||pressureText.includes(subjectBad+' 꼬인')) {
           failures.push(concern+'/'+key+': 이/가 조사 오류 '+JSON.stringify({object:engineRow.object,expected:subjectGood,bad:subjectBad,text:pressureText}));
         } else {
           josaChecks+=1;

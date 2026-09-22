@@ -6868,7 +6868,7 @@ currentResultData = {
             teaserT: "회복 전에 먼저 제거할 부하가 있어…",
             features: ["지금 가장 먼저 덜어낼 부담", "회복을 지키기 위한 생활 기준", "무리하지 않고 다시 움직일 가까운 흐름"],
             priceF: "언니랑 회복 기준 끝까지 보기",
-            priceT: "번아웃 회복 기준 끝까지 정리하기",
+            priceT: "지금 컨디션·과부하 회복 기준 끝까지 정리하기",
           },
           overthink: {
             label: "생각 과다",
@@ -7071,8 +7071,13 @@ currentResultData = {
             : "text-[11px] font-black text-rose-600";
         }
         if (paywallSisterSub) {
+          const isBurnoutSituation =
+            currentResultData?.concernKey === "mental" &&
+            currentResultData?.concernSituation === "burnout";
           paywallSisterSub.textContent = isT
-            ? paywallCopy.label + "에서 이제 행동 기준만 보면 돼"
+            ? (isBurnoutSituation
+                ? "번아웃 같다고 느낄 때, 이제 행동 기준만 보면 돼"
+                : paywallCopy.label + "에서 이제 행동 기준만 보면 돼")
             : paywallCopy.label + " 얘기, 이제 어디서 바꾸면 좋을지 보자";
         }
         if (paywallFeatureTitle) {
