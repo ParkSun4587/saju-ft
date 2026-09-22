@@ -27,6 +27,11 @@
     return /기$/.test(text) ? text.replace(/기$/, "는 식으로") : text;
   }
 
+  function cueAt(value) {
+    const text = String(value || "").trim();
+    return /순간$/.test(text) ? text.replace(/순간$/, "순간에") : text;
+  }
+
   const SITUATIONS = {
     money: {
       saving:{label:"돈이 잘 안 모여",object:"지출과 저축",cue:"돈이 들어와도 남는 금액을 만들기 위해 지출·저축 기준을 정해야 하는 순간",move:"돈이 남지 않는 장면 하나를 찾아 지출·저축 기준을 고정하기",metric:"7일 동안 계획 밖 지출과 그 이유를 적어보기"},
@@ -584,7 +589,7 @@
         badge:badgeFor(s.concern,0),
         title:titleFor(s,0,isT),
         desc:corePortrait(r,s,isT),
-        checklist:isT ? `검증: ${s.cue}에서 실제로 어떤 압박이 먼저 커지는지 한 번만 기록해.` : `언니 말이 맞는지 확인해보자. ${s.cue}에서 네가 제일 먼저 부담스러워지는 게 뭔지만 적어봐.`,
+        checklist:isT ? `검증: ${cueAt(s.cue)} 실제로 어떤 압박이 먼저 커지는지 한 번만 기록해.` : `언니 말이 맞는지 확인해보자. ${cueAt(s.cue)} 네가 제일 먼저 부담스러워지는 게 뭔지만 적어봐.`,
       },
       {
         badge:badgeFor(s.concern,1),
