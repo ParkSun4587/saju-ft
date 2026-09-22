@@ -1013,8 +1013,10 @@ function norm(v) {
     html.includes('min-height:40px!important') &&
     html.includes('min-width:154px!important') &&
     html.includes('margin-right:8px!important') &&
-    html.includes('filter:contrast(1.045) saturate(1.025) brightness(1.01)!important') &&
-    html.includes('filter:brightness(1.075) contrast(.97) saturate(.96)!important') &&
+    html.includes('#panelRoa{background:#f6bfd0!important}') &&
+    html.includes('#panelSeoa{background:#29384a!important}') &&
+    html.includes('#panelSeoa>div:nth-of-type(1){opacity:.66}') &&
+    html.includes('filter:none!important') &&
     html.includes('scale:1.27') &&
     html.includes('translate:0 -1.5%') &&
     html.includes('object-position:center 14%!important') &&
