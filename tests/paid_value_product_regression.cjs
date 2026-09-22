@@ -280,6 +280,21 @@ function norm(v) {
     document.getElementById('paymentFailRefreshBox')?.remove();
     removeStore('unni_payment_retry_after_refresh',true);
 
+    const declineError = new Error('잔액이 부족합니다.');
+    declineError.paymentFailed = true;
+    declineError.paymentCode = 'REJECT_CARD_COMPANY';
+    showDefinitivePaymentFailure(currentResultData, declineError, {
+      userKey:getUserUniqueKey(currentResultData),
+      orderId:'declined_test_order',
+    });
+    const definitivePaymentFailure = {
+      text:document.getElementById('paymentFailRefreshBox')?.innerText || '',
+      sameOrder:document.body.innerText.includes('같은 주문 다시 확인'),
+      retryFlag:readStore('unni_payment_retry_after_refresh',true) || '',
+    };
+    document.getElementById('paymentFailRefreshBox')?.remove();
+    removeStore('unni_payment_retry_after_refresh',true);
+
     renderUnniProductCatalog();
     const notes = generateConcernNotes(currentResultData, 'F');
     const note6 = notes[5];
@@ -351,6 +366,7 @@ function norm(v) {
       paywallVisible:!!document.getElementById('lockedOverlay') && getComputedStyle(document.getElementById('lockedOverlay')).display !== 'none',
       result:!!currentResultData,
       paymentRetryRecovery,
+      definitivePaymentFailure,
       lockedCatalog:!!lockedCatalog,
       previewPlain,
       previewBodyPlain,
@@ -397,6 +413,14 @@ function norm(v) {
     ui.paymentRetryRecovery.viewState==='result' &&
     ui.paymentRetryRecovery.savedKey,
     'payment failure did not clean URL/save result/create refresh retry '+JSON.stringify(ui.paymentRetryRecovery)
+  );
+  assert(
+    ui.definitivePaymentFailure.text.includes('잔액') &&
+    ui.definitivePaymentFailure.text.includes('다른 결제수단') &&
+    ui.definitivePaymentFailure.text.includes('새로고침하고 다시 결제') &&
+    ui.definitivePaymentFailure.sameOrder===false &&
+    ui.definitivePaymentFailure.retryFlag==='1',
+    'definitive payment decline must show a clear fresh-retry path '+JSON.stringify(ui.definitivePaymentFailure)
   );
   if (ui.sourceFreeLaunch) {
     assert(ui.lockedCatalog, 'free-launch mode should expose the post-report product catalog');
