@@ -655,25 +655,25 @@
   #topTitleBox{
     width:max-content!important;
     max-width:calc(100% - 48px)!important;
-    padding:6px 15px 7px!important;
-    border-radius:11px!important;
-    background:rgba(255,255,255,.80)!important;
-    border:1px solid rgba(255,255,255,.56)!important;
-    box-shadow:0 2px 9px rgba(34,42,60,.045)!important;
-    backdrop-filter:blur(10px)!important;
-    -webkit-backdrop-filter:blur(10px)!important
+    padding:4px 14px 5px!important;
+    border-radius:10px!important;
+    background:rgba(255,255,255,.74)!important;
+    border:1px solid rgba(255,255,255,.48)!important;
+    box-shadow:0 1px 6px rgba(34,42,60,.04)!important;
+    backdrop-filter:blur(8px)!important;
+    -webkit-backdrop-filter:blur(8px)!important
   }
   #topTitleBox p:first-child{
-    font-size:14.25px!important;
+    font-size:14px!important;
     line-height:1.2!important;
-    font-weight:790!important;
+    font-weight:780!important;
     letter-spacing:-.03em!important;
-    color:#263247!important;
+    color:#2c3442!important;
     max-width:310px
   }
   #topTitleBox p:nth-child(2){font-size:8.5px!important;margin-top:1px!important;color:#707784!important;font-weight:700!important}
   #centerDivider{
-    background:linear-gradient(to bottom,rgba(248,196,216,.14) 0%,rgba(226,220,237,.10) 50%,rgba(190,211,244,.14) 100%)!important;
+    background:linear-gradient(to bottom,rgba(248,244,238,0) 0%,rgba(248,244,238,.78) 35%,rgba(248,244,238,.86) 50%,rgba(248,244,238,.78) 65%,rgba(248,244,238,0) 100%)!important;
     box-shadow:none!important;
     backdrop-filter:none!important;
     -webkit-backdrop-filter:none!important
@@ -695,14 +695,37 @@
   }
   #panelSeoa{background:#29384a!important}
   #panelSeoa>div:nth-of-type(1){opacity:.66}
-  #panelRoa>div.relative{padding-bottom:36px!important}
-  #panelSeoa>div.relative{padding-bottom:32px!important}
+  #panelRoa>div.relative,
+  #panelSeoa>div.relative{padding-bottom:34px!important;gap:6px!important}
   #panelRoa>div.relative>div:first-child,
   #panelSeoa>div.relative>div:first-child{padding-left:8px!important}
-  #panelRoa>div.relative>div:first-child span,
-  #panelSeoa>div.relative>div:first-child span{font-size:11.25px!important}
+  .split-choice-name-tag{
+    display:inline-flex!important;
+    align-items:center!important;
+    width:max-content!important;
+    padding:4px 8px!important;
+    border-radius:999px!important;
+    font-size:11px!important;
+    line-height:1.15!important;
+    font-weight:800!important;
+    letter-spacing:-.02em!important;
+    box-shadow:0 2px 8px rgba(15,23,42,.055)!important;
+    backdrop-filter:blur(7px)!important;
+    -webkit-backdrop-filter:blur(7px)!important
+  }
+  #panelRoa .split-choice-name-tag{
+    background:rgba(255,250,251,.82)!important;
+    border:1px solid rgba(255,255,255,.58)!important;
+    color:#8f3a52!important
+  }
+  #panelSeoa .split-choice-name-tag{
+    background:rgba(244,249,252,.84)!important;
+    border:1px solid rgba(255,255,255,.30)!important;
+    color:#315d70!important
+  }
   .split-choice-bubble{
-    max-width:86%!important;
+    max-width:80%!important;
+    margin-left:8px!important;
     border-width:1px!important;
     box-shadow:0 4px 12px rgba(15,23,42,.06)!important;
     padding:8px 11px!important;
@@ -721,7 +744,7 @@
     box-shadow:0 4px 12px rgba(15,23,42,.075)!important;
     padding:9px 14px!important;
     border-radius:15px!important;
-    margin-right:6px!important
+    margin-right:8px!important
   }
   .split-choice-cta span:first-child{font-size:11.25px!important;font-weight:780!important}
   #panelRoa .split-choice-cta{background:rgba(255,250,251,.94)!important;color:#9d3853!important;border-color:rgba(225,119,143,.55)!important}
@@ -1142,14 +1165,15 @@
   #mainFooter{margin-top:52px!important;padding-top:22px!important}
 
   @media(max-width:370px){
-    #topTitleBox{max-width:calc(100% - 40px)!important;padding:6px 12px!important}
+    #topTitleBox{max-width:calc(100% - 40px)!important;padding:4px 12px 5px!important}
     #topTitleBox p:first-child{font-size:13.5px!important}
-    .split-choice-bubble{max-width:88%!important;padding:7px 10px!important}
+    .split-choice-name-tag{font-size:10.5px!important;padding:3px 7px!important}
+    .split-choice-bubble{max-width:82%!important;padding:7px 10px!important}
     .split-choice-bubble p{font-size:10.85px!important;line-height:1.36!important}
     .split-choice-cta{min-height:38px!important;padding:8px 12px!important;margin-right:4px!important}
     .split-choice-cta span:first-child{font-size:10.65px!important}
-    #panelRoa>div.relative{padding-bottom:26px!important;gap:5px!important}
-    #panelSeoa>div.relative{padding-bottom:24px!important;gap:5px!important}
+    #panelRoa>div.relative,
+    #panelSeoa>div.relative{padding-bottom:26px!important;gap:5px!important}
     #sajuInputCardBox{padding:13px!important}
     #sajuForm{gap:10px!important}
     #sajuInputCardBox input[type="text"],#sajuInputCardBox input[type="tel"],#sajuInputCardBox select{min-height:40px!important;height:40px!important}
@@ -1797,7 +1821,7 @@
         <!-- 중앙 구분선 -->
         <div
           id="centerDivider"
-          class="absolute top-1/2 left-0 w-full h-[2px] z-[80] pointer-events-none -translate-y-1/2 transition-opacity duration-200"
+          class="absolute top-1/2 left-0 w-full h-[8px] z-[80] pointer-events-none -translate-y-1/2 transition-opacity duration-200"
         ></div>
 
         <!-- 첫 상담자 선택 헤더 -->
@@ -1843,10 +1867,7 @@
             class="relative z-10 pb-[18px] px-3 flex flex-col gap-1.5 pointer-events-none"
           >
             <div class="flex items-center gap-1.5 pl-1">
-              <span
-                class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]"
-                >로아</span
-              >
+              <span class="split-choice-name-tag">로아 · 감정 공감형</span>
             </div>
 
             <!-- 언니 말풍선 -->
@@ -1910,10 +1931,7 @@
             class="relative z-10 pb-3.5 px-3 flex flex-col gap-1.5 pointer-events-none"
           >
             <div class="flex items-center gap-1.5 pl-1">
-              <span
-                class="text-[11px] font-black text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]"
-                >서아</span
-              >
+              <span class="split-choice-name-tag">서아 · 핵심 정리형</span>
             </div>
 
             <!-- 언니 말풍선 -->
