@@ -400,8 +400,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.selectOption('#partnerCalendar','lunar');
   await page.check('#partnerLeapMonth');
   await page.fill('#partnerBirth','20200401');
-  assert((await page.locator('#partnerTimeBranch').inputValue())==='','compatibility unknown-time default should stay selected');
-  assert(await page.locator('#partnerTimeInput').isHidden(),'compatibility direct-time input should stay hidden until requested');
+  assert((await page.locator('#partnerTimeBranch').inputValue())==='unknown','compatibility unknown-time default should stay selected');
+  assert(await page.locator('#partnerTimeDirectToggle').count()===0,'removed compatibility direct-time toggle returned');
+  assert(await page.locator('#partnerTimeInput').count()===0,'removed compatibility direct-time input returned');
   await page.click('#unniProductAction');
   await page.waitForSelector('#unniProductPayment',{state:'visible',timeout:10000});
   const uiLeap=await page.evaluate(()=>{
@@ -420,8 +421,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.waitForFunction(()=>document.querySelector('#unniProductAction')?.textContent?.includes('우리 둘 궁합 보기'),null,{timeout:10000});
   await page.fill('#partnerBirth','19990511');
   await page.selectOption('#partnerCalendar','solar');
-  await page.check('#partnerTimeDirectToggle');
-  await page.fill('#partnerTimeInput','1520');
+  await page.selectOption('#partnerTimeBranch','未');
   await page.click('#unniProductAction');
   await page.waitForSelector('#unniProductPayment',{state:'visible',timeout:10000});
   const uiTimed=await page.evaluate(()=>{
@@ -433,7 +433,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       sections:root.querySelectorAll('[data-export-kind="compat"]').length,
     };
   });
-  assert(uiTimed.partner?.t==='15:20'&&uiTimed.sections===16,'timed solar partner failed through paid-mode UI '+JSON.stringify(uiTimed));
+  assert(uiTimed.partner?.t==='未'&&uiTimed.sections===16,'branch-time solar partner failed through paid-mode UI '+JSON.stringify(uiTimed));
   await page.click('#unniProductClose');
 
   const grant=await page.evaluate(async()=>{
