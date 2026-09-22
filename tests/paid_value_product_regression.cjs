@@ -880,8 +880,11 @@ function norm(v) {
   assert(!html.includes('팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐'), 'old generic harsh T greeting remains');
   for (const harsh of ['아이고 왔어?', '시간 낭비 말고', '똑바로 찍어', '똥고집', '미련 곰탱이', '팩트 꽂힌', '팩폭 모드', '징징대지 말고 와', '살인 충동 느낌', '상대방 사람 취급', '멍청한 질문 3번']) assert(!html.includes(harsh), `harsh/old sister copy remains: ${harsh}`);
   assert(
-    html.includes('응, 좋아. 편하게 적어줘<br>언니가 사주랑 고민 같이 볼게') &&
-    html.includes('좋아, 바로 보자<br>사주랑 고민 적어주면 돼') &&
+    html.includes('아, 왔구나. 편하게 적어줘.<br>언니가 하나씩 잘 봐줄게.') &&
+    html.includes('왔어. 적어줘.<br>핵심부터 바로 볼게.') &&
+    html.includes('id="concernPickerPrompt"') &&
+    html.includes('요즘 제일 마음에 걸리는 건?') &&
+    html.includes('지금 제일 궁금한 건?') &&
     html.includes('로아 언니, 내 얘기 들어줘') &&
     html.includes('서아 언니, 바로 봐줘') &&
     html.includes('prompt.textContent = config.prompt;') &&
@@ -896,6 +899,8 @@ function norm(v) {
     html.includes('좋아. 이번엔 뭐부터 볼까?') &&
     !html.includes('note-bridge') &&
     !html.includes('bg-[#fee500]') &&
+    html.includes('bg-slate-700/94') &&
+    !html.includes('bg-slate-800/92 backdrop-blur-md') &&
     !html.includes('ㅎㅎ'),
     'distinct F/T counselor voice or restored situation flow missing'
   );
@@ -911,6 +916,8 @@ function norm(v) {
     html.includes('data-consult-mode="${targetMode}"') &&
     html.includes('#analysisSubmitButton[data-consult-mode="F"]') &&
     html.includes('#analysisSubmitButton[data-consult-mode="T"]') &&
+    html.includes('#analysisSubmitButton:disabled{') &&
+    html.includes('opacity:.34!important') &&
     !html.includes('class="w-full py-3 bg-[#fee500] hover:brightness-95 active:scale-98 text-[#3c1e1e]') &&
     !html.includes('#fee500') &&
     html.includes('function recoveryActionButtonStyle('),
@@ -960,13 +967,16 @@ function norm(v) {
   assert(!html.includes('내 보관함 ♡') && !html.includes('내 사주 ♡'), 'vault copy still uses decorative heart as dialogue text');
   assert(
     html.includes('id="birthTimeBranch"') &&
-    html.includes('<option value="">(시간 모름)</option>') &&
+    html.includes('<option value="">(모름)</option>') &&
     html.includes('자시 · 23:30~01:29') &&
     html.includes('해시 · 21:30~23:29') &&
     html.includes('id="birthTimeDirectToggle"') &&
     html.includes('id="birthTimeDirectLabel"') &&
-    html.includes('data-consult-mode="F"] #birthTimeDirectLabel') &&
-    html.includes('data-consult-mode="T"] #birthTimeDirectLabel') &&
+    html.includes('#birthTimeDirectLabel{') &&
+    html.includes('background:transparent!important') &&
+    html.includes('border-radius:0!important') &&
+    !html.includes('data-consult-mode="F"] #birthTimeDirectLabel{background:') &&
+    !html.includes('data-consult-mode="T"] #birthTimeDirectLabel{background:') &&
     html.includes('정확한 시간 직접 입력') &&
     html.includes('placeholder="예: 오후 1:30 → 1330"') &&
     !html.includes('id="birthTimeUnknown"') &&
