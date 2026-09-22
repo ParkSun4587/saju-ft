@@ -618,7 +618,11 @@ function norm(v) {
          ftScreen.f.notes.includes('현재 연애에서 반복되는 장면보다'),
     'final rendered F relationship screen lost neutral situation wording');
 
-  await page.evaluate(() => openUnniProduct('full_saju'));
+  await page.evaluate(() => {
+    selectedSplitMode='F';
+    if (currentResultData) currentResultData.currentMode='F';
+    openUnniProduct('full_saju');
+  });
   await page.waitForSelector('#unniProductModal', { state:'visible' });
   let modal = await page.locator('#unniProductModal').innerText();
   const sourceFreeLaunch = await page.evaluate(() => FREE_LAUNCH_MODE);
