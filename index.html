@@ -2373,7 +2373,8 @@
                     onchange="selectBirthTimeBranch(this)"
                     class="w-full h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[11px] text-slate-700 focus:bg-white focus:outline-none"
                   >
-                    <option value="">(선택)</option>
+                    <option value="" selected hidden>(선택)</option>
+                    <option value="unknown">모름</option>
                     <option value="子">자시 · 23:30~01:29</option>
                     <option value="丑">축시 · 01:30~03:29</option>
                     <option value="寅">인시 · 03:30~05:29</option>
@@ -6035,7 +6036,8 @@ function generateConcernNotes(data, mode) {
       function birthTimeKeyToBranch(value) {
         const key = String(value || "").trim();
         if (BIRTH_TIME_BRANCHES.has(key)) return key;
-        if (!key || key === "unknown") return "";
+        if (!key) return "";
+        if (key === "unknown") return "unknown";
 
         const normalized = key.includes(":")
           ? key
