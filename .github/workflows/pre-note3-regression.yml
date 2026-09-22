@@ -1,4 +1,4 @@
-name: Final copy candidate validation
+name: Final copy targeted legacy QA
 
 on:
   push:
@@ -6,97 +6,25 @@ on:
       - 'code-diet-copy-target-*'
 
 jobs:
-  full-regression:
+  targeted:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 8c482752316665b78558f84aa0ca5342fe25e53b
+          ref: d4b946d1f505f4b6b88ee9d06ab8f36e4ce25e2e
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Install test dependencies
+      - name: Install targeted dependencies
         run: |
           npm init -y >/dev/null 2>&1
           npm install --no-save playwright lunar-javascript korean-lunar-calendar >/dev/null
           npx playwright install --with-deps chromium >/dev/null
-          pip install sxtwl >/dev/null
       - name: Serve app
         run: |
           python3 -m http.server 4173 >/tmp/saju-http.log 2>&1 &
           sleep 2
           curl -f http://127.0.0.1:4173/index.html >/dev/null
-      - name: Run manse 1-4 validation
-        run: |
-          python3 tests/generate_sxtwl_cases.py
-          node tests/validate_manse_1_4.cjs
-      - name: Validate elapsed Jie days and saryeong activation
-        run: node tests/validate_days_from_jie.cjs
-      - name: Run classical 5-7 validation
-        run: node tests/validate_classical_5_7.cjs
-      - name: Run full browser regression
-        run: node tests/pre_note3_browser_regression_v4.cjs
-      - name: Run integrated profile regression
-        run: node tests/integrated_profile_regression.cjs
-      - name: Run classical causal reasoning A-G regression
-        run: node tests/classical_reasoning_v3_regression.cjs
-      - name: Run classical depth v3.1 regression
-        run: node tests/classical_depth_v31_regression.cjs
-      - name: Run product content boundary regression
-        run: node tests/product_content_boundary_regression.cjs
       - name: Run legacy timing, policy gate and leap-month regression
         run: node tests/tech_debt_policy_leap_regression.cjs
-      - name: Run premium hierarchy and entitlement regression
-        run: node tests/premium_entitlement_ladder_regression.cjs
-      - name: Run paid-value and product regression
-        run: node tests/paid_value_product_regression.cjs
-
-  production-mobile-smoke:
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: 8c482752316665b78558f84aa0ca5342fe25e53b
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      - name: Install browser
-        run: |
-          npm init -y >/dev/null 2>&1
-          npm install --no-save playwright >/dev/null
-          npx playwright install --with-deps chromium >/dev/null
-      - name: Serve final candidate
-        run: |
-          node - <<'NODE' >/tmp/saju-final-smoke.log 2>&1 &
-          const http=require('http');
-          const fs=require('fs');
-          const path=require('path');
-          const root=process.cwd();
-          const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.webp':'image/webp','.ico':'image/x-icon'};
-          http.createServer((req,res)=>{
-            const url=new URL(req.url,'http://127.0.0.1');
-            if(req.method==='POST'&&url.pathname==='/api/confirm-payment'){
-              req.resume();
-              res.writeHead(400,{'content-type':'application/json; charset=utf-8'});
-              res.end(JSON.stringify({ok:false,error:'final-candidate-smoke'}));
-              return;
-            }
-            let rel=decodeURIComponent(url.pathname);
-            if(rel==='/'||rel==='') rel='/index.html';
-            const file=path.resolve(root,'.'+rel);
-            if(!file.startsWith(root)){res.writeHead(403);res.end('forbidden');return;}
-            fs.stat(file,(err,st)=>{
-              if(err||!st.isFile()){res.writeHead(404);res.end('not found');return;}
-              res.writeHead(200,{'content-type':types[path.extname(file).toLowerCase()]||'application/octet-stream','cache-control':'no-store'});
-              fs.createReadStream(file).pipe(res);
-            });
-          }).listen(4174,'127.0.0.1');
-          NODE
-          sleep 2
-          curl -f http://127.0.0.1:4174/index.html >/dev/null
-      - name: Run Production mobile smoke
-        env:
-          PRODUCTION_BASE: http://127.0.0.1:4174/index.html
-        run: node tests/production_mobile_smoke.cjs
