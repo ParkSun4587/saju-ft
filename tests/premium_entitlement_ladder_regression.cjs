@@ -38,6 +38,9 @@ function loadServer(){
     const key=decodeURIComponent(String(url).split('/').pop());
     if(key==='confirm'){
       const body=JSON.parse(options.body||'{}');
+      if(body.paymentKey==='pay_declined'){
+        return new Response(JSON.stringify({code:'REJECT_CARD_COMPANY',message:'잔액이 부족합니다.'}),{status:400,headers:{'Content-Type':'application/json'}});
+      }
       const row={status:'DONE',paymentKey:body.paymentKey,orderId:body.orderId,totalAmount:Number(body.amount),balanceAmount:Number(body.amount),currency:'KRW'};
       return new Response(JSON.stringify(row),{status:200,headers:{'Content-Type':'application/json'}});
     }
@@ -85,6 +88,21 @@ function loadServer(){
   assert(branchPrepare.status===200&&branchPrepare.json.ok&&branchPrepare.json.amount===990,'12-branch birth time must reach payment prepare');
   const branchResume=await call({action:'resume',ticket:branchPrepare.json.ticket});
   assert(branchResume.status===200&&branchResume.json.data.t==='寅'&&branchResume.json.data.q==='saving','payment ticket resume lost branch time or concern situation');
+  const declined=await call({
+    action:'confirm',
+    paymentKey:'pay_declined',
+    orderId:branchPrepare.json.orderId,
+    amount:branchPrepare.json.amount,
+    userKey:branchPrepare.json.userKey,
+    ticket:branchPrepare.json.ticket,
+  });
+  assert(
+    declined.status===409 &&
+    declined.json.paymentFailed===true &&
+    declined.json.code==='REJECT_CARD_COMPANY' &&
+    /잔액/.test(declined.json.message||''),
+    'definitive card decline must not fall into ambiguous same-order retry '+JSON.stringify(declined)
+  );
   const branchCompat=server.__test.snapshot({...base,p:'compatibility',x:{partner:{n:'상대',b:'19990511',t:'子',g:'female',c:'solar',l:false}}});
   assert(branchCompat.x.partner.t==='子','compatibility partner 12-branch birth time must be accepted');
 
