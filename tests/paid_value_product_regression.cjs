@@ -592,6 +592,77 @@ function norm(v) {
   await page.evaluate(() => openUnniVault());
   assert(await page.locator('#unniVaultModal').evaluate((el) => getComputedStyle(el).display) === 'none', 'paused vault must not open');
 
+  // Lifetime re-access: premium purchases belong to the person, not to the currently unlocked 990-won concern.
+  await page.evaluate(() => {
+    FREE_LAUNCH_MODE = false;
+    const d = calculateAccurateManse(1998,2,21,'03:10','female');
+    d.__testNowYmd='2026-09-20';
+    d.concernKey='career';
+    d.concernSituation='current';
+    d.currentMode='F';
+    generateConcernNotes(d,'F');
+    currentResultData=d;
+    selectedSplitMode='F';
+    isUnlocked=false;
+    const originalPaymentAPI = paymentAPI;
+    paymentAPI = async (body) => {
+      if (body?.action === 'entitlements') {
+        return {
+          ok:true,
+          verifiedPurchases:[
+            {productId:'concern_bundle3',userKey:'owned_bundle'},
+            {productId:'full_saju',userKey:'owned_full'},
+            {productId:'compatibility',userKey:'owned_compat'},
+            {productId:'all_in_one',userKey:'owned_all'},
+          ],
+          effectiveEntitlements:['concern_bundle3','full_saju','compatibility','all_in_one','all_concerns'],
+          allInOneQuote:{targetProduct:'all_in_one',baseAmount:100,creditAmount:100,amount:0,alreadyOwned:true,creditedProducts:['all_in_one']},
+        };
+      }
+      return originalPaymentAPI(body);
+    };
+    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
+    document.getElementById('unniProductLadder')?.remove();
+    renderUnniProductCatalog();
+  });
+  await page.waitForFunction(
+    () => document.querySelector('#unniProductLadder')?.dataset.catalogMode === 'owned-reaccess' &&
+      document.querySelectorAll('#unniProductLadder [data-unni-product]').length === 4,
+    null,{timeout:10000}
+  );
+  const lockedOwnedCatalog = await page.evaluate(() => ({
+    mode:document.querySelector('#unniProductLadder')?.dataset.catalogMode,
+    ids:[...document.querySelectorAll('#unniProductLadder [data-unni-product]')].map(x=>x.dataset.unniProduct).sort(),
+    states:[...document.querySelectorAll('#unniProductLadder [data-unni-product]')].map(x=>x.dataset.productState),
+    text:document.querySelector('#unniProductLadder')?.innerText || '',
+  }));
+  assert(
+    lockedOwnedCatalog.mode==='owned-reaccess' &&
+    JSON.stringify(lockedOwnedCatalog.ids)===JSON.stringify(['all_in_one','compatibility','concern_bundle3','full_saju']) &&
+    lockedOwnedCatalog.states.every(x=>x==='purchased') &&
+    lockedOwnedCatalog.text.includes('새 고민 결제와 상관없이'),
+    'purchased premium products disappeared behind a new concern paywall '+JSON.stringify(lockedOwnedCatalog)
+  );
+  await page.evaluate(() => {
+    isUnlocked=true;
+    document.getElementById('unniProductLadder')?.remove();
+    renderUnniProductCatalog();
+  });
+  await page.waitForFunction(
+    () => document.querySelector('#unniProductLadder')?.dataset.catalogMode === 'upsell' &&
+      document.querySelectorAll('#unniProductLadder [data-unni-product]').length === 4,
+    null,{timeout:10000}
+  );
+  const allOwnedUnlocked = await page.evaluate(() => ({
+    ids:[...document.querySelectorAll('#unniProductLadder [data-unni-product]')].map(x=>x.dataset.unniProduct).sort(),
+    states:[...document.querySelectorAll('#unniProductLadder [data-unni-product]')].map(x=>x.dataset.productState),
+  }));
+  assert(
+    JSON.stringify(allOwnedUnlocked.ids)===JSON.stringify(['all_in_one','compatibility','concern_bundle3','full_saju']) &&
+    allOwnedUnlocked.states.every(x=>x==='purchased'),
+    'all_in_one ownership hid purchased one-person products '+JSON.stringify(allOwnedUnlocked)
+  );
+
   // Final copy freeze: render the exact same chart + concern + situation once in F and once in T.
   const ftScreen = await page.evaluate(() => {
     const seed = {
@@ -908,7 +979,7 @@ function norm(v) {
   const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.0'), 'paid value script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
-  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.1.2'), 'entitlement/product script include missing');
+  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.1.3'), 'entitlement/product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(!paid.includes('__paidValueWrapped') && !paid.includes('global.generateConcernNotes = wrapped'), 'stale paid-value NOTE rewrite wrapper returned');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('concern-note-engine-v2.js'),'paid/note script order wrong');
@@ -931,7 +1002,15 @@ function norm(v) {
   assert(premium.includes('isCurrentPaidExport') && premium.includes('EXPORT_IDLE_CANCELLED'), 'stale paid-export jobs must stop when the report changes');
   assert(premium.includes('paidExportCache.clear()') && premium.includes('paidExportCache.set(key, prepared)'), 'paid PNG blob cache must stay bounded to the current report');
   assert(premium.includes('nativeSharePngFiles') && premium.includes('isMobileDevice'), 'one-action mobile multi-image share path missing');
-  assert(premium.includes('recommendedProductId') && premium.includes('recommendationReason') && premium.includes('const unlocked = typeof isUnlocked') && premium.includes('if (!unlocked)') && premium.includes('data-secondary-product'), 'post-unlock personalized premium recommendation missing');
+  assert(
+    premium.includes('recommendedProductId') &&
+    premium.includes('recommendationReason') &&
+    premium.includes('const unlocked = typeof isUnlocked') &&
+    premium.includes('["purchased","included"].includes(allStates[p.id]?.kind)') &&
+    premium.includes('owned-reaccess') &&
+    premium.includes('data-secondary-product'),
+    'premium purchased-product reaccess/catalog policy missing'
+  );
   assert(!premium.includes('unniShowOtherProducts') && premium.includes('unniOtherProducts') && premium.includes('display:grid;gap:14px;margin-top:10px'), 'premium alternatives should stay fully open under the recommendation');
   assert(!premium.includes('unniProductSavePdf') && !premium.includes('printPaidReport') && !premium.includes('unniPaidPrintHost') && !premium.includes('PDF로 한 파일 보관하기'), 'PDF save code must be fully removed');
   assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="concern"'), 'semantic paid-report grouping missing');
