@@ -315,12 +315,15 @@
       zipingRuleId:zMain?.id||null,
       zipingState:zMain?.state||zMain?.facts?.state||"undetermined",zipingPath:zMain?.facts?.path||null,zipingConclusion:zMain?.conclusion||"",
       conflicts:prescription.conflicts,priorityPolicy:prescription.priorityPolicy,specialStructureStatus:special?.implementationStatus||"none",
+      specialStructureCandidate:special?.facts||null,
+      specialStructureGuarded:special?.implementationStatus==="unimplemented",
       prescription,
     };
   }
 
   function actualRuleIds(rows,requested){
-    const available=new Set(rows.filter(r=>r.implementationStatus!=="error").map(r=>r.id));
+    const excluded=new Set(["error","unimplemented","detect-only"]);
+    const available=new Set(rows.filter(r=>!excluded.has(r.implementationStatus)).map(r=>r.id));
     return uniq((requested||[]).filter(id=>id&&available.has(id)));
   }
   function evidenceFor(rows,ids){
@@ -361,7 +364,7 @@
     const c5=[zMain?.conclusion,dominant?.conclusion,`격을 돕는 신호는 ${cross.helpfulGods.join("·")||"명확하지 않음"}, 방해 신호는 ${cross.harmfulGods.join("·")||"뚜렷하지 않음"}이다.`].filter(Boolean);
     const c6=["원국 결론은 유지한다.","시간축에서는 대운·세운·월운이 원국의 뿌리·통관·격의 도움/방해·지지 관계를 어떻게 건드리는지 비교한다."].filter(Boolean);
 
-    return [
+    const claims=[
       makeClaim(1,{...monthFacts,strength:strength?.facts,season:season?.facts,ground:ground?.facts,party:party?.facts,pressure:pressure?.facts},ditianRows,zipingRows,
         [strength?.id,season?.id,ground?.id,party?.id,root?.id,pressure?.id],[zMonth?.id,zMain?.id],
         c1,c1.join(" → ")),
@@ -381,6 +384,13 @@
         [strength?.id,bridge?.id,relations?.id],[zMonth?.id,zMain?.id],
         c6,c6.join(" → ")),
     ];
+    if(cross.specialStructureGuarded){
+      for(const claim of claims){
+        claim.certainty="guarded";
+        claim.exceptions=uniq([...(claim.exceptions||[]),"힘이 한쪽으로 극단적으로 몰린 후보라 일반 강약 규칙만으로 단정하지 않음"]);
+      }
+    }
+    return claims;
   }
 
   function relationBetweenTransitAndNatal(zhi,pillars){
@@ -542,15 +552,33 @@
     return w?.startYmd||"";
   }
 
+  function hasMonthSpecificSignal(row,positive){
+    const layer=row?.layers?.wolun;
+    const signals=positive?(layer?.supportSignals||[]):(layer?.cautionSignals||[]);
+    return signals.some(x=>["major","support"].includes(x?.severity));
+  }
   function selectSalientMonths(rows){
-    const support=[...(rows||[])].filter(x=>["supportive","mild-support"].includes(x.class)).sort(opportunityComparator);
-    const caution=[...(rows||[])].filter(x=>["caution","mild-caution"].includes(x.class)).sort(cautionComparator);
+    const support=[...(rows||[])].filter(x=>["supportive","mild-support"].includes(x.class)&&hasMonthSpecificSignal(x,true)).sort(opportunityComparator);
+    const caution=[...(rows||[])].filter(x=>["caution","mild-caution"].includes(x.class)&&hasMonthSpecificSignal(x,false)).sort(cautionComparator);
     const picked=[];
     for(const row of [support[0],support[1],caution[0],caution[1]]){
       if(row&&!picked.some(x=>x.startYmd===row.startYmd))picked.push(row);
       if(picked.length>=4)break;
     }
     return picked.sort((a,b)=>String(a.startYmd).localeCompare(String(b.startYmd)));
+  }
+  function timingDirection(cls){
+    if(["supportive","mild-support"].includes(cls))return 1;
+    if(["caution","mild-caution"].includes(cls))return -1;
+    return 0;
+  }
+  function pivotReasons(prev,row){
+    if(!row)return [];
+    const reasons=[];
+    if(prev?.daeunGanZhi&&row?.daeunGanZhi&&prev.daeunGanZhi!==row.daeunGanZhi) reasons.push("major-flow-change");
+    const before=timingDirection(prev?.class),after=timingDirection(row?.class);
+    if(before!==after&&(before!==0||after!==0)) reasons.push("direction-change");
+    return reasons;
   }
 
   function groupDaeunPeriods(years){
@@ -603,7 +631,11 @@
         const start=w.startYmd||"",end=monthEndYmd(w,year);
         const monthLayer=transitLayer(ctx,cross,w.ganZhi||"",w.sipsin||tenGod(ctx.dayGan,String(w.ganZhi||"").charAt(0)),"wolun");
         const combined=combineTransitLayers([daeun,seyun,monthLayer]);
-        return {...w,startYmd:start,endYmd:end,year,daeunGanZhi,seyunGanZhi,layers:{daeun,seyun,wolun:monthLayer},...combined};
+        const monthSpecific={
+          support:monthLayer.supportSignals.filter(x=>["major","support"].includes(x.severity)).length,
+          caution:monthLayer.cautionSignals.filter(x=>["major","support"].includes(x.severity)).length,
+        };
+        return {...w,startYmd:start,endYmd:end,year,daeunGanZhi,seyunGanZhi,layers:{daeun,seyun,wolun:monthLayer},monthSpecific,...combined};
       });
       const active=monthRows.filter(w=>w.endYmd>=today&&w.startYmd<=detailEnd);
       nearMonths.push(...active);
@@ -623,23 +655,23 @@
     const publicYears=years.filter(y=>y.year<=publicEndYear);
     const nearHighlights=selectSalientMonths(nearMonths);
 
+    const yearByNumber=new Map(years.map(y=>[y.year,y]));
     const longTermCandidates=publicYears
       .filter(y=>y.year>=detailEndYear)
-      .map(y=>({
-        scope:"year",date:`${y.year}-01-01`,year:y.year,label:String(y.year),
-        evidence:y.evidence,class:y.class,supportSignals:y.supportSignals,cautionSignals:y.cautionSignals,
-        sourceRuleIds:uniq([...y.supportSignals,...y.cautionSignals].flatMap(sig=>sig.sourceRuleIds||[])),
-      }))
-      .filter(x=>["supportive","caution"].includes(x.class));
+      .map(y=>{
+        const reasons=pivotReasons(yearByNumber.get(y.year-1)||null,y);
+        return {
+          scope:"year",date:`${y.year}-01-01`,year:y.year,label:String(y.year),
+          evidence:y.evidence,class:y.class,supportSignals:y.supportSignals,cautionSignals:y.cautionSignals,
+          sourceRuleIds:uniq([...y.supportSignals,...y.cautionSignals].flatMap(sig=>sig.sourceRuleIds||[])),
+          pivotReasons:reasons,isStructuralPivot:reasons.length>0,
+        };
+      })
+      .filter(x=>x.isStructuralPivot&&["supportive","caution"].includes(x.class));
 
-    const longSupport=longTermCandidates.filter(x=>x.class==="supportive").sort(opportunityComparator);
-    const longCaution=longTermCandidates.filter(x=>x.class==="caution").sort(cautionComparator);
-    const longTermPivots=[];
-    for(const row of [longSupport[0],longCaution[0],longSupport[1],longCaution[1]]){
-      if(row&&!longTermPivots.some(x=>x.year===row.year))longTermPivots.push(row);
-      if(longTermPivots.length>=2)break;
-    }
-    longTermPivots.sort((a,b)=>a.year-b.year);
+    const longTermPivots=longTermCandidates
+      .sort((a,b)=>a.year-b.year)
+      .slice(0,2);
 
     const pointPool=[
       ...nearMonths.map(m=>({scope:"month",date:m.startYmd,label:m.ganZhi,evidence:m.evidence,class:m.class,supportSignals:m.supportSignals,cautionSignals:m.cautionSignals})),
@@ -686,13 +718,13 @@
         nearMonthCount:nearMonths.length,
         internalYearCount:years.length,
       },
-      method:"원국 강약·뿌리·통관 후보 + 자평진전 격의 도움/방해/구응 + 대운·세운·월운 천간·지지 + 원국과의 합·충·형·파·해를 신호별로 분리 비교. 합화와 특수격 변화는 확정하지 않음.",
+      method:"원국 강약·뿌리·통관 후보 + 자평진전 격의 도움/방해/구응 + 대운·세운·월운 천간·지지 + 원국과의 합·충·형·파·해를 신호별로 분리 비교. 월 상세는 월운 자체의 구분 신호가 있을 때만 고르고, 장기 변곡점은 전년 대비 방향 변화 또는 큰 흐름 교체가 확인될 때만 표시. 합화와 특수격 변화는 확정하지 않음.",
     };
     timing.fingerprint=stableHash({
       today:timing.today,detailEnd:timing.detailEnd,horizonEnd:timing.horizonEnd,internalHorizonEnd:timing.internalHorizonEnd,
       nearMonths:timing.nearMonths.map(x=>({start:x.startYmd,ganZhi:x.ganZhi,class:x.class,evidence:x.evidence,s:x.supportSignals.map(v=>v.code),c:x.cautionSignals.map(v=>v.code)})),
       years:years.map(y=>({year:y.year,daeun:y.daeunGanZhi,seyun:y.seyunGanZhi,class:y.class,evidence:y.evidence,s:y.supportSignals.map(v=>v.code),c:y.cautionSignals.map(v=>v.code)})),
-      longTermPivots:timing.longTermPivots.map(x=>({year:x.year,class:x.class,evidence:x.evidence})),
+      longTermPivots:timing.longTermPivots.map(x=>({year:x.year,class:x.class,evidence:x.evidence,pivotReasons:x.pivotReasons})),
     });
     return timing;
   }
