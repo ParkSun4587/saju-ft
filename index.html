@@ -770,10 +770,8 @@
   #sajuForm>*+*{margin-top:0!important}
   #sajuInputCardBox label{font-size:11px!important;line-height:1.3!important;font-weight:700!important;color:#727985!important;margin-bottom:5px!important}
   #sajuInputCardBox input[type="text"],#sajuInputCardBox input[type="tel"],#sajuInputCardBox select{min-height:42px!important;height:42px!important;font-size:16px!important;line-height:1!important;border-radius:13px!important;background:#fbfaf8!important;border:1px solid var(--unni-line-strong)!important;color:#253044!important;box-shadow:none!important}
-  #sajuInputCardBox #birthTimeBranch{text-align:center!important;text-align-last:center!important;padding-left:34px!important;padding-right:34px!important;color:#b0b4bc!important}
-  #sajuInputCardBox #birthTimeBranch:has(option:not([value="unknown"]):checked){color:#253044!important}
-  #birthTimeBranch option{text-align:center;color:#253044}
-  #birthTimeBranch option[value="unknown"]{color:#b0b4bc}
+  #sajuInputCardBox #birthTimeInput{letter-spacing:.02em!important}
+  #birthTimeUnknownButton[data-selected="1"]{background:#f1f5f9!important;border-color:#cbd5e1!important;color:#334155!important}
   #sajuInputCardBox input::placeholder{font-size:13px!important;color:#b0b4bc!important}
   #sajuInputCardBox .concern-chip{min-height:42px!important;border-radius:13px!important;background:#fff!important;border:1px solid var(--unni-line-strong)!important;font-size:12px!important;font-weight:720!important;box-shadow:none!important}
   #concernSituationBox{background:#faf7f4!important;border:1px solid var(--unni-line)!important;border-radius:17px!important;padding:12px!important}
@@ -2378,34 +2376,35 @@
                 </div>
               </div>
 
-              <!-- 태어난 시간: 만세력 시진을 기본으로, 정확한 시각은 선택적으로 직접 입력 -->
+              <!-- 태어난 시간: 정확한 시각을 바로 입력하고, 모르면 건너뛸 수 있게 단순화 -->
               <div>
                 <div class="mb-1">
                   <label class="block text-[9.5px] font-bold text-slate-500"
                     >태어난 시간</label
                   >
                 </div>
-                <div id="birthTimeBranchWrap">
-                  <select
-                    id="birthTimeBranch"
-                    onchange="selectBirthTimeBranch(this)"
-                    class="w-full h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[11px] text-slate-700 focus:bg-white focus:outline-none"
-                  >
-                    <option value="unknown" selected>(모름)</option>
-                    <option value="子">자시 · 23:30~01:29</option>
-                    <option value="丑">축시 · 01:30~03:29</option>
-                    <option value="寅">인시 · 03:30~05:29</option>
-                    <option value="卯">묘시 · 05:30~07:29</option>
-                    <option value="辰">진시 · 07:30~09:29</option>
-                    <option value="巳">사시 · 09:30~11:29</option>
-                    <option value="午">오시 · 11:30~13:29</option>
-                    <option value="未">미시 · 13:30~15:29</option>
-                    <option value="申">신시 · 15:30~17:29</option>
-                    <option value="酉">유시 · 17:30~19:29</option>
-                    <option value="戌">술시 · 19:30~21:29</option>
-                    <option value="亥">해시 · 21:30~23:29</option>
-                  </select>
+                <div class="flex items-center gap-2">
+                  <input
+                    id="birthTimeInput"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="5"
+                    placeholder="예: 09:42"
+                    oninput="formatBirthTime(this)"
+                    class="flex-1 min-w-0 h-[35px] px-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[11px] text-slate-700 placeholder-slate-400 text-center font-mono focus:bg-white focus:outline-none"
+                  />
+                  <button
+                    id="birthTimeUnknownButton"
+                    type="button"
+                    data-selected="1"
+                    onclick="setBirthTimeUnknown()"
+                    class="h-[35px] px-3 rounded-xl border border-slate-200 bg-slate-100 text-[10.5px] font-bold text-slate-600 whitespace-nowrap"
+                  >시간 모름</button>
                 </div>
+                <input type="hidden" id="birthTimeBranch" value="unknown" />
+                <p id="birthTimeHelp" class="mt-1 text-[9px] font-medium text-slate-400 text-center">
+                  정확한 시간을 알면 그대로 적고, 모르면 시간 모름으로 봐도 돼
+                </p>
               </div>
               <!-- 전송 버튼 영역 (스크립트 자동 주입) -->
               <div id="originalFTButtons" style="display: none"></div>
@@ -2665,7 +2664,7 @@
               >
                 <span class="flex items-center gap-1">
                   <span class="text-amber-500 font-bold">‹</span>
-                  <span>비밀 메모</span>
+                  <span>지금 고민 결과</span>
                 </span>
                 <span class="text-[11px] text-amber-800/50 font-mono"
                   >1:1 맞춤 상담 기록</span
@@ -2679,17 +2678,17 @@
                     id="vipSectionMainTitle"
                     class="text-sm sm:text-base font-black text-slate-900 tracking-tight"
                   >
-                    언니가 너한테만 남기는 비밀 메모
+                    지금 네 고민에서 보이는 것
                   </h3>
                 </div>
                 <p id="vipSectionSubTitle" class="text-[11px] text-slate-500 font-medium pl-6">
-                  지금 고민의 이유부터 행동·사람·시기까지 적어둔 상담 메모
+                  핵심부터 잘 맞는 조건·거를 신호·가까운 흐름까지
                 </p>
               </div>
 
-              <!-- 6대 테마 메모가 실시간으로 꽂히는 본문 컨테이너 -->
+              <!-- 5개 핵심 답변이 실시간으로 꽂히는 본문 컨테이너 -->
               <div id="notesListContainer" class="space-y-4 pt-1">
-                <!-- JS에서 NOTE1 전체 + NOTE2 맛보기, 결제 후 NOTE2 전체~NOTE6을 주입합니다 -->
+                <!-- JS에서 첫 답 전체 + 두 번째 답 맛보기, 결제 후 나머지 5개 답을 이어서 보여줍니다 -->
               </div>
             </div>
 
@@ -2825,7 +2824,7 @@
                     id="payBtnSubText"
                     class="text-[10.5px] font-bold text-white/88"
                   >
-                    NOTE2 다음부터 NOTE6까지
+                    맞는 조건 · 거를 신호 · 가까운 흐름까지
                   </span>
                 </button>
 
@@ -4083,7 +4082,13 @@
           userBirthStr: document
             .getElementById("birthDateInput")
             .value.replace(/\D/g, ""),
-          userTimeKey: document.getElementById("birthTimeBranch")?.value || "unknown",
+          userTimeKey: (() => {
+            const exact=document.getElementById("birthTimeInput")?.value || "";
+            const normalized=normalizeExactBirthTime(exact);
+            if(normalized) return normalized;
+            const legacy=document.getElementById("birthTimeBranch")?.value || "unknown";
+            return BIRTH_TIME_BRANCHES.has(legacy) ? legacy : "unknown";
+          })(),
           userGender: document.getElementById("genderValue").value,
           userCalendar: document.getElementById("calendarSelect").value,
           concernKey: document.getElementById("selectedConcernKey").value,
@@ -5101,14 +5106,14 @@ function buildNoteTwoPattern(data, concernKey, concernLabel, isT) {
   const title = (titles[concernKey] || titles.money)[isT ? "T" : "F"];
   if (isT) {
     return {
-      badge: `${concernLabel} · 반복 패턴`,
+      badge: `${concernLabel} · 실제 장면`,
       title,
       desc: `<b>시작</b> — ${p.trigger}.<br><br><b>네가 바로 하는 반응</b> — ${p.reaction}.<br><br><b>결국 남는 것</b> — ${p.cost}.<br><br>${strengthLine} 그래서 끊을 지점은 감정이 아니라 행동 순서야.`,
       checklist: `이번엔 이것 하나만 해봐: ${p.rule}`,
     };
   }
   return {
-    badge: `${concernLabel} · 반복 패턴`,
+    badge: `${concernLabel} · 실제 장면`,
     title,
     desc: `언니가 네 흐름을 보면 시작은 보통 <b>${p.trigger}</b>이야. 그때 ${p.reaction}. 그러고 나면 결국 ${p.cost}.<br><br>${strengthLine}. 그러니까 또 그랬다고 네 탓부터 하진 말자. 언니랑 딱 한 군데만 바꿔보자.`,
     checklist: `이번엔 이것만 해보자: ${p.rule}`,
@@ -6109,6 +6114,41 @@ function generateConcernNotes(data, mode) {
         saveInputDraft();
       }
 
+      function normalizeExactBirthTime(value) {
+        const raw=String(value || "").replace(/[^0-9]/g,"").slice(0,4);
+        if(raw.length!==4) return "";
+        const hh=raw.slice(0,2);
+        const mm=raw.slice(2,4);
+        const hour=Number(hh);
+        const minute=Number(mm);
+        if(hour>23 || minute>59) return "";
+        return hh+":"+mm;
+      }
+
+      function formatBirthTime(input) {
+        if(!input) return;
+        const digits=String(input.value || "").replace(/[^0-9]/g,"").slice(0,4);
+        input.value=digits.length>2 ? digits.slice(0,2)+":"+digits.slice(2) : digits;
+        const hidden=document.getElementById("birthTimeBranch");
+        const btn=document.getElementById("birthTimeUnknownButton");
+        const exact=normalizeExactBirthTime(input.value);
+        if(hidden) hidden.value=exact || (digits ? "pending" : "unknown");
+        if(btn) btn.dataset.selected=digits ? "0" : "1";
+        saveInputDraft();
+      }
+
+      function setBirthTimeUnknown() {
+        const input=document.getElementById("birthTimeInput");
+        const hidden=document.getElementById("birthTimeBranch");
+        const btn=document.getElementById("birthTimeUnknownButton");
+        const help=document.getElementById("birthTimeHelp");
+        if(input) input.value="";
+        if(hidden) hidden.value="unknown";
+        if(btn) btn.dataset.selected="1";
+        if(help) help.textContent="시간을 몰라도 괜찮아. 모르는 상태 그대로 계산할게";
+        saveInputDraft();
+      }
+
       function birthTimeKeyToBranch(value) {
         const key = String(value || "").trim();
         if (BIRTH_TIME_BRANCHES.has(key)) return key;
@@ -6282,12 +6322,24 @@ function generateConcernNotes(data, mode) {
           let birthStr = rawBirth.replace(/[^0-9]/g, "");
 
           const birthTimeBranch = document.getElementById("birthTimeBranch");
+        const birthTimeInput = document.getElementById("birthTimeInput");
+        const birthTimeUnknownButton = document.getElementById("birthTimeUnknownButton");
+          const birthTimeInput = document.getElementById("birthTimeInput");
+          const rawBirthTime = String(birthTimeInput?.value || "").trim();
+          const exactBirthTime = normalizeExactBirthTime(rawBirthTime);
+          const legacyBranchTime = birthTimeBranch?.value || "unknown";
 
-          // 시간대를 선택하지 않으면 기존과 동일하게 출생시간 미상으로 계산한다.
-          const branchTime = birthTimeBranch?.value || "";
-          const birthTime = BIRTH_TIME_BRANCHES.has(branchTime)
-            ? branchTime
-            : "unknown";
+          if (rawBirthTime && !exactBirthTime) {
+            showVoiceToast({
+              F: "태어난 시간만 한 번 봐줄래? 예: 09:42처럼 적으면 돼",
+              T: "태어난 시간을 확인해줘. 예: 09:42",
+            }, mode);
+            birthTimeInput?.focus();
+            return;
+          }
+
+          const birthTime = exactBirthTime ||
+            (BIRTH_TIME_BRANCHES.has(legacyBranchTime) ? legacyBranchTime : "unknown");
 
           const isLunar =
             document.getElementById("calendarSelect").value === "lunar";
@@ -6433,7 +6485,9 @@ function generateConcernNotes(data, mode) {
           const formattedBirthTime =
             birthTime === "unknown"
               ? "시간 모름"
-              : BIRTH_TIME_BRANCH_LABELS[birthTime] || birthTime;
+              : /^([01]\d|2[0-3]):[0-5]\d$/.test(birthTime)
+                ? birthTime
+                : BIRTH_TIME_BRANCH_LABELS[birthTime] || birthTime;
 
           const calendarLabel = isLunar
             ? isLeapMonth
@@ -6762,8 +6816,8 @@ currentResultData = {
             hookT: "돈이 잘 안 모이는 장면의 반복 흐름은 확인했어. 이제 어디서 남지 않는지와 바꿀 순서를 보면 돼.",
             subF: "지출 기준부터 돈을 지키는 조건, 가까운 흐름까지 같이 보자",
             subT: "지출 기준, 돈을 지키는 조건, 가까운 흐름까지 보면 돼.",
-            previewF: "돈이 들어와도 남는 금액을 만들려고 기준을 세우는 순간부터 패턴이 드러나. 그다음 행동이 핵심이야.",
-            previewT: "돈을 남기기 위해 지출·저축 기준을 세우는 순간부터 패턴이 드러나. 다음 행동에서 갈려.",
+            previewF: "돈이 들어와도 남는 금액을 만들려고 기준을 세우는 순간부터 반응이 드러나. 그다음 행동이 핵심이야.",
+            previewT: "돈을 남기기 위해 지출·저축 기준을 세우는 순간부터 반응이 드러나. 다음 행동에서 갈려.",
             teaserF: "돈이 남지 않는 장면에서 먼저 확인해야 할 신호가 하나 있어…",
             teaserT: "돈이 남지 않는 장면에서 먼저 확인할 신호가 있어…",
             features: ["돈이 남지 않는 정확한 장면", "지금 고정해야 할 지출·저축 기준", "돈 흐름이 움직이는 가까운 시기"],
@@ -6776,11 +6830,11 @@ currentResultData = {
             hookT: "수입을 늘릴 때 반복되는 흐름은 확인했어. 이제 보상으로 이어지는 지점과 행동 순서를 보면 돼.",
             subF: "수입 조건을 바꾸는 방식부터 네 강점이 돈으로 연결되는 조건, 움직일 시기까지 같이 보자",
             subT: "수입 조건, 돈으로 연결되는 조건, 움직일 시기까지 보면 돼.",
-            previewF: "수입을 늘리기 위해 단가·연봉·일의 조건을 바꾸려는 순간부터 패턴이 드러나. 그다음 선택이 중요해.",
-            previewT: "수입을 늘리기 위해 조건을 조정하는 순간부터 패턴이 드러나. 다음 대응이 핵심이야.",
+            previewF: "수입을 늘리기 위해 단가·연봉·일의 조건을 바꾸려는 순간부터 반응이 드러나. 그다음 선택이 중요해.",
+            previewT: "수입을 늘리기 위해 조건을 조정하는 순간부터 반응이 드러나. 다음 대응이 핵심이야.",
             teaserF: "수입을 늘릴 때는 능력만큼 단가·연봉·조건을 어떻게 바꾸는지가 중요해…",
             teaserT: "수입을 늘릴 때 단가·연봉·조건 중 먼저 바꿀 지점이 있어…",
-            features: ["수입 조건을 바꿀 때 반복되는 패턴", "지금 가격·연봉·조건으로 연결할 강점", "수입 기회를 잡기 좋은 가까운 흐름"],
+            features: ["수입 조건을 바꿀 때 반복되는 장면", "지금 가격·연봉·조건으로 연결할 강점", "수입 기회를 잡기 좋은 가까운 흐름"],
             priceF: "언니랑 수입 고민 끝까지 보기",
             priceT: "수입 고민 끝까지 정리하기",
           },
@@ -6790,8 +6844,8 @@ currentResultData = {
             hookT: "새 수입을 시험할 때 반복되는 흐름은 보여. 이제 실제 돈으로 검증할 한 가지를 정하면 돼.",
             subF: "돈 될 가능성을 확인할 행동부터 버릴 시도, 수입 흐름까지 같이 보자",
             subT: "검증할 행동, 버릴 시도, 수입 흐름까지 보면 돼.",
-            previewF: "부업이나 새 수입원을 실제 돈으로 시험하는 순간부터 패턴이 드러나. 그다음 선택이 갈림길이야.",
-            previewT: "부업이나 새 수입원을 실제 돈으로 시험하는 순간부터 패턴이 드러나. 여기서 선택이 갈려.",
+            previewF: "부업이나 새 수입원을 실제 돈으로 시험하는 순간부터 반응이 드러나. 그다음 선택이 갈림길이야.",
+            previewT: "부업이나 새 수입원을 실제 돈으로 시험하는 순간부터 반응이 드러나. 여기서 선택이 갈려.",
             teaserF: "네 경우 작게라도 가격을 붙여 실제 반응을 봐야 하는 지점이 있어…",
             teaserT: "가격을 붙여 실제 반응으로 검증할 지점이 있어…",
             features: ["지금 돈을 붙여 시험해볼 제안", "시간만 쓰는 시도를 거르는 기준", "새 수입 흐름이 움직이는 가까운 시기"],
@@ -6816,15 +6870,15 @@ currentResultData = {
         career: {
           exam: {
             label: "시험·합격",
-            hookF: "시험이 될지 안 될지만 보는 것보다, 준비 과정에서 반복되는 패턴부터 잡는 게 먼저야",
+            hookF: "시험이 될지 안 될지만 보는 것보다, 준비 과정에서 반복되는 장면부터 잡는 게 먼저야",
             hookT: "합격 여부만 볼 게 아니야. 준비에서 반복되는 지점과 실전 대응을 같이 봐야 해.",
             subF: "공부법을 고정할 기준부터 실전에서 흔들리는 지점, 가까운 시험 흐름까지 같이 보자",
             subT: "공부 기준, 실전 변수, 가까운 시험 흐름까지 보면 돼.",
-            previewF: "시험 준비에서 현재 수준과 합격 기준을 맞춰보는 순간부터 패턴이 드러나. 그다음 공부 방식이 중요해.",
-            previewT: "현재 수준과 합격 기준을 맞춰보는 순간부터 패턴이 드러나. 그다음 공부 방식에서 갈려.",
+            previewF: "시험 준비에서 현재 수준과 합격 기준을 맞춰보는 순간부터 반응이 드러나. 그다음 공부 방식이 중요해.",
+            previewT: "현재 수준과 합격 기준을 맞춰보는 순간부터 반응이 드러나. 그다음 공부 방식에서 갈려.",
             teaserF: "네 경우 공부량보다 먼저 고정해야 하는 한 가지가 있어…",
             teaserT: "공부량보다 먼저 고정할 기준이 하나 있어…",
-            features: ["시험 준비에서 반복되는 패턴", "지금 고정해야 할 공부·실전 기준", "가까운 시험 흐름에서 힘을 쓸 시기"],
+            features: ["시험 준비에서 반복되는 장면", "지금 고정해야 할 공부·실전 기준", "가까운 시험 흐름에서 힘을 쓸 시기"],
             priceF: "언니랑 시험 고민 끝까지 보기",
             priceT: "시험 고민 끝까지 정리하기",
           },
@@ -6834,7 +6888,7 @@ currentResultData = {
             hookT: "취업 준비의 반복 흐름은 확인했어. 이제 지원·평가 앞에서 막히는 지점과 다음 행동을 보면 돼.",
             subF: "지원·포트폴리오·면접 중 먼저 바꿀 것부터 네 강점이 먹히는 조건, 시기까지 같이 보자",
             subT: "먼저 바꿀 지원 행동, 강점 조건, 움직일 시기까지 보면 돼.",
-            previewF: "내 실력을 밖에 보여주고 평가받아야 하는 순간부터 패턴이 시작돼. 여기서 네 반응이 중요해.",
+            previewF: "내 실력을 밖에 보여주고 평가받아야 하는 순간부터 장면이 시작돼. 여기서 네 반응이 중요해.",
             previewT: "준비한 걸 밖에 보여주고 평가받는 순간부터 선택이 갈려. 다음 대응이 핵심이야.",
             teaserF: "네 경우 지원·포트폴리오·면접 중 먼저 다듬어야 할 보여주는 방식이 있어…",
             teaserT: "지원·포트폴리오·면접 중 먼저 다듬을 보여주는 방식이 있어…",
@@ -6863,7 +6917,7 @@ currentResultData = {
             subF: "역할·보상·업무량 중 먼저 건드릴 것부터 사람·환경 기준, 변화 시기까지 같이 보자",
             subT: "먼저 바꿀 조건, 환경 기준, 변화 시기까지 보면 돼.",
             previewF: "지금 자리에서 평가·역할·보상을 더 잘 연결하고 싶은 순간부터 선택이 갈려. 그다음 반응이 중요해.",
-            previewT: "지금 자리에서 평가·역할·보상을 더 연결하려는 순간부터 패턴이 시작돼.",
+            previewT: "지금 자리에서 평가·역할·보상을 더 연결하려는 순간부터 장면이 시작돼.",
             teaserF: "네 경우 지금 자리에서 더 잘 풀리려면 먼저 확인할 ‘바꿀 수 있는 한 가지’가 있어…",
             teaserT: "지금 자리에서 먼저 확인할 변경 가능 조건이 있어…",
             features: ["지금 자리에서 성과가 연결되는 조건", "말하거나 바꿔야 할 역할·보상 기준", "환경 변화가 필요한 가까운 시기"],
@@ -6878,11 +6932,11 @@ currentResultData = {
             hookT: "상대 마음 추측보다 확인 방식이 핵심이야. 어디서 확인할지 정하면 돼.",
             subF: "상대 마음을 확인할 지점부터 실제로 해볼 행동, 관계가 움직일 시기까지 같이 보자",
             subT: "확인 지점, 실제 행동, 관계가 움직일 시기까지 보면 돼.",
-            previewF: "상대 마음이나 관계의 다음 단계를 확인하고 싶은 순간부터 패턴이 드러나. 그다음 확인 방식이 핵심이야.",
-            previewT: "상대 마음이나 다음 단계를 확인하려는 순간부터 패턴이 드러나. 다음 확인 방식에서 갈려.",
+            previewF: "상대 마음이나 관계의 다음 단계를 확인하고 싶은 순간부터 반응이 드러나. 그다음 확인 방식이 핵심이야.",
+            previewT: "상대 마음이나 다음 단계를 확인하려는 순간부터 반응이 드러나. 다음 확인 방식에서 갈려.",
             teaserF: "네 경우 상대 마음을 추측하기 전에 먼저 확인해야 할 반응이 하나 있어…",
             teaserT: "추측 전에 확인할 실제 반응이 하나 있어…",
-            features: ["상대 마음을 확인할 때 반복되는 패턴", "지금 확인해볼 연락·만남 행동", "관계가 실제로 움직이는 가까운 시기"],
+            features: ["상대 마음을 확인할 때 반복되는 장면", "지금 확인해볼 연락·만남 행동", "관계가 실제로 움직이는 가까운 시기"],
             priceF: "언니랑 이 썸 끝까지 보기",
             priceT: "썸·짝사랑 흐름 끝까지 정리하기",
           },
@@ -6892,8 +6946,8 @@ currentResultData = {
             hookT: "지금 연애에서 기준을 맞출 때 반복되는 흐름은 확인했어. 이제 조정할 지점과 관계 기준을 보면 돼.",
             subF: "지금 맞춰볼 기준부터 관계가 편해지는 조건, 가까운 흐름까지 같이 보자",
             subT: "조정할 기준, 관계 조건, 가까운 흐름까지 보면 돼.",
-            previewF: "연락·표현·약속에서 둘의 기준을 맞추는 순간부터 패턴이 드러나. 그다음 대응이 핵심이야.",
-            previewT: "연락·표현·약속에서 둘의 기준을 맞추는 순간부터 패턴이 드러나. 다음 대응에서 갈려.",
+            previewF: "연락·표현·약속에서 둘의 기준을 맞추는 순간부터 반응이 드러나. 그다음 대응이 핵심이야.",
+            previewT: "연락·표현·약속에서 둘의 기준을 맞추는 순간부터 반응이 드러나. 다음 대응에서 갈려.",
             teaserF: "네 경우 연락·표현·약속 중 먼저 맞춰봐야 할 기준이 하나 있어…",
             teaserT: "연락·표현·약속 중 먼저 조정할 기준이 있어…",
             features: ["연락·표현·약속에서 반복되는 순서", "지금 맞춰볼 관계 기준 한 가지", "관계가 편해지는 조건과 가까운 흐름"],
@@ -6921,10 +6975,10 @@ currentResultData = {
             subF: "마음을 열어도 되는 신호부터 피해야 할 패턴, 새 인연이 움직일 시기까지 같이 보자",
             subT: "호감 필터, 피할 패턴, 새 인연이 움직일 시기까지 보면 돼.",
             previewF: "새로운 사람을 만나려고 움직이는 순간부터 어떤 접점을 고르고 누구에게 마음을 열지가 갈려. 그다음 판단이 중요해.",
-            previewT: "새로운 사람을 만나려고 움직이는 순간부터 선택 패턴이 시작돼.",
+            previewT: "새로운 사람을 만나려고 움직이는 순간부터 선택 장면이 시작돼.",
             teaserF: "네 경우 첫 호감보다 두세 번 더 확인해야 하는 신호가 있어…",
             teaserT: "첫인상보다 반복해서 확인할 신호가 있어…",
-            features: ["마음을 열어도 되는 사람의 실제 신호", "초반에 걸러야 할 반복 패턴", "새 인연 흐름이 움직이는 가까운 시기"],
+            features: ["마음을 열어도 되는 사람의 실제 신호", "초반에 걸러야 할 실제 장면", "새 인연 흐름이 움직이는 가까운 시기"],
             priceF: "언니랑 새 인연 흐름 끝까지 보기",
             priceT: "새 인연 흐름 끝까지 정리하기",
           },
@@ -6936,8 +6990,8 @@ currentResultData = {
             hookT: "진로는 생각만 늘리면 더 흐려져. 실제로 검증할 선택지부터 정해야 해.",
             subF: "먼저 시험해볼 방향부터 탐색을 줄여도 되는 기준, 방향이 선명해지는 시기까지 같이 보자",
             subT: "검증할 방향, 탐색을 줄일 기준, 방향이 선명해지는 시기까지 보면 돼.",
-            previewF: "무엇부터 해봐야 할지 방향이 안 잡히는 순간부터 패턴이 드러나. 다음 행동이 중요해.",
-            previewT: "무엇부터 해볼지 방향이 안 잡히는 순간부터 패턴이 드러나. 다음 검증 행동이 핵심이야.",
+            previewF: "무엇부터 해봐야 할지 방향이 안 잡히는 순간부터 반응이 드러나. 다음 행동이 중요해.",
+            previewT: "무엇부터 해볼지 방향이 안 잡히는 순간부터 반응이 드러나. 다음 검증 행동이 핵심이야.",
             teaserF: "네 경우 답을 더 생각하기보다 먼저 ‘작게 해봐야’ 보이는 선택이 있어…",
             teaserT: "생각보다 먼저 실제로 검증할 선택지가 있어…",
             features: ["지금 가장 먼저 시험해볼 방향", "시간만 쓰는 탐색을 줄일 기준", "진로 방향이 선명해지는 가까운 시기"],
@@ -6994,11 +7048,11 @@ currentResultData = {
             hookT: "친구·지인 관계도 경계 기준이 필요해. 참을 것과 말할 것을 나누면 돼.",
             subF: "지켜야 할 경계부터 상대 반응을 볼 기준, 관계 흐름까지 같이 보자",
             subT: "경계선, 상대 반응, 관계 흐름까지 보면 돼.",
-            previewF: "친구·지인 관계에서 불편한 장면이 생겼을 때 어떻게 대응하는지에서 패턴이 드러나. 그다음 반응이 중요해.",
-            previewT: "친구·지인 관계에서 불편한 장면이 생겼을 때 대응에서 패턴이 드러나. 다음 대응이 핵심이야.",
+            previewF: "친구·지인 관계에서 불편한 장면이 생겼을 때 어떻게 대응하는지에서 반응이 드러나. 그다음 반응이 중요해.",
+            previewT: "친구·지인 관계에서 불편한 장면이 생겼을 때 대응에서 반응이 드러나. 다음 대응이 핵심이야.",
             teaserF: "네 경우 이 관계를 판단하기 전에 작은 경계 하나만 말해봐도 답이 보이는 포인트가 있어…",
             teaserT: "이 관계를 판단하기 전에 먼저 시험할 경계선이 있어…",
-            features: ["친구·지인 관계에서 반복되는 패턴", "지금 말해볼 작은 경계 한 가지", "관계를 판단할 때 볼 실제 반응"],
+            features: ["친구·지인 관계에서 반복되는 장면", "지금 말해볼 작은 경계 한 가지", "관계를 판단할 때 볼 실제 반응"],
             priceF: "언니랑 이 관계 끝까지 보기",
             priceT: "친구·지인 관계 끝까지 정리하기",
           },
@@ -7008,8 +7062,8 @@ currentResultData = {
             hookT: "직장 관계는 감정보다 역할·업무·연락 기준으로 잘라야 해.",
             subF: "지켜야 할 업무 경계부터 상대 반응을 볼 기준, 관계가 덜 소모되는 흐름까지 같이 보자",
             subT: "업무 경계, 상대 반응, 덜 소모되는 환경 조건까지 보면 돼.",
-            previewF: "직장 사람 문제를 역할·업무·연락 기준으로 나누는 순간부터 패턴이 드러나. 그다음 대응이 중요해.",
-            previewT: "직장 사람 문제를 역할·업무·연락 기준으로 나누는 순간부터 패턴이 드러나.",
+            previewF: "직장 사람 문제를 역할·업무·연락 기준으로 나누는 순간부터 반응이 드러나. 그다음 대응이 중요해.",
+            previewT: "직장 사람 문제를 역할·업무·연락 기준으로 나누는 순간부터 반응이 드러나.",
             teaserF: "네 경우 감정을 설명하기보다 먼저 문장으로 고정해야 할 업무 기준이 있어…",
             teaserT: "감정 대신 문장으로 고정할 업무 기준이 있어…",
             features: ["직장 관계에서 반복해서 소모되는 지점", "업무·연락에서 바로 세울 경계", "사람보다 환경을 바꿔야 할 신호"],
@@ -7022,11 +7076,11 @@ currentResultData = {
             hookT: "가족과 반복해서 부딪히는 장면에서는 내가 지킬 범위를 정하는 게 먼저야.",
             subF: "부딪히는 장면에서 지킬 선부터 할 수 있는 것·어려운 것, 관계 흐름까지 같이 보자",
             subT: "허용 범위, 대응 기준, 관계 흐름까지 보면 돼.",
-            previewF: "가족과 부딪히는 장면이 반복될 때 어떤 기준으로 대응하는지에서 패턴이 드러나. 그다음 기준이 중요해.",
-            previewT: "가족과 부딪히는 장면이 반복될 때 대응에서 패턴이 드러나. 허용 범위가 핵심이야.",
+            previewF: "가족과 부딪히는 장면이 반복될 때 어떤 기준으로 대응하는지에서 반응이 드러나. 그다음 기준이 중요해.",
+            previewT: "가족과 부딪히는 장면이 반복될 때 대응에서 반응이 드러나. 허용 범위가 핵심이야.",
             teaserF: "네 경우 상대를 설득하기 전에 먼저 정해둬야 할 ‘여기까지’가 있어…",
             teaserT: "설득보다 먼저 정할 허용 범위가 있어…",
-            features: ["가족과 부딪힐 때 반복되는 패턴", "할 수 있는 것·어려운 것을 나눌 기준", "관계를 조절할 때 볼 신호"],
+            features: ["가족과 부딪힐 때 반복되는 장면", "할 수 있는 것·어려운 것을 나눌 기준", "관계를 조절할 때 볼 신호"],
             priceF: "언니랑 가족 고민 끝까지 보기",
             priceT: "가족 관계 기준 끝까지 정리하기",
           },
@@ -7094,11 +7148,11 @@ currentResultData = {
             hookT: "컨디션을 다시 찾을 땐 속도 조절이 핵심이야. 먼저 고정할 것과 천천히 올릴 걸 나눠야 해.",
             subF: "유지할 루틴부터 활동량을 올릴 기준, 다시 움직이는 가까운 흐름까지 같이 보자",
             subT: "유지 루틴, 활동량 기준, 다시 움직이는 흐름까지 보면 돼.",
-            previewF: "컨디션을 다시 만들려고 생활 리듬과 활동량을 조절하는 순간부터 패턴이 드러나. 다음 속도 조절이 중요해.",
+            previewF: "컨디션을 다시 만들려고 생활 리듬과 활동량을 조절하는 순간부터 반응이 드러나. 다음 속도 조절이 중요해.",
             previewT: "컨디션을 다시 만들 때 생활 리듬과 활동량을 어떻게 올리는지가 핵심이야.",
             teaserF: "네 경우 컨디션을 다시 만들 때 일부러 남겨둬야 하는 ‘여유 기준’이 있어…",
             teaserT: "컨디션을 오래 유지하려면 일부러 남겨둘 여유 기준이 있어…",
-            features: ["컨디션을 회복할 때 반복되는 패턴", "계속 유지할 생활 루틴과 활동량 기준", "무리 없이 속도를 올릴 가까운 흐름"],
+            features: ["컨디션을 회복할 때 반복되는 장면", "계속 유지할 생활 루틴과 활동량 기준", "무리 없이 속도를 올릴 가까운 흐름"],
             priceF: "언니랑 회복 흐름 끝까지 보기",
             priceT: "회복 흐름 끝까지 정리하기",
           },
@@ -7115,11 +7169,11 @@ currentResultData = {
             hookT: "돈 고민의 원인은 확인했어. 이제 행동 기준과 시기만 정리하면 돼.",
             subF: "돈이 새거나 붙는 조건부터 지금 할 행동, 가까운 흐름까지 같이 보자",
             subT: "돈 조건, 지금 할 행동, 가까운 흐름까지 보면 돼.",
-            previewF: "돈이 흔들리는 장면부터 패턴이 시작돼. 그다음 네 반응이 핵심이야.",
+            previewF: "돈이 흔들리는 장면부터 장면이 시작돼. 그다음 네 반응이 핵심이야.",
             previewT: "돈이 흔들리는 장면부터 시작돼. 다음 반응이 핵심이야.",
             teaserF: "네 돈 고민에서 먼저 끊어야 할 지점이 하나 있어…",
             teaserT: "돈 고민에서 먼저 끊어야 할 지점이 있어…",
-            features: ["돈이 흔들리는 반복 패턴", "지금 바꿔야 할 돈 행동", "가까운 돈 흐름의 변곡 시기"],
+            features: ["돈이 흔들리는 실제 장면", "지금 바꿔야 할 돈 행동", "가까운 돈 흐름의 변곡 시기"],
             priceF: "언니랑 돈 고민 끝까지 보기",
             priceT: "돈 고민 끝까지 정리하기",
           },
@@ -7129,11 +7183,11 @@ currentResultData = {
             hookT: "커리어가 막히는 지점은 확인했어. 이제 행동 기준과 시기를 정리하면 돼.",
             subF: "지금 바꿀 행동부터 환경 기준, 가까운 기회 흐름까지 같이 보자",
             subT: "행동, 환경 기준, 가까운 기회 흐름까지 보면 돼.",
-            previewF: "일에서 막히는 장면부터 패턴이 시작돼. 그다음 대응이 중요해.",
+            previewF: "일에서 막히는 장면부터 장면이 시작돼. 그다음 대응이 중요해.",
             previewT: "일에서 막히는 장면부터 시작돼. 다음 대응이 핵심이야.",
             teaserF: "지금 커리어에서 먼저 바꿔야 할 한 가지가 있어…",
             teaserT: "커리어에서 먼저 바꿀 지점이 있어…",
-            features: ["일이 막히는 반복 패턴", "지금 바꿔야 할 행동·환경 기준", "가까운 기회 흐름의 변곡 시기"],
+            features: ["일이 막히는 실제 장면", "지금 바꿔야 할 행동·환경 기준", "가까운 기회 흐름의 변곡 시기"],
             priceF: "언니랑 커리어 고민 끝까지 보기",
             priceT: "커리어 고민 끝까지 정리하기",
           },
@@ -7143,7 +7197,7 @@ currentResultData = {
             hookT: "연애 패턴은 확인했어. 이제 끊을 지점과 관계 기준을 정리하면 돼.",
             subF: "지금 바꿀 반응부터 사람 기준, 가까운 관계 흐름까지 같이 보자",
             subT: "바꿀 반응, 사람 기준, 가까운 관계 흐름까지 보면 돼.",
-            previewF: "관계가 흔들리는 순간부터 패턴이 시작돼. 그다음 네 반응이 핵심이야.",
+            previewF: "관계가 흔들리는 순간부터 장면이 시작돼. 그다음 네 반응이 핵심이야.",
             previewT: "관계가 흔들리는 순간부터 시작돼. 다음 반응이 핵심이야.",
             teaserF: "네 연애에서 먼저 끊어야 할 반복 지점이 하나 있어…",
             teaserT: "연애에서 먼저 끊어야 할 반응이 있어…",
@@ -7171,7 +7225,7 @@ currentResultData = {
             hookT: "관계에서 소모되는 지점은 확인했어. 이제 경계 기준만 정리하면 돼.",
             subF: "지켜야 할 선부터 남겨야 할 사람의 반응, 관계 흐름까지 같이 보자",
             subT: "경계선, 남길 사람의 반응, 관계 흐름까지 보면 돼.",
-            previewF: "관계에서 불편함을 참는 순간부터 패턴이 시작돼. 그다음 대응이 중요해.",
+            previewF: "관계에서 불편함을 참는 순간부터 장면이 시작돼. 그다음 대응이 중요해.",
             previewT: "관계에서 불편함을 참는 순간부터 시작돼. 다음 대응이 핵심이야.",
             teaserF: "이 관계에서 먼저 세워야 할 작은 경계가 하나 있어…",
             teaserT: "이 관계에서 먼저 세울 경계가 있어…",
@@ -7198,13 +7252,21 @@ currentResultData = {
           PAYWALL_CONVERSION_COPY[concernKey]?.[situationKey] ||
           fallbackByConcern[concernKey] ||
           fallbackByConcern.money;
+        const lockedBenefits = {
+          money:["돈이 남는 조건","빨리 끊어야 할 돈 신호","가까운 돈 흐름과 지금 할 것"],
+          career:["잘 풀리는 일·공부 조건","빨리 거를 환경·역할 신호","움직일 시기와 지금 할 것"],
+          love:["너랑 맞는 사람·관계 조건","초반에 빨리 거를 상대 신호","가까운 연애 흐름과 지금 할 것"],
+          path:["너한테 맞는 진로 조건","피해야 할 선택·환경 신호","움직일 시기와 지금 해볼 것"],
+          people:["남겨도 되는 사람의 반응","거리를 둬야 할 관계 신호","관계가 움직일 시기와 지금 할 것"],
+          mental:["회복이 붙는 조건","지금을 더 지치게 하는 신호","가까운 회복 흐름과 지금 줄일 것"],
+        };
         return {
           label: picked.label,
           hook: isT ? picked.hookT : picked.hookF,
           sub: isT ? picked.subT : picked.subF,
           preview: isT ? picked.previewT : picked.previewF,
           teaser: isT ? picked.teaserT : picked.teaserF,
-          features: picked.features,
+          features: lockedBenefits[concernKey] || lockedBenefits.money,
           priceTitle: isT ? picked.priceT : picked.priceF,
         };
       }
@@ -7248,14 +7310,14 @@ currentResultData = {
             : "언니, 그것도 봐줘";
         }
         if (payBtnSubText) {
-          payBtnSubText.textContent = "NOTE2 다음부터 NOTE6까지";
+          payBtnSubText.textContent = "맞는 조건 · 거를 신호 · 가까운 흐름까지";
         }
         if (paywallSisterHeader) paywallSisterHeader.style.display = "flex";
         if (paywallSisterAvatar) paywallSisterAvatar.src = isT ? "./서아.webp" : "./로아.webp";
         if (paywallSisterLabel) {
           paywallSisterLabel.textContent = isT
-            ? "서아 언니 · 마지막 기준만 보면 돼"
-            : "로아 언니 · 여기서 하나만 더 보자";
+            ? "서아 언니 · 이제 구체적인 답만 보면 돼"
+            : "로아 언니 · 이제 너한테 맞는 쪽을 보자";
           paywallSisterLabel.className = isT
             ? "text-[11px] font-black text-sky-600"
             : "text-[11px] font-black text-rose-600";
@@ -7265,18 +7327,16 @@ currentResultData = {
             currentResultData?.concernKey === "mental" &&
             currentResultData?.concernSituation === "burnout";
           paywallSisterSub.textContent = isT
-            ? (isBurnoutSituation
-                ? "번아웃 같다고 느낄 때, 이제 행동 기준만 보면 돼"
-                : paywallCopy.label + "에서 이제 행동 기준만 보면 돼")
-            : paywallCopy.label + " 얘기, 이제 어디서 바꾸면 좋을지 보자";
+            ? paywallCopy.label + "에서 맞는 조건·거를 신호·가까운 흐름까지"
+            : paywallCopy.label + " 얘기, 이제 맞는 조건이랑 거를 신호까지 이어서 보자";
         }
         if (paywallFeatureTitle) {
           paywallFeatureTitle.textContent = isT
-            ? "다음에 확인할 것"
-            : "그다음 같이 볼 얘기";
+            ? "이어보면 바로 알게 되는 것"
+            : "이어보면 알게 되는 것";
         }
         if (paywallNextLabel) {
-          paywallNextLabel.textContent = isT ? "다음 기준" : "다음 얘기";
+          paywallNextLabel.textContent = "다음 내용";
         }
         if (paywallNextTeaser) {
           paywallNextTeaser.textContent = "“" + paywallCopy.teaser + "”";
@@ -7349,13 +7409,13 @@ currentResultData = {
         }
         if (vipSectionMainTitle) {
           vipSectionMainTitle.textContent = isT
-            ? "언니가 핵심만 적어둔 비밀 메모"
-            : "언니가 너한테만 남기는 비밀 메모";
+            ? "지금 고민에서 핵심만 정리했어"
+            : "지금 네 고민에서 보이는 것";
         }
         if (vipSectionSubTitle) {
           vipSectionSubTitle.textContent = isT
-            ? "지금 고민의 원인·행동·사람·시기만 골라서 정리했어"
-            : "지금 고민의 이유부터 행동·사람·시기까지 언니가 적어뒀어";
+            ? "핵심 · 실제 장면 · 맞는 조건 · 거를 신호 · 가까운 흐름"
+            : "핵심부터 잘 맞는 조건·거를 신호·가까운 흐름까지 짧게 볼게";
         }
         if (mainShareBtnText) {
           mainShareBtnText.textContent = isT
@@ -7628,16 +7688,15 @@ currentResultData = {
             : "text-[34px] sm:text-[40px] font-black tracking-widest font-mono text-rose-500 drop-shadow-sm leading-none pt-2 pb-1";
         }
 
-        // [아이폰 비밀 메모장 렌더링] 무료 미리보기 / 구매 확인 후 전체 공개
+        // 5개 핵심 답변 렌더링: 무료는 첫 답 + 두 번째 답 맛보기, 결제 후 전체 공개
         const notesData = generateConcernNotes(data, mode);
 
         const noteRoleMeta = {
-          "01": { label:"핵심 진단", className:"note-role-diagnosis" },
-          "02": { label:"반복 패턴", className:"note-role-pattern" },
-          "03": { label:"왜 그런지", className:"note-role-cause" },
-          "04": { label:"바꿀 순서", className:"note-role-action" },
-          "05": { label:"맞는 조건", className:"note-role-fit" },
-          "06": { label:"시간 흐름", className:"note-role-timing" },
+          "01": { label:"핵심", className:"note-role-diagnosis" },
+          "02": { label:"실제 장면", className:"note-role-pattern" },
+          "03": { label:"잘 맞는 조건", className:"note-role-fit" },
+          "04": { label:"거를 신호", className:"note-role-cause" },
+          "05": { label:"가까운 흐름", className:"note-role-timing" },
         };
 
         const splitNoteParagraphs = (html) =>
@@ -7648,41 +7707,20 @@ currentResultData = {
 
         const renderNoteBody = (item) => {
           const parts = splitNoteParagraphs(item.desc);
-          if (String(item.themeNum) === "04") {
-            return `<div class="note-body note-body-steps">${parts
-              .map((part,index)=>`<div class="note-step"><span class="note-step-num">${index + 1}</span><div>${part}</div></div>`)
-              .join("")}</div>`;
-          }
-          if (String(item.themeNum) === "06") {
+          if (String(item.themeNum) === "05") {
             return `<div class="note-body note-body-timeline">${parts
               .map((part)=>`<div class="note-time-row"><span class="note-time-dot"></span><div>${part}</div></div>`)
               .join("")}</div>`;
           }
-          if (["02","03"].includes(String(item.themeNum))) {
+          if (String(item.themeNum) === "02") {
             return `<div class="note-body note-body-flow">${parts
               .map((part)=>`<div class="note-flow-row"><span class="note-flow-line"></span><div>${part}</div></div>`)
               .join("")}</div>`;
           }
-          if (String(item.themeNum) === "05") {
-            const fit = parts[0] || "";
-            const drain = parts[1] || "";
-            const criterion = parts.slice(2).join("<br><br>");
-            return `<div class="note-body note-body-fit">
-              <div class="note-fit-compare">
-                <section class="note-fit-panel note-fit-good">
-                  <div class="note-fit-kicker"><span class="note-fit-dot"></span><span>잘 맞는 쪽</span></div>
-                  <div class="note-fit-copy">${fit}</div>
-                </section>
-                <section class="note-fit-panel note-fit-drain">
-                  <div class="note-fit-kicker"><span class="note-fit-dot"></span><span>오래 두면 소모되는 쪽</span></div>
-                  <div class="note-fit-copy">${drain}</div>
-                </section>
-              </div>
-              <section class="note-fit-criterion">
-                <div class="note-fit-criterion-label">마지막 판단 기준</div>
-                <div class="note-fit-copy">${criterion}</div>
-              </section>
-            </div>`;
+          if (["03","04"].includes(String(item.themeNum))) {
+            return `<div class="note-body note-body-fit">${parts
+              .map((part)=>`<section class="note-fit-criterion"><div class="note-fit-copy">${part}</div></section>`)
+              .join("")}</div>`;
           }
           return `<div class="note-body">${parts.map((part)=>`<p>${part}</p>`).join("")}</div>`;
         };
@@ -7697,19 +7735,21 @@ currentResultData = {
               const badgeHtml = badgeText && badgeText !== meta.label
                 ? `<span class="note-badge">${badgeText}</span>`
                 : "";
+              const checkHtml = item.checklist ? `
+                        <div class="note-check">
+                          <span class="note-check-mark">✓</span>
+                          <div><span class="note-check-label">${isT ? "지금 할 것" : "이번에 해볼 것"}</span><span> ${item.checklist}</span></div>
+                        </div>` : "";
               return `
                     <div class="note-editorial ${meta.className} ${accent}" data-note-role="${num}">
                         <div class="note-editorial-head">
-                          <span class="note-number">NOTE ${item.themeNum}</span>
+                          <span class="note-number">${Number(num)}/5</span>
                           <span class="note-role-label">${meta.label}</span>
                           ${badgeHtml}
                         </div>
                         <h4 class="note-editorial-title">${item.title}</h4>
                         ${renderNoteBody(item)}
-                        <div class="note-check">
-                          <span class="note-check-mark">✓</span>
-                          <div><span class="note-check-label">${isT ? "실전 룰" : "언니랑 약속"}</span><span> ${item.checklist}</span></div>
-                        </div>
+                        ${checkHtml}
                     </div>`;
             })
             .join("");
@@ -7726,7 +7766,8 @@ currentResultData = {
             if (notesData[1]) {
               const nextNote = notesData[1];
               const paywallCopy = getPaywallConversionCopy(data, isT);
-              const previewDesc = "<p>" + escapeHTML(paywallCopy.preview) + "</p>";
+              const firstPreviewPart = splitNoteParagraphs(nextNote.desc)[0] || paywallCopy.preview;
+              const previewDesc = firstPreviewPart;
               const paywallNextTeaser = document.getElementById("paywallNextTeaser");
               if (paywallNextTeaser) {
                 paywallNextTeaser.textContent = "“" + paywallCopy.teaser + "”";
@@ -7737,15 +7778,9 @@ currentResultData = {
                 `
                   <div id="note2PreviewCard" class="note-editorial note-role-pattern ${isT ? "note-tone-t" : "note-tone-f"} relative overflow-hidden text-left">
                       <div class="note-editorial-head">
-                          <span class="note-number ${
-                            isT
-                              ? "text-sky-600 bg-sky-50 border-sky-200"
-                              : "text-rose-600 bg-rose-50 border-rose-200"
-                          }">
-                              NOTE ${nextNote.themeNum}
-                          </span>
-                          <span class="note-role-label">반복 패턴</span>
-                          ${String(nextNote.badge || "") !== "반복 패턴" ? `<span class="note-badge">${nextNote.badge}</span>` : ""}
+                          <span class="note-number">2/5</span>
+                          <span class="note-role-label">실제 장면</span>
+                          ${String(nextNote.badge || "") !== "실제 장면" ? `<span class="note-badge">${nextNote.badge}</span>` : ""}
                       </div>
                       <h4 class="note-editorial-title">
                           ${nextNote.title}
@@ -7756,8 +7791,8 @@ currentResultData = {
                       <div class="note-preview-continuation">
                           <p>
                               ${isT
-                                ? "이제 핵심은 하나야. 어디서 끊고, 뭘 바꿀지."
-                                : "이제 중요한 건 하나야. 어디서 끊고, 뭘 바꿀지."}
+                                ? "여기서부터 네 경우에 맞는 조건·거를 신호·가까운 흐름이 이어져."
+                                : "여기서부터 너한테 맞는 조건, 거를 신호, 가까운 흐름까지 이어서 볼게."}
                           </p>
                       </div>
                   </div>
@@ -7910,7 +7945,7 @@ currentResultData = {
           ohengList[0],
         );
 
-        // 가장 강한 기운과 가장 약한 기운을 한 번에 보여주고, 아래 비밀메모로 자연스럽게 연결한다.
+        // 가장 강한 기운과 가장 약한 기운을 한 번에 보여주고, 아래 고민 결과로 자연스럽게 연결한다.
         const minCount = Math.min(...ohengList.map((o) => o.count));
         const minItems = ohengList.filter((o) => o.count === minCount);
         const minNames = minItems.map((o) => o.name).join("·");
@@ -7944,8 +7979,8 @@ currentResultData = {
 
         if (summaryTxt) {
           summaryTxt.innerHTML = isT
-            ? `<b>${maxOheng.name}</b> 비중이 가장 커. 반대로 <b>${minNames}</b>은 겉으로 적게 보여. 이건 오행 개수 기준 분포이고, 실제 세력 강약은 계절·뿌리·위치까지 따로 계산해. <b>아래 비밀 메모는 그 실제 판단과 지금 고민을 같이 본 결과야.</b>`
-            : `<b>${maxOheng.name}</b>이 겉으로 가장 많이 보여. 반대로 <b>${minNames}</b>은 적게 보이고. 이건 눈에 보이는 오행 분포야. 실제로 어떤 기운이 힘을 쓰는지는 계절·뿌리·위치까지 따로 본 다음, <b>지금 네 고민이랑 같이 아래 비밀 메모에 이어서 풀어뒀어.</b>`;
+            ? `<b>${maxOheng.name}</b> 비중이 가장 커. 반대로 <b>${minNames}</b>은 겉으로 적게 보여. 이건 오행 개수만 보여주는 화면이고, 실제 판단은 계절·뿌리·위치까지 따로 계산해. <b>아래에서는 그걸 지금 네 고민에 맞는 말로만 짧게 정리했어.</b>`
+            : `<b>${maxOheng.name}</b>이 겉으로 가장 많이 보여. 반대로 <b>${minNames}</b>은 적게 보이고. 이건 눈에 보이는 오행 분포야. 실제 힘은 계절·뿌리·위치까지 따로 계산한 다음, <b>아래에서는 지금 네 고민에 필요한 얘기만 짧게 풀어줄게.</b>`;
         }
       }
 
@@ -9620,8 +9655,17 @@ currentResultData = {
         }
 
         const savedTimeKey = String(savedData.userTimeKey || "unknown");
+        const savedExactTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(savedTimeKey) ? savedTimeKey : "";
+        if (birthTimeInput) birthTimeInput.value = savedExactTime;
         if (birthTimeBranch) {
-          birthTimeBranch.value = birthTimeKeyToBranch(savedTimeKey);
+          birthTimeBranch.value = savedExactTime
+            ? savedExactTime
+            : (BIRTH_TIME_BRANCHES.has(savedTimeKey) ? savedTimeKey : "unknown");
+        }
+        if (birthTimeUnknownButton) birthTimeUnknownButton.dataset.selected = savedTimeKey === "unknown" ? "1" : "0";
+        const birthTimeHelp = document.getElementById("birthTimeHelp");
+        if (birthTimeHelp && BIRTH_TIME_BRANCHES.has(savedTimeKey)) {
+          birthTimeHelp.textContent = "예전에 고른 대략 시간대("+ (BIRTH_TIME_BRANCH_LABELS[savedTimeKey] || savedTimeKey) +")로 저장돼 있어. 정확한 시간을 알면 위에 다시 적어줘";
         }
 
         const concernOrder = [
@@ -9832,8 +9876,8 @@ currentResultData = {
     <script src="./rules/ziping-zhenquan-rules.js?v=1.1.0"></script>
     <script src="./integrated-saju-profile-v1.js?v=2.1.0"></script>
     <script src="./classical-reasoning-engine-v1.js?v=1.2.0"></script>
-    <script src="./paid-value-layer-v1.js?v=1.5.0"></script>
-    <script src="./concern-note-engine-v2.js?v=3.2.1"></script>
+    <script src="./paid-value-layer-v1.js?v=1.5.1"></script>
+    <script src="./concern-note-engine-v2.js?v=4.0.0"></script>
     <script src="./product-content-policy-v1.js?v=1.1.0"></script>
     <script src="./product-entitlements-v1.js?v=1.0.1"></script>
     <script src="./premium-products-v1.js?v=2.2.0"></script>
