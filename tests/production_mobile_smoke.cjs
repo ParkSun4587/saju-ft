@@ -122,15 +122,15 @@ async function enter(page, mode, concern, situation) {
     'birth-time selection placeholder color drift '+JSON.stringify(firstState.timeSelect));
   assert(firstState.submitOpacity<=0.4,'disabled consultation CTA is still too visually active '+JSON.stringify(firstState));
   if (mode==='F') assert(
-    firstState.sisterText.includes('아, 왔구나. 편하게 적어줘.') &&
-    firstState.sisterText.includes('언니가 하나씩 잘 봐줄게.') &&
+    firstState.sisterText.includes('응, 왔구나. 편하게 얘기해줘.') &&
+    firstState.sisterText.includes('네 사주 보면서 왜 마음에 걸리는지 같이 풀어볼게.') &&
     firstState.concernPrompt==='요즘 제일 마음에 걸리는 건?' &&
     !firstState.sisterText.includes('ㅎㅎ'),
     'F input lost warm concise counselor voice '+JSON.stringify(firstState)
   );
   if (mode==='T') assert(
-    firstState.sisterText.includes('왔어. 적어줘.') &&
-    firstState.sisterText.includes('핵심부터 바로 볼게.') &&
+    firstState.sisterText.includes('좋아. 필요한 것만 적어줘.') &&
+    firstState.sisterText.includes('네 사주에서 원인부터 바로 짚어볼게.') &&
     firstState.concernPrompt==='지금 제일 궁금한 건?' &&
     !firstState.sisterText.includes('ㅎㅎ'),
     'T input lost concise counselor voice '+JSON.stringify(firstState)
