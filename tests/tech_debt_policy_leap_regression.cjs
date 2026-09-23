@@ -439,35 +439,90 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   const grant=await page.evaluate(async()=>{
     const restored=calculateAccurateManse(1998,2,21,'03:10','female');
     restored.__testNowYmd='2026-09-20';restored.concernKey='love';restored.concernSituation='relationship';restored.currentMode='F';
+    restored.name='테스트';
+    restored.userName='테스트';
+    restored.userBirthStr='19980221';
+    restored.userTimeKey='03:10';
+    restored.userGender='female';
+    restored.userCalendar='solar';
+    restored.isLeapMonth=false;
     generateConcernNotes(restored,'F');
     currentResultData=restored;
-    const extra={partner:{n:'윤달상대',b:'20200401',t:'unknown',g:'female',c:'lunar',l:true}};
+    const extraA={partner:{n:'윤달상대',b:'20200401',t:'unknown',g:'female',c:'lunar',l:true}};
+    const extraB={partner:{n:'다른상대',b:'20010101',t:'unknown',g:'male',c:'solar',l:false}};
+    const baseUserKey='sazu_v2_'+JSON.stringify(['테스트','19980221','03:10','female','solar',false,'love']);
+    const userKeyA=baseUserKey+'::compatibility::'+JSON.stringify(extraA);
+    const userKeyB=baseUserKey+'::compatibility::'+JSON.stringify(extraB);
     const oldConfirm=confirmPaymentOnServer;
     const oldVerify=verifyAccessToken;
-    confirmPaymentOnServer=async()=> 'test-grant-token';
+    const oldPaymentAPI=paymentAPI;
+    confirmPaymentOnServer=async(paymentKey,orderId,amount,userKey)=> userKey===userKeyB ? 'test-grant-token-b' : 'test-grant-token-a';
     verifyAccessToken=async()=> 'valid';
     try{
-      const params=new URLSearchParams('payment=success&paymentKey=pk_test&orderId=order_test&amount=5900');
-      const resume={productId:'compatibility',orderId:'order_test',amount:5900,userKey:'grant-user',data:{x:extra}};
-      await globalThis.handleUnniProductPaymentReturn(params,resume,restored,'ticket_test');
-      const storedKeys=Object.keys(localStorage).filter(k=>k.startsWith('unni_product_grant_v1_compatibility_'));
-      const stored=storedKeys.map(k=>JSON.parse(localStorage.getItem(k)||'null')).find(x=>x?.orderId==='order_test')||null;
+      await globalThis.handleUnniProductPaymentReturn(
+        new URLSearchParams('payment=success&paymentKey=pk_a&orderId=order_a&amount=100'),
+        {productId:'compatibility',orderId:'order_a',amount:100,userKey:userKeyA,data:{x:extraA}},
+        restored,'ticket_a'
+      );
+      document.querySelector('#unniProductClose')?.click();
+      await new Promise(r=>setTimeout(r,5));
+      await globalThis.handleUnniProductPaymentReturn(
+        new URLSearchParams('payment=success&paymentKey=pk_b&orderId=order_b&amount=100'),
+        {productId:'compatibility',orderId:'order_b',amount:100,userKey:userKeyB,data:{x:extraB}},
+        restored,'ticket_b'
+      );
+      document.querySelector('#unniProductClose')?.click();
+
+      paymentAPI=async(body)=>{
+        if(body?.action==='entitlements') return {
+          ok:true,
+          verifiedPurchases:[
+            {productId:'compatibility',userKey:userKeyA},
+            {productId:'compatibility',userKey:userKeyB},
+          ],
+          effectiveEntitlements:['compatibility'],
+          allInOneQuote:{targetProduct:'all_in_one',baseAmount:100,creditAmount:0,amount:100,alreadyOwned:false,creditedProducts:[]},
+        };
+        if(body?.action==='prepare') {
+          globalThis.__techDebtPreparePayload=body;
+          return {ok:true,productId:'compatibility',baseAmount:100,amount:100,orderId:'order_new_pair',ticket:'ticket_new_pair',userKey:'new_pair_user'};
+        }
+        return oldPaymentAPI(body);
+      };
+      globalThis.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
+      await globalThis.openUnniProduct('compatibility');
+      const listCount=document.querySelectorAll('[data-compat-reopen]').length;
+      const listText=document.querySelector('#unniCompatibilityPurchases')?.innerText||'';
+      const newPairButton=document.querySelector('#unniCompatibilityNewPair');
+      const reopenLabel=document.querySelector('#unniProductAction')?.textContent||'';
+      document.querySelector('[data-compat-reopen="0"]')?.click();
+      await new Promise(r=>setTimeout(r,30));
+      const latestFp=document.querySelector('#unniProductBody [data-export-intro="compat"]')?.getAttribute('data-person-b-fingerprint')||'';
       document.querySelector('#unniProductClose')?.click();
       await globalThis.openUnniProduct('compatibility');
-      const action=document.querySelector('#unniProductAction');
-      const reopenLabel=action?.textContent||'';
-      action?.click();
+      document.querySelector('#unniCompatibilityNewPair')?.click();
       await new Promise(r=>setTimeout(r,30));
-      const restoredFp=document.querySelector('#unniProductBody [data-export-intro="compat"]')?.getAttribute('data-person-b-fingerprint')||'';
-      return {storedLeap:stored?.extra?.partner?.l,reopenLabel,restoredFp};
+      const newPairMode={
+        birth:document.querySelector('#partnerBirth')?.value||'',
+        action:document.querySelector('#unniProductAction')?.textContent||'',
+        price:document.querySelector('#unniProductPrice')?.textContent||'',
+      };
+      const storedKeys=Object.keys(localStorage).filter(k=>k.startsWith('unni_product_grant_v1_compatibility_'));
+      const stored=storedKeys.map(k=>JSON.parse(localStorage.getItem(k)||'null')).filter(x=>x?.userKey===userKeyA||x?.userKey===userKeyB);
+      return {listCount,listText,reopenLabel,latestFp,newPairMode,storedCount:stored.length,storedLeap:stored.find(x=>x?.userKey===userKeyA)?.extra?.partner?.l};
     } finally {
       confirmPaymentOnServer=oldConfirm;
       verifyAccessToken=oldVerify;
+      paymentAPI=oldPaymentAPI;
+      globalThis.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
     }
   });
+  assert(grant.storedCount===2,'multiple compatibility grants were overwritten '+JSON.stringify(grant));
   assert(grant.storedLeap===true,'grant save dropped partner.l '+JSON.stringify(grant));
-  assert(grant.reopenLabel.includes('구매한')&&grant.reopenLabel.includes('다시 보기'),'grant restore path not offered '+JSON.stringify(grant));
-  assert(grant.restoredFp===lunar.leapUnknown.bFp,'grant restore did not reuse leap-month partner extra '+JSON.stringify(grant));
+  assert(grant.listCount===2&&grant.listText.includes('윤달상대')&&grant.listText.includes('다른상대'),'purchased compatibility list missing '+JSON.stringify(grant));
+  assert(grant.reopenLabel.includes('구매한 궁합')&&grant.reopenLabel.includes('다시 보기'),'grant restore path not offered '+JSON.stringify(grant));
+  assert(grant.latestFp,'compatibility saved report did not reopen '+JSON.stringify(grant));
+  assert(grant.newPairMode.birth===''&&grant.newPairMode.action.includes('우리 둘 궁합 보기')&&grant.newPairMode.price.includes('100원'),'new compatibility partner checkout mode did not reset '+JSON.stringify(grant));
 
   assert(errors.length===0,'browser errors: '+errors.join(' | '));
 
