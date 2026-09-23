@@ -40,8 +40,8 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
         structureFingerprint:rr.structureFingerprint,timingFingerprint:rr.timingFingerprint,
         claimConclusions:rr.claims.map(x=>x.conclusion),
         timing:rr.timing,
-        note6:plain(notes[5]?.desc),
-        note6Meta:notes[5]?.__timingQA||{},
+        timingAnswer:plain(notes[4]?.desc),
+        timingMeta:notes[4]?.__timingQA||{},
       });
     }
 
@@ -80,7 +80,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
       return {
         concern:key,fp:d.classicalReasoningV1.structureFingerprint,
         core:d.classicalReasoningV1.claims.slice(0,5).map(x=>x.conclusion),
-        note6:plain(notes[5]?.desc),
+        timingAnswer:plain(notes[4]?.desc),
       };
     });
 
@@ -98,7 +98,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
       runs:runs.map(x=>({
         id:x.id,concern:x.concern,situation:x.situation,
         fp:x.structureFingerprint,timingFp:x.timingFingerprint,
-        note6:x.note6,note6Meta:x.note6Meta,
+        timingAnswer:x.timingAnswer,timingMeta:x.timingMeta,
         pivots:(x.timing.longTermPivots||[]).map(p=>({year:p.year,class:p.class,sourceRuleIds:p.sourceRuleIds||[]})),
         nearCount:x.timing.concernNearTerm?.months?.length||0,
         fullPublicYears:(x.timing.fullSajuTimeline?.years||[]).map(y=>y.year),
@@ -149,7 +149,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
       },
       concernInvariant,
       samples:{
-        basicNote6:canonical.note6,
+        basicTiming:canonical.timingAnswer,
         fullSaju:plain(fullRoot.querySelector('[data-export-index="10"]')?.innerText||''),
         fullNear:plain(fullRoot.querySelector('[data-export-index="9"]')?.innerText||''),
         bundleExclusive:plain(bundleRoot.querySelector('[data-product-exclusive="concern_bundle3"]')?.innerText||''),
@@ -174,13 +174,13 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     assert(run.fullInternalYears.length>=6,'internal horizon is not longer than product disclosure: '+run.id);
     assert(run.pivots.length<=2,'basic long-term teaser exceeds two real pivots: '+run.id);
     for(const pivot of run.pivots) assert(pivot.sourceRuleIds.length>0,'long-term pivot lacks classical rule provenance: '+run.id+' '+JSON.stringify(pivot));
-    assert(!run.note6.includes('앞으로 5년 큰 흐름'),'basic NOTE6 leaked full_saju five-year heading: '+run.id);
-    const shownYears=[...new Set((run.note6.match(/20\d{2}년/g)||[]).map(x=>Number(x.slice(0,4))))];
+    assert(!run.timingAnswer.includes('앞으로 5년 큰 흐름'),'basic timing answer leaked full_saju five-year heading: '+run.id);
+    const shownYears=[...new Set((run.timingAnswer.match(/20\d{2}년/g)||[]).map(x=>Number(x.slice(0,4))))];
     const pivotYears=run.pivots.map(x=>x.year);
     assert(shownYears.every(y=>pivotYears.includes(y)),'basic NOTE6 invented/non-pivot long-term year: '+run.id+' '+JSON.stringify({shownYears,pivotYears}));
-    if(!pivotYears.length) assert(!run.note6.includes('그 이후 큰 변곡점'),'basic NOTE6 invented teaser without a real pivot: '+run.id);
-    if(pivotYears.length) assert(run.note6Meta.longTermPivotYears?.every(y=>pivotYears.includes(y)),'NOTE6 meta teaser not sourced from timing.longTermPivots: '+run.id);
-    assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관)/.test(run.note6),'basic NOTE6 leaked internal jargon: '+run.id+' '+run.note6);
+    if(!pivotYears.length) assert(!(run.timingMeta.longTermPivotYears||[]).length,'basic timing answer invented teaser without a real pivot: '+run.id);
+    if(pivotYears.length) assert(run.timingAnswerMeta.longTermPivotYears?.every(y=>pivotYears.includes(y)),'NOTE6 meta teaser not sourced from timing.longTermPivots: '+run.id);
+    assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관|압박|구조)/.test(run.timingAnswer),'basic timing answer leaked internal jargon: '+run.id+' '+run.timingAnswer);
   }
 
   assert(r.products.full.sections===12&&r.products.full.contract==='full_saju','full_saju 12-section whole-chart report missing');
@@ -189,7 +189,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   const fullYears=[...new Set((r.products.full.text.match(/20\d{2}년/g)||[]))];
   assert(fullYears.length>=5,'full_saju must expose five annual flow rows, got '+JSON.stringify(fullYears));
 
-  assert(r.products.bundle.articles===18&&r.products.bundle.exclusive,'bundle3 must provide three full six-NOTE concern analyses + common structure');
+  assert(r.products.bundle.articles===15&&r.products.bundle.exclusive,'bundle3 must provide three full five-answer concern analyses + common synthesis');
   assert(r.products.bundle.fullSections===0,'bundle3 leaked full_saju whole-chart chapters');
   assert(!r.products.bundle.text.includes('앞으로 5년 큰 흐름'),'bundle3 leaked full five-year roadmap');
 
@@ -198,7 +198,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   assert(r.products.compat.aFp&&r.products.compat.bFp&&r.products.compat.aFp!==r.products.compat.bFp&&r.products.compat.overlayFp,'compatibility does not prove two distinct charts + overlay');
   assert(!r.products.full.text.includes('둘이 같이 있을 때의 시기 흐름')&&!r.products.all.text.includes('둘이 같이 있을 때의 시기 흐름'),'one-person products leaked pair-specific result');
 
-  assert(r.products.all.articles===36&&r.products.all.fullSections===12&&r.products.all.exclusive,'all_in_one must include whole chart + six concerns + synthesis');
+  assert(r.products.all.articles===30&&r.products.all.fullSections===12&&r.products.all.exclusive,'all_in_one must include whole chart + six five-answer concerns + synthesis');
   assert(r.products.all.compatTiming===0&&r.products.all.compatExclusive===0,'all_in_one swallowed compatibility');
   assert(r.products.all.text.includes('두 사람 궁합은 포함하지 않아'),'all_in_one boundary not explicit');
 
@@ -217,7 +217,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     fiveCharts:r.runs.map(x=>({id:x.id,concern:x.concern,near:x.nearCount,publicYears:x.fullPublicYears.length,internalYears:x.fullInternalYears.length,pivots:x.pivots})),
     concernInvariant:r.concernInvariant.map(x=>({concern:x.concern,fp:x.fp})),
   }));
-  console.log('BASIC_NOTE6_SAMPLE',JSON.stringify(r.samples.basicNote6));
+  console.log('BASIC_TIMING_SAMPLE',JSON.stringify(r.samples.basicTiming));
   console.log('FULL_SAJU_TIMELINE_SAMPLE',JSON.stringify({near:r.samples.fullNear,long:r.samples.fullSaju}));
   console.log('PRODUCT_EXCLUSIVE_SAMPLES',JSON.stringify({bundle:r.samples.bundleExclusive,compat:r.samples.compatExclusive,all:r.samples.allExclusive}));
   console.log('PRODUCT_CONTRACT_SAMPLE',JSON.stringify(r.contracts));
