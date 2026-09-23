@@ -131,7 +131,7 @@ async function enter(page, mode, concern, situation) {
   if (mode==='T') assert(
     firstState.sisterText.includes('좋아. 필요한 것만 적어줘.') &&
     firstState.sisterText.includes('네 사주에서 원인부터 바로 짚어볼게.') &&
-    firstState.concernPrompt==='지금 제일 궁금한 건?' &&
+    firstState.concernPrompt==='지금 딱 궁금한 건 뭐야?' &&
     !firstState.sisterText.includes('ㅎㅎ'),
     'T input lost concise counselor voice '+JSON.stringify(firstState)
   );
