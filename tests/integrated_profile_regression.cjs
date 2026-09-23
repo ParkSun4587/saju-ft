@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 
 function assert(cond, msg) { if (!cond) throw new Error(msg); }
 function plain(v) {
-  return String(v || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return String(v || '').replace(/<br\s*\/?\s*>/gi, ' ').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 }
 function norm(v) {
   return plain(v).replace(/[\s.,!?·‘’'"“”()\[\]]/g, '');
