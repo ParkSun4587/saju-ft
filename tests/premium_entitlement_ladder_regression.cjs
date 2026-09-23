@@ -160,6 +160,25 @@ function loadServer(){
   assert(blockedBundleFromAll.status===409&&!blockedBundleFromAll.json.ok,'all_in_one owner can repurchase included concern bundle');
   const compatAfterAll=await call({action:'prepare',data:{...base,p:'compatibility',x:{partner:{n:'다른상대',b:'20010101',t:'unknown',g:'male',c:'solar',l:false}}},entitlementTokens:[all]});
   assert(compatAfterAll.status===200&&compatAfterAll.json.amount===100,'all_in_one incorrectly entitles or discounts compatibility');
+  const sameCompatAgain=await call({
+    action:'prepare',
+    data:{...base,p:'compatibility',x:{partner:{n:'이름변경',b:'19990511',t:'12:00',g:'female',c:'solar',l:false}}},
+    entitlementTokens:[compat],
+  });
+  assert(
+    sameCompatAgain.status===409&&!sameCompatAgain.json.ok,
+    'same compatibility pair could be charged again after nickname change '+JSON.stringify(sameCompatAgain)
+  );
+  const differentCompat=await call({
+    action:'prepare',
+    data:{...base,p:'compatibility',x:{partner:{n:'다른상대',b:'20010101',t:'unknown',g:'male',c:'solar',l:false}}},
+    entitlementTokens:[compat],
+  });
+  assert(
+    differentCompat.status===200&&differentCompat.json.amount===100,
+    'existing compatibility purchase blocked a different partner '+JSON.stringify(differentCompat)
+  );
+
 
   const tampered=await call({action:'confirm',paymentKey:'pay_upgrade_bad',orderId:preparedFull.json.orderId,amount:101,userKey:preparedFull.json.userKey,ticket:preparedFull.json.ticket});
   assert(tampered.status===400&&!tampered.json.ok,'tampered return amount was accepted');
@@ -174,7 +193,7 @@ function loadServer(){
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load',timeout:60000});
   await page.waitForFunction(()=>(
     globalThis.__UNNI_PRODUCT_ENTITLEMENTS_V1__?.version==='1.0.0' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version==='2.1.1'
+    globalThis.__UNNI_PRODUCTS_V1__?.version==='2.2.0'
   ),null,{timeout:60000});
 
   const report=await page.evaluate(()=>{
