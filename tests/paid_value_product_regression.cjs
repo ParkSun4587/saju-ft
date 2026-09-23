@@ -1188,6 +1188,13 @@ function norm(v) {
   assert(server.includes('const expectedAmount = Number(order.amount ?? product.amount)') && server.includes('Number(body.amount) !== expectedAmount'), 'server does not reject client amount against signed server quote');
   assert(server.includes('body:JSON.stringify({ paymentKey:body.paymentKey,orderId:order.orderId,amount:expectedAmount })'), 'Toss confirm is not bound to server-quoted amount');
   assert(
+    html.includes('function showPaymentConfirmingHeader()') &&
+    html.includes('bar.textContent = "결제 확인 중..."') &&
+    html.includes('if (isPaymentSuccess) showPaymentConfirmingHeader()') &&
+    html.includes('hidePaymentConfirmingHeader()'),
+    'payment-return top confirmation header missing'
+  );
+  assert(
     premium.includes('async function ensurePremiumPaymentWidgetSDK()') &&
     premium.includes('await ensurePremiumPaymentWidgetSDK()') &&
     html.includes('window.ensurePaymentWidgetSDK = ensurePaymentWidgetSDK'),
