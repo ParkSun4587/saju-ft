@@ -272,10 +272,10 @@
     const st = reasoning?.profile?.strength || {};
     const season = !!st.deukryeong?.active;
     const party = !!st.deukse?.active;
-    if (season && party) return "태어난 계절도 네 힘을 받쳐주고, 다른 자리의 도움도 같이 붙는 편이야";
-    if (season && !party) return "태어난 계절은 네 힘을 받쳐주지만, 다른 자리까지 전부 같은 편은 아니야";
-    if (!season && party) return "태어난 계절 자체가 네 편은 아니지만, 다른 자리에서 그 부담을 보완해주는 힘은 있어";
-    return "태어난 계절도 네 힘을 바로 받쳐주진 않고, 다른 자리의 도움도 넉넉한 편은 아니야";
+    if (season && party) return "태어난 계절의 중심 힘도 네 편이고, 다른 자리에서 보태주는 힘도 같이 붙는 편이야";
+    if (season && !party) return "태어난 계절의 중심 힘은 네 편이지만, 그 밖의 자리까지 전부 같은 방향으로 받쳐주진 않아";
+    if (!season && party) return "태어난 계절의 중심 힘 자체는 네 편이 아니지만, 다른 자리에서 그 부담을 보완해주는 힘은 있어";
+    return "태어난 계절의 중심 힘 자체는 네 편이 아니고, 가까운 뿌리를 빼면 바깥에서 보태주는 힘도 넉넉하진 않아";
   }
 
   function specialGuardUser(reasoning, isT) {
@@ -481,9 +481,12 @@
     const goodRows = helpfulGods.length
       ? helpfulGods.slice(0,2).map(g => `<b>${GOD_USER[g] || g}</b> → ${godSpecificCondition(g,domain,"help") || domain.help[godGroup(g)] || domain.help.unknown}`)
       : needed.slice(0,2).map(g => `<b>${groupText(g).noun}</b> → ${domain.help[g] || domain.help.unknown}`);
+    const pressureGroup = reasoning?.integrated?.pressureGroup || "unknown";
     const badRows = harmfulGods.length
       ? harmfulGods.slice(0,2).map(g => `<b>${GOD_USER[g] || g}</b>이 과해질 때 → ${godSpecificCondition(g,domain,"harm") || domain.harm[godGroup(g)] || domain.harm.unknown}`)
-      : [domain.harm.unknown];
+      : pressureGroup !== "unknown"
+        ? [`<b>${groupText(pressureGroup).pressure}</b>이 과해질 때 → ${domain.harm[pressureGroup] || domain.harm.unknown}`]
+        : [domain.harm.unknown];
     if (!goodRows.length) goodRows.push(domain.help.unknown);
     const state = reasoning?.integrated?.zipingState;
     const stateLine = state === "rescued"
