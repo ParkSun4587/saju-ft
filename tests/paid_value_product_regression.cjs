@@ -142,7 +142,7 @@ function norm(v) {
   assert(qa.productVersion.version === '2.1.0' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
-  const expectedPrices = { concern_bundle3:2900, full_saju:4900, compatibility:5900, all_in_one:9900 };
+  const expectedPrices = { concern_bundle3:100, full_saju:100, compatibility:100, all_in_one:100 };
   for (const [id, price] of Object.entries(expectedPrices)) assert(qa.products[id]?.price === price, `${id} price drift`);
   assert(qa.products.concern_bundle3.badge === '다른 고민 3개 확장' && qa.products.concern_bundle3.desc.includes('공통 구조'), 'bundle3 unique-value copy missing');
   assert(qa.products.full_saju.badge === '전체 구조 + 5년 흐름' && qa.products.full_saju.desc.includes('향후 5년'), 'full-saju long-horizon value copy missing');
@@ -255,7 +255,7 @@ function norm(v) {
           verifiedPurchases:[],
           effectiveEntitlements:[],
           allInOneQuote:{
-            targetProduct:'all_in_one',baseAmount:9900,creditAmount:0,amount:9900,
+            targetProduct:'all_in_one',baseAmount:100,creditAmount:0,amount:100,
             alreadyOwned:false,creditedProducts:[],
           },
         };
@@ -435,8 +435,8 @@ function norm(v) {
     assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
     assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-    assert(ui.fPaywallText.includes('로아 언니 · 여기서 하나만 더 보자') && ui.fPaywallText.includes('무엇부터 덜어야') && ui.fPaywallText.includes('언니, 그것도 봐줘') && ui.fPaywallText.includes('990원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
-    assert(ui.tPaywallText.includes('서아 언니 · 마지막 기준만 보면 돼') && ui.tPaywallText.includes('부하 제거') && ui.tPaywallText.includes('응, 끝까지 봐줘') && ui.tPaywallText.includes('990원'), `T conversion paywall sister header should be restored: ${ui.tPaywallText}`);
+    assert(ui.fPaywallText.includes('로아 언니 · 여기서 하나만 더 보자') && ui.fPaywallText.includes('무엇부터 덜어야') && ui.fPaywallText.includes('언니, 그것도 봐줘') && ui.fPaywallText.includes('100원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
+    assert(ui.tPaywallText.includes('서아 언니 · 마지막 기준만 보면 돼') && ui.tPaywallText.includes('부하 제거') && ui.tPaywallText.includes('응, 끝까지 봐줘') && ui.tPaywallText.includes('100원'), `T conversion paywall sister header should be restored: ${ui.tPaywallText}`);
     assert(ui.tPaywallSisterSub==='번아웃 같다고 느낄 때, 이제 행동 기준만 보면 돼', `T burnout uncertainty drift: ${ui.tPaywallSisterSub}`);
     assert(ui.tPaywallPriceTitle==='지금 컨디션·과부하 회복 기준 끝까지 정리하기' && !ui.tPaywallText.includes('번아웃 회복 기준'), `T burnout paywall must not hard-diagnose: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
@@ -665,7 +665,7 @@ function norm(v) {
   assert(
     sourceFreeLaunch
       ? initialActionText.includes('무료 이벤트')
-      : initialActionText.includes('내 전체 사주판 보기 · 4,900원'),
+      : initialActionText.includes('내 전체 사주판 보기 · 100원'),
     `free/paid toggle UI mismatch: sourceFreeLaunch=${sourceFreeLaunch}, action=${initialActionText}`
   );
 
@@ -682,7 +682,7 @@ function norm(v) {
           verifiedPurchases:[],
           effectiveEntitlements:[],
           allInOneQuote:{
-            targetProduct:'all_in_one',baseAmount:9900,creditAmount:0,amount:9900,
+            targetProduct:'all_in_one',baseAmount:100,creditAmount:0,amount:100,
             alreadyOwned:false,creditedProducts:[],
           },
         };
@@ -697,7 +697,7 @@ function norm(v) {
   const oppositeActionText = await page.locator('#unniProductAction').innerText();
   assert(
     sourceFreeLaunch
-      ? oppositeActionText.includes('내 전체 사주판 보기 · 4,900원')
+      ? oppositeActionText.includes('내 전체 사주판 보기 · 100원')
       : oppositeActionText.includes('무료 이벤트'),
     `opposite free/paid toggle UI mismatch: sourceFreeLaunch=${sourceFreeLaunch}, action=${oppositeActionText}`
   );
@@ -719,7 +719,7 @@ function norm(v) {
           verifiedPurchases:[],
           effectiveEntitlements:[],
           allInOneQuote:{
-            targetProduct:'all_in_one',baseAmount:9900,creditAmount:0,amount:9900,
+            targetProduct:'all_in_one',baseAmount:100,creditAmount:0,amount:100,
             alreadyOwned:false,creditedProducts:[],
           },
         };
@@ -728,8 +728,8 @@ function norm(v) {
         return {
           ok:true,
           productId:body.data?.p,
-          baseAmount:4900,
-          amount:4900,
+          baseAmount:100,
+          amount:100,
           orderId:'SAJU2_PREMIUM_RELOAD_TEST',
           ticket:'premium-reload-test-ticket',
         };
@@ -908,7 +908,7 @@ function norm(v) {
   const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.0'), 'paid value script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
-  assert(html.includes('./product-entitlements-v1.js?v=1.0.0') && html.includes('./premium-products-v1.js?v=2.1.1'), 'entitlement/product script include missing');
+  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.1.2'), 'entitlement/product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(!paid.includes('__paidValueWrapped') && !paid.includes('global.generateConcernNotes = wrapped'), 'stale paid-value NOTE rewrite wrapper returned');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('concern-note-engine-v2.js'),'paid/note script order wrong');
@@ -1179,10 +1179,10 @@ function norm(v) {
   }
 
   const server = fs.readFileSync('functions/api/confirm-payment.js','utf8');
-  for (const [id, price] of Object.entries({concern_single:990, ...expectedPrices})) {
+  for (const [id, price] of Object.entries({concern_single:100, ...expectedPrices})) {
     assert(server.includes(`${id}: { amount: ${price}`), `server product price missing ${id}/${price}`);
   }
-  assert(server.includes('all_in_one: { amount: 9900, name: "어떤언니 내 사주 완전판" }'), 'Toss all-in-one order name is stale');
+  assert(server.includes('all_in_one: { amount: 100, name: "어떤언니 내 사주 완전판" }'), 'Toss all-in-one order name is stale');
   assert(!server.includes('어떤언니 올인원'), 'old all-in-one order name remains in Toss server');
   assert(server.includes('const product = productFor(order.data);'), 'server does not resolve signed product price');
   assert(server.includes('const expectedAmount = Number(order.amount ?? product.amount)') && server.includes('Number(body.amount) !== expectedAmount'), 'server does not reject client amount against signed server quote');
