@@ -1548,6 +1548,41 @@
     prewarmPaidExport(root, productId);
   }
 
+  async function ensurePremiumPaymentWidgetSDK() {
+    if (typeof global.PaymentWidget === "function") return global.PaymentWidget;
+
+    // 기본 NOTE 결제 경로가 제공하는 로더가 있으면 같은 로더/Promise를 공유한다.
+    if (typeof global.ensurePaymentWidgetSDK === "function") {
+      try {
+        const loaded = await global.ensurePaymentWidgetSDK();
+        if (typeof global.PaymentWidget === "function") return global.PaymentWidget;
+        if (typeof loaded === "function") return loaded;
+      } catch (_) {}
+    }
+
+    // 결제 복귀/새로고침 뒤에는 SDK 전역이 사라질 수 있으므로 추가상품 경로도 독립적으로 복구한다.
+    if (!global.__paymentWidgetLoading) {
+      global.__paymentWidgetLoading = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://js.tosspayments.com/v1/payment-widget";
+        script.async = true;
+        script.onload = () =>
+          typeof global.PaymentWidget === "function"
+            ? resolve(global.PaymentWidget)
+            : reject(new Error("PAYMENT_WIDGET_MISSING"));
+        script.onerror = () => reject(new Error("PAYMENT_WIDGET_LOAD_FAILED"));
+        document.head.appendChild(script);
+      }).finally(() => {
+        global.__paymentWidgetLoading = null;
+      });
+    }
+
+    const loaded = await global.__paymentWidgetLoading;
+    if (typeof global.PaymentWidget !== "function" && typeof loaded !== "function")
+      throw new Error("PAYMENT_WIDGET_MISSING");
+    return typeof global.PaymentWidget === "function" ? global.PaymentWidget : loaded;
+  }
+
   async function beginPaidCheckout(productId, data, extra, root, verifiedState) {
     applyProductModalVoice(root, data);
     if (typeof paymentAPI !== "function" || typeof resultSnapshot !== "function")
@@ -1573,11 +1608,15 @@
         T: "구매 상태가 갱신됐어. 재결제하지 말고 상품을 다시 열어 최종 업그레이드 금액을 확인해줘.",
       }));
     }
-    if (typeof PaymentWidget === "undefined")
+    let PaymentWidgetCtor;
+    try {
+      PaymentWidgetCtor = await ensurePremiumPaymentWidgetSDK();
+    } catch (_) {
       throw new Error(productVoice(data, {
-        F: "결제창을 불러오지 못했어. 지금 내용은 그대로 있으니까 새로고침하고 다시 해보자.",
-        T: "결제창을 불러오지 못했어. 새로고침한 뒤 다시 해줘.",
+        F: "결제창을 불러오지 못했어. 지금 내용은 그대로니까 네트워크를 확인하고 한 번만 다시 눌러줘.",
+        T: "결제창을 불러오지 못했어. 네트워크 확인 후 다시 눌러줘.",
       }));
+    }
     root.querySelector("#unniProductPrice").textContent = productId === "all_in_one" && Number(order.amount) < product.price
       ? `${won(product.price)} → ${won(order.amount)}`
       : won(order.amount);
@@ -1586,7 +1625,7 @@
     if (paymentAmount) paymentAmount.textContent = `최종 ${won(order.amount)}`;
     root.querySelector("#unniProductPaymentMethod").innerHTML = "";
     root.querySelector("#unniProductPaymentAgreement").innerHTML = "";
-    const widget = PaymentWidget(TOSS_CLIENT_KEY, PaymentWidget.ANONYMOUS);
+    const widget = PaymentWidgetCtor(TOSS_CLIENT_KEY, PaymentWidgetCtor.ANONYMOUS);
     widget.renderPaymentMethods("#unniProductPaymentMethod", { value:order.amount, currency:"KRW" }, { variantKey:"saju" });
     widget.renderAgreement("#unniProductPaymentAgreement");
     const action = root.querySelector("#unniProductAction");
