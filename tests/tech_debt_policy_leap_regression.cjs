@@ -15,7 +15,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     globalThis.__CLASSICAL_REASONING_V1__?.version==='1.2.0' &&
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='3.2.1' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version==='2.1.1'
+    globalThis.__UNNI_PRODUCTS_V1__?.version==='2.1.2'
   ),null,{timeout:60000});
 
   const source=fs.readFileSync('index.html','utf8');
