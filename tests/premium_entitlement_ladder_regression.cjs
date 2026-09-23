@@ -161,6 +161,13 @@ function loadServer(){
   const compatAfterAll=await call({action:'prepare',data:{...base,p:'compatibility',x:{partner:{n:'다른상대',b:'20010101',t:'unknown',g:'male',c:'solar',l:false}}},entitlementTokens:[all]});
   assert(compatAfterAll.status===200&&compatAfterAll.json.amount===100,'all_in_one incorrectly entitles or discounts compatibility');
 
+  const sameCompat=await call({action:'prepare',data:{...base,p:'compatibility',x:{partner:{n:'상대',b:'19990511',t:'12:00',g:'female',c:'solar',l:false}}},entitlementTokens:[compat]});
+  assert(sameCompat.status===409&&!sameCompat.json.ok,'same compatibility pair can be repurchased');
+  const aliasSameCompat=await call({action:'prepare',data:{...base,p:'compatibility',x:{partner:{n:'별명만변경',b:'19990511',t:'12:00',g:'female',c:'solar',l:false}}},entitlementTokens:[compat]});
+  assert(aliasSameCompat.status===409&&!aliasSameCompat.json.ok,'same compatibility pair bypassed duplicate protection by changing name');
+  const differentCompat=await call({action:'prepare',data:{...base,p:'compatibility',x:{partner:{n:'새상대',b:'20010101',t:'unknown',g:'male',c:'solar',l:false}}},entitlementTokens:[compat]});
+  assert(differentCompat.status===200&&differentCompat.json.amount===100,'different compatibility partner is incorrectly blocked by an older purchase');
+
   const tampered=await call({action:'confirm',paymentKey:'pay_upgrade_bad',orderId:preparedFull.json.orderId,amount:101,userKey:preparedFull.json.userKey,ticket:preparedFull.json.ticket});
   assert(tampered.status===400&&!tampered.json.ok,'tampered return amount was accepted');
 
@@ -174,7 +181,7 @@ function loadServer(){
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load',timeout:60000});
   await page.waitForFunction(()=>(
     globalThis.__UNNI_PRODUCT_ENTITLEMENTS_V1__?.version==='1.0.0' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version==='2.1.1'
+    globalThis.__UNNI_PRODUCTS_V1__?.version==='2.1.2'
   ),null,{timeout:60000});
 
   const report=await page.evaluate(()=>{
@@ -281,7 +288,9 @@ function loadServer(){
     serverSrc.includes('Number(body.amount) !== expectedAmount') &&
     premiumSrc.includes('verifyAccessToken(directStoredGrant.userKey,directStoredGrant.token,productId)') &&
     serverSrc.includes('expectedProductId') &&
-    serverSrc.includes('grant.productId === expectedProductId'),
+    serverSrc.includes('grant.productId === expectedProductId') &&
+    serverSrc.includes('compatibilityIdentity(data)') &&
+    serverSrc.includes('compatibilityIdentityFromUserKey'),
     'checkout/server amount or product-bound grant binding missing'
   );
 
