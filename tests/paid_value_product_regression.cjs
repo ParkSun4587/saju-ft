@@ -835,6 +835,7 @@ function norm(v) {
   await page.locator('#unniProductClose').click();
 
   const html = fs.readFileSync('index.html','utf8');
+  const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.0'), 'paid value script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.0') && html.includes('./premium-products-v1.js?v=2.1.0'), 'entitlement/product script include missing');
