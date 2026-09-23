@@ -4582,7 +4582,7 @@
             if (senderTitle) senderTitle.textContent = "로아 언니";
             if (sisterText) {
               sisterText.innerHTML =
-                "응, 왔구나. 편하게 얘기해줘.<br>네 사주 보면서 왜 마음에 걸리는지 같이 풀어볼게.";
+                "응, 편하게 적어줘.";
             }
           } else {
             if (concernPickerPrompt)
@@ -4596,7 +4596,7 @@
             if (senderTitle) senderTitle.textContent = "서아 언니";
             if (sisterText) {
               sisterText.innerHTML =
-                "좋아. 필요한 것만 적어줘.<br>네 사주에서 원인부터 바로 짚어볼게.";
+                "좋아. 필요한 것만 적어줘.";
             }
           }
 
@@ -4605,7 +4605,7 @@
             nextButtonContainer.style.display = "block";
             nextButtonContainer.innerHTML = `
                         <button id="analysisSubmitButton" data-consult-mode="${mode}" type="button" disabled aria-disabled="true" onclick="startAnalysis('${mode}')" style="opacity:.48;cursor:default" class="w-full py-3.5 active:scale-[0.98] text-white font-extrabold text-[13px] rounded-2xl transition-all flex items-center justify-center gap-1.5">
-                            <span>${mode === "F" ? "로아 언니, 같이 봐줘" : "서아 언니, 핵심만 봐줘"}</span>
+                            <span>${mode === "F" ? "응, 이대로 봐줘" : "좋아, 바로 봐줘"}</span>
                         </button>
                     `;
           }
