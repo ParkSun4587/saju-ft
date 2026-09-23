@@ -1997,6 +1997,10 @@
     }
 
     const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
+    if (!unlocked && !isFreeLaunch && collectStoredPremiumGrants().length === 0) {
+      existing?.remove();
+      return;
+    }
     const state = isFreeLaunch ? { verifiedPurchases:[], effectiveEntitlements:[], allInOneQuote:null } : cachedEntitlements(data);
     if (!isFreeLaunch && !state) {
       if (!entitlementPromise) {
