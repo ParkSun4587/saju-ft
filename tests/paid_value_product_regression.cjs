@@ -20,8 +20,8 @@ function norm(v) {
   page.on('console', m => { if (m.type() === 'error') errors.push(`[console] ${m.text()}`); });
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
-    globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.2.1' &&
+    globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '4.0.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '2.2.0' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.1.0' &&
     typeof generateConcernNotes === 'function' &&
@@ -137,8 +137,8 @@ function norm(v) {
     };
   });
 
-  assert(qa.paidVersion.version === '1.5.0', 'paid value layer missing');
-  assert(qa.noteVersion.version === '3.2.1', 'NOTE v3 engine missing');
+  assert(qa.paidVersion.version === '1.5.1', 'paid value layer missing');
+  assert(qa.noteVersion.version === '4.0.0', 'NOTE v3 engine missing');
   assert(qa.productVersion.version === '2.2.0' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
@@ -158,7 +158,7 @@ function norm(v) {
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
     assert(row.notes.length === 6, `${row.concern}/${row.situation}/${row.mode}: note count ${row.notes.length}`);
-    assert(row.noteAudit?.version === '3.2.1' && row.noteAudit?.structureFingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v3 audit missing`);
+    assert(row.noteAudit?.version === '4.0.0' && row.noteAudit?.structureFingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v3 audit missing`);
     assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
     assert(Array.isArray(row.noteAudit?.claims) && row.noteAudit.claims.length === 6, `${row.concern}/${row.situation}/${row.mode}: six causal claims missing`);
     for (const claim of row.noteAudit.claims) {
@@ -1034,7 +1034,7 @@ function norm(v) {
 
   const html = fs.readFileSync('index.html','utf8');
   const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
-  assert(html.includes('./paid-value-layer-v1.js?v=1.5.0'), 'paid value script include missing');
+  assert(html.includes('./paid-value-layer-v1.js?v=1.5.1'), 'paid value script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.2.0'), 'entitlement/product script include missing');
   assert(
