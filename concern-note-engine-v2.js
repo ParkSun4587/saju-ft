@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "3.2.1";
+  const VERSION = "4.0.0";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   function hasBatchim(value) {
@@ -663,25 +663,287 @@
     };
   }
 
-  function badgeFor(concern, idx) {
-    const rows={
-      money:["돈의 핵심","돈 패턴","진짜 원인","바꿀 순서","돈이 남는 구조","돈 흐름"],
-      career:["일의 핵심","막히는 패턴","진짜 원인","바꿀 순서","맞는 일 환경","기회 시기"],
-      love:["연애 핵심","반복 패턴","진짜 원인","바꿀 순서","맞는 사람","관계 시기"],
-      path:["진로 핵심","고민 패턴","진짜 원인","바꿀 순서","맞는 일 방식","움직일 시기"],
-      people:["관계 핵심","반복 패턴","진짜 원인","바꿀 순서","남길 사람","관계 시기"],
-      mental:["마음 핵심","지치는 패턴","진짜 원인","이번 주 행동","회복 환경","회복 시기"],
-    };
-    return rows[concern]?.[idx] || "비밀 메모";
+  const CONCERN_GROUP_LINES = {
+    money:{
+      self:"돈 문제에서도 남 기준보다 네 방식대로 해결하려는 힘이 먼저 나와. 그래서 한 번 정한 소비·가격 기준을 바꾸는 타이밍이 늦어질 수 있어",
+      print:"돈이 불안해지면 바로 움직이기보다 더 알아보고 준비하려는 쪽으로 가기 쉬워. 그래서 결정이 늦어질 수 있어",
+      output:"아이디어나 하고 싶은 건 빨리 생기는데, 실제 가격·수입 기준을 붙이는 건 뒤로 갈 수 있어",
+      wealth:"돈이나 기회가 보이면 현실 계산이 빨리 돌아가는 편이야. 대신 여러 가능성을 한꺼번에 잡으면 새는 곳도 같이 늘 수 있어",
+      officer:"돈 문제에서도 안정과 책임을 먼저 챙기는 편이야. 그래서 보상 요구나 조건 변경을 늦출 수 있어",
+      unknown:"돈 문제는 한 가지 이유보다 수입·지출·조건이 같이 움직여. 그래서 실제로 돈이 남는 장면을 기준으로 보는 게 맞아",
+    },
+    career:{
+      self:"일에서는 네가 맡은 건 네가 끝내려는 힘이 강해. 그래서 도움을 청하거나 조건을 다시 말하는 시점이 늦어질 수 있어",
+      print:"준비가 덜 됐다고 느끼면 실행보다 공부·검토를 더 늘리는 쪽으로 가기 쉬워",
+      output:"결과를 만들고 보여주는 힘은 빠른 편이지만, 평가 기준과 어긋나면 한 만큼 인정받지 못했다고 느끼기 쉬워",
+      wealth:"성과와 보상이 연결되는지 빨리 보는 편이야. 대신 기회가 여러 개 보이면 한쪽에 집중하기 어려워질 수 있어",
+      officer:"책임·평가를 먼저 감당하려는 편이야. 그래서 일은 늘어나는데 네 요구는 뒤로 밀릴 수 있어",
+      unknown:"일에서는 능력 하나보다 역할·평가·보상이 같이 맞아야 오래 편해져",
+    },
+    love:{
+      self:"연애에서도 네 기준이 중요한 편이야. 마음이 생겨도 상대에게 전부 맞추기보다 내 선을 지키려는 쪽이 먼저 나와",
+      print:"상대의 말과 행동을 그냥 넘기기보다 속뜻을 오래 생각하는 편이야. 애매한 반응이 길어질수록 혼자 해석하는 시간이 늘 수 있어",
+      output:"마음이 움직이면 표현과 반응이 비교적 빠른 편이야. 그래서 상대 반응이 늦으면 온도 차이를 더 크게 느낄 수 있어",
+      wealth:"좋아하면 시간·배려·에너지를 실제 행동으로 많이 쓰는 편이야. 문제는 주고받는 양이 기울 때도 네가 조금 더 쓰기 쉽다는 거야",
+      officer:"관계를 망치고 싶지 않아서 약속이나 상대 기대를 먼저 맞추려는 편이야. 서운함을 바로 말하지 않으면 뒤에서 더 크게 쌓일 수 있어",
+      unknown:"연애에서는 감정 하나보다 상대가 실제로 어떻게 행동하는지를 같이 봐야 네 판단이 선명해져",
+    },
+    path:{
+      self:"진로는 남들이 좋다는 답보다 네가 납득해야 움직이는 편이야. 한번 마음먹으면 오래 밀지만, 방향을 바꾸는 데 시간이 걸릴 수 있어",
+      print:"진로가 불안하면 직접 해보기보다 정보를 더 찾고 준비하려는 쪽으로 가기 쉬워",
+      output:"생각만 할 때보다 직접 만들고 보여볼 때 적성이 더 빨리 드러나는 편이야",
+      wealth:"진로에서도 현실성·수입·기회를 빨리 보는 편이야. 대신 조건이 좋은 선택지가 여러 개면 마음이 분산될 수 있어",
+      officer:"안전한 길이나 정답처럼 보이는 기준을 먼저 의식하는 편이야. 그래서 네가 진짜 원하는 방향을 뒤로 미룰 수 있어",
+      unknown:"진로는 생각만으로 맞는 답을 고르기보다 직접 해본 반응을 쌓아야 선명해져",
+    },
+    people:{
+      self:"관계에서도 네 선은 분명한 편이지만, 한번 내 사람이라고 생각하면 생각보다 오래 참을 수 있어",
+      print:"상대가 왜 그랬는지 이유를 많이 생각하는 편이야. 이해하려다 네 불편함을 뒤로 미룰 수 있어",
+      output:"불편함을 말로 풀 수 있을 때는 관계 회복이 빠른 편이야. 반대로 말을 막는 관계에서는 소모가 확 커져",
+      wealth:"사람에게 시간·도움·배려를 실제로 많이 쓰는 편이야. 주고받는 몫이 기울면 네 쪽 피로가 빨리 쌓여",
+      officer:"예의·책임·관계 유지 역할을 많이 의식하는 편이야. 그래서 상대 잘못까지 네가 정리하려 들 수 있어",
+      unknown:"사람 문제는 호감보다 선을 말했을 때 상대가 어떻게 반응하는지를 보는 게 더 정확해",
+    },
+    mental:{
+      self:"힘들어도 일단 버티는 쪽이라 쉬어야 할 때를 늦게 알아차릴 수 있어",
+      print:"피곤할수록 생각과 검토가 더 많아질 수 있어. 몸은 쉬는데 머리는 계속 일하는 식으로 남기 쉬워",
+      output:"답답한 걸 말·글·움직임으로 빼낼 통로가 있을 때 훨씬 낫고, 안으로만 쌓이면 피로가 빨리 커져",
+      wealth:"시간·일정·돈처럼 현실 변수가 흔들리면 마음도 같이 바빠지는 편이야. 한꺼번에 챙길 게 많을수록 소모가 커져",
+      officer:"해야 한다는 기준이 강한 편이라 지쳐도 할 일을 먼저 챙길 수 있어. 그래서 회복을 자꾸 뒤로 미루기 쉬워",
+      unknown:"지금은 이유를 하나로 단정하기보다 무엇을 줄였을 때 실제로 덜 지치는지 확인하는 게 먼저야",
+    },
+  };
+
+  const SCENE_TITLES = {
+    money:{
+      saving:"돈이 새기 시작하는 순간",income:"보상 못 받는 장면이 시작되는 순간",side:"부업이 준비에서 멈추는 순간",flow:"돈 기회를 놓치기 쉬운 순간",
+    },
+    career:{
+      exam:"점수가 흔들리기 시작하는 순간",jobsearch:"지원보다 준비만 늘어나는 순간",move:"퇴사 생각만 커지는 순간",current:"일은 느는데 인정은 안 따라오는 순간",
+    },
+    love:{
+      crush:"썸에서 혼자 더 지치는 순간",relationship:"서운함이 쌓이기 시작하는 순간",breakup:"재회 생각이 다시 커지는 순간",new:"새 인연을 원해도 만남이 안 늘어나는 순간",
+    },
+    path:{
+      lost:"생각만 많아지고 시작은 늦어지는 순간",current:"지금 길 전체가 틀린 것처럼 느껴지는 순간",switch:"새 분야가 무조건 좋아 보이는 순간",strength:"이미 잘하는 걸 놓치는 순간",
+    },
+    people:{
+      friend:"친구 때문에 혼자 곱씹기 시작하는 순간",work:"직장 사람 문제까지 네가 떠안는 순간",family:"가족과 같은 싸움이 다시 시작되는 순간",distance:"끊을지 참을지만 반복해서 고민하는 순간",
+    },
+    mental:{
+      burnout:"지쳤는데도 더 밀어붙이는 순간",overthink:"생각만 돌고 결론은 안 나는 순간",low:"아무것도 못 하겠다는 느낌이 커지는 순간",recover:"잠깐 나아졌다 다시 무너지는 순간",
+    },
+  };
+
+  const DECISION_CRITERIA = {
+    money:{
+      saving:"한 달 반복했을 때 통장에 실제로 남는 돈이 늘었는지만 봐",
+      income:"일이 늘었는데 보상·단가·연봉이 그대로면 좋은 조건이 아니야",
+      side:"좋다는 말보다 실제로 돈을 낸 사람이 생기는지 봐",
+      flow:"좋은 시기라는 말보다 그때 수입·지출 행동을 실제로 바꿀 수 있는지 봐",
+    },
+    career:{
+      exam:"공부시간보다 같은 유형의 실전 점수가 오르는지 봐",
+      jobsearch:"준비량보다 지원 뒤 면접·연락 반응이 늘어나는지 봐",
+      move:"다음 직장 필수조건 세 개 중 적어도 두 개가 실제로 맞는지 봐",
+      current:"책임이 늘 때 역할·평가·보상 중 하나라도 같이 움직이는지 봐",
+    },
+    love:{
+      crush:"호감 표현보다 실제 약속을 잡고 지키는지 봐",
+      relationship:"불편한 얘기를 꺼냈을 때 상대가 같이 조정하려는지 봐",
+      breakup:"그리움보다 헤어진 핵심 이유가 실제로 달라졌는지 봐",
+      new:"첫 텐션보다 두세 번 만났을 때도 말과 행동이 같은지 봐",
+    },
+    path:{
+      lost:"직접 해본 뒤에도 다시 해보고 싶은 마음이 남는지 봐",
+      current:"최근 몇 달 동안 성장·만족·현실 보상 중 두 가지 이상이 나아지는지 봐",
+      switch:"새 분야의 실제 하루를 경험해본 뒤에도 옮기고 싶은지 봐",
+      strength:"잘하는 것뿐 아니라 반복해도 남들보다 덜 지치는지 봐",
+    },
+    people:{
+      friend:"선을 말했을 때 웃어넘기지 않고 실제 행동을 바꾸는지 봐",
+      work:"업무 경계를 말한 뒤 역할·연락 방식이 실제로 바뀌는지 봐",
+      family:"선을 말했을 때 죄책감만 주는지, 서로 조정할 여지를 보이는지 봐",
+      distance:"거리를 조금 줄였을 때 오히려 네 마음과 생활이 편해지는지 봐",
+    },
+    mental:{
+      burnout:"할 일 하나를 덜었을 때 수면·피로가 실제로 나아지는지 봐",
+      overthink:"생각한 시간보다 실제 결정이나 행동 하나가 생기는지 봐",
+      low:"큰 성과보다 기상·식사·걷기 중 하나가 일주일 유지되는지 봐",
+      recover:"한 번 몰아서가 아니라 일주일 반복해도 무리가 없는지 봐",
+    },
+  };
+
+  function situationProfile(s) {
+    return global.__PAID_VALUE_LAYER_V1__?.situationProfiles?.[s.concern]?.[s.key] || null;
   }
 
-  function titleFor(s, idx, isT) {
-    if (idx === 0) return isT ? `${s.label} — 사주 전체에서 먼저 볼 건 이거야` : `${s.label} — 언니는 네 사주 전체부터 볼래`;
-    if (idx === 1) return isT ? "결과보다 이 순서부터 끊어" : "반복되는 순서가 여기서 시작돼";
-    if (idx === 2) return isT ? "원인은 성격 한 줄로 설명 안 돼" : "왜 자꾸 이렇게 되는지 뿌리부터 볼게";
-    if (idx === 3) return isT ? "바꿀 건 하나가 아니라 순서야" : "이제 뭘 먼저 바꿀지 같이 보자";
-    if (idx === 4) return isT ? "잘 맞는 조건과 피할 조건을 나눠" : "너를 살리는 사람·환경은 조건이 달라";
-    return isT ? "사주는 같아도, 움직일 시기는 따로 봐" : "같은 너라도 힘이 붙는 시기는 따로 있어";
+  function plainSentence(value) {
+    const text=stripHtml(value).replace(/[.!?]+$/,"");
+    return text ? text+"." : "";
+  }
+
+  function pressureGroupLine(reasoning,s) {
+    const group=reasoning?.integrated?.pressureGroup || "unknown";
+    return CONCERN_GROUP_LINES[s.concern]?.[group] || CONCERN_GROUP_LINES[s.concern]?.unknown || "";
+  }
+
+  function wearLine(reasoning) {
+    const strength=reasoning?.integrated?.strength;
+    const root=firstFinding(reasoning,"root")?.facts?.quality || "";
+    if(strength==="신약" && root==="rootless") return "특히 오래 끌면 네 쪽 소모가 빨리 커지는 편이라, 참는 시간을 길게 가져가는 건 불리해.";
+    if(strength==="신약") return "처음엔 버텨도 같은 일이 길어지면 네 쪽 소모가 먼저 쌓이는 편이야.";
+    if(strength==="신강") return "힘들어도 일단 네가 밀어붙이는 쪽이라, 멈추거나 조건을 바꾸는 시점이 늦을 수 있어.";
+    return "한 번의 반응보다 같은 장면이 두세 번 반복되는지를 보는 게 네 경우엔 더 정확해.";
+  }
+
+  function specificFit(reasoning,s) {
+    const domain=DOMAIN[s.concern] || DOMAIN.money;
+    const z=zipingMain(reasoning);
+    const helpful=(z?.supportGods?.length ? z.supportGods : reasoning?.integrated?.helpfulGods) || [];
+    const god=helpful[0];
+    if(god) return godSpecificCondition(god,domain,"help") || domain.help[godGroup(god)] || domain.help.unknown;
+    const group=(reasoning?.integrated?.neededGroups || [])[0];
+    return domain.help[group] || domain.help.unknown;
+  }
+
+  function specificHarm(reasoning,s) {
+    const domain=DOMAIN[s.concern] || DOMAIN.money;
+    const z=zipingMain(reasoning);
+    const harmful=(z?.harmGods?.length ? z.harmGods : reasoning?.integrated?.harmfulGods) || [];
+    const god=harmful[0];
+    if(god) return godSpecificCondition(god,domain,"harm") || domain.harm[godGroup(god)] || domain.harm.unknown;
+    const group=reasoning?.integrated?.pressureGroup || "unknown";
+    return domain.harm[group] || domain.harm.unknown;
+  }
+
+  function noteOneDesc(reasoning,s,p,isT) {
+    const focus=plainSentence(p?.focus || s.cue);
+    const personal=plainSentence(pressureGroupLine(reasoning,s));
+    const assumed=stripHtml(p?.assumed || "");
+    const actual=stripHtml(p?.actual || "");
+    const certainty=reasoning?.integrated?.specialStructureGuarded
+      ? "다만 한쪽 반응이 아주 강하게 잡혀서, 한 문장으로 딱 잘라 말하지 않고 반복해서 확인되는 쪽만 말할게."
+      : "";
+    if(isT){
+      const contrast=assumed&&actual ? `<b>착각하기 쉬운 지점</b> — ${assumed}.<br><b>실제 핵심</b> — ${actual}.` : "";
+      return `${focus}<br><br>${personal}${contrast ? "<br><br>"+contrast : ""}${certainty ? "<br><br>"+certainty : ""}`;
+    }
+    const contrast=assumed&&actual ? `겉으로는 “${assumed}”처럼 느껴질 수 있어. 그런데 실제로는 <b>${actual}</b>.` : "";
+    return `${focus}<br><br>${personal}${contrast ? "<br><br>"+contrast : ""}${certainty ? "<br><br>"+certainty : ""}`;
+  }
+
+  function noteTwoDesc(reasoning,s,p,isT) {
+    const trigger=plainSentence(p?.trigger || s.cue);
+    const reaction=plainSentence(p?.reaction || "");
+    const cost=plainSentence(p?.cost || "");
+    const wear=wearLine(reasoning);
+    if(isT){
+      return `<b>시작</b> — ${trigger}<br><b>그다음</b> — ${reaction}<br><b>결국</b> — ${cost}<br><br>${wear}`;
+    }
+    return `보통 <b>${trigger}</b><br>그러면 ${reaction}<br>결국 ${cost}<br><br>${wear}`;
+  }
+
+  function noteThreeDesc(reasoning,s,p,isT) {
+    const keep=plainSentence(p?.keep || "");
+    const place=plainSentence(p?.place || "");
+    const specific=plainSentence(specificFit(reasoning,s));
+    const a=isT?"잘 맞는 사람·반응":"잘 맞는 쪽";
+    return `<b>${a}</b> — ${keep}<br><br><b>환경</b> — ${place}<br><br><b>네 경우 특히</b> — ${specific}`;
+  }
+
+  function noteFourDesc(reasoning,s,p,isT) {
+    const cut=plainSentence(p?.cut || "");
+    const harm=plainSentence(specificHarm(reasoning,s));
+    const criterion=plainSentence(DECISION_CRITERIA[s.concern]?.[s.key] || "말보다 실제 반응이 달라지는지 봐");
+    return `<b>빨리 거를 신호</b> — ${cut}<br><br><b>네 경우 특히</b> — ${harm}<br><br><b>판단은 이것만</b> — ${criterion}`;
+  }
+
+  function compactTimingReason(row,positive) {
+    const rows=positive ? (row?.layers?.wolun?.supportSignals || []) : (row?.layers?.wolun?.cautionSignals || []);
+    const signal=rows.find(x=>x.severity==="major") || rows.find(x=>x.severity==="support") || rows[0] || null;
+    const code=signal?.code || "";
+    if(positive){
+      if(/generate|rescue|root-add|assist/.test(code)) return "받쳐주는 힘이 붙어서 평소보다 덜 버겁게 움직일 수 있어";
+      if(/bridge|flow-unblock/.test(code)) return "막혀 있던 연결이 풀리기 쉬운 쪽이야";
+      if(/discharge/.test(code)) return "말·표현·실행이 평소보다 잘 빠지는 쪽이야";
+      if(/control/.test(code)) return "조건을 정하고 정리하기가 평소보다 쉬워";
+      if(/ziping-support/.test(code)) return "원래 잘하는 방식이 실제 반응으로 이어지기 쉬워";
+      return "작게 움직여 실제 반응을 확인해보기 좋은 쪽이야";
+    }
+    if(/root-clash/.test(code)) return "평소 버티던 힘이 흔들리기 쉬워서 무리한 결정은 피하는 게 좋아";
+    if(/body-cost/.test(code)) return "감당할 일이 늘기 쉬워서 범위를 줄이는 게 먼저야";
+    if(/ziping-harm/.test(code)) return "평소 잘되던 방식이 꼬이기 쉬워서 한 번 더 확인하는 게 좋아";
+    if(/over-support/.test(code)) return "고집이나 과부하가 커지기 쉬워서 속도를 낮추는 게 좋아";
+    return "한 번에 크게 결정하기보다 부담을 줄이고 확인하는 쪽이 좋아";
+  }
+
+  function compactTimingNote(reasoning,s,p,isT) {
+    const timing=reasoning?.timing || {};
+    const policy=global.__UNNI_PRODUCT_CONTENT_POLICY_V1__;
+    const disclosed=policy?.filterTimingForProduct
+      ? policy.filterTimingForProduct("basic_concern",timing)
+      : {concernNearTerm:timing.concernNearTerm||null,longTermPivots:(timing.longTermPivots||[]).slice(0,2)};
+    const near=disclosed.concernNearTerm || {};
+    const highlights=(near.highlights || []).filter(row=>{
+      const ms=row?.monthSpecific || {};
+      return Number(ms.support||0)>0 || Number(ms.caution||0)>0;
+    }).slice(0,2);
+    const pivot=(disclosed.longTermPivots || []).find(x=>x?.isStructuralPivot===true) || null;
+    const lines=highlights.map(row=>{
+      const when=formatMonth(row);
+      const positive=["supportive","mild-support"].includes(row.class);
+      const caution=["caution","mild-caution"].includes(row.class);
+      if(positive) return `<b>${when}</b> — 움직여보기 좋은 쪽. ${compactTimingReason(row,true)}.`;
+      if(caution) return `<b>${when}</b> — 속도를 줄이는 쪽. ${compactTimingReason(row,false)}.`;
+      return `<b>${when}</b> — 좋은 점과 주의할 점이 같이 보여서 작은 확인부터 하는 게 좋아.`;
+    });
+    if(!lines.length) lines.push("달까지 좁혀 말할 근거가 약해서 특정 날짜를 억지로 찍지는 않을게.");
+    if(pivot?.year){
+      lines.push(`<b>${pivot.year}년 전후</b> — 앞선 해와 비교해 방향이 실제로 바뀌는 구간이야. 여기서는 시점만 먼저 짚을게.`);
+    }
+    const action=plainSentence(p?.first || s.move);
+    lines.push(`<b>지금 할 것</b> — ${action}`);
+    const label=(row)=>row ? formatMonth(row) : null;
+    return {
+      desc:lines.join("<br><br>"),
+      meta:{
+        firstDate:label(highlights[0]||null),
+        secondDate:label(highlights[1]||null),
+        firstBody:highlights[0] ? `${label(highlights[0])} ${highlights[0].class||""}` : "",
+        secondBody:highlights[1] ? `${label(highlights[1])} ${highlights[1].class||""}` : "",
+        concernSituation:s.key,
+        structureFingerprint:reasoning?.structureFingerprint||"",
+        timingFingerprint:reasoning?.timingFingerprint||"",
+        method:timing.method||"",
+        horizonEnd:timing.horizonEnd||"",
+        internalHorizonEnd:timing.internalHorizonEnd||"",
+        detailEnd:timing.detailEnd||"",
+        nearMonthCount:Array.isArray(near.months)?near.months.length:0,
+        longTermPivotYears:pivot?.year?[pivot.year]:[],
+        disclosureContract:"basic_concern",
+        fullFiveYearAllowed:false,
+      },
+    };
+  }
+
+  function badgeFor(concern, idx) {
+    return ["핵심","실제 장면","잘 맞는 조건","거를 신호","가까운 흐름"][idx] || "핵심";
+  }
+
+  function titleFor(s, idx, isT, profile) {
+    if(idx===0) return `${profile?.label || s.label} — 핵심은 이거야`;
+    if(idx===1) return SCENE_TITLES[s.concern]?.[s.key] || "이 장면부터 봐";
+    if(idx===2){
+      const rows={money:"돈이 남는 조건",career:"잘 풀리는 일·공부 조건",love:"너랑 잘 맞는 사람·관계",path:"너한테 맞는 진로 조건",people:"남겨도 되는 사람·관계",mental:"회복이 붙는 조건"};
+      return rows[s.concern] || "잘 맞는 조건";
+    }
+    if(idx===3){
+      const rows={money:"돈에서 빨리 끊어야 할 신호",career:"일·공부에서 빨리 거를 신호",love:"연애에서 빨리 거를 신호",path:"진로에서 피해야 할 신호",people:"거리를 둬야 할 관계 신호",mental:"지금 더 지치게 하는 신호"};
+      return rows[s.concern] || "빨리 거를 신호";
+    }
+    const rows={money:"가까운 돈 흐름과 지금 할 것",career:"가까운 일·시험 흐름과 지금 할 것",love:"가까운 연애 흐름과 지금 할 것",path:"가까운 진로 흐름과 지금 할 것",people:"가까운 관계 흐름과 지금 할 것",mental:"가까운 회복 흐름과 지금 할 것"};
+    return rows[s.concern] || "가까운 흐름과 지금 할 것";
   }
 
   function buildConcernDiagnosisV2(data) {
@@ -701,70 +963,80 @@
   }
 
   function renderConcernNotesV2(data, mode) {
-    data = data || {};
-    const isT = mode === "T";
-    const d = buildConcernDiagnosisV2(data);
-    const r = d.reasoning;
-    const s = d.situation;
-    const timing = timingNote(r,s,isT);
+    data=data||{};
+    const isT=mode==="T";
+    const d=buildConcernDiagnosisV2(data);
+    const r=d.reasoning;
+    const s=d.situation;
+    const p=situationProfile(s) || {
+      label:s.label,focus:s.cue,trigger:s.cue,reaction:"익숙한 방식으로 먼저 반응해",cost:"같은 고민이 다시 남을 수 있어",
+      assumed:"내가 더 잘하면 해결된다",actual:"실제 반응이 달라지는 조건을 확인하는 게 먼저야",
+      keep:"말과 행동이 일치하는 사람",cut:"말해도 같은 불편함을 반복하는 반응",place:"기준을 직접 확인할 수 있는 환경",
+      first:s.move,
+    };
+    const timing=compactTimingNote(r,s,p,isT);
 
-    const notes = [
+    const notes=[
       {
         badge:badgeFor(s.concern,0),
-        title:titleFor(s,0,isT),
-        desc:corePortrait(r,s,isT),
-        checklist:isT ? `검증: ${cueAt(s.cue)} 실제로 어떤 압박이 먼저 커지는지 한 번만 기록해.` : `언니 말이 맞는지 확인해보자. ${cueAt(s.cue)} 네가 제일 먼저 부담스러워지는 게 뭔지만 적어봐.`,
+        title:titleFor(s,0,isT,p),
+        desc:noteOneDesc(r,s,p,isT),
+        checklist:"",
       },
       {
         badge:badgeFor(s.concern,1),
-        title:titleFor(s,1,isT),
-        desc:pressureChain(r,s,isT),
-        checklist:isT ? `체크: ${s.metric}.` : `다음에 비슷한 일이 오면 마지막 결과 말고 첫 장면을 보자. ${s.metric}.`,
+        title:titleFor(s,1,isT,p),
+        desc:noteTwoDesc(r,s,p,isT),
+        checklist:"",
       },
       {
         badge:badgeFor(s.concern,2),
-        title:titleFor(s,2,isT),
-        desc:deepCause(r,s,isT),
-        checklist:isT ? "원인을 ‘내 성격’ 한 단어로 끝내지 말고, 어떤 힘이 들어오고 무엇이 그걸 받쳐주는지 둘로 나눠봐." : "이번에는 ‘내가 원래 이래’로 끝내지 말자. 부담이 시작된 조건과 그걸 덜어준 조건을 하나씩만 적어봐.",
+        title:titleFor(s,2,isT,p),
+        desc:noteThreeDesc(r,s,p,isT),
+        checklist:"",
       },
       {
         badge:badgeFor(s.concern,3),
-        title:titleFor(s,3,isT),
-        desc:changeOrder(r,s,isT),
-        checklist:isT ? `7일 뒤 효과 있었던 순서 하나만 남겨. 기준은 ${s.metric}.` : `7일 뒤 ‘이 순서는 덜 힘들었어’ 싶은 것 하나만 남기면 돼. 기준은 ${s.metric}.`,
+        title:titleFor(s,3,isT,p),
+        desc:noteFourDesc(r,s,p,isT),
+        checklist:"",
       },
       {
         badge:badgeFor(s.concern,4),
-        title:titleFor(s,4,isT),
-        desc:domainFit(r,s,isT),
-        checklist:isT ? "사람·환경 하나를 떠올리고 도움 조건과 방해 조건 중 실제로 뭐가 반복되는지 봐." : "떠오르는 사람이나 환경 하나에 이 기준을 대입해봐. 기분보다 반복되는 반응을 보면 더 선명해져.",
-      },
-      {
-        badge:badgeFor(s.concern,5),
-        title:titleFor(s,5,isT),
+        title:titleFor(s,4,isT,p),
         desc:timing.desc,
-        checklist:isT ? "좋은 구간엔 확인할 행동 하나, 조심 구간엔 줄일 행동 하나만 캘린더에 넣어." : "움직일 때 할 것 하나, 힘을 아낄 때 줄일 것 하나만 미리 적어두자.",
+        checklist:isT ? `한 가지만 실행해. ${p.first || s.move}.` : `이번엔 이것 하나만 해보자. ${p.first || s.move}.`,
         __timingQA:timing.meta,
       },
     ];
 
-    notes.forEach((note, idx) => {
-      note.themeNum=String(idx+1).padStart(2,"0");
-      const claim=r.claims?.[idx];
-      if (claim?.evidenceStatus === "insufficient-evidence") {
-        note.desc += isT
-          ? "<br><br>여기는 근거가 한쪽만 잡혀 있어서 확정해서 말하지 않을게."
-          : "<br><br>여기는 아직 근거가 한쪽만 잡혀 있어서 언니도 단정하지 않을게.";
+    const claimMap=[0,1,4,2,5];
+    (r.claims||[]).forEach(claim=>{
+      if(claim){
+        claim.userNoteIndex=null;
+        if(Object.prototype.hasOwnProperty.call(claim,"noteSentence")) delete claim.noteSentence;
       }
-      if (claim) claim.noteSentence=stripHtml(note.desc);
+    });
+    notes.forEach((note,idx)=>{
+      note.themeNum=String(idx+1).padStart(2,"0");
+      const claim=r.claims?.[claimMap[idx]];
+      if(claim?.evidenceStatus==="insufficient-evidence"){
+        note.desc += isT
+          ? "<br><br>여긴 근거가 한쪽만 잡혀 있어서 확정해서 말하지 않을게."
+          : "<br><br>여긴 아직 근거가 한쪽만 잡혀 있어서 언니도 단정하지 않을게.";
+      }
+      if(claim){
+        claim.userNoteIndex=idx+1;
+        claim.noteSentence=stripHtml(note.desc);
+      }
     });
 
-    const paidValueAudit = typeof global.auditPaidValueNotes === "function"
-      ? global.auditPaidValueNotes(notes, mode || "F")
+    const paidValueAudit=typeof global.auditPaidValueNotes==="function"
+      ? global.auditPaidValueNotes(notes,mode||"F")
       : null;
-    if (paidValueAudit && data && typeof data === "object") data.paidValueAudit = paidValueAudit;
+    if(paidValueAudit&&data&&typeof data==="object") data.paidValueAudit=paidValueAudit;
 
-    const audit = {
+    const audit={
       version:VERSION,
       engine:"classical-causal",
       fingerprint:r.structureFingerprint+"|"+s.concern+"|"+s.key,
@@ -772,8 +1044,10 @@
       structureFingerprint:r.structureFingerprint,
       timingFingerprint:r.timingFingerprint,
       situation:{concern:s.concern,key:s.key},
-      ditianRuleIds:r.ditian?.findings?.map((x)=>x.id)||[],
-      zipingRuleIds:r.ziping?.findings?.map((x)=>x.id)||[],
+      noteCount:notes.length,
+      outputClaimMap:claimMap.map((claimIndex,noteIndex)=>({noteNum:noteIndex+1,claimNum:claimIndex+1})),
+      ditianRuleIds:r.ditian?.findings?.map(x=>x.id)||[],
+      zipingRuleIds:r.ziping?.findings?.map(x=>x.id)||[],
       claims:r.claims||[],
       unsupported:r.unsupported||[],
       sourceLayers:{
