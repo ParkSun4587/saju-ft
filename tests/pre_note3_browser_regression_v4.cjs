@@ -10,6 +10,7 @@ const LABELS = {
   mental: '마음·스트레스',
 };
 function assert(cond, msg) { if (!cond) throw new Error(msg); }
+function norm(v) { return String(v || '').replace(/<[^>]+>/g,' ').replace(/[\s.,!?·‘’'"“”()\[\]]/g,''); }
 function isExpectedBoundaryDiagnostic(text) {
   const value = String(text);
   return value.includes('이 생일은 절기가 바뀌는 날이라 태어난 시간을 모르면') ||
