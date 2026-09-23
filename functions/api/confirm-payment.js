@@ -122,6 +122,27 @@ function resultKey(d) {
 function ownerKey(d) {
   return "sazu_owner_v1_" + JSON.stringify([d.n,d.b,d.t,d.g,d.c,d.l]);
 }
+function compatibilityScopeKeyFromPartner(partner) {
+  if (!partner || typeof partner !== "object") return "";
+  return JSON.stringify([partner.b,partner.t,partner.g,partner.c,partner.l === true]);
+}
+function compatibilityScopeKeyFromData(d) {
+  if (d?.p !== "compatibility") return "";
+  return compatibilityScopeKeyFromPartner(d?.x?.partner);
+}
+function compatibilityScopeKeyFromUserKey(userKey) {
+  if (typeof userKey !== "string") return "";
+  const marker = "::compatibility::";
+  const idx = userKey.indexOf(marker);
+  if (idx < 0) return "";
+  try {
+    const extra = JSON.parse(userKey.slice(idx + marker.length));
+    return compatibilityScopeKeyFromPartner(extra?.partner);
+  } catch {
+    return "";
+  }
+}
+
 function ownerKeyFromLegacyUserKey(userKey) {
   if (typeof userKey !== "string" || !userKey.startsWith("sazu_v2_")) return "";
   const raw = userKey.slice("sazu_v2_".length);
@@ -180,9 +201,16 @@ function calculateUpgradeQuote(targetProduct, verifiedPurchases) {
     creditedProducts,
   };
 }
-function isProductAlreadyEntitled(productId, verifiedPurchases) {
+function isProductAlreadyEntitled(productId, verifiedPurchases, data) {
   const effective = new Set(effectiveEntitlements(verifiedPurchases));
-  if (productId === "compatibility") return (verifiedPurchases || []).some((x) => x.productId === "compatibility");
+  if (productId === "compatibility") {
+    const targetScope = compatibilityScopeKeyFromData(data);
+    if (!targetScope) return false;
+    return (verifiedPurchases || []).some((x) =>
+      x.productId === "compatibility" &&
+      (x.scopeKey || compatibilityScopeKeyFromUserKey(x.userKey)) === targetScope
+    );
+  }
   return effective.has(productId);
 }
 async function aesKey(secret) {
@@ -248,7 +276,13 @@ async function verifyPremiumPurchase(record, currentOwnerKey, secret, signing) {
   const payment = await toss(encodeURIComponent(grant.paymentKey), secret);
   if (!payment.ok) throw new Error("VERIFY_UNAVAILABLE");
   if (!paid(payment.data,grant.paymentKey,grant.orderId,expected)) return null;
-  return { productId:grant.productId, userKey:grant.userKey, orderId:grant.orderId, amount:expected };
+  return {
+    productId:grant.productId,
+    userKey:grant.userKey,
+    orderId:grant.orderId,
+    amount:expected,
+    scopeKey:grant.productId === "compatibility" ? compatibilityScopeKeyFromUserKey(grant.userKey) : "",
+  };
 }
 async function resolveVerifiedEntitlements(data, records, secret, signing) {
   const currentOwnerKey = ownerKey(data);
@@ -307,7 +341,7 @@ export async function onRequestPost({ request, env }) {
       const data = snapshot(body.data);
       const product = productFor(data);
       const entitlementState = await resolveVerifiedEntitlements(data,body.entitlementTokens,secret,signing);
-      if (isProductAlreadyEntitled(data.p,entitlementState.verifiedPurchases)) {
+      if (isProductAlreadyEntitled(data.p,entitlementState.verifiedPurchases,data)) {
         return reply({ ok:false, message:"이미 구매했거나 완전판에 포함된 상품이야. 다시 결제하지 않아도 돼." },409);
       }
       const quote = calculateUpgradeQuote(data.p,entitlementState.verifiedPurchases);
@@ -452,6 +486,8 @@ export const __test = Object.freeze({
   validateExtra,
   snapshot,
   resultKey,
+  compatibilityScopeKeyFromData,
+  compatibilityScopeKeyFromUserKey,
   signedGrantToken,
   resolveVerifiedEntitlements,
 });
