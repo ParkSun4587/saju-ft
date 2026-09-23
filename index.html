@@ -9161,7 +9161,29 @@ currentResultData = {
         }
       }
       
+      function showPaymentConfirmingHeader() {
+        let bar = document.getElementById("paymentConfirmingHeader");
+        if (!bar) {
+          bar = document.createElement("div");
+          bar.id = "paymentConfirmingHeader";
+          bar.setAttribute("role", "status");
+          bar.setAttribute("aria-live", "polite");
+          bar.style.cssText =
+            "position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:100000;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;background:rgba(255,253,250,.97);border-bottom:1px solid #e8e1db;backdrop-filter:blur(16px);box-sizing:border-box;text-align:center;font-size:12px;font-weight:900;color:#475569;letter-spacing:-.01em;";
+          bar.textContent = "결제 확인 중...";
+          document.body.appendChild(bar);
+        }
+        bar.style.display = "block";
+      }
+
+      function hidePaymentConfirmingHeader() {
+        document.getElementById("paymentConfirmingHeader")?.remove();
+      }
+      window.hidePaymentConfirmingHeader = hidePaymentConfirmingHeader;
+
       async function handlePaymentReturn(params) {
+        const isPaymentSuccess = params.get("payment") === "success";
+        if (isPaymentSuccess) showPaymentConfirmingHeader();
         const ticket = params.get("state");
         const paymentKey = params.get("paymentKey");
         const returnedOrder = params.get("orderId");
@@ -9174,6 +9196,7 @@ currentResultData = {
             T: "이전 결제 복귀 정보야. 이미 결제했다면 재결제하지 말고 주문번호로 문의해줘.",
           });
           showReturnRecovery(params);
+          hidePaymentConfirmingHeader();
           return;
         }
         try {
@@ -9188,6 +9211,7 @@ currentResultData = {
             typeof window.handleUnniProductPaymentReturn === "function"
           ) {
             await window.handleUnniProductPaymentReturn(params, resume, restored, ticket);
+            hidePaymentConfirmingHeader();
             return;
           }
           if (params.get("payment") === "fail") {
@@ -9195,9 +9219,13 @@ currentResultData = {
             failError.paymentFailed = true;
             failError.paymentCode = params.get("code") || "";
             showDefinitivePaymentFailure(restored, failError);
+            hidePaymentConfirmingHeader();
             return;
           }
-          if (params.get("payment") !== "success") return;
+          if (params.get("payment") !== "success") {
+            hidePaymentConfirmingHeader();
+            return;
+          }
           if (
             !paymentKey ||
             returnedOrder !== resume.orderId ||
@@ -9224,7 +9252,9 @@ currentResultData = {
           );
           showPaymentRetryBox(context);
           await approveCurrentOrder(context);
+          hidePaymentConfirmingHeader();
         } catch (error) {
+          hidePaymentConfirmingHeader();
           if (versionBefore !== viewVersion) return;
           if (error?.paymentFailed && restored) {
             showDefinitivePaymentFailure(restored, error);
