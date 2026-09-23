@@ -1250,7 +1250,8 @@ function norm(v) {
     contentPolicySource.includes('두 사람 사주를 겹쳐 관계의 이유와 시기 보기') &&
     contentPolicySource.includes('나 한 사람의 전체 사주판과 6개 고민을 한 번에 열기') &&
     premium.includes('data-recommendation-reason="1"') &&
-    premium.includes('wrap.innerHTML = `<div style="display:grid;gap:0">') &&
+    premium.includes('data-product-catalog-copy') &&
+    premium.includes('productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})') &&
     !premium.includes('왜 이걸 먼저 보냐면</span>') &&
     premium.includes('내 전체 사주판 보기') &&
     premium.includes('완전판으로 이어보기'),
