@@ -702,6 +702,76 @@ function norm(v) {
     `opposite free/paid toggle UI mismatch: sourceFreeLaunch=${sourceFreeLaunch}, action=${oppositeActionText}`
   );
 
+  // Regression: after the 990 won checkout returns/reloads the page, Toss SDK is no longer
+  // guaranteed to exist. Premium checkout must reload it before rendering payment methods.
+  await page.locator('#unniProductClose').click();
+  await page.evaluate(() => {
+    FREE_LAUNCH_MODE = false;
+    window.__premiumSdkReloadCalls = 0;
+    window.__premiumMethodsRendered = 0;
+    window.__premiumAgreementRendered = 0;
+    try { delete window.PaymentWidget; } catch (_) { window.PaymentWidget = undefined; }
+    const originalPaymentAPI = paymentAPI;
+    paymentAPI = async (body) => {
+      if (body?.action === 'entitlements') {
+        return {
+          ok:true,
+          verifiedPurchases:[],
+          effectiveEntitlements:[],
+          allInOneQuote:{
+            targetProduct:'all_in_one',baseAmount:9900,creditAmount:0,amount:9900,
+            alreadyOwned:false,creditedProducts:[],
+          },
+        };
+      }
+      if (body?.action === 'prepare') {
+        return {
+          ok:true,
+          productId:body.data?.p,
+          baseAmount:4900,
+          amount:4900,
+          orderId:'SAJU2_PREMIUM_RELOAD_TEST',
+          ticket:'premium-reload-test-ticket',
+        };
+      }
+      return originalPaymentAPI(body);
+    };
+    window.ensurePaymentWidgetSDK = async () => {
+      window.__premiumSdkReloadCalls += 1;
+      function FakePaymentWidget() {
+        return {
+          renderPaymentMethods() { window.__premiumMethodsRendered += 1; },
+          renderAgreement() { window.__premiumAgreementRendered += 1; },
+          requestPayment: async () => {},
+        };
+      }
+      FakePaymentWidget.ANONYMOUS = 'ANONYMOUS';
+      window.PaymentWidget = FakePaymentWidget;
+      return FakePaymentWidget;
+    };
+  });
+  await page.evaluate(() => openUnniProduct('full_saju'));
+  await page.waitForSelector('#unniProductModal', { state:'visible' });
+  await page.locator('#unniProductAction').click();
+  await page.waitForFunction(() =>
+    window.__premiumSdkReloadCalls === 1 &&
+    window.__premiumMethodsRendered === 1 &&
+    window.__premiumAgreementRendered === 1 &&
+    getComputedStyle(document.getElementById('unniProductPayment')).display !== 'none',
+    null,
+    { timeout:10000 }
+  );
+  const premiumReload = await page.evaluate(() => ({
+    sdk:window.__premiumSdkReloadCalls,
+    methods:window.__premiumMethodsRendered,
+    agreement:window.__premiumAgreementRendered,
+    paymentVisible:getComputedStyle(document.getElementById('unniProductPayment')).display !== 'none',
+  }));
+  assert(
+    premiumReload.sdk===1 && premiumReload.methods===1 && premiumReload.agreement===1 && premiumReload.paymentVisible,
+    'premium checkout did not recover Toss SDK after payment return '+JSON.stringify(premiumReload)
+  );
+
   // The rest of this regression inspects the unlocked report without opening a real checkout.
   await page.evaluate(() => { FREE_LAUNCH_MODE = true; });
   await page.locator('#unniProductClose').click();
@@ -1117,6 +1187,12 @@ function norm(v) {
   assert(server.includes('const product = productFor(order.data);'), 'server does not resolve signed product price');
   assert(server.includes('const expectedAmount = Number(order.amount ?? product.amount)') && server.includes('Number(body.amount) !== expectedAmount'), 'server does not reject client amount against signed server quote');
   assert(server.includes('body:JSON.stringify({ paymentKey:body.paymentKey,orderId:order.orderId,amount:expectedAmount })'), 'Toss confirm is not bound to server-quoted amount');
+  assert(
+    premium.includes('async function ensurePremiumPaymentWidgetSDK()') &&
+    premium.includes('await ensurePremiumPaymentWidgetSDK()') &&
+    html.includes('window.ensurePaymentWidgetSDK = ensurePaymentWidgetSDK'),
+    'premium checkout no longer guarantees Toss SDK reload after payment return'
+  );
   assert(server.includes('resolveVerifiedEntitlements(data,body.entitlementTokens,secret,signing)') && server.includes('calculateUpgradeQuote(data.p,entitlementState.verifiedPurchases)'), 'server-side verified entitlement upgrade quote missing');
   assert(server.includes('if (!d.p || d.p === "concern_single") return legacy;'), 'legacy 990 result key compatibility missing');
 
