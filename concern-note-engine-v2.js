@@ -131,14 +131,14 @@
     money:{
       name:"돈",
       help:{
-        self:"내 몫과 지출 기준을 스스로 정할 수 있는 구조",print:"급하게 벌리기보다 정보를 확인하고 준비할 여유가 있는 구조",
-        output:"내가 만든 것이 실제 판매·성과로 연결되는 구조",wealth:"수입·지출·보상이 숫자로 분명하게 보이는 구조",
-        officer:"역할과 보상이 계약·규칙으로 정리된 구조",unknown:"돈이 들어오고 나가는 원인을 하나씩 확인할 수 있는 구조",
+        self:"내 몫과 지출 기준을 스스로 정할 수 있는 조건",print:"급하게 벌리기보다 정보를 확인하고 준비할 여유가 있는 조건",
+        output:"내가 만든 것이 실제 판매·성과로 연결되는 조건",wealth:"수입·지출·보상이 숫자로 분명하게 보이는 조건",
+        officer:"역할과 보상이 계약·규칙으로 정리된 조건",unknown:"돈이 들어오고 나가는 원인을 하나씩 확인할 수 있는 조건",
       },
       harm:{
-        self:"비교나 경쟁 때문에 내 기준 없이 버티게 만드는 구조",print:"준비만 계속 늘고 실제 돈의 반응은 확인하지 못하는 구조",
-        output:"표현과 시도만 많고 회수 기준이 없는 구조",wealth:"기회·지출·투자를 한꺼번에 늘리게 만드는 구조",
-        officer:"책임과 고정비만 늘고 내 선택권은 줄어드는 구조",unknown:"왜 돈이 새는지 확인하기 어려운 구조",
+        self:"비교나 경쟁 때문에 내 기준 없이 버티게 만드는 환경",print:"준비만 계속 늘고 실제 돈의 반응은 확인하지 못하는 환경",
+        output:"표현과 시도만 많고 회수 기준이 없는 환경",wealth:"기회·지출·투자를 한꺼번에 늘리게 만드는 환경",
+        officer:"책임과 고정비만 늘고 내 선택권은 줄어드는 환경",unknown:"왜 돈이 새는지 확인하기 어려운 환경",
       }
     },
     career:{
@@ -150,7 +150,7 @@
       },
       harm:{
         self:"내 방식은 막으면서 책임만 떠넘기는 환경",print:"준비와 검토만 늘고 실행 기회는 주지 않는 환경",
-        output:"말하거나 결과물을 내도 계속 막히는 환경",wealth:"성과보다 실적 압박과 조건 변동만 커지는 환경",
+        output:"말하거나 결과물을 내도 계속 막히는 환경",wealth:"성과보다 실적 요구와 조건 변동만 커지는 환경",
         officer:"기준은 계속 바뀌는데 책임만 늘어나는 환경",unknown:"무엇을 잘해야 하는지 기준 자체가 흐린 환경",
       }
     },
@@ -164,7 +164,7 @@
       harm:{
         self:"누가 이기나 버티게 만드는 관계",print:"해석과 기다림만 늘어나는 관계",
         output:"말할수록 불이익이 생겨 계속 참게 되는 관계",wealth:"관계를 손익과 조건으로만 흔드는 관계",
-        officer:"통제와 압박을 사랑처럼 요구하는 관계",unknown:"신호만 주고 설명은 하지 않는 관계",
+        officer:"통제와 강요를 사랑처럼 요구하는 관계",unknown:"신호만 주고 설명은 하지 않는 관계",
       }
     },
     path:{
@@ -453,7 +453,7 @@
       정재:`시간·돈·보상·약속이 예측 가능하게 반복되는 ${name} 조건`,
       편재:`새 기회나 범위를 넓혀도 회수 기준이 분명한 ${name} 조건`,
       정관:`역할·책임·평가 기준이 처음부터 명확한 ${name} 조건`,
-      편관:`난도와 압박이 있어도 권한·보호장치가 같이 주어지는 ${name} 조건`,
+      편관:`난도와 부담이 있어도 권한·보호장치가 같이 주어지는 ${name} 조건`,
       정인:`배울 시간·자료·피드백과 회복 여지가 보장되는 ${name} 조건`,
       편인:`깊게 파거나 다른 방식을 시험할 재량이 있는 ${name} 조건`,
     };
@@ -465,7 +465,7 @@
       정재:`안정을 지키는 데 매여 필요한 변화까지 못 하는 ${name} 조건`,
       편재:`기회·사람·돈을 한꺼번에 벌려 회수 기준이 사라지는 ${name} 조건`,
       정관:`규칙·책임은 늘지만 기준과 보상은 자꾸 바뀌는 ${name} 조건`,
-      편관:`압박·경쟁만 강하고 권한이나 보호장치는 없는 ${name} 조건`,
+      편관:`부담·경쟁만 강하고 권한이나 보호장치는 없는 ${name} 조건`,
       정인:`준비·검토만 늘고 실제로 움직일 기회는 없는 ${name} 조건`,
       편인:`생각과 해석만 깊어지고 현실 확인은 계속 늦어지는 ${name} 조건`,
     };
@@ -890,7 +890,19 @@
       return Number(ms.support||0)>0 || Number(ms.caution||0)>0;
     }).slice(0,2);
     const pivot=(disclosed.longTermPivots || []).find(x=>x?.isStructuralPivot===true) || null;
-    const lines=highlights.map(row=>{
+    const uniqueHighlights=[];
+    const seenTimingReasons=new Set();
+    for(const row of highlights){
+      const positive=["supportive","mild-support"].includes(row.class);
+      const caution=["caution","mild-caution"].includes(row.class);
+      const reason=positive ? compactTimingReason(row,true) : caution ? compactTimingReason(row,false) : "좋은 점과 주의할 점이 같이 보여서 작은 확인부터 하는 게 좋아";
+      const key=(positive?"P":caution?"C":"M")+"|"+reason;
+      if(seenTimingReasons.has(key)) continue;
+      seenTimingReasons.add(key);
+      uniqueHighlights.push(row);
+      if(uniqueHighlights.length>=2) break;
+    }
+    const lines=uniqueHighlights.map(row=>{
       const when=formatMonth(row);
       const positive=["supportive","mild-support"].includes(row.class);
       const caution=["caution","mild-caution"].includes(row.class);
@@ -908,10 +920,10 @@
     return {
       desc:lines.join("<br><br>"),
       meta:{
-        firstDate:label(highlights[0]||null),
-        secondDate:label(highlights[1]||null),
-        firstBody:highlights[0] ? `${label(highlights[0])} ${highlights[0].class||""}` : "",
-        secondBody:highlights[1] ? `${label(highlights[1])} ${highlights[1].class||""}` : "",
+        firstDate:label(uniqueHighlights[0]||null),
+        secondDate:label(uniqueHighlights[1]||null),
+        firstBody:uniqueHighlights[0] ? `${label(uniqueHighlights[0])} ${uniqueHighlights[0].class||""}` : "",
+        secondBody:uniqueHighlights[1] ? `${label(uniqueHighlights[1])} ${uniqueHighlights[1].class||""}` : "",
         concernSituation:s.key,
         structureFingerprint:reasoning?.structureFingerprint||"",
         timingFingerprint:reasoning?.timingFingerprint||"",
@@ -1005,7 +1017,7 @@
         badge:badgeFor(s.concern,4),
         title:titleFor(s,4,isT,p),
         desc:timing.desc,
-        checklist:isT ? `한 가지만 실행해. ${p.first || s.move}.` : `이번엔 이것 하나만 해보자. ${p.first || s.move}.`,
+        checklist:"",
         __timingQA:timing.meta,
       },
     ];
