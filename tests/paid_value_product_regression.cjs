@@ -878,7 +878,7 @@ function norm(v) {
     html.includes('좋아. 필요한 것만 적어줘.<br>네 사주에서 원인부터 바로 짚어볼게.') &&
     html.includes('id="concernPickerPrompt"') &&
     html.includes('요즘 제일 마음에 걸리는 건?') &&
-    html.includes('지금 제일 궁금한 건?') &&
+    html.includes('지금 딱 궁금한 건 뭐야?') &&
     html.includes('로아 언니, 같이 봐줘') &&
     html.includes('서아 언니, 핵심만 봐줘') &&
     html.includes('prompt.textContent = config.prompt;') &&
