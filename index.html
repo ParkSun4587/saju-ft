@@ -2804,7 +2804,7 @@
                       </div>
                     </div>
                     <div id="paywallPriceBadge" class="shrink-0 text-right">
-                      <span id="paywallPriceAmount" class="text-[18px] font-black tracking-tight text-rose-600">990원</span>
+                      <span id="paywallPriceAmount" class="text-[18px] font-black tracking-tight text-rose-600">100원</span>
                     </div>
                   </div>
                 </div>
@@ -2859,7 +2859,7 @@
                       <div id="paymentContinueTitle" class="text-[12px] font-black text-slate-800">응, 확인되면 아까 얘기부터 계속 볼게</div>
                       <div id="paymentContinueSub" class="mt-0.5 text-[10px] font-bold text-slate-400">결제수단만 고르면 방금 보던 데서 그대로 이어져</div>
                     </div>
-                    <div class="shrink-0 text-[12px] font-black text-rose-600">990원</div>
+                    <div class="shrink-0 text-[12px] font-black text-rose-600">100원</div>
                   </div>
                   <div id="paymentMethod" class="mt-2"></div>
                   <div id="paymentAgreement" class="mt-2"></div>
@@ -6122,7 +6122,7 @@ function generateConcernNotes(data, mode) {
 
       // ⚠️ 키는 반드시 이 한 줄에서만 관리. 토스 대시보드에서 직접 복사해 붙여넣을 것.
       const TOSS_CLIENT_KEY = "live_ck_GjLJoQ1aVZ5oLqXGlyvw3w6KYe2R";
-      const PAY_AMOUNT = 990;
+      const PAY_AMOUNT = 100; // TEMP QA: real-payment open/access test
       const CONFIRM_API = "/api/confirm-payment"; // 서버리스 결제 승인 엔드포인트
 
       function ensurePaymentWidgetSDK() {
@@ -9763,7 +9763,7 @@ currentResultData = {
     <script src="./paid-value-layer-v1.js?v=1.5.0"></script>
     <script src="./concern-note-engine-v2.js?v=3.2.1"></script>
     <script src="./product-content-policy-v1.js?v=1.1.0"></script>
-    <script src="./product-entitlements-v1.js?v=1.0.0"></script>
-    <script src="./premium-products-v1.js?v=2.1.1"></script>
+    <script src="./product-entitlements-v1.js?v=1.0.1"></script>
+    <script src="./premium-products-v1.js?v=2.1.2"></script>
   </body>
 </html>
