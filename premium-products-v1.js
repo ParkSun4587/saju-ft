@@ -1990,13 +1990,17 @@
       existing?.remove();
       return;
     }
-    if (!unlocked) {
+    const desiredCatalogMode = unlocked ? "upsell" : "owned-reaccess";
+    if (existing) {
+      if (existing.dataset.catalogMode === desiredCatalogMode || existing.querySelector("[data-entitlement-status]")) return;
+      existing.remove();
+    }
+
+    const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
+    if (!unlocked && !isFreeLaunch && collectStoredPremiumGrants().length === 0) {
       existing?.remove();
       return;
     }
-    if (existing) return;
-
-    const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
     const state = isFreeLaunch ? { verifiedPurchases:[], effectiveEntitlements:[], allInOneQuote:null } : cachedEntitlements(data);
     if (!isFreeLaunch && !state) {
       if (!entitlementPromise) {
@@ -2040,36 +2044,48 @@
     }
 
     const direct = entitlementApi()?.verifiedProductIds?.(state) || [];
-    const allOwned = direct.includes("all_in_one");
-    const visibleProducts = allOwned ? [PRODUCTS.compatibility] : Object.values(PRODUCTS);
-    const states = Object.fromEntries(visibleProducts.map((p)=>[p.id,productStateFor(p.id,state)]));
+    const allProducts = Object.values(PRODUCTS);
+    const allStates = Object.fromEntries(allProducts.map((p)=>[p.id,productStateFor(p.id,state)]));
+    // 새 고민의 990원 잠금과 이미 구매한 프리미엄 권한은 별개다.
+    // 잠긴 결과에서도 구매 완료/완전판 포함 상품은 평생 다시보기 진입점을 유지한다.
+    const visibleProducts = unlocked
+      ? allProducts
+      : allProducts.filter((p) => ["purchased","included"].includes(allStates[p.id]?.kind));
+    if (!visibleProducts.length) {
+      existing?.remove();
+      return;
+    }
+    const states = Object.fromEntries(visibleProducts.map((p)=>[p.id,allStates[p.id]]));
     const isT = data?.currentMode === "T";
-    let recommendedId = recommendedProductId(data,state);
+    let recommendedId = unlocked ? recommendedProductId(data,state) : visibleProducts[0]?.id;
     if (!visibleProducts.some((p)=>p.id === recommendedId)) recommendedId = visibleProducts[0]?.id;
     const recommended = PRODUCTS[recommendedId] || visibleProducts[0];
     if (!recommended) return;
     const others = visibleProducts.filter((p) => p.id !== recommended.id);
-    const reason = recommendationReason(recommended.id,data,isT,state);
+    const reason = unlocked ? recommendationReason(recommended.id,data,isT,state) : "";
 
     const wrap = document.createElement("section");
     wrap.id = "unniProductLadder";
     wrap.dataset.verifiedPremium = isFreeLaunch ? "free-launch" : "server";
+    wrap.dataset.catalogMode = unlocked ? "upsell" : "owned-reaccess";
     wrap.style.cssText = "margin-top:20px;padding:16px 2px 0;border-top:1px solid #e8e1db;background:transparent;box-shadow:none";
-    const eyebrow = allOwned
-      ? (isT ? "나에 대한 정리는 이미 전부 열려 있어" : "너에 대한 건 이미 전부 열어뒀어")
-      : (isT ? "더 볼 거면, 다음 정보는 여기야" : "더 궁금한 게 남았다면");
-    const headline = allOwned
-      ? "이제 둘 사이를 따로 볼 수 있어"
-      : (isT ? "다음으로 볼 거면 이게 가장 연결돼" : "지금 얘기 다음으로는 이게 제일 자연스러워");
-    const sub = allOwned
-      ? "완전판에 포함된 1인 내용은 다시 권하지 않을게. 궁합만 상대 사주가 필요한 별도 계산이야."
-      : (isT
+    const eyebrow = unlocked
+      ? (isT ? "더 볼 거면, 다음 정보는 여기야" : "더 궁금한 게 남았다면")
+      : (isT ? "이미 구매한 상품" : "전에 열어둔 건 여기 있어");
+    const headline = unlocked
+      ? (isT ? "다음으로 볼 거면 이게 가장 연결돼" : "지금 얘기 다음으로는 이게 제일 자연스러워")
+      : (isT ? "구매한 내용은 바로 다시 볼 수 있어" : "새 고민 결제와 상관없이 다시 볼 수 있어");
+    const sub = unlocked
+      ? (isT
           ? "방금 본 내용과 겹치지 않게, 새로 볼 정보가 많은 걸 먼저 뒀어."
-          : "아까 본 얘기는 빼고, 여기서 새로 볼 게 많은 걸 먼저 뒀어.");
+          : "아까 본 얘기는 빼고, 여기서 새로 볼 게 많은 걸 먼저 뒀어.")
+      : (isT
+          ? "새 고민의 NOTE 잠금과 기존 구매내역은 별개야."
+          : "새 고민이 잠겨 있어도 전에 결제한 상품은 다시 결제할 필요 없어.");
     const otherHtml = others.length
       ? `<div id="unniOtherProducts" style="display:grid;gap:14px;margin-top:10px">${foldedProductGroups(others,states)}</div>`
       : "";
-    wrap.innerHTML = `<div style="display:grid;gap:0">${productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})}${otherHtml}</div>`;
+    wrap.innerHTML = `<div data-product-catalog-copy style="margin:0 2px 10px"><div style="font-size:10px;font-weight:800;color:#969ba4">${eyebrow}</div><div style="margin-top:2px;font-size:14px;font-weight:900;color:#172033">${headline}</div><div style="margin-top:3px;font-size:10.5px;line-height:1.55;color:#7a8089">${sub}</div></div><div style="display:grid;gap:0">${productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})}${otherHtml}</div>`;
     slot.replaceChildren(wrap);
 
     wrap.querySelectorAll("[data-unni-product]").forEach((btn)=>btn.addEventListener("click",()=>openProduct(btn.dataset.unniProduct)));
@@ -2120,7 +2136,7 @@
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
   global.__UNNI_PRODUCTS_V1__ = {
-    version:"2.1.0",
+    version:"2.1.1",
     products:PRODUCTS,
     contracts:global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.contracts || {},
     buildProductBody:productBody,

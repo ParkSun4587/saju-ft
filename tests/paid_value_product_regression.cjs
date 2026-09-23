@@ -22,7 +22,7 @@ function norm(v) {
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.2.1' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version === '2.1.0' &&
+    globalThis.__UNNI_PRODUCTS_V1__?.version === '2.1.1' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.1.0' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
@@ -139,7 +139,7 @@ function norm(v) {
 
   assert(qa.paidVersion.version === '1.5.0', 'paid value layer missing');
   assert(qa.noteVersion.version === '3.2.1', 'NOTE v3 engine missing');
-  assert(qa.productVersion.version === '2.1.0' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
+  assert(qa.productVersion.version === '2.1.1' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
   const expectedPrices = { concern_bundle3:100, full_saju:100, compatibility:100, all_in_one:100 };
@@ -592,6 +592,84 @@ function norm(v) {
   await page.evaluate(() => openUnniVault());
   assert(await page.locator('#unniVaultModal').evaluate((el) => getComputedStyle(el).display) === 'none', 'paused vault must not open');
 
+  // Lifetime re-access: premium purchases belong to the person, not to the currently unlocked 990-won concern.
+  await page.evaluate(() => {
+    FREE_LAUNCH_MODE = false;
+    const d = calculateAccurateManse(1998,2,21,'03:10','female');
+    d.__testNowYmd='2026-09-20';
+    d.concernKey='career';
+    d.concernSituation='current';
+    d.currentMode='F';
+    generateConcernNotes(d,'F');
+    currentResultData=d;
+    selectedSplitMode='F';
+    isUnlocked=false;
+    localStorage.setItem('unni_product_grant_v1_test_reaccess_seed', JSON.stringify({userKey:'seed',token:'seed'}));
+    window.__lifetimeOriginalPaymentAPI = paymentAPI;
+    paymentAPI = async (body) => {
+      if (body?.action === 'entitlements') {
+        return {
+          ok:true,
+          verifiedPurchases:[
+            {productId:'concern_bundle3',userKey:'owned_bundle'},
+            {productId:'full_saju',userKey:'owned_full'},
+            {productId:'compatibility',userKey:'owned_compat'},
+            {productId:'all_in_one',userKey:'owned_all'},
+          ],
+          effectiveEntitlements:['concern_bundle3','full_saju','compatibility','all_in_one','all_concerns'],
+          allInOneQuote:{targetProduct:'all_in_one',baseAmount:100,creditAmount:100,amount:0,alreadyOwned:true,creditedProducts:['all_in_one']},
+        };
+      }
+      return window.__lifetimeOriginalPaymentAPI(body);
+    };
+    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
+    document.getElementById('unniProductLadder')?.remove();
+    renderUnniProductCatalog();
+  });
+  await page.waitForFunction(
+    () => document.querySelector('#unniProductLadder')?.dataset.catalogMode === 'owned-reaccess' &&
+      document.querySelectorAll('#unniProductLadder [data-unni-product]').length === 4,
+    null,{timeout:10000}
+  );
+  const lockedOwnedCatalog = await page.evaluate(() => ({
+    mode:document.querySelector('#unniProductLadder')?.dataset.catalogMode,
+    ids:[...document.querySelectorAll('#unniProductLadder [data-unni-product]')].map(x=>x.dataset.unniProduct).sort(),
+    states:[...document.querySelectorAll('#unniProductLadder [data-unni-product]')].map(x=>x.dataset.productState),
+    text:document.querySelector('#unniProductLadder')?.innerText || '',
+  }));
+  assert(
+    lockedOwnedCatalog.mode==='owned-reaccess' &&
+    JSON.stringify(lockedOwnedCatalog.ids)===JSON.stringify(['all_in_one','compatibility','concern_bundle3','full_saju']) &&
+    lockedOwnedCatalog.states.every(x=>x==='purchased') &&
+    lockedOwnedCatalog.text.includes('새 고민 결제와 상관없이'),
+    'purchased premium products disappeared behind a new concern paywall '+JSON.stringify(lockedOwnedCatalog)
+  );
+  await page.evaluate(() => {
+    isUnlocked=true;
+    renderUnniProductCatalog();
+  });
+  await page.waitForFunction(
+    () => document.querySelector('#unniProductLadder')?.dataset.catalogMode === 'upsell' &&
+      document.querySelectorAll('#unniProductLadder [data-unni-product]').length === 4,
+    null,{timeout:10000}
+  );
+  const allOwnedUnlocked = await page.evaluate(() => ({
+    ids:[...document.querySelectorAll('#unniProductLadder [data-unni-product]')].map(x=>x.dataset.unniProduct).sort(),
+    states:[...document.querySelectorAll('#unniProductLadder [data-unni-product]')].map(x=>x.dataset.productState),
+  }));
+  assert(
+    JSON.stringify(allOwnedUnlocked.ids)===JSON.stringify(['all_in_one','compatibility','concern_bundle3','full_saju']) &&
+    allOwnedUnlocked.states.every(x=>x==='purchased'),
+    'all_in_one ownership hid purchased one-person products '+JSON.stringify(allOwnedUnlocked)
+  );
+  await page.evaluate(() => {
+    paymentAPI = window.__lifetimeOriginalPaymentAPI;
+    delete window.__lifetimeOriginalPaymentAPI;
+    localStorage.removeItem('unni_product_grant_v1_test_reaccess_seed');
+    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
+    document.getElementById('unniProductLadder')?.remove();
+  });
+
   // Final copy freeze: render the exact same chart + concern + situation once in F and once in T.
   const ftScreen = await page.evaluate(() => {
     const seed = {
@@ -908,7 +986,7 @@ function norm(v) {
   const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.0'), 'paid value script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
-  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.1.2'), 'entitlement/product script include missing');
+  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.1.3'), 'entitlement/product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(!paid.includes('__paidValueWrapped') && !paid.includes('global.generateConcernNotes = wrapped'), 'stale paid-value NOTE rewrite wrapper returned');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('concern-note-engine-v2.js'),'paid/note script order wrong');
@@ -931,7 +1009,15 @@ function norm(v) {
   assert(premium.includes('isCurrentPaidExport') && premium.includes('EXPORT_IDLE_CANCELLED'), 'stale paid-export jobs must stop when the report changes');
   assert(premium.includes('paidExportCache.clear()') && premium.includes('paidExportCache.set(key, prepared)'), 'paid PNG blob cache must stay bounded to the current report');
   assert(premium.includes('nativeSharePngFiles') && premium.includes('isMobileDevice'), 'one-action mobile multi-image share path missing');
-  assert(premium.includes('recommendedProductId') && premium.includes('recommendationReason') && premium.includes('const unlocked = typeof isUnlocked') && premium.includes('if (!unlocked)') && premium.includes('data-secondary-product'), 'post-unlock personalized premium recommendation missing');
+  assert(
+    premium.includes('recommendedProductId') &&
+    premium.includes('recommendationReason') &&
+    premium.includes('const unlocked = typeof isUnlocked') &&
+    premium.includes('["purchased","included"].includes(allStates[p.id]?.kind)') &&
+    premium.includes('owned-reaccess') &&
+    premium.includes('data-secondary-product'),
+    'premium purchased-product reaccess/catalog policy missing'
+  );
   assert(!premium.includes('unniShowOtherProducts') && premium.includes('unniOtherProducts') && premium.includes('display:grid;gap:14px;margin-top:10px'), 'premium alternatives should stay fully open under the recommendation');
   assert(!premium.includes('unniProductSavePdf') && !premium.includes('printPaidReport') && !premium.includes('unniPaidPrintHost') && !premium.includes('PDF로 한 파일 보관하기'), 'PDF save code must be fully removed');
   assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="concern"'), 'semantic paid-report grouping missing');
@@ -1164,7 +1250,8 @@ function norm(v) {
     contentPolicySource.includes('두 사람 사주를 겹쳐 관계의 이유와 시기 보기') &&
     contentPolicySource.includes('나 한 사람의 전체 사주판과 6개 고민을 한 번에 열기') &&
     premium.includes('data-recommendation-reason="1"') &&
-    premium.includes('wrap.innerHTML = `<div style="display:grid;gap:0">') &&
+    premium.includes('data-product-catalog-copy') &&
+    premium.includes('productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})') &&
     !premium.includes('왜 이걸 먼저 보냐면</span>') &&
     premium.includes('내 전체 사주판 보기') &&
     premium.includes('완전판으로 이어보기'),
