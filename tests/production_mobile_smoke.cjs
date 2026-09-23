@@ -749,13 +749,13 @@ async function inspect(page, mode) {
     await small.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
     const voice=await small.locator('#welcomeSisterText').innerText();
     if(mode==='F') assert(
-      voice.includes('아, 왔구나. 편하게 적어줘.') &&
-      voice.includes('언니가 하나씩 잘 봐줄게.'),
+      voice.includes('응, 왔구나. 편하게 얘기해줘.') &&
+      voice.includes('네 사주 보면서 왜 마음에 걸리는지 같이 풀어볼게.'),
       '360px F voice drift '+voice
     );
     else assert(
-      voice.includes('왔어. 적어줘.') &&
-      voice.includes('핵심부터 바로 볼게.'),
+      voice.includes('좋아. 필요한 것만 적어줘.') &&
+      voice.includes('네 사주에서 원인부터 바로 짚어볼게.'),
       '360px T voice drift '+voice
     );
     await small.close();
