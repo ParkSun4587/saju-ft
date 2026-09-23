@@ -464,7 +464,7 @@ function norm(v) {
   assert(ui.share.version === '5', `story card version ${ui.share.version}`);
   assert(ui.share.text.includes('사주 성향을 MBTI로 번역하면') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('너는 뭐 나왔어?') && ui.share.text.includes('나도 내 결과 보기') && ui.share.text.includes('sajuft.com'), 'story card viral/share copy missing');
   assert(ui.share.core && ui.share.strong && ui.share.need, `story card element strip missing: ${JSON.stringify(ui.share)}`);
-  assert(ui.share.avatar === './로아.png', `F story avatar mismatch: ${ui.share.avatar}`);
+  assert(ui.share.avatar === './로아.webp', `F story avatar mismatch: ${ui.share.avatar}`);
   await page.evaluate(() => closeShareModal(true));
   assert((await page.locator('#mainShareBtnText').innerText()).includes('인스타 스토리'), 'main share CTA should keep the actual story action explicit');
   assert(await page.locator('#storyShareBtn').count() === 0, 'duplicate Instagram/share action must be removed');
@@ -1026,13 +1026,13 @@ function norm(v) {
     !html.includes('좋아, 핵심만 바로 알려줘') &&
     !html.includes('원하는 상담 스타일을 골라봐') &&
     html.includes('로아 · 감정 공감형') &&
-    html.includes('서아 · 핵심 정리형') &&
+    html.includes('서아 · 팩트 직진형') &&
     html.includes('max-width:81%!important') &&
     html.includes('.split-choice-name-tag{') &&
     html.includes('class="split-choice-tail absolute -left-[5px] top-0 w-3 h-3 bg-white"') &&
     html.includes('class="split-choice-tail absolute -left-[5px] top-0 w-3 h-3 bg-slate-700"') &&
     html.includes('<span class="split-choice-name-tag">로아 · 감정 공감형</span>') &&
-    html.includes('<span class="split-choice-name-tag">서아 · 핵심 정리형</span>') &&
+    html.includes('<span class="split-choice-name-tag">서아 · 팩트 직진형</span>') &&
     !html.includes('왔어? 요즘 뭐가 제일 마음에 걸려') &&
     !html.includes('왔어? 뭐가 제일 궁금해'),
     'immersive first counselor-choice copy missing'
