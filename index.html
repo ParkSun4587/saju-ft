@@ -62,8 +62,8 @@
     <!-- 파비콘 (브라우저 탭 아이콘) -->
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <!-- 카카오톡 인앱 브라우저 광속 로딩용 이미지 프리로드 -->
-    <link rel="preload" as="image" href="./로아.png" fetchpriority="high" />
-    <link rel="preload" as="image" href="./서아.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="./로아.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="./서아.webp" fetchpriority="high" />
 
     <meta name="referrer" content="strict-origin" />
     <script>
@@ -1857,7 +1857,7 @@
         >
           <img
             id="imgRoa"
-            src="./로아.png"
+            src="./로아.webp"
             alt="로아"
             class="panel-img absolute inset-0 w-full h-full object-cover object-[center_18%]"
           />
@@ -1918,7 +1918,7 @@
         >
           <img
             id="imgSeoa"
-            src="./서아.png"
+            src="./서아.webp"
             alt="서아"
             class="panel-img absolute inset-0 w-full h-full object-cover object-[center_20%]"
           />
@@ -1996,7 +1996,7 @@
             <div class="relative">
               <img
                 id="welcomeSisterImg"
-                src="./로아.png"
+                src="./로아.webp"
                 alt="프로필"
                 class="w-8 h-8 rounded-full object-cover border border-white/60 shadow-sm"
               />
@@ -2054,7 +2054,7 @@
             <div id="chatTypingIndicator" class="flex items-start gap-1.5">
               <img
                 id="chatBubbleProfileMiniTyping"
-                src="./로아.png"
+                src="./로아.webp"
                 class="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5"
               />
               <div class="typing-indicator">
@@ -2072,7 +2072,7 @@
             >
               <img
                 id="chatBubbleProfileMini"
-                src="./로아.png"
+                src="./로아.webp"
                 class="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5"
               />
               <div>
@@ -2433,7 +2433,7 @@
             <div class="relative">
               <img
                 id="loadingSisterProfile"
-                src="./로아.png"
+                src="./로아.webp"
                 alt="프로필"
                 class="w-9 h-9 rounded-full object-cover border border-white/60 shadow-sm"
               />
@@ -2516,7 +2516,7 @@
           >
             <img
               id="resultSisterProfile"
-              src="./로아.png"
+              src="./로아.webp"
               alt="언니 프로필"
               class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 shadow-sm mt-0.5"
             />
@@ -2639,7 +2639,7 @@
         </section>
 
         <div id="resultConcernHandoff">
-          <img id="resultConcernHandoffAvatar" src="./로아.png" alt="" />
+          <img id="resultConcernHandoffAvatar" src="./로아.webp" alt="" />
           <div class="min-w-0">
             <div id="resultConcernHandoffName">로아 언니</div>
             <p id="resultConcernHandoffText">아까 말한 고민에서 중요한 부분부터 볼게.</p>
@@ -2704,7 +2704,7 @@
                 <div id="paywallSisterHeader" class="flex items-center gap-2.5">
                   <img
                     id="paywallSisterAvatar"
-                    src="./로아.png"
+                    src="./로아.webp"
                     alt=""
                     class="w-9 h-9 rounded-full object-cover border border-white shadow-sm shrink-0"
                   />
@@ -3113,7 +3113,7 @@
             <div style="position:relative;width:42px;height:42px;flex:none">
               <img
                 id="cardSisterAvatar"
-                src="./로아.png"
+                src="./로아.webp"
                 alt=""
                 style="width:42px;height:42px;border-radius:999px;object-fit:cover;border:3px solid white;box-shadow:0 6px 18px rgba(244,63,99,.18)"
               />
@@ -4523,11 +4523,11 @@
           if (mode === "F") {
             if (concernPickerPrompt)
               concernPickerPrompt.textContent = "요즘 제일 마음에 걸리는 건?";
-            if (sisterImg) sisterImg.src = "./로아.png";
-            if (miniProfile) miniProfile.src = "./로아.png";
+            if (sisterImg) sisterImg.src = "./로아.webp";
+            if (miniProfile) miniProfile.src = "./로아.webp";
             if (document.getElementById("chatBubbleProfileMiniTyping"))
               document.getElementById("chatBubbleProfileMiniTyping").src =
-                "./로아.png";
+                "./로아.webp";
             if (sisterBadge) sisterBadge.textContent = "로아 언니";
             if (senderTitle) senderTitle.textContent = "로아 언니";
             if (sisterText) {
@@ -4537,11 +4537,11 @@
           } else {
             if (concernPickerPrompt)
               concernPickerPrompt.textContent = "지금 딱 궁금한 건 뭐야?";
-            if (sisterImg) sisterImg.src = "./서아.png";
-            if (miniProfile) miniProfile.src = "./서아.png";
+            if (sisterImg) sisterImg.src = "./서아.webp";
+            if (miniProfile) miniProfile.src = "./서아.webp";
             if (document.getElementById("chatBubbleProfileMiniTyping"))
               document.getElementById("chatBubbleProfileMiniTyping").src =
-                "./서아.png";
+                "./서아.webp";
             if (sisterBadge) sisterBadge.textContent = "서아 언니";
             if (senderTitle) senderTitle.textContent = "서아 언니";
             if (sisterText) {
@@ -6347,7 +6347,7 @@ function generateConcernNotes(data, mode) {
           const loadingName = document.getElementById("loadingSisterName");
           const loadingStatusText = document.getElementById("loadingStatusText");
           const loadingStageText = document.getElementById("loadingStageText");
-          if (loadingProfile) loadingProfile.src = mode === "T" ? "./서아.png" : "./로아.png";
+          if (loadingProfile) loadingProfile.src = mode === "T" ? "./서아.webp" : "./로아.webp";
           if (loadingName) loadingName.textContent = mode === "T" ? "서아 언니" : "로아 언니";
           if (loadingStatusText) {
             loadingStatusText.textContent =
@@ -6408,7 +6408,7 @@ function generateConcernNotes(data, mode) {
 
           // 2) 타이핑 인디케이터
           const typingId = "tempTyping_" + Date.now();
-          const profileImg = mode === "T" ? "./서아.png" : "./로아.png";
+          const profileImg = mode === "T" ? "./서아.webp" : "./로아.webp";
           const sisterName = mode === "T" ? "서아 언니" : "로아 언니";
           const typingHTML = `
                     <div id="${typingId}" class="flex items-start gap-1.5 fade-in-up mt-1">
@@ -7186,7 +7186,7 @@ currentResultData = {
           payBtnSubText.textContent = "NOTE2 다음부터 NOTE6까지";
         }
         if (paywallSisterHeader) paywallSisterHeader.style.display = "flex";
-        if (paywallSisterAvatar) paywallSisterAvatar.src = isT ? "./서아.png" : "./로아.png";
+        if (paywallSisterAvatar) paywallSisterAvatar.src = isT ? "./서아.webp" : "./로아.webp";
         if (paywallSisterLabel) {
           paywallSisterLabel.textContent = isT
             ? "서아 언니 · 마지막 기준만 보면 돼"
@@ -7358,14 +7358,14 @@ currentResultData = {
 
         if (isT) {
           if (resultFirstLookLabel) resultFirstLookLabel.textContent = "언니가 먼저 정리한 너";
-          if (resultConcernHandoffAvatar) resultConcernHandoffAvatar.src = "./서아.png";
+          if (resultConcernHandoffAvatar) resultConcernHandoffAvatar.src = "./서아.webp";
           if (resultConcernHandoffName) resultConcernHandoffName.textContent = "서아 언니";
           if (resultConcernHandoffText) resultConcernHandoffText.textContent = "아까 말한 고민에선 이 부분이 핵심이야.";
           if (resultFunExtrasSummary) resultFunExtrasSummary.textContent = "참고로 가볍게 볼 것 · MBTI와 찰떡";
           if (resultShareLead) resultShareLead.textContent = "필요한 내용은 상담 기록으로 남겨둘 수 있어.";
           if (consultationCloseoutTitle) consultationCloseoutTitle.textContent = "이번 고민은 여기까지 볼게.";
           if (consultationCloseoutSub) consultationCloseoutSub.textContent = "다른 것도 궁금하면 바로 말해줘. 사주정보는 다시 안 적어도 돼.";
-          if (resSisterProfile) resSisterProfile.src = "./서아.png";
+          if (resSisterProfile) resSisterProfile.src = "./서아.webp";
           if (resSisterName) resSisterName.textContent = "서아 언니";
           if (badge) {
             badge.innerHTML = `핵심 정리`;
@@ -7384,14 +7384,14 @@ currentResultData = {
           }
         } else {
           if (resultFirstLookLabel) resultFirstLookLabel.textContent = "언니가 먼저 본 너";
-          if (resultConcernHandoffAvatar) resultConcernHandoffAvatar.src = "./로아.png";
+          if (resultConcernHandoffAvatar) resultConcernHandoffAvatar.src = "./로아.webp";
           if (resultConcernHandoffName) resultConcernHandoffName.textContent = "로아 언니";
           if (resultConcernHandoffText) resultConcernHandoffText.textContent = "그리고 아까 말한 고민 있지? 거기선 이 부분이 제일 중요해";
           if (resultFunExtrasSummary) resultFunExtrasSummary.textContent = "재미로 덧붙여 보면 · MBTI와 찰떡";
           if (resultShareLead) resultShareLead.textContent = "마음에 남는 얘기가 있으면 상담 기록으로 남겨둬도 돼";
           if (consultationCloseoutTitle) consultationCloseoutTitle.textContent = "이번 고민은 여기까지 봤어";
           if (consultationCloseoutSub) consultationCloseoutSub.textContent = "다른 것도 마음에 걸리면 바로 얘기해줘. 사주는 다시 안 적어도 돼";
-          if (resSisterProfile) resSisterProfile.src = "./로아.png";
+          if (resSisterProfile) resSisterProfile.src = "./로아.webp";
           if (resSisterName) resSisterName.textContent = "로아 언니";
           if (badge) {
             badge.innerHTML = `편하게 상담`;
@@ -8039,7 +8039,7 @@ currentResultData = {
             ? "rgba(56,189,248,.32)"
             : "rgba(251,113,133,.34)";
         }
-        if (sisterAvatar) sisterAvatar.src = isT ? "./서아.png" : "./로아.png";
+        if (sisterAvatar) sisterAvatar.src = isT ? "./서아.webp" : "./로아.webp";
 
         const rawN = (data.name || "").trim();
         const displayName = rawN.length >= 2 ? rawN.slice(1) : rawN || "너";
@@ -9381,7 +9381,7 @@ currentResultData = {
           landingSection.style.display = "flex";
         }
 
-        const profileSrc = isT ? "./서아.png" : "./로아.png";
+        const profileSrc = isT ? "./서아.webp" : "./로아.webp";
 
         const welcomeSisterImg = document.getElementById("welcomeSisterImg");
 
