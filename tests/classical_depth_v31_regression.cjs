@@ -115,20 +115,22 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     function provenanceCheck(run){
       const all=[...run.reasoning.ditian.findings,...run.reasoning.ziping.findings];
       const byId=Object.fromEntries(all.map(x=>[x.id,x]));
-      return run.audit.claims.map((claim,i)=>{
-        const ids=[...(claim.ditianRuleIds||[]),...(claim.zipingRuleIds||[])];
+      return (run.audit.outputClaimMap||[]).map(link=>{
+        const claim=run.audit.claims[link.claimNum-1];
+        const ids=[...(claim?.ditianRuleIds||[]),...(claim?.zipingRuleIds||[])];
         const refs=ids.map(id=>byId[id]).filter(Boolean);
         const expectedConditions=sorted(refs.flatMap(x=>x.conditions||[]));
         const expectedExceptions=sorted(refs.flatMap(x=>x.exceptions||[]));
         return {
-          noteNum:claim.noteNum,
+          noteNum:link.noteNum,
+          claimNum:link.claimNum,
           idsExist:ids.length===refs.length && ids.length>0,
           noFallback:claim.ditianRuleIds.length<run.reasoning.ditian.findings.length || claim.zipingRuleIds.length<run.reasoning.ziping.findings.length,
           conditionsMatch:JSON.stringify(sorted(claim.conditions))===JSON.stringify(expectedConditions),
           exceptionsMatch:JSON.stringify(sorted(claim.exceptions))===JSON.stringify(expectedExceptions),
           causalSteps:claim.causalSteps||[],
           evidenceStatus:claim.evidenceStatus,
-          sentenceMatches:claim.noteSentence===plain(run.notes[i]?.desc),
+          sentenceMatches:claim.noteSentence===plain(run.notes[link.noteNum-1]?.desc),
         };
       });
     }
@@ -264,7 +266,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       },
       sangsin:{
         ruleP:zmain(sangPresent),ruleA:zmain(sangAbsent),
-        note5P:plain(sangPresent.notes[4].desc),note5A:plain(sangAbsent.notes[4].desc),
+        fitP:plain(sangPresent.notes[2].desc),fitA:plain(sangAbsent.notes[2].desc),
       },
       gisin:{
         ruleP:zmain(gisinPresent),ruleA:zmain(gisinAbsent),
@@ -302,19 +304,22 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       concerns:concernRuns.map((x,i)=>({
         concern:concernKeys[i],fp:x.audit.structureFingerprint,
         coreClaims:x.audit.claims.slice(0,5).map(c=>c.conclusion),
-        note5:plain(x.notes[4].desc),
+        fit:plain(x.notes[2].desc),
       })),
       provenance:provenanceCheck(CANON),
       insufficient:{
-        claims:insufficientRun.audit.claims.map((c,i)=>({
-          noteNum:c.noteNum,
-          ditianRuleIds:c.ditianRuleIds,
-          zipingRuleIds:c.zipingRuleIds,
-          evidenceStatus:c.evidenceStatus,
-          certainty:c.certainty,
-          noteSentence:c.noteSentence,
-          actual:plain(insufficientRun.notes[i]?.desc),
-        })),
+        claims:(insufficientRun.audit.outputClaimMap||[]).map(link=>{
+          const c=insufficientRun.audit.claims[link.claimNum-1];
+          return {
+            noteNum:link.noteNum,claimNum:link.claimNum,
+            ditianRuleIds:c.ditianRuleIds,
+            zipingRuleIds:c.zipingRuleIds,
+            evidenceStatus:c.evidenceStatus,
+            certainty:c.certainty,
+            noteSentence:c.noteSentence,
+            actual:plain(insufficientRun.notes[link.noteNum-1]?.desc),
+          };
+        }),
       },
       legacy:{
         fpA:LEG_A.audit.structureFingerprint,fpB:LEG_B.audit.structureFingerprint,
@@ -349,10 +354,10 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         turningPoints:CANON.reasoning.timing.turningPoints,
         nearHighlights:CANON.reasoning.timing.concernNearTerm?.highlights||[],
         longTermPivots:CANON.reasoning.timing.longTermPivots||[],
-        note2:plain(CANON.notes[1].desc),
-        note5:plain(CANON.notes[4].desc),
-        note6:plain(CANON.notes[5].desc),
-        note6Meta:CANON.notes[5].__timingQA,
+        scene:plain(CANON.notes[1].desc),
+        fit:plain(CANON.notes[2].desc),
+        timingAnswer:plain(CANON.notes[4].desc),
+        timingMeta:CANON.notes[4].__timingQA,
       },
       traces:[
         trace('canonical-weak-officer',CANON),
@@ -388,7 +393,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   assert(r.sangsin.ruleP?.gyeokName==='정관격'&&r.sangsin.ruleA?.gyeokName==='정관격','sangsin fixtures changed gyeok');
   assert((r.sangsin.ruleP.supportGods||[]).length>(r.sangsin.ruleA.supportGods||[]).length,'sangsin presence not reflected in support gods');
-  assert(r.sangsin.note5P!==r.sangsin.note5A,'different Ziping support gods collapsed into the same NOTE5 user condition');
+  assert(r.sangsin.fitP!==r.sangsin.fitA,'different Ziping support gods collapsed into the same rendered fit condition');
 
   assert(r.gisin.ruleP?.harmGods?.includes('상관'),'gisin fixture did not fire harm god');
   assert(!(r.gisin.ruleA?.harmGods||[]).includes('상관'),'gisin-absent fixture still has harm god');
@@ -410,7 +415,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(r.special.unsupported.some(x=>x.ruleId==='DTS_SPECIAL_120'),'special unimplemented provenance missing');
   assert(r.special.claims.every(x=>x.certainty==='guarded'),'special-structure candidate did not lower NOTE certainty');
   assert(r.special.claims.every(x=>!(x.ditianRuleIds||[]).includes('DTS_SPECIAL_120')&&!(x.zipingRuleIds||[]).includes('ZZ_CHANGE_130')),'unimplemented/detect-only rule leaked into NOTE provenance');
-  assert(/한쪽으로 아주 크게 몰린 후보/.test(r.special.note1),'special-structure uncertainty was not explained in user language');
+  assert(/한쪽 반응이 아주 강하게 잡혀서/.test(r.special.note1),'special-structure uncertainty was not explained in user language');
 
   assert(new Set(r.timing.natal).size===1,'changing transit data changed natal structure');
   assert(r.timing.fps[0]!==r.timing.fps[1],'different Daewoon did not change timing fingerprint');
@@ -422,7 +427,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   assert(new Set(r.concerns.map(x=>x.fp)).size===1,'same saju concern changed natal fingerprint');
   assert(new Set(r.concerns.map(x=>JSON.stringify(x.coreClaims))).size===1,'same saju concern changed core NOTE1-5 conclusions');
-  assert(new Set(r.concerns.map(x=>x.note5)).size>=5,'concern application layer did not change domain rendering');
+  assert(new Set(r.concerns.map(x=>x.fit)).size>=5,'concern application layer did not change fit rendering');
 
   for(const p of r.provenance){
     assert(p.idsExist,'NOTE'+p.noteNum+' references a rule that did not fire');
@@ -470,11 +475,11 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   }),'NOTE6 selected a month without month-specific evidence');
   assert((r.canonicalTiming.longTermPivots||[]).every(x=>x.isStructuralPivot===true&&Array.isArray(x.pivotReasons)&&x.pivotReasons.length>0),'long-term teaser labeled a non-structural year as pivot');
   assert((r.canonicalTiming.longTermPivots||[]).every((x,i,a)=>i===0||x.year!==a[i-1].year),'duplicate long-term pivot year');
-  assert(/흐름|이어지는|넘어가는 연결/.test(r.canonicalTiming.note2),'NOTE2 dropped dominant flow/blocked-chain translation');
-  assert(/잘 맞는 조건/.test(r.canonicalTiming.note5)&&/마지막 판단 기준/.test(r.canonicalTiming.note5),'NOTE5 lost explicit condition/decision structure');
-  assert(/가까운 시기 상세/.test(r.canonicalTiming.note6),'NOTE6 near-term hierarchy missing');
-  assert(!/앞으로 5년 큰 흐름|이후 큰 흐름/.test(r.canonicalTiming.note6),'basic NOTE6 leaked full five-year annual disclosure');
-  assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관)/.test(r.canonicalTiming.note6),'NOTE6 leaked internal jargon');
+  assert(/보통|그러면|결국/.test(r.canonicalTiming.scene),'second answer lost concrete real-life scene sequence');
+  assert(/잘 맞는 쪽|네 경우 특히/.test(r.canonicalTiming.fit),'fit answer lost concrete matching conditions');
+  assert(/지금 할 것/.test(r.canonicalTiming.timingAnswer),'timing answer lost immediate action');
+  assert(!/앞으로 5년 큰 흐름|이후 큰 흐름/.test(r.canonicalTiming.timingAnswer),'basic timing answer leaked full five-year annual disclosure');
+  assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관|압박|구조)/.test(r.canonicalTiming.timingAnswer),'timing answer leaked internal jargon');
 
   assert(r.traces.length>=5,'need at least five runtime trace samples');
   assert(errors.length===0,'browser errors: '+errors.join(' | '));
