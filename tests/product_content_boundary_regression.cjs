@@ -16,7 +16,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     globalThis.__CLASSICAL_REASONING_V1__?.version==='1.2.0' &&
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='3.2.1' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version==='2.1.1'
+    globalThis.__UNNI_PRODUCTS_V1__?.version==='2.1.2'
   ),null,{timeout:60000});
 
   const r=await page.evaluate(()=>{
@@ -159,7 +159,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     };
   });
 
-  assert(r.versions.reasoning==='1.2.0'&&r.versions.note==='3.2.1'&&r.versions.products==='2.1.1'&&r.versions.policy==='1.1.0','runtime versions drift');
+  assert(r.versions.reasoning==='1.2.0'&&r.versions.note==='3.2.1'&&r.versions.products==='2.1.2'&&r.versions.policy==='1.1.0','runtime versions drift');
 
   const c=r.contracts;
   assert(c.basic_concern.longTermDetail==='teaser-only'&&c.basic_concern.concernCount===1&&!c.basic_concern.compatibilityAllowed,'basic contract invalid');
