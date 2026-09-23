@@ -167,7 +167,7 @@ function norm(v) {
       `${row.concern}/${row.situation}/${row.mode}: rendered claim map missing`);
     for (const link of row.noteAudit.outputClaimMap) {
       const claim=row.noteAudit.claims[link.claimNum-1];
-      const actual=String(row.notes[link.noteNum-1]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+      const actual=String(row.notes[link.noteNum-1]?.desc||'').replace(/<br\s*\/?\s*>/gi,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
       assert(claim?.rawFacts && claim.ditianRuleIds?.filter(Boolean).length && claim.zipingRuleIds?.filter(Boolean).length,
         `${row.concern}/${row.situation}/${row.mode}: mapped rule provenance missing`);
       assert(claim.noteSentence===actual,
