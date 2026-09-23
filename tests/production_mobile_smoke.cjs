@@ -127,18 +127,16 @@ async function enter(page, mode, concern, situation) {
     'exact birth-time input should be primary with explicit unknown fallback '+JSON.stringify(firstState.timeInput));
   assert(firstState.submitOpacity<=0.4,'disabled consultation CTA is still too visually active '+JSON.stringify(firstState));
   if (mode==='F') assert(
-    firstState.sisterText.includes('응, 왔구나. 편하게 얘기해줘.') &&
-    firstState.sisterText.includes('네 사주 보면서 왜 마음에 걸리는지 같이 풀어볼게.') &&
+    firstState.sisterText==='응, 편하게 적어줘.' &&
     firstState.concernPrompt==='요즘 제일 마음에 걸리는 건?' &&
     !firstState.sisterText.includes('ㅎㅎ'),
-    'F input lost warm concise counselor voice '+JSON.stringify(firstState)
+    'F input copy should stay one short warm line '+JSON.stringify(firstState)
   );
   if (mode==='T') assert(
-    firstState.sisterText.includes('좋아. 필요한 것만 적어줘.') &&
-    firstState.sisterText.includes('네 사주에서 원인부터 바로 짚어볼게.') &&
+    firstState.sisterText==='좋아. 필요한 것만 적어줘.' &&
     firstState.concernPrompt==='지금 딱 궁금한 건 뭐야?' &&
     !firstState.sisterText.includes('ㅎㅎ'),
-    'T input lost concise counselor voice '+JSON.stringify(firstState)
+    'T input copy should stay one short line '+JSON.stringify(firstState)
   );
   await page.fill('#nameInput','테스트');
   const label = concern === 'love' ? '연애 · 썸' : '마음 · 스트레스';
@@ -750,16 +748,8 @@ async function inspect(page, mode) {
     await small.locator(mode==='F'?'#panelRoa':'#panelSeoa').click();
     await small.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
     const voice=await small.locator('#welcomeSisterText').innerText();
-    if(mode==='F') assert(
-      voice.includes('응, 왔구나. 편하게 얘기해줘.') &&
-      voice.includes('네 사주 보면서 왜 마음에 걸리는지 같이 풀어볼게.'),
-      '360px F voice drift '+voice
-    );
-    else assert(
-      voice.includes('좋아. 필요한 것만 적어줘.') &&
-      voice.includes('네 사주에서 원인부터 바로 짚어볼게.'),
-      '360px T voice drift '+voice
-    );
+    if(mode==='F') assert(voice==='응, 편하게 적어줘.','360px F voice drift '+voice);
+    else assert(voice==='좋아. 필요한 것만 적어줘.','360px T voice drift '+voice);
     await small.close();
   }
   await smallCtx.close();
