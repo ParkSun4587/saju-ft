@@ -185,6 +185,7 @@ function norm(v) {
       `${row.concern}/${row.situation}/${row.mode}: NOTE6 must either provide distinct evidence-backed timing roles or explicitly avoid fake month precision`
     );
     assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: hard saju jargon leaked`);
+    assert(row.audit?.duplicates?.length === 0, `${row.concern}/${row.situation}/${row.mode}: NOTE roles still repeat the same user-facing sentence: ${JSON.stringify(row.audit?.duplicates)}`);
     assert(row.finalAudit && JSON.stringify(row.finalAudit)===JSON.stringify(row.audit), `${row.concern}/${row.situation}/${row.mode}: final NOTE QA hook is not auditing the actual rendered notes`);
     assert(!row.allText.includes('계산값 그대로'), `${row.concern}/${row.situation}/${row.mode}: raw calculation dump leaked`);
     assert(!/(undefined|NaN|null)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: bad token leaked`);
@@ -838,6 +839,7 @@ function norm(v) {
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.0') && html.includes('./premium-products-v1.js?v=2.1.0'), 'entitlement/product script include missing');
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
+  assert(!paid.includes('__paidValueWrapped') && !paid.includes('global.generateConcernNotes = wrapped'), 'stale paid-value NOTE rewrite wrapper returned');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('concern-note-engine-v2.js'),'paid/note script order wrong');
   assert(html.indexOf('concern-note-engine-v2.js') < html.indexOf('product-content-policy-v1.js') && html.indexOf('product-content-policy-v1.js') < html.indexOf('premium-products-v1.js'),'policy/product script order wrong');
   assert(html.includes('resume.productId !== "concern_single"'), 'product payment return delegation missing');
