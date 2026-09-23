@@ -354,10 +354,14 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     globalThis.__techDebtPreparePayload=null;
     paymentAPI=async(body)=>{
       if(body?.action==='entitlements'){
+        const stored=[...Array(localStorage.length)].map((_,i)=>localStorage.key(i))
+          .filter(k=>k?.startsWith('unni_product_grant_v1_compatibility_'))
+          .map(k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}})
+          .find(x=>x?.userKey&&x?.token);
         return {
           ok:true,
-          verifiedPurchases:[],
-          effectiveEntitlements:[],
+          verifiedPurchases:stored?[{productId:'compatibility',userKey:stored.userKey}]:[],
+          effectiveEntitlements:stored?['compatibility']:[],
           allInOneQuote:{
             targetProduct:'all_in_one',baseAmount:100,creditAmount:0,amount:100,
             alreadyOwned:false,creditedProducts:[],
@@ -455,18 +459,21 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       document.querySelector('#unniProductClose')?.click();
       await globalThis.openUnniProduct('compatibility');
       const action=document.querySelector('#unniProductAction');
-      const reopenLabel=action?.textContent||'';
-      action?.click();
+      const reopen=document.querySelector('[data-compatibility-purchase-reopen]');
+      const reopenLabel=reopen?.textContent||'';
+      const newPartnerLabel=action?.textContent||'';
+      reopen?.click();
       await new Promise(r=>setTimeout(r,30));
       const restoredFp=document.querySelector('#unniProductBody [data-export-intro="compat"]')?.getAttribute('data-person-b-fingerprint')||'';
-      return {storedLeap:stored?.extra?.partner?.l,reopenLabel,restoredFp};
+      return {storedLeap:stored?.extra?.partner?.l,reopenLabel,newPartnerLabel,restoredFp};
     } finally {
       confirmPaymentOnServer=oldConfirm;
       verifyAccessToken=oldVerify;
     }
   });
   assert(grant.storedLeap===true,'grant save dropped partner.l '+JSON.stringify(grant));
-  assert(grant.reopenLabel.includes('구매한')&&grant.reopenLabel.includes('다시 보기'),'grant restore path not offered '+JSON.stringify(grant));
+  assert(grant.reopenLabel.includes('다시 보기'),'grant restore path not offered '+JSON.stringify(grant));
+  assert(grant.newPartnerLabel.includes('다른 상대 궁합 보기'),'new-partner compatibility path missing '+JSON.stringify(grant));
   assert(grant.restoredFp===lunar.leapUnknown.bFp,'grant restore did not reuse leap-month partner extra '+JSON.stringify(grant));
 
   assert(errors.length===0,'browser errors: '+errors.join(' | '));
