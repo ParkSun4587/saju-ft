@@ -878,15 +878,7 @@
     situationProfiles: SITUATION_PROFILES,
   };
 
-  const base = global.generateConcernNotes;
-  if (typeof base === "function" && !base.__paidValueWrapped) {
-    const wrapped = function (data, mode) {
-      return polishPaidValueNotes(base(data, mode), data || {}, mode || "F");
-    };
-    wrapped.__paidValueWrapped = true;
-    wrapped.__integratedProfileWrapped = !!base.__integratedProfileWrapped;
-    wrapped.__base = base.__base || base;
-    wrapped.__integratedBase = base;
-    global.generateConcernNotes = wrapped;
-  }
+  // NOTE 본문을 다시 쓰는 레거시 wrapper는 사용하지 않는다.
+  // 최신 classical-causal NOTE가 최종 문장을 만든 뒤, concern-note-engine에서
+  // auditPaidValueNotes()만 호출해 중복/난해 용어를 최종 QA한다.
 })(globalThis);
