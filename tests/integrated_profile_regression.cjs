@@ -119,17 +119,24 @@ function norm(v) {
       row.concern+'/'+row.situation+': F/T changed timing reasoning');
 
     for (const [mode,notes,audit] of [['F',row.notesF,row.auditF],['T',row.notesT,row.auditT]]) {
-      assert(notes.length === 6, row.concern+'/'+row.situation+'/'+mode+': expected six notes');
+      assert(notes.length === 5, row.concern+'/'+row.situation+'/'+mode+': expected five answers');
+      assert(notes.map(n=>n.themeNum).join(',') === '01,02,03,04,05', row.concern+'/'+row.situation+'/'+mode+': five-answer numbering drift');
       assert(audit?.version === '4.0.0' && audit?.engine === 'classical-causal', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
       assert(audit.genericClusterDependency === false, row.concern+'/'+row.situation+'/'+mode+': generic cluster dependency returned');
       assert(audit.structureFingerprint && audit.timingFingerprint, row.concern+'/'+row.situation+'/'+mode+': fingerprints missing');
-      assert(Array.isArray(audit.claims) && audit.claims.length === 6, row.concern+'/'+row.situation+'/'+mode+': six auditable claims missing');
+      assert(Array.isArray(audit.claims) && audit.claims.length === 6, row.concern+'/'+row.situation+'/'+mode+': six internal causal claims missing');
+      assert(Array.isArray(audit.outputClaimMap) && audit.outputClaimMap.length === 5, row.concern+'/'+row.situation+'/'+mode+': five-answer claim map missing');
       for (const claim of audit.claims) {
         assert(claim.id && claim.rawFacts && Array.isArray(claim.ditianRuleIds) && Array.isArray(claim.zipingRuleIds),
           row.concern+'/'+row.situation+'/'+mode+': claim provenance missing');
         assert(claim.ditianRuleIds.filter(Boolean).length > 0 && claim.zipingRuleIds.filter(Boolean).length > 0,
           row.concern+'/'+row.situation+'/'+mode+': claim rule ids missing');
-        assert(claim.conclusion && claim.noteSentence, row.concern+'/'+row.situation+'/'+mode+': claim conclusion/sentence missing');
+        assert(claim.conclusion, row.concern+'/'+row.situation+'/'+mode+': claim conclusion missing');
+      }
+      for (const link of audit.outputClaimMap) {
+        const claim=audit.claims[link.claimNum-1];
+        assert(claim?.userNoteIndex===link.noteNum && claim?.noteSentence===plain(notes[link.noteNum-1]?.desc),
+          row.concern+'/'+row.situation+'/'+mode+': rendered answer is not bound to mapped classical claim');
       }
       assert(audit.sourceLayers?.ditian === '1.1.0' && audit.sourceLayers?.ziping === '1.1.0',
         row.concern+'/'+row.situation+'/'+mode+': source layer versions missing');
@@ -139,11 +146,13 @@ function norm(v) {
       assert(!jargon.test(all), row.concern+'/'+row.situation+'/'+mode+': internal saju jargon leaked: '+all);
       assert(!all.includes('계산값 그대로'), row.concern+'/'+row.situation+'/'+mode+': raw calculation dump leaked');
       assert(!/(undefined|NaN|null)/.test(all), row.concern+'/'+row.situation+'/'+mode+': bad token leaked');
-      assert(plain(notes[0].desc).length >= 110, row.concern+'/'+row.situation+'/'+mode+': NOTE1 too thin');
-      assert(plain(notes[1].desc).length >= 120, row.concern+'/'+row.situation+'/'+mode+': NOTE2 too thin');
-      assert(plain(notes[2].desc).length >= 120, row.concern+'/'+row.situation+'/'+mode+': NOTE3 too thin');
-      assert(notes[5]?.__timingQA?.structureFingerprint === audit.structureFingerprint,
-        row.concern+'/'+row.situation+'/'+mode+': NOTE6 lost natal fingerprint');
+      for (const [i,note] of notes.entries()) {
+        const len=plain(note.desc).length;
+        assert(len >= 55 && len <= 420, row.concern+'/'+row.situation+'/'+mode+': answer '+(i+1)+' length drift '+len);
+      }
+      assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(all), row.concern+'/'+row.situation+'/'+mode+': old/abstract consultation wording leaked');
+      assert(notes[4]?.__timingQA?.structureFingerprint === audit.structureFingerprint,
+        row.concern+'/'+row.situation+'/'+mode+': timing answer lost natal fingerprint');
     }
 
     assert(norm(row.notesF[0].desc) !== norm(row.notesT[0].desc), row.concern+'/'+row.situation+': F/T tone did not differ');
