@@ -59,10 +59,10 @@ function loadServer(){
     return {userKey,token};
   }
 
-  const full=await purchaseRecord('full_saju',4900,'pay_full',{});
-  const bundle=await purchaseRecord('concern_bundle3',2900,'pay_bundle',bundleExtra);
-  const compat=await purchaseRecord('compatibility',5900,'pay_compat',{partner:{n:'상대',b:'19990511',t:'12:00',g:'female',c:'solar',l:false}});
-  const all=await purchaseRecord('all_in_one',9900,'pay_all',{situations:allSituations});
+  const full=await purchaseRecord('full_saju',100,'pay_full',{});
+  const bundle=await purchaseRecord('concern_bundle3',100,'pay_bundle',bundleExtra);
+  const compat=await purchaseRecord('compatibility',100,'pay_compat',{partner:{n:'상대',b:'19990511',t:'12:00',g:'female',c:'solar',l:false}});
+  const all=await purchaseRecord('all_in_one',100,'pay_all',{situations:allSituations});
 
   const verifiedFull=await call({action:'verify',userKey:full.userKey,token:full.token,expectedProductId:'full_saju'});
   assert(verifiedFull.status===200&&verifiedFull.json.ok===true,'matching premium grant verification failed');
@@ -76,12 +76,12 @@ function loadServer(){
   assert(crossAllToCompat.status===200&&crossAllToCompat.json.ok===false,'all_in_one incorrectly unlocked compatibility');
 
   const q=server.__test.calculateUpgradeQuote;
-  assert(q('all_in_one',[]).amount===9900,'no-purchase quote must be 9900');
-  assert(q('all_in_one',[{productId:'full_saju'}]).amount===5000,'full_saju credit must yield 5000');
-  assert(q('all_in_one',[{productId:'concern_bundle3'}]).amount===7000,'bundle credit must yield 7000');
-  assert(q('all_in_one',[{productId:'full_saju'},{productId:'concern_bundle3'}]).amount===2100,'two credits must yield 2100');
-  assert(q('all_in_one',[{productId:'compatibility'}]).amount===9900,'compatibility must not credit all_in_one');
-  assert(q('all_in_one',[{productId:'full_saju'},{productId:'compatibility'}]).amount===5000,'compatibility must not add credit');
+  assert(q('all_in_one',[]).amount===100,'QA no-purchase quote must be 100');
+  assert(q('all_in_one',[{productId:'full_saju'}]).amount===100,'QA full_saju state must keep all_in_one payable at 100');
+  assert(q('all_in_one',[{productId:'concern_bundle3'}]).amount===100,'QA bundle state must keep all_in_one payable at 100');
+  assert(q('all_in_one',[{productId:'full_saju'},{productId:'concern_bundle3'}]).amount===100,'QA prior purchases must keep all_in_one payable at 100');
+  assert(q('all_in_one',[{productId:'compatibility'}]).amount===100,'compatibility must keep all_in_one at QA price');
+  assert(q('all_in_one',[{productId:'full_saju'},{productId:'compatibility'}]).amount===100,'compatibility must not alter QA price');
   assert(q('all_in_one',[{productId:'all_in_one'}]).alreadyOwned&&q('all_in_one',[{productId:'all_in_one'}]).amount===0,'all_in_one owned state invalid');
 
   async function call(body){
@@ -96,7 +96,7 @@ function loadServer(){
   const branchSnapshot=server.__test.snapshot(branchBase);
   assert(branchSnapshot.t==='寅'&&branchSnapshot.q==='saving','server must preserve selected 12-branch birth time and concern situation');
   const branchPrepare=await call({action:'prepare',data:branchBase,entitlementTokens:[]});
-  assert(branchPrepare.status===200&&branchPrepare.json.ok&&branchPrepare.json.amount===990,'12-branch birth time must reach payment prepare');
+  assert(branchPrepare.status===200&&branchPrepare.json.ok&&branchPrepare.json.amount===100,'12-branch birth time must reach payment prepare');
   const branchResume=await call({action:'resume',ticket:branchPrepare.json.ticket});
   assert(branchResume.status===200&&branchResume.json.data.t==='寅'&&branchResume.json.data.q==='saving','payment ticket resume lost branch time or concern situation');
   const declined=await call({
@@ -118,54 +118,54 @@ function loadServer(){
   assert(branchCompat.x.partner.t==='子','compatibility partner 12-branch birth time must be accepted');
 
   const none=(await call({action:'entitlements',data:entitlementData,tokens:[]})).json;
-  assert(none.allInOneQuote.amount===9900&&none.verifiedPurchases.length===0,'empty entitlement server quote drift');
+  assert(none.allInOneQuote.amount===100&&none.verifiedPurchases.length===0,'empty entitlement server quote drift');
 
   const fullState=(await call({action:'entitlements',data:entitlementData,tokens:[full]})).json;
-  assert(fullState.allInOneQuote.amount===5000&&fullState.effectiveEntitlements.includes('full_saju'),'verified full_saju server quote failed');
+  assert(fullState.allInOneQuote.amount===100&&fullState.effectiveEntitlements.includes('full_saju'),'verified full_saju server quote failed');
 
   const bundleState=(await call({action:'entitlements',data:entitlementData,tokens:[bundle]})).json;
-  assert(bundleState.allInOneQuote.amount===7000,'verified bundle server quote failed');
+  assert(bundleState.allInOneQuote.amount===100,'verified bundle server quote failed');
 
   const bothState=(await call({action:'entitlements',data:entitlementData,tokens:[full,bundle]})).json;
-  assert(bothState.allInOneQuote.amount===2100,'verified double-credit server quote failed');
+  assert(bothState.allInOneQuote.amount===100,'verified double-credit server quote failed');
 
   const compatState=(await call({action:'entitlements',data:entitlementData,tokens:[compat]})).json;
-  assert(compatState.allInOneQuote.amount===9900&&!compatState.effectiveEntitlements.includes('full_saju'),'compatibility leaked into single-person credit');
+  assert(compatState.allInOneQuote.amount===100&&!compatState.effectiveEntitlements.includes('full_saju'),'compatibility leaked into single-person credit');
 
   const allState=(await call({action:'entitlements',data:entitlementData,tokens:[all]})).json;
   assert(allState.effectiveEntitlements.includes('full_saju')&&allState.effectiveEntitlements.includes('concern_bundle3')&&!allState.effectiveEntitlements.includes('compatibility'),'all_in_one entitlement graph invalid');
 
   const fake=(await call({action:'entitlements',data:entitlementData,tokens:[{userKey:full.userKey,token:'v3.fake.fake'}]})).json;
-  assert(fake.allInOneQuote.amount===9900&&fake.verifiedPurchases.length===0,'fake local grant produced credit');
+  assert(fake.allInOneQuote.amount===100&&fake.verifiedPurchases.length===0,'fake local grant produced credit');
 
   const fullSnap=server.__test.snapshot({...base,p:'full_saju',x:{}});
-  const expiredGrant={userKey:server.__test.resultKey(fullSnap),ownerKey:server.__test.ownerKey(fullSnap),orderId:'expired',paymentKey:'pay_expired',productId:'full_saju',amount:4900,exp:Date.now()-1000};
+  const expiredGrant={userKey:server.__test.resultKey(fullSnap),ownerKey:server.__test.ownerKey(fullSnap),orderId:'expired',paymentKey:'pay_expired',productId:'full_saju',amount:100,exp:Date.now()-1000};
   const expiredToken=await server.__test.signedGrantToken(expiredGrant,signing,'v3');
   const expired=(await call({action:'entitlements',data:entitlementData,tokens:[{userKey:expiredGrant.userKey,token:expiredToken}]})).json;
-  assert(expired.allInOneQuote.amount===9900&&expired.verifiedPurchases.length===0,'expired entitlement produced credit');
+  assert(expired.allInOneQuote.amount===100&&expired.verifiedPurchases.length===0,'expired entitlement produced credit');
 
   const allData={...base,p:'all_in_one',x:{situations:allSituations}};
   const preparedFull=await call({action:'prepare',data:allData,entitlementTokens:[full]});
-  assert(preparedFull.status===200&&preparedFull.json.amount===5000&&preparedFull.json.baseAmount===9900,'server prepare ignored full_saju credit');
+  assert(preparedFull.status===200&&preparedFull.json.amount===100&&preparedFull.json.baseAmount===100,'server prepare ignored full_saju credit');
   const preparedBundle=await call({action:'prepare',data:allData,entitlementTokens:[bundle]});
-  assert(preparedBundle.json.amount===7000,'server prepare ignored bundle credit');
+  assert(preparedBundle.json.amount===100,'server prepare ignored bundle credit');
   const preparedBoth=await call({action:'prepare',data:allData,entitlementTokens:[full,bundle]});
-  assert(preparedBoth.json.amount===2100,'server prepare ignored combined credit');
+  assert(preparedBoth.json.amount===100,'server prepare ignored combined credit');
   const preparedCompat=await call({action:'prepare',data:allData,entitlementTokens:[compat]});
-  assert(preparedCompat.json.amount===9900,'server prepare credited compatibility');
+  assert(preparedCompat.json.amount===100,'server prepare credited compatibility');
 
   const blockedFullFromAll=await call({action:'prepare',data:{...base,p:'full_saju',x:{}},entitlementTokens:[all]});
   assert(blockedFullFromAll.status===409&&!blockedFullFromAll.json.ok,'all_in_one owner can repurchase included full_saju');
   const blockedBundleFromAll=await call({action:'prepare',data:{...base,p:'concern_bundle3',x:bundleExtra},entitlementTokens:[all]});
   assert(blockedBundleFromAll.status===409&&!blockedBundleFromAll.json.ok,'all_in_one owner can repurchase included concern bundle');
   const compatAfterAll=await call({action:'prepare',data:{...base,p:'compatibility',x:{partner:{n:'다른상대',b:'20010101',t:'unknown',g:'male',c:'solar',l:false}}},entitlementTokens:[all]});
-  assert(compatAfterAll.status===200&&compatAfterAll.json.amount===5900,'all_in_one incorrectly entitles or discounts compatibility');
+  assert(compatAfterAll.status===200&&compatAfterAll.json.amount===100,'all_in_one incorrectly entitles or discounts compatibility');
 
-  const tampered=await call({action:'confirm',paymentKey:'pay_upgrade_bad',orderId:preparedFull.json.orderId,amount:9900,userKey:preparedFull.json.userKey,ticket:preparedFull.json.ticket});
+  const tampered=await call({action:'confirm',paymentKey:'pay_upgrade_bad',orderId:preparedFull.json.orderId,amount:101,userKey:preparedFull.json.userKey,ticket:preparedFull.json.ticket});
   assert(tampered.status===400&&!tampered.json.ok,'tampered return amount was accepted');
 
-  const confirmed=await call({action:'confirm',paymentKey:'pay_upgrade_ok',orderId:preparedFull.json.orderId,amount:5000,userKey:preparedFull.json.userKey,ticket:preparedFull.json.ticket});
-  assert(confirmed.status===200&&confirmed.json.ok&&confirmed.json.amount===5000&&confirmed.json.baseAmount===9900,'server did not confirm ticket-quoted upgrade amount');
+  const confirmed=await call({action:'confirm',paymentKey:'pay_upgrade_ok',orderId:preparedFull.json.orderId,amount:100,userKey:preparedFull.json.userKey,ticket:preparedFull.json.ticket});
+  assert(confirmed.status===200&&confirmed.json.ok&&confirmed.json.amount===100&&confirmed.json.baseAmount===100,'server did not confirm ticket-quoted upgrade amount');
 
   const browser=await chromium.launch({headless:true});
   const page=await browser.newPage({viewport:{width:390,height:844}});
@@ -250,9 +250,9 @@ function loadServer(){
   assert(report.all.fullSections===12&&report.all.notes===36&&report.all.common===1&&report.all.timing===1&&report.all.strategy===1,'all_in_one is not full_saju + 6 concerns + synthesis '+JSON.stringify(report.all));
   assert(report.all.compat===0,'all_in_one contains compatibility data');
   assert(report.graph.allFull&&report.graph.allBundle&&!report.graph.allCompat,'client entitlement graph invalid');
-  assert(JSON.stringify([report.graph.none,report.graph.full,report.graph.bundle,report.graph.both,report.graph.compat])===JSON.stringify([9900,5000,7000,2100,9900]),'client upgrade quotes drift '+JSON.stringify(report.graph));
+  assert(JSON.stringify([report.graph.none,report.graph.full,report.graph.bundle,report.graph.both,report.graph.compat])===JSON.stringify([100,100,100,100,100]),'client upgrade quotes drift '+JSON.stringify(report.graph));
   assert(report.graph.states.fullOwned.kind==='purchased'&&report.graph.states.fullIncluded.kind==='included','purchased/included states drift');
-  assert(report.graph.states.upgradeFull.amount===5000&&report.graph.states.upgradeBoth.amount===2100,'upgrade UI states drift');
+  assert(report.graph.states.upgradeFull.kind==='unpurchased'&&report.graph.states.upgradeFull.amount===100&&report.graph.states.upgradeBoth.kind==='unpurchased'&&report.graph.states.upgradeBoth.amount===100,'upgrade UI states drift');
   assert(report.graph.recs.none==='full_saju','no-premium default recommendation must be full_saju');
   assert(report.graph.recs.full==='all_in_one'&&report.graph.recs.bundle==='full_saju'&&report.graph.recs.both==='all_in_one'&&report.graph.recs.all==='compatibility'&&report.graph.recs.compat==='full_saju','entitlement-aware recommendations drift '+JSON.stringify(report.graph.recs));
 
@@ -286,7 +286,7 @@ function loadServer(){
   );
 
   console.log('PREMIUM_ENTITLEMENT_LADDER_PASS',JSON.stringify({
-    quotes:{none:9900,full:5000,bundle:7000,both:2100,compatibility:9900},
+    quotes:{none:100,full:100,bundle:100,both:100,compatibility:100},
     graph:report.graph,
     fullSections:report.sections.map(x=>({title:x.title,sourceRuleIds:x.claim.sourceRuleIds,newFacts:x.claim.newFacts,conclusion:x.claim.conclusion})),
     allInOne:report.all,
