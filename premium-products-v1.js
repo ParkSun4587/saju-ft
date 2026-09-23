@@ -280,6 +280,24 @@
     return collectStoredPremiumGrants().find((row) => row.userKey === purchase.userKey)?.grant || null;
   }
 
+  function verifiedCompatibilityGrants(state, fallbackGrant = null) {
+    const stored = collectStoredPremiumGrants();
+    const grants = (state?.verifiedPurchases || [])
+      .filter((row) => row.productId === "compatibility")
+      .map((row) => stored.find((item) => item.userKey === row.userKey)?.grant)
+      .filter((grant) => grant?.extra?.partner);
+    if (fallbackGrant?.extra?.partner && !grants.some((grant) => grant.userKey === fallbackGrant.userKey)) {
+      grants.push(fallbackGrant);
+    }
+    const seen = new Set();
+    return grants.filter((grant) => {
+      const key = grant.userKey || grant.orderId || JSON.stringify(grant.extra?.partner || {});
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
   function productStateFor(productId, state) {
     return entitlementApi()?.getProductState?.(productId,state)
       || { kind:"unpurchased", productId, amount:PRODUCTS[productId]?.price || 0, label:`${won(PRODUCTS[productId]?.price || 0)}에 열기` };
@@ -1494,7 +1512,12 @@
   }
 
   function saveGrant(data, productId, grant) {
-    try { localStorage.setItem(grantStoreKey(data, productId), JSON.stringify(grant)); } catch (_) {}
+    try {
+      const key = productId === "compatibility" && grant?.orderId
+        ? "unni_product_grant_v1_compatibility_" + grant.orderId
+        : grantStoreKey(data, productId);
+      localStorage.setItem(key, JSON.stringify(grant));
+    } catch (_) {}
   }
 
   function readGrant(data, productId) {
@@ -1754,7 +1777,37 @@
     if (state.kind === "purchased") {
       root.querySelector("#unniProductPrice").textContent = "구매 완료";
       action.textContent = productActionLabel(productId,state);
-      if (productId === "all_in_one") {
+      if (productId === "compatibility") {
+        const purchasedGrants = verifiedCompatibilityGrants(verifiedState, directGrant);
+        if (purchasedGrants.length) {
+          body.insertAdjacentHTML("beforeend", `<div data-compatibility-purchase-history="1" style="margin-top:12px;padding:12px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0"><div style="font-size:10.5px;font-weight:900;color:#475569;margin-bottom:7px">구매한 궁합 다시 보기</div><div style="display:grid;gap:7px">${purchasedGrants.map((grant,index) => {
+            const p = grant.extra?.partner || {};
+            const label = [p.n || "상대", p.b || ""].filter(Boolean).join(" · ");
+            return `<button type="button" data-compatibility-purchase-reopen="${index}" style="width:100%;padding:10px 11px;border:1px solid #dbe3ec;border-radius:11px;background:white;text-align:left;font-size:11px;font-weight:800;color:#334155;cursor:pointer">${esc(label)} <span style="float:right;color:#64748b">다시 보기 →</span></button>`;
+          }).join("")}</div></div>`);
+          body.querySelectorAll("[data-compatibility-purchase-reopen]").forEach((button) => {
+            button.addEventListener("click", () => {
+              const grant = purchasedGrants[Number(button.dataset.compatibilityPurchaseReopen)];
+              if (grant) showReport(productId, data, grant.extra || {});
+            });
+          });
+        }
+        root.querySelector("#unniProductPrice").textContent = purchasedGrants.length > 1 ? `구매 ${purchasedGrants.length}건` : "구매 완료";
+        action.textContent = `다른 상대 궁합 보기 · ${won(product.price)}`;
+        action.onclick = async () => {
+          action.disabled = true;
+          try {
+            const extra = collectExtra(productId,data,root);
+            if (isFreeLaunch) return showReport(productId,data,extra);
+            await beginPaidCheckout(productId,data,extra,root,verifiedState);
+          } catch (e) {
+            productToast(data, e?.message || {
+              F: "새 상대 궁합을 열지 못했어. 기존에 산 궁합은 그대로 있으니까 입력값만 한 번 확인해줘.",
+              T: "새 상대 궁합을 열지 못했어. 기존 구매내역은 유지돼. 입력값을 확인해줘.",
+            });
+          } finally { action.disabled = false; }
+        };
+      } else if (productId === "all_in_one") {
         const savedSituations = directGrant?.extra?.situations || {};
         for (const key of Object.keys(CONCERNS)) {
           const select = root.querySelector(`[data-all-situation="${key}"]`);
@@ -2136,7 +2189,7 @@
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
   global.__UNNI_PRODUCTS_V1__ = {
-    version:"2.1.1",
+    version:"2.1.2",
     products:PRODUCTS,
     contracts:global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.contracts || {},
     buildProductBody:productBody,
