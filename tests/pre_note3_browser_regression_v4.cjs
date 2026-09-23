@@ -200,15 +200,18 @@ async function load(page) {
     let tText = '';
     const summary = [];
     for (const set of copyAudit.out) {
-      assert(set.notes.length === 6, `note count ${set.key}/${set.mode}: ${set.notes.length}`);
-      assert(new Set(set.notes.map(n => n.title)).size === 6, `duplicate note title ${set.key}/${set.mode}`);
+      assert(set.notes.length === 5, `answer count ${set.key}/${set.mode}: ${set.notes.length}`);
+      assert(new Set(set.notes.map(n => n.title)).size === 5, `duplicate answer title ${set.key}/${set.mode}`);
       const full = set.notes.map(n => `${n.badge} ${n.title} ${n.desc} ${n.checklist}`).join(' ');
       assert(!/(undefined|NaN|null)/.test(full), `bad token ${set.key}/${set.mode}`);
       for (const phrase of banned) assert(!full.includes(phrase), `banned phrase ${phrase} in ${set.key}/${set.mode}`);
       for (const phrase of jargon) assert(!full.includes(phrase), `hard jargon ${phrase} in ${set.key}/${set.mode}`);
       for (const n of set.notes) {
-        assert(n.badge && n.title && n.desc && n.checklist, `empty note field ${set.key}/${set.mode}`);
+        assert(n.badge && n.title && n.desc, `empty answer field ${set.key}/${set.mode}`);
+        const len=String(n.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().length;
+        assert(len>=55 && len<=420, `answer length drift ${set.key}/${set.mode}: ${len}`);
       }
+      assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(full), `old/abstract answer wording ${set.key}/${set.mode}`);
       if (set.mode === 'F') fText += ' ' + full; else tText += ' ' + full;
       summary.push({key:set.key, mode:set.mode, titles:set.notes.map(n=>n.title)});
     }
@@ -221,16 +224,15 @@ async function load(page) {
     for (const key of Object.keys(LABELS)) {
       const f = copyAudit.out.find(x => x.key === key && x.mode === 'F');
       const t = copyAudit.out.find(x => x.key === key && x.mode === 'T');
-      const sameTitles = f.notes.filter((n,i) => n.title === t.notes[i].title).length;
-      assert(sameTitles <= 1, `F/T titles collapsed for ${key}: ${sameTitles}`);
-      assert(f.notes.map(n=>n.desc).join('|') !== t.notes.map(n=>n.desc).join('|'), `F/T body collapsed for ${key}`);
+      const bodyDiffs=f.notes.filter((n,i)=>n.desc!==t.notes[i]?.desc).length;
+      assert(bodyDiffs >= 2, `F/T voice did not materially differ for ${key}: ${bodyDiffs}`);
     }
     console.log('COPY_QA_PASS', JSON.stringify({fScore,tScore,personalized:copyAudit.personalized,summary}));
 
     await page.close();
   }
 
-  // B. Explicitly find a 中和 chart and ensure NOTE 1/2 no longer treat it as 신약.
+  // B. A middle-strength chart must still render plain user language, not internal strength jargon.
   {
     const page = await context.newPage();
     const errs = [];
@@ -253,14 +255,14 @@ async function load(page) {
                   userGender: 'female',
                   userCalendar: 'solar',
                   concernKey: 'money',
+                  concernSituation:'saving',
                 };
-                const n1 = buildNoteOneInsight(data, 'money', '돈·재물', false);
-                const n2 = buildNoteTwoPattern(data, 'money', '돈·재물', false);
+                const notes=generateConcernNotes(data,'F');
                 found = {
                   date: data.userBirthStr,
                   ratio: r.analysisProfile.dayMaster.supportRatio,
-                  n1: n1.desc,
-                  n2: n2.desc,
+                  count:notes.length,
+                  text:notes.map(n=>String(n.desc||'').replace(/<[^>]+>/g,' ')).join(' '),
                 };
                 break outer;
               }
@@ -270,12 +272,9 @@ async function load(page) {
       }
       return found;
     });
-    assert(middle, 'could not locate deterministic 중화 sample');
-    assert(middle.n1.includes('버틸 때와 내려놓을 때를 꽤 잘 아는데'), 'NOTE1 middle-strength copy drift');
-    assert(middle.n2.includes('버틸 때와 내려놓을 때를 꽤 잘 아는데'), 'NOTE2 middle-strength copy drift');
-    assert(!middle.n1.includes('상황과 사람의 분위기를 빨리 읽는 만큼 네 마음이 뒤로 밀리기 쉬워'), 'NOTE1 collapsed middle into weak copy');
-    assert(!middle.n2.includes('상황과 사람의 분위기를 빨리 읽는 만큼 네 마음이 뒤로 밀리기 쉬워'), 'NOTE2 collapsed middle into weak copy');
-    assert(!middle.n1.includes('중화') && !middle.n2.includes('중화'), 'hard strength jargon leaked into user copy');
+    assert(middle, 'could not locate deterministic middle-strength sample');
+    assert(middle.count===5,'middle-strength sample did not render five answers');
+    assert(!/(신강|신약|중화|압박|구조|월령|지장간|격국|용신)/.test(middle.text), 'internal strength/classical jargon leaked into user copy');
     assert(errs.length === 0, `middle-strength browser errors: ${errs.join(' | ')}`);
     console.log('MIDDLE_STRENGTH_PASS', JSON.stringify({date:middle.date, ratio:middle.ratio}));
     await page.close();
@@ -389,19 +388,12 @@ async function load(page) {
         classical:[!!data.analysisProfile?.classical?.japyeong, !!data.analysisProfile?.classical?.jeokcheon, !!data.analysisProfile?.classical?.yongshin, !('qiongtong' in (data.analysisProfile?.classical || {}))],
         noteCount:Array.isArray(notes) ? notes.length : -1,
         noteNums:Array.isArray(notes) ? notes.map(x=>x.themeNum) : [],
-        note1Valid:!!(notes?.[0]?.title && notes?.[0]?.desc && notes?.[0]?.checklist),
-        note2Valid:!!(notes?.[1]?.title && notes?.[1]?.desc && notes?.[1]?.checklist),
-        note3Valid:!!(notes?.[2]?.title && notes?.[2]?.desc && notes?.[2]?.checklist && notes?.[2]?.badge),
-        note3Integrated:!!(data.noteV3Audit?.structureFingerprint && data.noteV3Audit?.claims?.[2]?.noteSentence && diagnosis?.structureFingerprint === data.noteV3Audit?.structureFingerprint),
-        note4Valid:!!(notes?.[3]?.title && notes?.[3]?.desc && notes?.[3]?.checklist && notes?.[3]?.badge),
-        note5Valid:!!(notes?.[4]?.title && notes?.[4]?.desc && notes?.[4]?.checklist && notes?.[4]?.badge),
-        note6Valid:!!(
-          notes?.[5]?.title && notes?.[5]?.desc && notes?.[5]?.checklist && notes?.[5]?.__timingQA &&
-          (
-            (notes[5].__timingQA.firstDate && notes[5].__timingQA.secondDate) ||
-            String(notes[5].desc||'').includes('특정 달을 억지로 찍지는 않을게')
-          )
-        ),
+        note1Valid:!!(notes?.[0]?.title && notes?.[0]?.desc && notes?.[0]?.badge),
+        note2Valid:!!(notes?.[1]?.title && notes?.[1]?.desc && notes?.[1]?.badge),
+        note3Valid:!!(notes?.[2]?.title && notes?.[2]?.desc && notes?.[2]?.badge),
+        note3Integrated:!!(data.noteV3Audit?.structureFingerprint && data.noteV3Audit?.outputClaimMap?.length===5 && diagnosis?.structureFingerprint === data.noteV3Audit?.structureFingerprint),
+        note4Valid:!!(notes?.[3]?.title && notes?.[3]?.desc && notes?.[3]?.badge),
+        note5Valid:!!(notes?.[4]?.title && notes?.[4]?.desc && notes?.[4]?.badge && notes?.[4]?.__timingQA),
         noteV2Version:data.noteV3Audit?.version || '',
         noteV2Primary:data.noteV3Audit?.claims?.[0]?.ditianRuleIds?.[0] || '',
         noteV2Secondary:data.noteV3Audit?.claims?.[0]?.zipingRuleIds?.[0] || '',
@@ -412,7 +404,7 @@ async function load(page) {
         badText:/(^|[^가-힣a-zA-Z])(undefined|NaN)([^가-힣a-zA-Z]|$)/.test(generated),
         failureToast:visible.includes('만세력 연산에 실패했습니다') || visible.includes('연산 중 오류가 발생했습니다'),
         resultVisible:document.getElementById('resultSection')?.style.display !== 'none',
-        firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('NOTE 01'),
+        firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('1/5'),
         paywallHook:document.getElementById('payBoxHookMsg')?.innerText || '',
         paywallTeaser:document.getElementById('paywallNextTeaser')?.innerText || '',
         paywallFeatures:[...document.querySelectorAll('#payBoxFeatures > div')].map(x => x.querySelector('span:last-child')?.innerText.trim() || ''),
@@ -420,7 +412,8 @@ async function load(page) {
         note2PreviewText:document.getElementById('note2PreviewBody')?.innerText || '',
         expectedPaywall:(() => {
           const copy = getPaywallConversionCopy(data, c.mode === 'T');
-          return {hook:copy.hook, teaser:copy.teaser, preview:copy.preview, features:copy.features};
+          const actualPreview=String(notes[1]?.desc||'').split(/<br\s*\/?>\s*<br\s*\/?>/i)[0].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+          return {hook:copy.hook, teaser:copy.teaser, actualPreview, features:copy.features};
         })(),
         funExtrasDisplay:document.getElementById('resultFunExtras')?.style.display || '',
         shareActionsDisplay:document.getElementById('resultShareActions')?.style.display || '',
@@ -445,26 +438,25 @@ async function load(page) {
     assert(!!report.gyeok, `${c.id}: gyeok missing`);
     assert(!!report.yongshin, `${c.id}: yongshin missing`);
     assert(report.classical.every(Boolean), `${c.id}: classical layer missing ${report.classical}`);
-    assert(report.noteCount === 6, `${c.id}: notes=${report.noteCount}`);
-    assert(report.noteNums.join(',') === '01,02,03,04,05,06', `${c.id}: numbering ${report.noteNums.join(',')}`);
-    assert(report.note1Valid, `${c.id}: NOTE1 content missing`);
-    assert(report.note2Valid, `${c.id}: NOTE2 content missing`);
-    assert(report.note3Valid, `${c.id}: NOTE3 content missing`);
-    assert(report.note3Integrated, `${c.id}: causal classical diagnosis not integrated into generated notes`);
-    assert(report.noteV2Version === '4.0.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: NOTE v3 rule provenance audit missing`);
-    assert(report.note4Valid, `${c.id}: NOTE4 prescription missing`);
-    assert(report.note5Valid, `${c.id}: NOTE5 domain-specific fit section missing`);
-    assert(report.note6Valid, `${c.id}: NOTE6 timing metadata missing`);
+    assert(report.noteCount === 5, `${c.id}: answers=${report.noteCount}`);
+    assert(report.noteNums.join(',') === '01,02,03,04,05', `${c.id}: numbering ${report.noteNums.join(',')}`);
+    assert(report.note1Valid, `${c.id}: core answer missing`);
+    assert(report.note2Valid, `${c.id}: real-scene answer missing`);
+    assert(report.note3Valid, `${c.id}: fit answer missing`);
+    assert(report.note3Integrated, `${c.id}: classical diagnosis not integrated into five answers`);
+    assert(report.noteV2Version === '4.0.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
+    assert(report.note4Valid, `${c.id}: filter answer missing`);
+    assert(report.note5Valid, `${c.id}: timing/action answer missing`);
     assert(!report.forbiddenVisible, `${c.id}: removed meta/explanation copy leaked into UI`);
     assert(!report.badText, `${c.id}: undefined/NaN leaked into generated note text`);
     assert(!report.failureToast, `${c.id}: calculation failure toast visible`);
     assert(report.resultVisible, `${c.id}: result section not visible`);
-    assert(report.firstNoteRendered, `${c.id}: NOTE01 not rendered into result DOM`);
+    assert(report.firstNoteRendered, `${c.id}: first 1/5 answer not rendered into result DOM`);
     assert(report.paywallHook === report.expectedPaywall.hook, `${c.id}: paywall hook not situation-specific`);
     assert(report.paywallTeaser.includes(report.expectedPaywall.teaser), `${c.id}: paywall teaser not situation-specific`);
-    assert(report.note2PreviewText.includes(report.expectedPaywall.preview), `${c.id}: NOTE2 preview not stopped at configured answer edge`);
+    assert(report.note2PreviewText.includes(report.expectedPaywall.actualPreview), `${c.id}: second-answer preview is not the actual generated scene`);
     assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), `${c.id}: paid outcomes mismatch`);
-    assert(report.paywallSubcopy === 'NOTE2 다음부터 NOTE6까지', `${c.id}: paid scope copy drift`);
+    assert(report.paywallSubcopy === '맞는 조건 · 거를 신호 · 가까운 흐름까지', `${c.id}: paid scope copy drift`);
     assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
     assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
     if (c.id === 'user-branch-love-F') {
