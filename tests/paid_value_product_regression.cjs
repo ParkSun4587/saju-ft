@@ -157,40 +157,42 @@ function norm(v) {
 
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
-    assert(row.notes.length === 6, `${row.concern}/${row.situation}/${row.mode}: note count ${row.notes.length}`);
-    assert(row.noteAudit?.version === '4.0.0' && row.noteAudit?.structureFingerprint, `${row.concern}/${row.situation}/${row.mode}: NOTE v3 audit missing`);
+    assert(row.notes.length === 5, `${row.concern}/${row.situation}/${row.mode}: answer count ${row.notes.length}`);
+    assert(row.notes.map(n=>n.badge).join('|') === '핵심|실제 장면|잘 맞는 조건|거를 신호|가까운 흐름',
+      `${row.concern}/${row.situation}/${row.mode}: five-answer roles drift ${JSON.stringify(row.notes.map(n=>n.badge))}`);
+    assert(row.noteAudit?.version === '4.0.0' && row.noteAudit?.structureFingerprint, `${row.concern}/${row.situation}/${row.mode}: five-answer audit missing`);
     assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
-    assert(Array.isArray(row.noteAudit?.claims) && row.noteAudit.claims.length === 6, `${row.concern}/${row.situation}/${row.mode}: six causal claims missing`);
-    for (const claim of row.noteAudit.claims) {
-      assert(claim.rawFacts && claim.ditianRuleIds?.filter(Boolean).length && claim.zipingRuleIds?.filter(Boolean).length && claim.noteSentence,
-        `${row.concern}/${row.situation}/${row.mode}: auditable rule provenance missing`);
+    assert(Array.isArray(row.noteAudit?.claims) && row.noteAudit.claims.length === 6, `${row.concern}/${row.situation}/${row.mode}: six internal causal claims missing`);
+    assert(Array.isArray(row.noteAudit?.outputClaimMap) && row.noteAudit.outputClaimMap.length === 5,
+      `${row.concern}/${row.situation}/${row.mode}: rendered claim map missing`);
+    for (const link of row.noteAudit.outputClaimMap) {
+      const claim=row.noteAudit.claims[link.claimNum-1];
+      const actual=String(row.notes[link.noteNum-1]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+      assert(claim?.rawFacts && claim.ditianRuleIds?.filter(Boolean).length && claim.zipingRuleIds?.filter(Boolean).length,
+        `${row.concern}/${row.situation}/${row.mode}: mapped rule provenance missing`);
+      assert(claim.noteSentence===actual,
+        `${row.concern}/${row.situation}/${row.mode}: mapped claim is not bound to rendered answer ${link.noteNum}`);
     }
 
-    const n1=String(row.notes[0]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    for (const [i,note] of row.notes.entries()) {
+      const body=String(note?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+      assert(body.length >= 55 && body.length <= 420,
+        `${row.concern}/${row.situation}/${row.mode}: answer ${i+1} length drift (${body.length})`);
+    }
     const n2=String(row.notes[1]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-    const n4=String(row.notes[3]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-    const n5=String(row.notes[4]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-
-    assert(n1.length >= 140 && n1.length <= 1200, `${row.concern}/${row.situation}/${row.mode}: NOTE1 classical-fusion size drift (${n1.length})`);
-    assert(n2.length >= 140 && n2.length <= 1200, `${row.concern}/${row.situation}/${row.mode}: NOTE2 classical-fusion size drift (${n2.length})`);
-    assert(n4.length >= 150 && n4.length <= 1400, `${row.concern}/${row.situation}/${row.mode}: NOTE4 classical-fusion action size drift (${n4.length})`);
-    assert(n5.length >= 120 && n5.length <= 760, `${row.concern}/${row.situation}/${row.mode}: NOTE5 domain-fit size drift (${n5.length})`);
-    assert(/시작|보통/.test(n2) && /갈림길|여기서|그리고/.test(n2), `${row.concern}/${row.situation}/${row.mode}: NOTE2 lacks concrete causal sequence`);
-    assert(row.notes[5]?.timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: NOTE6 situation metadata missing`);
-    const firstTiming=norm(row.notes[5]?.timing?.firstBody);
-    const secondTiming=norm(row.notes[5]?.timing?.secondBody);
-    assert(
-      (firstTiming && secondTiming && firstTiming!==secondTiming) ||
-      row.allText.includes('특정 달을 억지로 찍지는 않을게'),
-      `${row.concern}/${row.situation}/${row.mode}: NOTE6 must either provide distinct evidence-backed timing roles or explicitly avoid fake month precision`
-    );
-    assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: hard saju jargon leaked`);
-    assert(row.audit?.duplicates?.length === 0, `${row.concern}/${row.situation}/${row.mode}: NOTE roles still repeat the same user-facing sentence: ${JSON.stringify(row.audit?.duplicates)}`);
-    assert(row.finalAudit && JSON.stringify(row.finalAudit)===JSON.stringify(row.audit), `${row.concern}/${row.situation}/${row.mode}: final NOTE QA hook is not auditing the actual rendered notes`);
-    assert(!row.allText.includes('계산값 그대로'), `${row.concern}/${row.situation}/${row.mode}: raw calculation dump leaked`);
+    assert(/보통|시작/.test(n2) && /그러면|그다음/.test(n2) && /결국/.test(n2),
+      `${row.concern}/${row.situation}/${row.mode}: real-life scene sequence missing`);
+    const timing=row.notes[4]?.timing;
+    assert(timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: timing metadata missing`);
+    const firstTiming=norm(timing?.firstBody);
+    const secondTiming=norm(timing?.secondBody);
+    assert(!firstTiming || !secondTiming || firstTiming!==secondTiming,
+      `${row.concern}/${row.situation}/${row.mode}: duplicate month precision returned`);
+    assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: hard/abstract saju jargon leaked`);
+    assert(row.audit?.duplicates?.length === 0, `${row.concern}/${row.situation}/${row.mode}: answers repeat the same sentence: ${JSON.stringify(row.audit?.duplicates)}`);
+    assert(row.finalAudit && JSON.stringify(row.finalAudit)===JSON.stringify(row.audit), `${row.concern}/${row.situation}/${row.mode}: final QA is not auditing actual rendered answers`);
+    assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: old/abstract consultation wording leaked`);
     assert(!/(undefined|NaN|null)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: bad token leaked`);
-    for (const note of row.notes) assert((note.badge||'').length <= 16, `${row.concern}/${row.situation}/${row.mode}: NOTE badge too long ${note.badge}`);
-
   }
 
   for (const concern of ['money','career','love','path','people','mental']) {
@@ -212,11 +214,10 @@ function norm(v) {
 
   const loveF=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='love'&&r.mode==='F').map(r=>[r.situation,r]));
   const loveT=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='love'&&r.mode==='T').map(r=>[r.situation,r]));
-  assert(/연락|서운|현재 연애/.test(loveF.relationship?.allText||''), 'relationship path lost current-relationship context');
-  assert((loveF.relationship?.allText||'').includes('현재 연애를 볼 때도') && (loveF.relationship?.allText||'').includes('현재 연애에서 반복되는 장면보다'),
-    'F current-relationship copy must stay neutral without inventing a problem');
-  assert(!(loveF.relationship?.allText||'').includes('현재 연애 때문에 힘들 때도') && !(loveF.relationship?.allText||'').includes('현재 연애가 꼬인 마지막 장면보다'),
-    'F current-relationship copy still presumes distress');
+  assert(/연락|약속|관계|서운/.test(loveF.relationship?.allText||''), 'relationship path lost current-relationship answers');
+  assert(/새 인연|새로운 사람|만남/.test(loveF.new?.allText||'') && !/재회|헤어진 사람/.test(loveF.new?.allText||''), 'new-person path mixed another love situation');
+  assert(/이별|재회|헤어진/.test(loveF.breakup?.allText||''), 'breakup path lacks breakup context');
+  assert(/썸|짝사랑|상대/.test(loveF.crush?.allText||''), 'crush path lacks crush context');
   assert(
     JSON.stringify((loveF.relationship?.noteAudit?.claims||[]).map(x=>({rawFacts:x.rawFacts,conclusion:x.conclusion}))) ===
     JSON.stringify((loveT.relationship?.noteAudit?.claims||[]).map(x=>({rawFacts:x.rawFacts,conclusion:x.conclusion}))),
@@ -224,9 +225,6 @@ function norm(v) {
   );
   assert(norm(loveF.relationship?.allText||'') !== norm(loveT.relationship?.allText||''),
     'same factual judgment should still render distinct F/T counselor voice');
-  assert(/새 인연|새 사람/.test(loveF.new?.allText||'') && !/헤어진 이유/.test(loveF.new?.allText||''), 'new-person path mixed another love situation');
-  assert(/이별|재회|헤어진/.test(loveF.breakup?.allText||''), 'breakup path lacks breakup context');
-  assert(/썸|상대 반응/.test(loveF.crush?.allText||''), 'crush path lacks crush context');
 
   const finalCopyForbidden=[
     '순간에서','확정 규칙이 없는 특수한 구조나 묶임은 결과에 억지로 끼워 넣지 않았어.',
@@ -237,9 +235,8 @@ function norm(v) {
   for(const row of qa.situationRows){
     for(const bad of finalCopyForbidden) assert(!row.allText.includes(bad), `${row.concern}/${row.situation}/${row.mode}: final copy QA leak ${bad}`);
   }
-  assert(qa.situationRows.some(r=>r.mode==='F'&&r.allText.includes('확실하지 않은 부분은 억지로 단정하지 않았어.')) ||
-         qa.situationRows.every(r=>!r.allText.includes('특수한 구조')),
-    'unsupported-structure notice should stay in user language only');
+  assert(qa.situationRows.every(r=>!/(특수한 구조|종격|가종|전왕)/.test(r.allText)),
+    'unsupported special-structure jargon leaked into user answers');
 
   assert(qa.chartCompare.diagA.structureFingerprint !== qa.chartCompare.diagB.structureFingerprint, 'different charts share NOTE v3 structure fingerprint');
   assert(qa.chartCompare.diffs.filter(Boolean).length >= 4, 'different charts do not materially change enough NOTE outputs');
@@ -303,7 +300,7 @@ function norm(v) {
 
     renderUnniProductCatalog();
     const notes = generateConcernNotes(currentResultData, 'F');
-    const note6 = notes[5];
+    const timingAnswer = notes[4];
 
     const lockedCatalog = document.getElementById('unniProductLadder');
     const note2Preview = document.getElementById('note2PreviewCard');
@@ -400,9 +397,9 @@ function norm(v) {
       tOheng,
       tGreeting,
       fGreeting,
-      note6First:note6?.__timingQA?.firstBody || '',
-      note6Second:note6?.__timingQA?.secondBody || '',
-      note6Text:note6?.desc || '',
+      timingFirst:timingAnswer?.__timingQA?.firstBody || '',
+      timingSecond:timingAnswer?.__timingQA?.secondBody || '',
+      timingText:timingAnswer?.desc || '',
       resultGreeting:document.getElementById('resultSisterGreeting')?.innerText || '',
       catalogText:catalog?.innerText || '',
       catalogReason:catalog?.querySelector('[data-recommendation-reason="1"]')?.innerText || '',
@@ -430,27 +427,30 @@ function norm(v) {
   );
   if (ui.sourceFreeLaunch) {
     assert(ui.lockedCatalog, 'free-launch mode should expose the post-report product catalog');
-    assert(!ui.previewVisible && !ui.paywallVisible, 'free-launch mode must keep the 990 won lock UI hidden');
+    assert(!ui.previewVisible && !ui.paywallVisible, 'free-launch mode must keep the basic lock UI hidden');
   } else {
-    assert(!ui.lockedCatalog, 'premium upsells must not appear before the 990 won unlock');
-    assert(ui.previewPlain && /NOTE 0?2/.test(ui.previewPlain), 'NOTE2 teaser missing before paywall');
-    assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length, `NOTE2 teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-    assert(ui.fPaywallText.includes('로아 언니 · 여기서 하나만 더 보자') && ui.fPaywallText.includes('무엇부터 덜어야') && ui.fPaywallText.includes('언니, 그것도 봐줘') && ui.fPaywallText.includes('100원'), `F conversion paywall handoff missing: ${ui.fPaywallText}`);
-    assert(ui.tPaywallText.includes('서아 언니 · 마지막 기준만 보면 돼') && ui.tPaywallText.includes('부하 제거') && ui.tPaywallText.includes('응, 끝까지 봐줘') && ui.tPaywallText.includes('100원'), `T conversion paywall sister header should be restored: ${ui.tPaywallText}`);
-    assert(ui.tPaywallSisterSub==='번아웃 같다고 느낄 때, 이제 행동 기준만 보면 돼', `T burnout uncertainty drift: ${ui.tPaywallSisterSub}`);
-    assert(ui.tPaywallPriceTitle==='지금 컨디션·과부하 회복 기준 끝까지 정리하기' && !ui.tPaywallText.includes('번아웃 회복 기준'), `T burnout paywall must not hard-diagnose: ${ui.tPaywallText}`);
-    assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three benefit lines: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
-    assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser, `actual locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
-    assert(ui.fPaywallText.includes('NOTE2 다음부터 NOTE6까지') && ui.tPaywallText.includes('NOTE2 다음부터 NOTE6까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText), '990 won unlock scope or stale sale badge drift');
+    assert(!ui.lockedCatalog, 'premium upsells must not appear before the basic unlock');
+    assert(ui.previewPlain && ui.previewPlain.includes('2/5') && ui.previewPlain.includes('실제 장면'), 'second-answer teaser missing before paywall');
+    assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length,
+      `second-answer teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
+    assert(ui.fPaywallText.includes('로아 언니 · 이제 너한테 맞는 쪽을 보자') && ui.fPaywallText.includes('맞는 조건') && ui.fPaywallText.includes('100원'),
+      `F conversion handoff missing: ${ui.fPaywallText}`);
+    assert(ui.tPaywallText.includes('서아 언니 · 이제 구체적인 답만 보면 돼') && ui.tPaywallText.includes('거를 신호') && ui.tPaywallText.includes('100원'),
+      `T conversion handoff missing: ${ui.tPaywallText}`);
+    assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three concrete benefits: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
+    assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser,
+      `locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
+    assert(ui.fPaywallText.includes('맞는 조건 · 거를 신호 · 가까운 흐름까지') && ui.tPaywallText.includes('맞는 조건 · 거를 신호 · 가까운 흐름까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText),
+      'basic unlock scope or stale sale copy drift');
   }
-  assert(ui.unlockedNoteCards === 6 && !ui.previewAfterUnlock, `unlock must replace teaser with all six full notes: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
+  assert(ui.unlockedNoteCards === 5 && !ui.previewAfterUnlock,
+    `unlock must replace teaser with all five full answers: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3 && !ui.otherToggle && ui.otherVisible, `premium catalog should show all four products immediately: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherVisible:ui.otherVisible})}`);
   assert(
-    (norm(ui.note6First) && norm(ui.note6Second) && norm(ui.note6First)!==norm(ui.note6Second)) ||
-    String(ui.note6Text||'').includes('특정 달을 억지로 찍지는 않을게'),
-    'production-like NOTE6 must not invent duplicate month precision'
+    !norm(ui.timingFirst) || !norm(ui.timingSecond) || norm(ui.timingFirst)!==norm(ui.timingSecond),
+    'production-like timing answer must not invent duplicate month precision'
   );
   assert(ui.fGreeting.includes('언니가 보니까') && ui.fGreeting.includes('제일 먼저 눈에 들어오는 건 이거야') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 90, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
   assert(ui.tGreeting.includes('먼저 봐야 할 건 이거야') && ui.tGreeting.length <= 80, `T result intro should feel concise but caring: ${ui.tGreeting}`);
@@ -468,12 +468,11 @@ function norm(v) {
   assert(ui.mbtiInfo.fontSize <= 38 && ui.mbtiInfo.oneLineBeforeThreeLine && ui.mbtiInfo.threeLineBeforeMbti && ui.mbtiInfo.mbtiBeforeChem, `result hierarchy must preserve one-line → 3-line and optional MBTI → chemistry order: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.fChem.best.includes('rose') && ui.fChem.worst.includes('violet') && ui.fChem.bestTitle === '환상의 찰떡 깐부' && ui.fChem.worstTitle === '기 빨리는 상극', `F chemistry theme drift: ${JSON.stringify(ui.fChem)}`);
   assert(ui.tChem.best.includes('sky') && ui.tChem.worst.includes('slate') && ui.tChem.bestTitle === '최강 시너지' && ui.tChem.worstTitle === '충돌 많은 상극', `T chemistry theme drift: ${JSON.stringify(ui.tChem)}`);
-  assert(ui.fOheng.includes('겉으로 가장 많이 보여') && ui.fOheng.includes('적게 보이고') && ui.fOheng.includes('눈에 보이는 오행 분포') && ui.fOheng.includes('계절·뿌리·위치') && ui.fOheng.includes('아래 비밀 메모') && !/제일 강해|약한 편/.test(ui.fOheng) && !/\d+%/.test(ui.fOheng) && ui.fOheng.length <= 260, `F five-element raw-count wording drift: ${ui.fOheng}`);
-  assert(ui.tOheng.includes('비중이 가장 커') && ui.tOheng.includes('겉으로 적게 보여') && ui.tOheng.includes('오행 개수 기준 분포') && ui.tOheng.includes('실제 세력 강약') && ui.tOheng.includes('아래 비밀 메모') && !/제일 강해|약한 편/.test(ui.tOheng) && !/\d+%/.test(ui.tOheng) && ui.tOheng.length <= 235, `T five-element raw-count wording drift: ${ui.tOheng}`);
+  assert(ui.fOheng.includes('겉으로 가장 많이 보여') && ui.fOheng.includes('눈에 보이는 오행 분포') && ui.fOheng.includes('계절·뿌리·위치') && ui.fOheng.includes('지금 네 고민에 필요한 얘기만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.fOheng) && !/\d+%/.test(ui.fOheng) && ui.fOheng.length <= 260, `F five-element bridge wording drift: ${ui.fOheng}`);
+  assert(ui.tOheng.includes('비중이 가장 커') && ui.tOheng.includes('계절·뿌리·위치') && ui.tOheng.includes('지금 네 고민에 맞는 말로만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.tOheng) && !/\d+%/.test(ui.tOheng) && ui.tOheng.length <= 235, `T five-element bridge wording drift: ${ui.tOheng}`);
   assert(await page.locator('#sisterSwitchCard').count() === 0, 'bottom F/T mode-switch CTA must be removed');
-  assert(ui.noteBadges.every((x) => x.length <= 16), `visible NOTE badges too long: ${JSON.stringify(ui.noteBadges)}`);
-  assert(ui.noteBadges.join('|').includes('마음 핵심') && ui.noteBadges.join('|').includes('지치는 패턴') && ui.noteBadges.join('|').includes('진짜 원인') && ui.noteBadges.join('|').includes('이번 주 행동') && ui.noteBadges.join('|').includes('회복 환경') && ui.noteBadges.join('|').includes('회복 시기'), `mental NOTE v2 badges are not direct enough: ${JSON.stringify(ui.noteBadges)}`);
-  assert(!ui.noteBadges.some((x) => /·|사람 필터|7일 처방|놓친 포인트/.test(x)), `old technical NOTE badges remain: ${JSON.stringify(ui.noteBadges)}`);
+  assert(ui.noteBadges.join('|')==='핵심|실제 장면|잘 맞는 조건|거를 신호|가까운 흐름',
+    `five-answer badges drift: ${JSON.stringify(ui.noteBadges)}`);
   assert(ui.share.version === '5', `story card version ${ui.share.version}`);
   assert(ui.share.text.includes('사주 성향을 MBTI로 번역하면') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('너는 뭐 나왔어?') && ui.share.text.includes('나도 내 결과 보기') && ui.share.text.includes('sajuft.com'), 'story card viral/share copy missing');
   assert(ui.share.core && ui.share.strong && ui.share.need, `story card element strip missing: ${JSON.stringify(ui.share)}`);
@@ -762,8 +761,10 @@ function norm(v) {
          JSON.stringify(ftScreen.f.claims)===JSON.stringify(ftScreen.t.claims),
     'final F/T screen comparison changed factual judgment');
   assert(ftScreen.f.notes!==ftScreen.t.notes &&
-         ftScreen.f.notes.includes('언니랑 약속') &&
-         ftScreen.t.notes.includes('실전 룰') &&
+         ftScreen.f.notes.includes('1/5') &&
+         ftScreen.t.notes.includes('1/5') &&
+         !ftScreen.f.notes.includes('실전 룰') &&
+         !ftScreen.t.notes.includes('실전 룰') &&
          ftScreen.f.greeting.includes('언니가 보니까') &&
          ftScreen.t.greeting.includes('먼저 봐야 할 건 이거야'),
     'final F/T screen comparison lost counselor voice distinction');
@@ -967,7 +968,7 @@ function norm(v) {
   await page.locator('#unniProductAction').click();
   modal = await page.locator('#unniProductModal').innerText();
   const bundleArticles = await page.locator('#unniProductBody article').count();
-  assert(bundleArticles === 18, `bundle3 NOTE card count ${bundleArticles}`);
+  assert(bundleArticles === 15, `bundle3 five-answer card count ${bundleArticles}`);
   assert(await page.locator('#unniProductBody [data-product-exclusive="concern_bundle3"]').count()===1,'bundle3 shared-structure exclusive block missing');
   assert(await page.locator('#unniProductBody [data-export-kind="full"]').count()===0,'bundle3 leaked full_saju chapters');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'bundle3 full-report save missing');
@@ -1010,7 +1011,7 @@ function norm(v) {
   modal = await page.locator('#unniProductModal').innerText();
   for (const label of ['돈·재물','학업·직장','연애·썸','진로·적성','사람·관계','마음·스트레스']) assert(modal.includes(label), `all-in-one missing ${label}`);
   const allInOneArticles = await page.locator('#unniProductBody article').count();
-  assert(allInOneArticles === 36, `all-in-one NOTE card count ${allInOneArticles}`);
+  assert(allInOneArticles === 30, `all-in-one five-answer card count ${allInOneArticles}`);
   assert(await page.locator('#unniProductBody [data-product-exclusive="all_in_one"]').count()===1,'all-in-one cross-domain exclusive block missing');
   assert(!modal.includes('마음·스트레스은') && modal.includes('이 6개 고민은 서로 다른 문제처럼 보여도'), 'all-in-one dynamic domain join is unnatural');
   assert(await page.locator('#unniProductBody [data-export-compat-timing]').count()===0,'all-in-one must not include compatibility timeline');
@@ -1035,6 +1036,7 @@ function norm(v) {
   const html = fs.readFileSync('index.html','utf8');
   const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.1'), 'paid value script include missing');
+  assert(html.includes('./concern-note-engine-v2.js?v=4.0.0'), 'five-answer NOTE script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.2.0'), 'entitlement/product script include missing');
   assert(
@@ -1093,7 +1095,7 @@ function norm(v) {
   assert(!html.includes('정확한 만세력 조회를 위해 적어줘') && !html.includes('출생기록에 적힌 시각을 입력하면 더 정확해'), 'old birth-time helper copy remains');
   assert(!html.includes('🥺') && !html.includes('💕') && !html.includes('💌') && !html.includes('ㅠㅠ'), 'excessive F emoticon copy remains in the main journey');
   assert(!html.includes('id="sisterSwitchCard"') && !html.includes('switchSisterMode()'), 'bottom F/T mode-switch CTA code remains');
-  assert(html.includes('눈에 보이는 오행 분포') && html.includes('오행 개수 기준 분포') && html.includes('실제 세력 강약') && html.includes('아래 비밀 메모에 이어서 풀어뒀어') && html.includes('아래 비밀 메모는 그 실제 판단과 지금 고민을 같이 본 결과야'), 'five-element raw-count/secret-note copy missing');
+  assert(html.includes('눈에 보이는 오행 분포') && html.includes('계절·뿌리·위치') && html.includes('지금 네 고민에 필요한 얘기만 짧게') && html.includes('지금 네 고민에 맞는 말로만 짧게') && !/비밀\s*메모/.test(html), 'five-element bridge copy missing or secret-memo wording returned');
   for (const oldOheng of ['목(나무)','화(불)','토(흙)','금(쇠)','수(물)']) assert(!html.includes(oldOheng), `old parenthetical five-element label remains: ${oldOheng}`);
   for (const oldStoryOheng of ['목 · 나무','화 · 불','토 · 흙','금 · 쇠','수 · 물']) assert(!html.includes(oldStoryOheng), `story card five-element label should stay simple: ${oldStoryOheng}`);
   assert(!html.includes('사주 데이터로 까본 내 진짜 MBTI'), 'MBTI is still framed as a true diagnostic result');
@@ -1188,41 +1190,29 @@ function norm(v) {
   ]) assert(!html.includes(staleGeneric), `generic/system voice remains: ${staleGeneric}`);
   assert(!html.includes('내 보관함 ♡') && !html.includes('내 사주 ♡'), 'vault copy still uses decorative heart as dialogue text');
   assert(
-    html.includes('id="birthTimeBranch"') &&
-    html.includes('<option value="unknown" selected>(모름)</option>') &&
-    html.includes('자시 · 23:30~01:29') &&
-    html.includes('해시 · 21:30~23:29') &&
-    html.includes('function birthTimeKeyToBranch(value)') &&
-    !html.includes('id="birthTimeDirectToggle"') &&
-    !html.includes('id="birthTimeDirectLabel"') &&
-    !html.includes('id="birthTimeDirectWrap"') &&
-    !html.includes('id="birthTimeInput"') &&
-    !html.includes('정확한 시간 직접 입력') &&
-    !html.includes('placeholder="예: 오후 1:30 → 1330"') &&
-    !premium.includes('partnerTimeDirectToggle') &&
-    !premium.includes('partnerTimeDirectWrap') &&
-    !premium.includes('id="partnerTimeInput"') &&
-    premium.includes('<option value="unknown" selected>(모름)</option>'),
-    'simplified branch-only birth-time UI missing'
+    html.includes('id="birthTimeInput"') &&
+    html.includes('placeholder="예: 09:42"') &&
+    html.includes('id="birthTimeUnknownButton"') &&
+    html.includes('>시간 모름</button>') &&
+    html.includes('type="hidden" id="birthTimeBranch"') &&
+    html.includes('function normalizeExactBirthTime(value)') &&
+    html.includes('function formatBirthTime(input)') &&
+    html.includes('function setBirthTimeUnknown()') &&
+    !html.includes('<select\n                    id="birthTimeBranch"'),
+    'exact HH:MM primary birth-time input or unknown-time fallback missing'
   );
   assert(html.includes('BIRTH_TIME_BRANCHES') && html.includes('BIRTH_TIME_BRANCH_LABELS'), 'branch-time parsing/restore support missing');
   assert(
-    html.includes('id="paywallPriceBadge" class="shrink-0 text-right"') &&
-    html.includes('id="paywallPriceAmount"') &&
-    html.includes('paywallPriceBadge.className = "shrink-0 text-right"') &&
-    html.includes('text-[18px] font-black tracking-tight text-sky-600') &&
-    !html.includes('rounded-full border border-sky-100 bg-sky-50 px-3 py-1.5 text-right') &&
-    html.includes('if (paywallSisterHeader) paywallSisterHeader.style.display = "flex";') &&
-    html.includes('#welcomeSisterBubble[data-consult-mode="T"]') &&
-    html.includes('color:#315d70!important') &&
-    html.includes('.note-preview-continuation::before{content:none!important}') &&
-    html.includes('border-left:3px solid #e77892') &&
-    html.includes('이제 중요한 건 하나야. 어디서 끊고, 뭘 바꿀지.') &&
-    html.includes('이제 핵심은 하나야. 어디서 끊고, 뭘 바꿀지.'),
-    'NOTE2 conversion turn should use one compact impact line with simple price text'
+    html.includes('맞는 조건 · 거를 신호 · 가까운 흐름까지') &&
+    html.includes('"01": { label:"핵심"') &&
+    html.includes('"02": { label:"실제 장면"') &&
+    html.includes('"03": { label:"잘 맞는 조건"') &&
+    html.includes('"04": { label:"거를 신호"') &&
+    html.includes('"05": { label:"가까운 흐름"') &&
+    html.includes('지금 네 고민에서 보이는 것') &&
+    !/비밀\s*메모|NOTE2 다음부터 NOTE6까지|실전 룰|반복 패턴/.test(html),
+    'five-answer consultation/paywall contract drift'
   );
-  assert(html.includes('언니가 먼저 본 너') && html.includes('언니가 먼저 정리한 너') && html.includes('언니가 핵심만 적어둔 비밀 메모') && html.includes('언니가 너한테만 남기는 비밀 메모'), 'generic counselor editorial labels missing');
-  assert(!html.includes('로아 언니가 먼저 본 너') && !html.includes('서아 언니가 먼저 정리한 너') && !html.includes('로아 언니가 너한테만 남기는 비밀 메모') && !html.includes('서아 언니가 핵심만 적어둔 비밀 메모'), 'character name still leaks into final editorial labels');
   assert(html.includes('analysisErrorText(') && !html.includes('calcErr.message || {'), 'raw analysis-engine errors can still leak into user copy');
   assert(
     html.includes('똑같은 내 사주, 누구한테 먼저 털어놓을래?') &&
