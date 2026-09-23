@@ -1990,7 +1990,11 @@
       existing?.remove();
       return;
     }
-    if (existing) return;
+    const desiredCatalogMode = unlocked ? "upsell" : "owned-reaccess";
+    if (existing) {
+      if (existing.dataset.catalogMode === desiredCatalogMode || existing.querySelector("[data-entitlement-status]")) return;
+      existing.remove();
+    }
 
     const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
     const state = isFreeLaunch ? { verifiedPurchases:[], effectiveEntitlements:[], allInOneQuote:null } : cachedEntitlements(data);
