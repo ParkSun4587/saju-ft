@@ -16,7 +16,7 @@ async function deployed(page) {
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach NOTE v3 / paid 1.5.1 / products 2.2.0');
+  throw new Error('production did not reach five-answer NOTE 4.0.0 / paid 1.5.1 / products 2.2.0');
 }
 
 async function clickCatalogProduct(page, productId) {
@@ -93,12 +93,17 @@ async function enter(page, mode, concern, situation) {
   await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
   const firstState = await page.evaluate(() => ({
     concern:document.getElementById('selectedConcernKey')?.value || '',
-    timeSelect:(()=>{
-      const el=document.getElementById('birthTimeBranch');
+    timeInput:(()=>{
+      const el=document.getElementById('birthTimeInput');
+      const hidden=document.getElementById('birthTimeBranch');
+      const unknown=document.getElementById('birthTimeUnknownButton');
       return el?{
         value:el.value,
-        text:el.options[el.selectedIndex]?.text || '',
-        color:getComputedStyle(el).color,
+        placeholder:el.getAttribute('placeholder')||'',
+        hiddenValue:hidden?.value||'',
+        hiddenType:hidden?.type||'',
+        unknownSelected:unknown?.dataset?.selected||'',
+        unknownText:unknown?.innerText||'',
       }:null;
     })(),
     selected:document.querySelectorAll('#concernGrid .concern-chip.selected').length,
@@ -116,10 +121,10 @@ async function enter(page, mode, concern, situation) {
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
-  assert(firstState.timeSelect && firstState.timeSelect.value==='unknown' && firstState.timeSelect.text==='(모름)',
-    'birth-time selector should default to unknown '+JSON.stringify(firstState.timeSelect));
-  assert(firstState.timeSelect.color.includes('176, 180, 188'),
-    'birth-time selection placeholder color drift '+JSON.stringify(firstState.timeSelect));
+  assert(firstState.timeInput && firstState.timeInput.value==='' && firstState.timeInput.placeholder==='예: 09:42' &&
+         firstState.timeInput.hiddenValue==='unknown' && firstState.timeInput.hiddenType==='hidden' &&
+         firstState.timeInput.unknownSelected==='1' && firstState.timeInput.unknownText.includes('시간 모름'),
+    'exact birth-time input should be primary with explicit unknown fallback '+JSON.stringify(firstState.timeInput));
   assert(firstState.submitOpacity<=0.4,'disabled consultation CTA is still too visually active '+JSON.stringify(firstState));
   if (mode==='F') assert(
     firstState.sisterText.includes('응, 왔구나. 편하게 얘기해줘.') &&
@@ -154,13 +159,12 @@ async function enter(page, mode, concern, situation) {
   await page.waitForSelector('#concernSituationBox',{state:'visible'});
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.fill('#birthDateInput','19980221');
-  assert(await page.locator('#birthTimeBranch option').count()===13,'birth-time selector should include unknown and 12 branches');
-  assert((await page.locator('#birthTimeBranch option').first().innerText())==='(모름)','birth-time unknown default missing');
-  assert((await page.locator('#birthTimeBranch').inputValue())==='unknown','birth-time unknown default value missing');
-  assert((await page.locator('#birthTimeBranch option[value="子"]').innerText()).includes('23:30~01:29'),'manse-corrected 子 range missing');
-  assert(await page.locator('#birthTimeDirectToggle').count()===0,'removed direct-time checkbox returned');
-  assert(await page.locator('#birthTimeInput').count()===0,'removed direct-time field returned');
-  await page.selectOption('#birthTimeBranch','寅');
+  assert(await page.locator('#birthTimeInput').count()===1,'exact birth-time input missing');
+  assert(await page.locator('#birthTimeUnknownButton').count()===1,'unknown-time fallback missing');
+  assert(await page.locator('#birthTimeBranch').getAttribute('type')==='hidden','legacy branch state should stay hidden');
+  await page.fill('#birthTimeInput','0942');
+  assert((await page.locator('#birthTimeInput').inputValue())==='09:42','exact HH:MM auto-format failed');
+  assert((await page.locator('#birthTimeBranch').inputValue())==='09:42','exact HH:MM did not reach hidden runtime state');
   await page.locator('#splitNextButton button').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
   const sourceFreeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
@@ -303,7 +307,7 @@ async function inspect(page, mode) {
       n1:plain(notes[0]?.desc), n2:plain(notes[1]?.desc),
       n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc),
       noteV2Audit:currentResultData?.noteV2Audit || null,
-      note6Timing:notes[5]?.__timingQA || null,
+      timingMeta:notes[4]?.__timingQA || null,
       oheng:document.getElementById('ohengSummaryTxt')?.innerText||'',
       dayMasterTag:document.getElementById('dayMasterTag')?.innerText||'',
       sourceFreeLaunch:FREE_LAUNCH_MODE,
@@ -391,27 +395,31 @@ async function inspect(page, mode) {
   },mode);
   r.resultLayout=await resultLayoutSnapshot(page);
   assertResultLayout(r.resultLayout,mode+' primary result');
-  assert(r.noteV2Audit?.version==='4.0.0'&&r.noteV2Audit?.structureFingerprint,mode+' NOTE v3 audit missing');
+  assert(r.noteV2Audit?.version==='4.0.0'&&r.noteV2Audit?.structureFingerprint,mode+' five-answer audit missing');
   assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
-  assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six causal claims missing');
-  for(const claim of r.noteV2Audit.claims) assert(claim.ditianRuleIds?.filter(Boolean).length&&claim.zipingRuleIds?.filter(Boolean).length&&claim.noteSentence,mode+' claim provenance missing');
-  assert(r.n1.length>=140&&r.n1.length<=1200,mode+' NOTE1 classical-fusion size drift '+r.n1.length);
-  assert(r.n2.length>=140&&r.n2.length<=1200,mode+' NOTE2 classical-fusion size drift '+r.n2.length);
-  assert(r.n4.length>=150&&r.n4.length<=1400,mode+' NOTE4 classical-fusion action size drift '+r.n4.length);
-  assert(r.n5.length>=100&&r.n5.length<=760,mode+' NOTE5 domain-fit size drift '+r.n5.length);
-  assert(/시작|보통/.test(r.n2)&&/갈림길|여기서|그리고/.test(r.n2),mode+' NOTE2 causal chain missing '+r.n2);
-  assert(r.note6Timing?.concernSituation,mode+' NOTE6 situation metadata missing');
-  assert(norm(r.note6Timing?.firstBody)!==norm(r.note6Timing?.secondBody),mode+' NOTE6 timing roles duplicated');
-  if (mode==='F') assert(r.oheng.includes('겉으로 가장 많이 보여')&&r.oheng.includes('눈에 보이는 오행 분포')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('아래 비밀 메모')&&!/제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng raw-count wording '+r.oheng);
-  if (mode==='T') assert(r.oheng.includes('비중이 가장 커')&&r.oheng.includes('오행 개수 기준 분포')&&r.oheng.includes('실제 세력 강약')&&r.oheng.includes('아래 비밀 메모')&&!/제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng raw-count wording '+r.oheng);
+  assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six internal causal claims missing');
+  assert(Array.isArray(r.noteV2Audit?.outputClaimMap)&&r.noteV2Audit.outputClaimMap.length===5,mode+' five-answer provenance map missing');
+  for(const link of r.noteV2Audit.outputClaimMap){
+    const claim=r.noteV2Audit.claims[link.claimNum-1];
+    assert(claim?.ditianRuleIds?.filter(Boolean).length&&claim?.zipingRuleIds?.filter(Boolean).length&&claim?.noteSentence,mode+' mapped claim provenance missing');
+  }
+  for(const [label,text] of [['core',r.n1],['scene',r.n2],['filter',r.n4],['timing',r.n5]]){
+    assert(text.length>=55&&text.length<=420,mode+' '+label+' answer length drift '+text.length);
+  }
+  assert(/보통|시작/.test(r.n2)&&/그러면|그다음/.test(r.n2)&&/결국/.test(r.n2),mode+' real-life scene chain missing '+r.n2);
+  assert(r.timingMeta?.concernSituation,mode+' timing answer metadata missing');
+  assert(!norm(r.timingMeta?.firstBody)||!norm(r.timingMeta?.secondBody)||norm(r.timingMeta?.firstBody)!==norm(r.timingMeta?.secondBody),mode+' duplicate timing roles returned');
+  assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(r.n1+' '+r.n2+' '+r.n4+' '+r.n5),mode+' old/abstract answer wording returned');
+  if (mode==='F') assert(r.oheng.includes('겉으로 가장 많이 보여')&&r.oheng.includes('눈에 보이는 오행 분포')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('지금 네 고민에 필요한 얘기만 짧게')&&!/비밀\s*메모|제일 강해|약한 편/.test(r.oheng)&&!\/\d+%\/.test(r.oheng)&&r.oheng.length<=260,'F oheng bridge wording '+r.oheng);
+  if (mode==='T') assert(r.oheng.includes('비중이 가장 커')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('지금 네 고민에 맞는 말로만 짧게')&&!/비밀\s*메모|제일 강해|약한 편/.test(r.oheng)&&!\/\d+%\/.test(r.oheng)&&r.oheng.length<=235,'T oheng bridge wording '+r.oheng);
   assert(!/[나무불흙쇠물]\)/.test(r.oheng+r.dayMasterTag),'old parenthetical five-element wording remains '+JSON.stringify({oheng:r.oheng,day:r.dayMasterTag}));
   if(r.sourceFreeLaunch){
     assert(r.count===4&&r.visible===4&&!r.otherToggle&&r.otherVisible,'free-launch should show all four premium products immediately '+JSON.stringify(r));
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
-    assert(/NOTE 0?2/.test(r.note2Preview)&&r.paywallVisible,'NOTE2 teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
-    if(mode==='F') assert(r.paywall.includes('로아 언니 · 여기서 하나만 더 보자')&&r.paywall.includes('지금 연애에서 기준을 맞출 때 반복되는 흐름이 조금 보여')&&r.paywall.includes('언니, 그것도 봐줘'),'live F conversion paywall drift '+r.paywall);
-    if(mode==='T') assert(r.paywall.includes('서아 언니 · 마지막 기준만 보면 돼')&&r.paywall.includes('부하 제거')&&r.paywall.includes('응, 끝까지 봐줘'),'T 990 paywall sister header should be restored '+r.paywall);
+    assert(r.note2Preview.includes('2/5')&&r.note2Preview.includes('실제 장면')&&r.paywallVisible,'second-answer teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
+    if(mode==='F') assert(r.paywall.includes('로아 언니 · 이제 너한테 맞는 쪽을 보자')&&r.paywall.includes('맞는 조건')&&r.paywall.includes('거를 신호'),'live F conversion paywall drift '+r.paywall);
+    if(mode==='T') assert(r.paywall.includes('서아 언니 · 이제 구체적인 답만 보면 돼')&&r.paywall.includes('맞는 조건')&&r.paywall.includes('거를 신호'),'T basic paywall handoff drift '+r.paywall);
     assert(r.paywall.includes('100원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
     if(mode==='F') assert(r.paywallPrice.text==='100원'&&r.paywallPrice.badge.trim()==='shrink-0 text-right'&&!/rounded|bg-|border/.test(r.paywallPrice.badge)&&r.paywallPrice.amount.includes('rose-600'),'F 990 simple price display drift '+JSON.stringify(r.paywallPrice));
     if(mode==='T') assert(r.paywallPrice.text==='100원'&&r.paywallPrice.badge.trim()==='shrink-0 text-right'&&!/rounded|bg-|border/.test(r.paywallPrice.badge)&&r.paywallPrice.amount.includes('sky-600'),'T 990 simple price display drift '+JSON.stringify(r.paywallPrice));
@@ -420,11 +428,12 @@ async function inspect(page, mode) {
       r.paywallTurn.borderLeft>=3 &&
       r.paywallTurn.font>=12.5 &&
       (!r.paywallTurn.before || r.paywallTurn.before==='none' || r.paywallTurn.before==='normal') &&
-      /이제 (중요한 건|핵심은) 하나야/.test(r.paywallTurn.text) &&
-      /어디서 끊고, 뭘 바꿀지/.test(r.paywallTurn.text),
-      'NOTE2 conversion turn should be one compact impact line '+JSON.stringify(r.paywallTurn)
+      r.paywallTurn.text.includes('여기서부터') &&
+      r.paywallTurn.text.includes('맞는 조건') &&
+      r.paywallTurn.text.includes('거를 신호'),
+      'second-answer conversion turn should point to concrete locked value '+JSON.stringify(r.paywallTurn)
     );
-    assert(r.paywall.includes('NOTE2 다음부터 NOTE6까지')&&!/오픈 체험가/.test(r.paywall),'990 won unlock scope or stale sale copy drift '+r.paywall);
+    assert(r.paywall.includes('맞는 조건 · 거를 신호 · 가까운 흐름까지')&&!/오픈 체험가/.test(r.paywall),'basic unlock scope or stale sale copy drift '+r.paywall);
     assert(r.funExtrasDisplay==='none'&&r.shareActionsDisplay==='none','locked 990 flow should hide MBTI/share diversions '+JSON.stringify({fun:r.funExtrasDisplay,share:r.shareActionsDisplay}));
   }
   if(r.catalog){
@@ -623,26 +632,19 @@ async function inspect(page, mode) {
     reasonCount:document.querySelectorAll('#unniProductLadder [data-recommendation-reason="1"]').length,
     reasonText:document.querySelector('#unniProductLadder [data-recommendation-reason="1"]')?.innerText||'',
     catalogText:document.getElementById('unniProductLadder')?.innerText||'',
-    note5Presentation:(()=>{
-      const note=document.querySelector('#notesListContainer [data-note-role="05"]');
-      return {
-        good:note?.querySelector('.note-fit-good .note-fit-copy')?.innerText?.trim()||'',
-        drain:note?.querySelector('.note-fit-drain .note-fit-copy')?.innerText?.trim()||'',
-        criterion:note?.querySelector('.note-fit-criterion .note-fit-copy')?.innerText?.trim()||'',
-        labels:[...note?.querySelectorAll('.note-fit-kicker,.note-fit-criterion-label')||[]].map(x=>x.innerText.trim()),
-      };
-    })(),
+    roles:[...document.querySelectorAll('#notesListContainer [data-note-role]')].map(el=>({
+      role:el.getAttribute('data-note-role'),
+      label:el.querySelector('.note-role-label')?.innerText||'',
+      text:el.innerText||'',
+    })),
   }));
-  assert(postUnlock.cards===6&&!postUnlock.preview&&postUnlock.catalogAfterNotes,'990 unlock must reveal NOTE2-6 before post-report upsells '+JSON.stringify(postUnlock));
-  assert(
-    postUnlock.note5Presentation.good.length>=8 &&
-    postUnlock.note5Presentation.drain.length>=8 &&
-    postUnlock.note5Presentation.criterion.length>=8 &&
-    postUnlock.note5Presentation.labels.includes('잘 맞는 쪽') &&
-    postUnlock.note5Presentation.labels.includes('오래 두면 소모되는 쪽') &&
-    postUnlock.note5Presentation.labels.includes('마지막 판단 기준'),
-    'NOTE5 three-part decision presentation missing '+JSON.stringify(postUnlock.note5Presentation)
-  );
+  assert(postUnlock.cards===5&&!postUnlock.preview&&postUnlock.catalogAfterNotes,'basic unlock must reveal all five answers before post-report upsells '+JSON.stringify(postUnlock));
+  assert(postUnlock.roles.map(x=>x.label).join('|')==='핵심|실제 장면|잘 맞는 조건|거를 신호|가까운 흐름',
+    'five-answer presentation roles missing '+JSON.stringify(postUnlock.roles));
+  assert(postUnlock.roles.find(x=>x.role==='03')?.text.includes('잘 맞는') &&
+         postUnlock.roles.find(x=>x.role==='04')?.text.includes('거를') &&
+         postUnlock.roles.find(x=>x.role==='05')?.text.includes('지금 할 것'),
+    'fit/filter/timing answers are not concrete '+JSON.stringify(postUnlock.roles));
   assert(postUnlock.reasonCount===1&&postUnlock.reasonText.length>=10,'premium recommendation should keep one compact reason '+JSON.stringify(postUnlock));
   assert(!postUnlock.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아')&&!postUnlock.catalogText.includes('다음으로 볼 가치는 이게 제일 커')&&!postUnlock.catalogText.includes('방금 같이 본 얘기는 반복하지 않고')&&!postUnlock.catalogText.includes('방금 본 내용과 겹치는 건 빼고'),
     'premium recommendation still renders marketing-style preamble '+postUnlock.catalogText);
