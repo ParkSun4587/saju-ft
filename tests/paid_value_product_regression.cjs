@@ -900,6 +900,73 @@ function norm(v) {
     'premium checkout did not recover Toss SDK after payment return '+JSON.stringify(premiumReload)
   );
 
+  // A paid compatibility report remains reopenable, while a different partner can start a new checkout.
+  await page.locator('#unniProductClose').click();
+  await page.evaluate(() => {
+    FREE_LAUNCH_MODE = false;
+    const d = calculateAccurateManse(1998,2,21,'03:10','female');
+    d.__testNowYmd='2026-09-20';
+    d.concernKey='love';
+    d.concernSituation='relationship';
+    d.currentMode='F';
+    generateConcernNotes(d,'F');
+    currentResultData=d;
+    selectedSplitMode='F';
+    const storedKey='unni_product_grant_v1_compatibility_'+getUserUniqueKey(d);
+    window.__compatPurchasedTestKey=storedKey;
+    localStorage.setItem(storedKey,JSON.stringify({
+      userKey:'compat_pair_old',
+      token:'compat-token',
+      orderId:'compat_old_order',
+      extra:{partner:{n:'기존상대',b:'19990511',t:'午',g:'female',c:'solar',l:false}},
+    }));
+    window.__compatOriginalPaymentAPI=paymentAPI;
+    window.__compatOriginalVerifyAccessToken=verifyAccessToken;
+    paymentAPI=async (body)=>{
+      if(body?.action==='entitlements'){
+        return {
+          ok:true,
+          verifiedPurchases:[{productId:'compatibility',userKey:'compat_pair_old'}],
+          effectiveEntitlements:['compatibility'],
+          allInOneQuote:{targetProduct:'all_in_one',baseAmount:100,creditAmount:0,amount:100,alreadyOwned:false,creditedProducts:[]},
+        };
+      }
+      return window.__compatOriginalPaymentAPI(body);
+    };
+    verifyAccessToken=async()=> 'valid';
+    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
+  });
+  await page.evaluate(() => openUnniProduct('compatibility'));
+  await page.waitForFunction(
+    () => document.querySelectorAll('[data-compatibility-purchase-reopen]').length===1 &&
+      /다른 상대 궁합 보기/.test(document.getElementById('unniProductAction')?.innerText||''),
+    null,{timeout:10000}
+  );
+  const compatPurchasedUi=await page.evaluate(()=>({
+    history:document.querySelectorAll('[data-compatibility-purchase-reopen]').length,
+    historyText:document.querySelector('[data-compatibility-purchase-history]')?.innerText||'',
+    action:document.getElementById('unniProductAction')?.innerText||'',
+  }));
+  assert(
+    compatPurchasedUi.history===1 &&
+    compatPurchasedUi.historyText.includes('기존상대') &&
+    compatPurchasedUi.action.includes('다른 상대 궁합 보기') &&
+    compatPurchasedUi.action.includes('100원'),
+    'purchased compatibility cannot reopen old pair and start a new partner checkout '+JSON.stringify(compatPurchasedUi)
+  );
+  await page.locator('[data-compatibility-purchase-reopen]').click();
+  await page.waitForFunction(()=>document.querySelector('#unniProductBody [data-export-intro="compat"]'),null,{timeout:10000});
+  await page.locator('#unniProductClose').click();
+  await page.evaluate(() => {
+    localStorage.removeItem(window.__compatPurchasedTestKey);
+    delete window.__compatPurchasedTestKey;
+    paymentAPI=window.__compatOriginalPaymentAPI;
+    verifyAccessToken=window.__compatOriginalVerifyAccessToken;
+    delete window.__compatOriginalPaymentAPI;
+    delete window.__compatOriginalVerifyAccessToken;
+    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
+  });
+
   // The rest of this regression inspects the unlocked report without opening a real checkout.
   await page.evaluate(() => { FREE_LAUNCH_MODE = true; });
   await page.locator('#unniProductClose').click();
@@ -1037,6 +1104,14 @@ function norm(v) {
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.0'), 'paid value script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.1.4'), 'entitlement/product script include missing');
+  assert(
+    premium.includes('verifiedCompatibilityGrants') &&
+    premium.includes('data-compatibility-purchase-reopen') &&
+    premium.includes('다른 상대 궁합 보기') &&
+    premium.includes('"unni_product_grant_v1_compatibility_" + grant.orderId'),
+    'compatibility pair reaccess/new-partner purchase UI or storage isolation missing'
+  );
+
   assert(
     html.includes('function hasStoredAllInOneGrant()') &&
     html.includes('checkAllConcernsEntitlement(data, version)') &&
