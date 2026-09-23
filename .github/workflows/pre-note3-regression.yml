@@ -8,7 +8,6 @@ on:
       - 'integrated-profile-*'
       - 'product-ladder-*'
       - 'code-diet-*'
-      - 'test-payments-*'
   workflow_dispatch:
 
 jobs:
