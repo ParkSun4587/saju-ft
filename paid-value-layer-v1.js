@@ -839,7 +839,7 @@
     const seen = new Map();
     const duplicates = [];
     const hardTerms = [];
-    const banned = ["월령", "지장간", "상신", "기신", "격국", "용신", "세운", "십신", "신강", "신약", "사령"];
+    const banned = ["월령", "지장간", "상신", "기신", "격국", "용신", "세운", "십신", "신강", "신약", "사령", "득령", "득지", "득세", "통관", "중심 구조", "압박"];
     (notes || []).forEach((note, i) => {
       splitSentences(note?.desc).forEach((sentence) => {
         const key = normalizeSentence(sentence);
@@ -850,8 +850,9 @@
       const text = stripHtml(`${note?.title || ""} ${note?.desc || ""} ${note?.checklist || ""}`);
       banned.forEach((term) => { if (text.includes(term)) hardTerms.push([i + 1, term]); });
     });
-    const n6 = notes?.[5]?.__timingQA;
-    const timingDuplicate = !!n6 && normalizeSentence(n6.firstBody) === normalizeSentence(n6.secondBody);
+    const timingNote = notes?.[4]?.__timingQA;
+    const timingDuplicate = !!timingNote && !!timingNote.firstBody && !!timingNote.secondBody &&
+      normalizeSentence(timingNote.firstBody) === normalizeSentence(timingNote.secondBody);
     const tone = (notes || []).map((n) => stripHtml(`${n?.title || ""} ${n?.desc || ""}`)).join(" ");
     const fSignals = ["언니", "같이", "우리", "괜찮", "마음", "해보자", "돼"].filter((x) => tone.includes(x)).length;
     const tSignals = ["내가", "딱", "바로", "확인", "기준", "끊", "보자"].filter((x) => tone.includes(x)).length;
@@ -862,9 +863,9 @@
   }
 
   function polishPaidValueNotes(notes, data, mode) {
-    if (!Array.isArray(notes) || notes.length < 6) return notes;
+    if (!Array.isArray(notes) || notes.length < 5) return notes;
     let out = notes.map((n) => ({ ...n }));
-    out[5] = rebuildNoteSix(out[5], data || {}, mode || "F");
+    out[4] = rebuildNoteSix(out[4], data || {}, mode || "F");
     out = applySituationNotes(out, data || {}, mode || "F");
     const audit = auditNotes(out, mode || "F");
     if (data && typeof data === "object") data.paidValueAudit = audit;
@@ -874,7 +875,7 @@
   global.polishPaidValueNotes = polishPaidValueNotes;
   global.auditPaidValueNotes = auditNotes;
   global.__PAID_VALUE_LAYER_V1__ = {
-    version: "1.5.0",
+    version: "1.5.1",
     situationProfiles: SITUATION_PROFILES,
   };
 
