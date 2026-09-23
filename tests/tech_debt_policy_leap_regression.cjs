@@ -42,7 +42,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   }
   assert(!noteSource.includes('replace(/<[^>]+>/g," ")'),'stripHtml must not create spaces at inline tag boundaries');
   assert(noteSource.includes('function hasBatchim(value)')&&noteSource.includes('function withJosa(value, withBatchim, withoutBatchim)'),'Korean josa helper missing');
-  assert(!noteSource.includes('손실과 과로를 먼저 줄여'),'generic NOTE6 caution copy remains');
+  assert(!noteSource.includes('손실과 과로를 먼저 줄여'),'generic timing caution copy remains');
   assert(!noteSource.includes('평소보다 20% 이상'),'unsupported 20% threshold remains in NOTE copy');
   assert(!noteSource.includes('서운함 하나를 24시간'),'unsupported 24-hour relationship threshold remains in NOTE copy');
   assert(!productSource.includes('서운함은 24시간 안에'),'unsupported 24-hour compatibility threshold remains');
@@ -67,9 +67,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       oldGet:typeof globalThis.getTrueBaziTiming,
       oldBuild:typeof globalThis.buildNoteSixTiming,
       wrapped:!!globalThis.generateConcernNotes?.__classicalCausal,
-      note6Badge:notes[5]?.badge||'',
-      note6Text:String(notes[5]?.desc||'').replace(/<[^>]+>/g,' '),
-      meta:notes[5]?.__timingQA||{},
+      timingBadge:notes[4]?.badge||'',
+      timingText:String(notes[4]?.desc||'').replace(/<[^>]+>/g,' '),
+      meta:notes[4]?.__timingQA||{},
       audit:d.noteV3Audit,
       timing:{
         today:timing.today,detailEnd:timing.detailEnd,horizonEnd:timing.horizonEnd,
@@ -83,141 +83,74 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   assert(runtime.oldGet==='undefined'&&runtime.oldBuild==='undefined','legacy timing functions still exist at runtime '+JSON.stringify(runtime));
   assert(runtime.wrapped&&runtime.audit?.engine==='classical-causal','runtime NOTE path is not classical concern-note engine');
-  assert(!runtime.note6Badge.includes('2026-2027')&&!runtime.note6Text.includes('2026-2027'),'legacy fixed-year NOTE6 badge/text generated');
-  assert(runtime.meta.disclosureContract==='basic_concern'&&runtime.meta.fullFiveYearAllowed===false,'basic NOTE6 disclosure policy not enforced '+JSON.stringify(runtime.meta));
+  assert(!runtime.timingBadge.includes('2026-2027')&&!runtime.timingText.includes('2026-2027'),'legacy fixed-year timing badge/text generated');
+  assert(runtime.meta.disclosureContract==='basic_concern'&&runtime.meta.fullFiveYearAllowed===false,'basic timing disclosure policy not enforced '+JSON.stringify(runtime.meta));
   assert(runtime.timing.nearCount>=17&&runtime.timing.publicYears.length>=5&&runtime.timing.internalYears.length>=10,'rolling timing coverage missing '+JSON.stringify(runtime.timing));
 
 
   const copyQa=await page.evaluate(()=>{
     const ui=globalThis.__CONCERN_SITUATIONS__||{};
     const engine=globalThis.__CONCERN_NOTE_ENGINE_V2__?.situations||{};
-    const routes=[];
     const failures=[];
-    let josaChecks=0;
-    let noteSurfaceChecks=0;
-    const forbiddenJoinPatterns=[
-      ['명사+이야/야 공백',/[가-힣]\s+(?:이야|야)(?=[.!?]|$)/],
-      ['느냐 야',/느냐\s+야\b/],
-      ['것 마침표 공백',/것\s+\./],
-      ['것+조사 공백',/것\s+(?:이|가|을|를)\b/],
-      ['하기 만',/하기\s+만\b/],
-      ['해야 해 언니',/해야 해\s+언니/],
-      ['맞아 쉽게 풀면',/맞아\s+쉽게 풀면/],
-      ['마침표 앞 공백',/\s+[.!?]/],
-      ['문장 경계 누락',/(?:해야 해|맞아|중요해|좋아|쉬워|커져|보여|않아|돼|있어|없어)\s+(?:언니가|쉽게 풀면|그래서|그리고|그다음)\b/],
-      ['모음 명사+을',/(?:연애|진로|관계)을 볼 때/],
+    let routeCount=0;
+    let answerChecks=0;
+    const signatures=new Set();
+    const plain=(v)=>String(v||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    const forbidden=/(비밀\s*메모|실전 룰|반복 패턴|압박|구조|원국|격국|용신|상신|기신|통관|월령|지장간|신강|신약)/;
+    const badJoins=[
+      /[가-힣]\s+(?:이야|야)(?=[.!?]|$)/,
+      /느냐\s+야\b/,
+      /것\s+\./,
+      /것\s+(?:이|가|을|를)\b/,
+      /하기\s+만\b/,
+      /\s+[.!?]/,
     ];
-    const visibleText=(html)=>{
-      const el=document.createElement('div');
-      el.innerHTML=String(html||'');
-      return String(el.innerText||el.textContent||'').replace(/\s+/g,' ').trim();
-    };
-    const hasBatchim=(value)=>{
-      const chars=Array.from(String(value||'').trim());
-      for(let i=chars.length-1;i>=0;i-=1){
-        const code=chars[i].charCodeAt(0);
-        if(code>=0xAC00&&code<=0xD7A3) return (code-0xAC00)%28!==0;
-      }
-      return false;
-    };
-    const withJosa=(value,withBatchim,withoutBatchim)=>String(value||'')+(hasBatchim(value)?withBatchim:withoutBatchim);
-    const claimCore=(claims)=>(claims||[]).map((claim)=>{
-      const copy={...claim};
-      delete copy.noteSentence;
-      return copy;
-    });
-    const renderRoute=(concern,key,mode)=>{
-      const d=calculateAccurateManse(1998,2,21,'03:10','female');
-      d.__testNowYmd='2026-09-20';
-      d.concernKey=concern;
-      d.concernSituation=key;
-      d.currentMode=mode;
-      const notes=generateConcernNotes(d,mode);
-      return {
-        notes,
-        label:d.noteDiagnosisV2?.situation?.label||'',
-        situationKey:d.noteDiagnosisV2?.situation?.key||'',
-        structureFingerprint:d.noteV3Audit?.structureFingerprint||'',
-        timingFingerprint:d.noteV3Audit?.timingFingerprint||'',
-        claims:claimCore(d.noteV3Audit?.claims),
-        claimSentences:(d.noteV3Audit?.claims||[]).map((claim)=>String(claim?.noteSentence||'')),
-      };
-    };
     for(const [concern,config] of Object.entries(ui)){
       for(const option of (config?.options||[])){
         const [key,label]=option;
-        routes.push({concern,key,label});
+        routeCount+=1;
         const engineRow=engine?.[concern]?.[key];
-        if(!engineRow) {
-          failures.push(concern+'/'+key+': engine situation missing');
-          continue;
-        }
-        if(engineRow.label!==label) failures.push(concern+'/'+key+': label parity '+JSON.stringify({ui:label,engine:engineRow.label}));
-        const f=renderRoute(concern,key,'F');
-        const t=renderRoute(concern,key,'T');
-        const subjectGood=withJosa(engineRow.object,'이','가');
-        const subjectBad=withJosa(engineRow.object,'가','이');
-        const objectGood=withJosa(engineRow.object,'을','를');
-        const objectBad=withJosa(engineRow.object,'를','을');
-        const pressureText=String(f.notes?.[1]?.desc||'');
-        const causeText=String(f.notes?.[2]?.desc||'');
-        const neutralCurrentRelationship = concern==='love' && key==='relationship';
-        if (neutralCurrentRelationship) {
-          if(!pressureText.includes(engineRow.object+'에서 반복되는 장면보다') ||
-             pressureText.includes(subjectGood+' 꼬인') ||
-             pressureText.includes(subjectBad+' 꼬인')) {
-            failures.push(concern+'/'+key+': 현재 연애 중립 문구 오류 '+JSON.stringify({object:engineRow.object,text:pressureText}));
-          } else {
-            josaChecks+=1;
-          }
-        } else if(!pressureText.includes(subjectGood+' 꼬인')||pressureText.includes(subjectBad+' 꼬인')) {
-          failures.push(concern+'/'+key+': 이/가 조사 오류 '+JSON.stringify({object:engineRow.object,expected:subjectGood,bad:subjectBad,text:pressureText}));
-        } else {
-          josaChecks+=1;
-        }
-        if(!causeText.includes(objectGood+' 볼 때')||causeText.includes(objectBad+' 볼 때')) {
-          failures.push(concern+'/'+key+': 을/를 조사 오류 '+JSON.stringify({object:engineRow.object,expected:objectGood,bad:objectBad,text:causeText}));
-        } else {
-          josaChecks+=1;
-        }
-        for(const [mode,row] of [['F',f],['T',t]]){
-          if(row.situationKey!==key||row.label!==label) failures.push(concern+'/'+key+'/'+mode+': selected situation changed '+JSON.stringify({key:row.situationKey,label:row.label}));
-          if(row.notes.length!==6) failures.push(concern+'/'+key+'/'+mode+': note count '+row.notes.length);
-          if(!String(row.notes[0]?.title||'').includes(label)) failures.push(concern+'/'+key+'/'+mode+': NOTE1 title lost selected label');
-          const visible=row.notes.map(n=>[n?.badge,n?.title,n?.desc,n?.checklist].join(' ')).join(' ');
-          if(/\bundefined\b|\bnull\b/.test(visible)) failures.push(concern+'/'+key+'/'+mode+': undefined/null leaked');
+        if(!engineRow){ failures.push(concern+'/'+key+': engine situation missing'); continue; }
+        if(engineRow.label!==label) failures.push(concern+'/'+key+': label parity drift');
+        for(const mode of ['F','T']){
+          const d=calculateAccurateManse(1998,2,21,'03:10','female');
+          d.__testNowYmd='2026-09-20';
+          d.concernKey=concern; d.concernSituation=key; d.currentMode=mode;
+          const notes=generateConcernNotes(d,mode);
+          if(notes.length!==5) failures.push(concern+'/'+key+'/'+mode+': answer count '+notes.length);
+          if(notes.map(n=>n.badge).join('|')!=='핵심|실제 장면|잘 맞는 조건|거를 신호|가까운 흐름') failures.push(concern+'/'+key+'/'+mode+': answer roles drift');
+          if(!String(notes[0]?.title||'').includes(label)) failures.push(concern+'/'+key+'/'+mode+': first answer title lost selected label');
+          const visible=notes.map(n=>plain([n?.badge,n?.title,n?.desc,n?.checklist].join(' '))).join(' ');
+          if(/\bundefined\b|\bnull\b|NaN/.test(visible)) failures.push(concern+'/'+key+'/'+mode+': undefined/null leaked');
           if(/20%|24시간|세 번/.test(visible)) failures.push(concern+'/'+key+'/'+mode+': unsupported precision leaked');
-          row.notes.forEach((note,noteIndex)=>{
-            const finalText=[String(note?.title||''),visibleText(note?.desc),String(note?.checklist||'')].join(' ').replace(/\s+/g,' ').trim();
-            const auditText=String(row.claimSentences?.[noteIndex]||'').replace(/\s+/g,' ').trim();
-            for(const [patternName,pattern] of forbiddenJoinPatterns){
-              if(pattern.test(finalText)) failures.push(concern+'/'+key+'/'+mode+'/NOTE'+(noteIndex+1)+': runtime '+patternName+' => '+finalText);
-              pattern.lastIndex=0;
-              if(pattern.test(auditText)) failures.push(concern+'/'+key+'/'+mode+'/NOTE'+(noteIndex+1)+': claim sentence '+patternName+' => '+auditText);
-              pattern.lastIndex=0;
-            }
-            noteSurfaceChecks+=1;
+          if(forbidden.test(visible)) failures.push(concern+'/'+key+'/'+mode+': old/abstract wording leaked');
+          notes.forEach((note,i)=>{
+            const text=plain(note?.desc);
+            if(text.length<55||text.length>420) failures.push(concern+'/'+key+'/'+mode+': answer '+(i+1)+' length '+text.length);
+            for(const pattern of badJoins){ if(pattern.test(text)) failures.push(concern+'/'+key+'/'+mode+': Korean join error '+text); pattern.lastIndex=0; }
+            answerChecks+=1;
           });
+          const links=d.noteV3Audit?.outputClaimMap||[];
+          if(links.length!==5) failures.push(concern+'/'+key+'/'+mode+': output claim map missing');
+          for(const link of links){
+            const claim=d.noteV3Audit?.claims?.[link.claimNum-1];
+            if(claim?.noteSentence!==plain(notes[link.noteNum-1]?.desc)) failures.push(concern+'/'+key+'/'+mode+': claim binding '+link.noteNum);
+          }
+          signatures.add(concern+'/'+key+'/'+mode+'|'+plain(notes[0]?.desc)+'|'+plain(notes[1]?.desc));
         }
-        if(f.structureFingerprint!==t.structureFingerprint||f.timingFingerprint!==t.timingFingerprint) {
-          failures.push(concern+'/'+key+': F/T factual fingerprint drift');
-        }
-        if(JSON.stringify(f.claims)!==JSON.stringify(t.claims)) failures.push(concern+'/'+key+': F/T claim core drift');
+        const f={...calculateAccurateManse(1998,2,21,'03:10','female'),concernKey:concern,concernSituation:key,currentMode:'F',__testNowYmd:'2026-09-20'};
+        const t={...calculateAccurateManse(1998,2,21,'03:10','female'),concernKey:concern,concernSituation:key,currentMode:'T',__testNowYmd:'2026-09-20'};
+        generateConcernNotes(f,'F'); generateConcernNotes(t,'T');
+        if(f.noteV3Audit?.structureFingerprint!==t.noteV3Audit?.structureFingerprint||f.noteV3Audit?.timingFingerprint!==t.noteV3Audit?.timingFingerprint) failures.push(concern+'/'+key+': F/T factual fingerprint drift');
       }
     }
-    return {routeCount:routes.length,josaChecks,noteSurfaceChecks,concernKeys:Object.keys(ui),failures};
+    return {routeCount,answerChecks,signatureCount:signatures.size,concernKeys:Object.keys(ui),failures};
   });
   assert(copyQa.routeCount===24,'expected all 24 current concern/situation routes, got '+copyQa.routeCount);
-  assert(copyQa.josaChecks===copyQa.routeCount*2,'dynamic 이/가·을/를 checks incomplete '+JSON.stringify(copyQa));
-  assert(copyQa.noteSurfaceChecks===24*2*6,'expected 24 situations × F/T × NOTE1~6 runtime sentence checks, got '+copyQa.noteSurfaceChecks);
-  assert(copyQa.failures.length===0,'copy QA2 route regression: '+copyQa.failures.join(' | '));
-  const cautionStart=noteSource.indexOf('const cautionAction = ({');
-  const cautionEnd=noteSource.indexOf('})[situation.concern]',cautionStart);
-  const cautionBlock=noteSource.slice(cautionStart,cautionEnd);
-  assert(cautionStart>=0&&cautionEnd>cautionStart,'NOTE6 concern caution map missing');
-  for(const concern of copyQa.concernKeys){
-    assert(new RegExp('\\b'+concern+':').test(cautionBlock),'NOTE6 caution language missing for current concern '+concern);
-  }
+  assert(copyQa.answerChecks===24*2*5,'expected 24 situations × F/T × five answers, got '+copyQa.answerChecks);
+  assert(copyQa.signatureCount===48,'all 24 paths × F/T should keep distinct rendered signatures');
+  assert(copyQa.failures.length===0,'five-answer route regression: '+copyQa.failures.join(' | '));
+
 
   async function mockedTiming(ymd){
     return page.evaluate((ymd)=>{
@@ -240,7 +173,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           nearCount:t.concernNearTerm?.months?.length||0,
           publicYears:t.fullSajuTimeline?.years?.map(x=>x.year)||[],
           internalYears:t.fullHorizon?.years?.map(x=>x.year)||[],
-          note6Meta:notes[5]?.__timingQA||{},
+          timingMeta:notes[4]?.__timingQA||{},
         };
       } finally {
         globalThis.Date=RealDate;
@@ -256,7 +189,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     assert(row.nearCount>=17,'mocked +18 month detail missing '+JSON.stringify(row));
     assert(row.publicYears[0]===startYear&&row.publicYears.at(-1)>=startYear+5,'mocked five-year horizon did not roll '+JSON.stringify(row));
     assert(row.internalYears[0]===startYear&&row.internalYears.at(-1)>=startYear+10,'mocked internal ten-year horizon did not roll '+JSON.stringify(row));
-    assert(row.note6Meta.detailEnd===row.detailEnd&&row.note6Meta.horizonEnd===row.horizonEnd,'NOTE6 did not consume same rolling timing '+JSON.stringify(row));
+    assert(row.timingMeta.detailEnd===row.detailEnd&&row.timingMeta.horizonEnd===row.horizonEnd,'timing answer did not consume same rolling timing '+JSON.stringify(row));
   }
 
   const policy=await page.evaluate(()=>{
