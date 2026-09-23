@@ -670,6 +670,56 @@ function norm(v) {
     document.getElementById('unniProductLadder')?.remove();
   });
 
+  // All-in-one includes all six concerns: a new concern must not ask for another basic NOTE payment.
+  await page.evaluate(() => {
+    const d = calculateAccurateManse(1998,2,21,'03:10','female');
+    d.__testNowYmd='2026-09-20';
+    d.concernKey='people';
+    d.concernSituation='friend';
+    d.currentMode='F';
+    generateConcernNotes(d,'F');
+    currentResultData=d;
+    selectedSplitMode='F';
+    isUnlocked=false;
+    removeStore('tok_'+getUserUniqueKey(d));
+    localStorage.setItem(
+      'unni_product_grant_v1_all_in_one_test_basic_unlock',
+      JSON.stringify({userKey:'owned_all',token:'seed'})
+    );
+    window.__allConcernsOriginalPaymentAPI = paymentAPI;
+    paymentAPI = async (body) => {
+      if (body?.action === 'entitlements') {
+        return {
+          ok:true,
+          verifiedPurchases:[{productId:'all_in_one',userKey:'owned_all'}],
+          effectiveEntitlements:['all_in_one','full_saju','concern_bundle3','all_concerns'],
+          allInOneQuote:{targetProduct:'all_in_one',baseAmount:100,creditAmount:100,amount:0,alreadyOwned:true,creditedProducts:['all_in_one']},
+        };
+      }
+      return window.__allConcernsOriginalPaymentAPI(body);
+    };
+    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
+    renderResultView(d,{resumeApproval:false});
+  });
+  await page.waitForFunction(() => isUnlocked === true, null, {timeout:10000});
+  const allConcernsBasicAccess = await page.evaluate(() => ({
+    unlocked:isUnlocked,
+    paywall:getComputedStyle(document.getElementById('lockedOverlay')).display,
+    basicToken:!!savedAccess(currentResultData),
+  }));
+  assert(
+    allConcernsBasicAccess.unlocked &&
+    allConcernsBasicAccess.paywall==='none' &&
+    !allConcernsBasicAccess.basicToken,
+    'all-in-one owner was asked to repurchase a new concern NOTE '+JSON.stringify(allConcernsBasicAccess)
+  );
+  await page.evaluate(() => {
+    paymentAPI = window.__allConcernsOriginalPaymentAPI;
+    delete window.__allConcernsOriginalPaymentAPI;
+    localStorage.removeItem('unni_product_grant_v1_all_in_one_test_basic_unlock');
+    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
+  });
+
   // Final copy freeze: render the exact same chart + concern + situation once in F and once in T.
   const ftScreen = await page.evaluate(() => {
     const seed = {
@@ -987,6 +1037,13 @@ function norm(v) {
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.0'), 'paid value script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.1.3'), 'entitlement/product script include missing');
+  assert(
+    html.includes('function hasStoredAllInOneGrant()') &&
+    html.includes('checkAllConcernsEntitlement(data, version)') &&
+    html.includes('state.effectiveEntitlements.includes("all_concerns")'),
+    'all-in-one to basic concern entitlement bridge missing'
+  );
+
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(!paid.includes('__paidValueWrapped') && !paid.includes('global.generateConcernNotes = wrapped'), 'stale paid-value NOTE rewrite wrapper returned');
   assert(html.indexOf('paid-value-layer-v1.js') < html.indexOf('concern-note-engine-v2.js'),'paid/note script order wrong');
