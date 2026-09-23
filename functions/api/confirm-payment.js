@@ -343,7 +343,10 @@ export async function onRequestPost({ request, env }) {
       if (isProductAlreadyEntitled(data,entitlementState.verifiedPurchases)) {
         return reply({ ok:false, message:"이미 구매했거나 완전판에 포함된 상품이야. 다시 결제하지 않아도 돼." },409);
       }
-      const quote = calculateUpgradeQuote(data.p,entitlementState.verifiedPurchases);
+      const rawQuote = calculateUpgradeQuote(data.p,entitlementState.verifiedPurchases);
+      const quote = data.p === "compatibility"
+        ? { ...rawQuote, alreadyOwned:false }
+        : rawQuote;
       if (quote.amount <= 0) return reply({ ok:false, message:"이미 이용 가능한 상품이야." },409);
       const orderId = "SAJU2_" + crypto.randomUUID().replace(/-/g,"");
       const ticket = await seal({
