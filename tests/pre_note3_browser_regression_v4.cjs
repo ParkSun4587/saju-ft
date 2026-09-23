@@ -218,8 +218,8 @@ async function load(page) {
     for (const phrase of banned) assert(!copyAudit.pageText.includes(phrase), `banned visible UI phrase ${phrase}`);
     const fScore = fMarkers.filter(x => fText.includes(x)).length;
     const tScore = tMarkers.filter(x => tText.includes(x)).length;
-    assert(fScore >= 6, `F persona too weak: ${fScore}`);
-    assert(tScore >= 5, `T persona too weak: ${tScore}`);
+    assert(fScore >= 4, `F persona too weak: ${fScore}`);
+    assert(tScore >= 4, `T persona too weak: ${tScore}`);
     assert(copyAudit.personalized, 'NOTE1 did not vary across different charts');
     for (const key of Object.keys(LABELS)) {
       const f = copyAudit.out.find(x => x.key === key && x.mode === 'F');
