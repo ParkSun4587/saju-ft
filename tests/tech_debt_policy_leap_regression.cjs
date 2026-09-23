@@ -359,7 +359,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           verifiedPurchases:[],
           effectiveEntitlements:[],
           allInOneQuote:{
-            targetProduct:'all_in_one',baseAmount:9900,creditAmount:0,amount:9900,
+            targetProduct:'all_in_one',baseAmount:100,creditAmount:0,amount:100,
             alreadyOwned:false,creditedProducts:[],
           },
         };
@@ -372,8 +372,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           orderId:'tech-debt-compat-order',
           ticket:'tech-debt-compat-ticket',
           userKey:getUserUniqueKey(currentResultData),
-          amount:5900,
-          baseAmount:5900,
+          amount:100,
+          baseAmount:100,
         };
       }
       return originalPaymentAPI(body);

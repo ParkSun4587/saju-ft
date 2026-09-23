@@ -4,10 +4,10 @@
   const VERSION = "1.0.0";
 
   const BASE_PRICES = Object.freeze({
-    concern_bundle3: 2900,
-    full_saju: 4900,
-    compatibility: 5900,
-    all_in_one: 9900,
+    concern_bundle3: 100,
+    full_saju: 100,
+    compatibility: 100,
+    all_in_one: 100,
   });
 
   const ENTITLEMENT_GRAPH = Object.freeze({
@@ -17,7 +17,7 @@
     all_in_one: Object.freeze(["all_in_one", "full_saju", "concern_bundle3", "all_concerns"]),
   });
 
-  const ALL_IN_ONE_CREDIT_PRODUCTS = Object.freeze(["full_saju", "concern_bundle3"]);
+  const ALL_IN_ONE_CREDIT_PRODUCTS = Object.freeze([]); // TEMP QA: keep every unowned product payable at 100 won
 
   function verifiedProductIds(summary) {
     const rows = Array.isArray(summary?.verifiedPurchases) ? summary.verifiedPurchases : [];
