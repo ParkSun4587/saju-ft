@@ -777,9 +777,10 @@ function norm(v) {
   ]){
     assert(!ftScreen.f.notes.includes(bad)&&!ftScreen.t.notes.includes(bad), 'final rendered F/T screen still contains approved issue: '+bad);
   }
-  assert(ftScreen.f.notes.includes('현재 연애를 볼 때도') &&
-         ftScreen.f.notes.includes('현재 연애에서 반복되는 장면보다'),
-    'final rendered F relationship screen lost neutral situation wording');
+  assert(ftScreen.f.notes.includes('지금은 다른 사람 얘기가 아니라, 지금 둘 사이에서') &&
+         ftScreen.f.notes.includes('오래 갈수록 마음보다 연락·약속·거리감 같은 기준을 말로 맞춰야 해') &&
+         !ftScreen.f.notes.includes('현재 연애 때문에 힘들 때도'),
+    'final rendered F relationship screen lost neutral current-relationship framing');
 
   await page.evaluate(() => {
     selectedSplitMode='F';
