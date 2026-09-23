@@ -336,6 +336,15 @@
     return "중심 구조는 보이지만 무엇이 살리고 무엇이 깨는지는 한쪽으로 과장하지 않는 게 맞아";
   }
 
+  function zipingCauseSummary(reasoning) {
+    const state = reasoning?.integrated?.zipingState;
+    if (state === "supported") return "살리는 조건이 들어오면 중심이 흩어지기보다 한 방향으로 모이는 구조야";
+    if (state === "rescued") return "한 번 흐트러져도 다시 받치는 힘이 이어질 때 회복되는 구조야";
+    if (state === "damaged") return "방해 조건을 그대로 두면 중심 흐름이 반복해서 깎이는 구조야";
+    if (state === "mixed") return "살리는 힘과 흔드는 힘이 같이 있어서 무엇을 먼저 쓰느냐가 결과를 가르는 구조야";
+    return "한 가지 힘만 보고 결론내리기보다 살리는 조건과 흔드는 조건을 함께 봐야 하는 구조야";
+  }
+
   function pressureChain(reasoning, situation, isT) {
     const pressure = firstFinding(reasoning,"pressure");
     const root = firstFinding(reasoning,"root");
@@ -400,7 +409,7 @@
     const conflictLine = conflict
       ? "다만 몸이 감당하는 방향과 중심 구조가 요구하는 방향이 완전히 같진 않아서, 먼저 버틸 조건을 만든 다음 결과 쪽 힘을 써야 해."
       : "";
-    const resolution = String(conflictLine || zipingUser(reasoning)).replace(/[.!?]+$/,"");
+    const resolution = String(conflictLine || zipingCauseSummary(reasoning)).replace(/[.!?]+$/,"");
     if (isT) {
       return `원인은 성격 한 줄이 아니야. <b>${monthLine}</b>. ${supportLine}. ${harmLine}. ${rescueLine}<br><br>${bridgeLine} ${relationLine}<br><br>${resolution}. 그래서 ${situation.object}에서 봐야 할 건 '내가 왜 이러지?'가 아니라 <b>어떤 조건이 중심을 살리고, 어떤 조건이 먼저 흐름을 깨는지</b>야.`;
     }
