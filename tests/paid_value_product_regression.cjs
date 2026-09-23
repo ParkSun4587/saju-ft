@@ -604,7 +604,8 @@ function norm(v) {
     currentResultData=d;
     selectedSplitMode='F';
     isUnlocked=false;
-    const originalPaymentAPI = paymentAPI;
+    localStorage.setItem('unni_product_grant_v1_test_reaccess_seed', JSON.stringify({userKey:'seed',token:'seed'}));
+    window.__lifetimeOriginalPaymentAPI = paymentAPI;
     paymentAPI = async (body) => {
       if (body?.action === 'entitlements') {
         return {
@@ -619,7 +620,7 @@ function norm(v) {
           allInOneQuote:{targetProduct:'all_in_one',baseAmount:100,creditAmount:100,amount:0,alreadyOwned:true,creditedProducts:['all_in_one']},
         };
       }
-      return originalPaymentAPI(body);
+      return window.__lifetimeOriginalPaymentAPI(body);
     };
     window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
     document.getElementById('unniProductLadder')?.remove();
@@ -662,6 +663,13 @@ function norm(v) {
     allOwnedUnlocked.states.every(x=>x==='purchased'),
     'all_in_one ownership hid purchased one-person products '+JSON.stringify(allOwnedUnlocked)
   );
+  await page.evaluate(() => {
+    paymentAPI = window.__lifetimeOriginalPaymentAPI;
+    delete window.__lifetimeOriginalPaymentAPI;
+    localStorage.removeItem('unni_product_grant_v1_test_reaccess_seed');
+    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
+    document.getElementById('unniProductLadder')?.remove();
+  });
 
   // Final copy freeze: render the exact same chart + concern + situation once in F and once in T.
   const ftScreen = await page.evaluate(() => {
