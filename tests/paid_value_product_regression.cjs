@@ -874,13 +874,13 @@ function norm(v) {
   assert(!html.includes('팩트만 적어뒀으니까 정신 똑바로 차리고 읽어봐'), 'old generic harsh T greeting remains');
   for (const harsh of ['아이고 왔어?', '시간 낭비 말고', '똑바로 찍어', '똥고집', '미련 곰탱이', '팩트 꽂힌', '팩폭 모드', '징징대지 말고 와', '살인 충동 느낌', '상대방 사람 취급', '멍청한 질문 3번']) assert(!html.includes(harsh), `harsh/old sister copy remains: ${harsh}`);
   assert(
-    html.includes('아, 왔구나. 편하게 적어줘.<br>언니가 하나씩 잘 봐줄게.') &&
-    html.includes('왔어. 적어줘.<br>핵심부터 바로 볼게.') &&
+    html.includes('응, 왔구나. 편하게 얘기해줘.<br>네 사주 보면서 왜 마음에 걸리는지 같이 풀어볼게.') &&
+    html.includes('좋아. 필요한 것만 적어줘.<br>네 사주에서 원인부터 바로 짚어볼게.') &&
     html.includes('id="concernPickerPrompt"') &&
     html.includes('요즘 제일 마음에 걸리는 건?') &&
     html.includes('지금 제일 궁금한 건?') &&
-    html.includes('로아 언니, 내 얘기 들어줘') &&
-    html.includes('서아 언니, 바로 봐줘') &&
+    html.includes('로아 언니, 같이 봐줘') &&
+    html.includes('서아 언니, 핵심만 봐줘') &&
     html.includes('prompt.textContent = config.prompt;') &&
     !html.includes('CONCERN_CONVERSATION_PROMPTS') &&
     !html.includes('concernSituationAck') &&
@@ -1006,9 +1006,9 @@ function norm(v) {
     !html.includes('마음부터 들어주는') &&
     !html.includes('핵심부터 짚어주는') &&
     html.includes('id="centerDivider"') &&
-    html.includes('h-[5px]') &&
-    html.includes('height:5px!important') &&
-    html.includes('background:rgba(255,255,255,.74)!important') &&
+    html.includes('h-[3px]') &&
+    html.includes('height:3px!important') &&
+    html.includes('background:rgba(255,255,255,.69)!important') &&
     html.includes('border-radius:10px!important') &&
     html.includes('min-height:40px!important') &&
     html.includes('min-width:154px!important') &&
@@ -1027,7 +1027,7 @@ function norm(v) {
     !html.includes('원하는 상담 스타일을 골라봐') &&
     html.includes('로아 · 감정 공감형') &&
     html.includes('서아 · 팩트 직진형') &&
-    html.includes('max-width:81%!important') &&
+    html.includes('max-width:77%!important') &&
     html.includes('.split-choice-name-tag{') &&
     html.includes('class="split-choice-tail absolute -left-[5px] top-0 w-3 h-3 bg-white"') &&
     html.includes('class="split-choice-tail absolute -left-[5px] top-0 w-3 h-3 bg-slate-700"') &&
