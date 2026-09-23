@@ -6063,14 +6063,6 @@ function generateConcernNotes(data, mode) {
                 value.slice(6);
       }
 
-      // 🚀 [추가] 24시간 형식 4자리(예: 1330 ➔ 13:30) 자동 변환 및 방어 함수
-      function formatBirthTime(el) {
-        const value = el.value.replace(/\D/g, "").slice(0, 4);
-        // 25:80 등을 23:59로 바꾸지 않고 전송 전에 오류를 안내합니다.
-        el.value =
-          value.length <= 2 ? value : value.slice(0, 2) + ":" + value.slice(2);
-      }
-
       function setCalendar(type) {
         document.getElementById("calendarSelect").value = type;
 
@@ -6322,8 +6314,6 @@ function generateConcernNotes(data, mode) {
           let birthStr = rawBirth.replace(/[^0-9]/g, "");
 
           const birthTimeBranch = document.getElementById("birthTimeBranch");
-        const birthTimeInput = document.getElementById("birthTimeInput");
-        const birthTimeUnknownButton = document.getElementById("birthTimeUnknownButton");
           const birthTimeInput = document.getElementById("birthTimeInput");
           const rawBirthTime = String(birthTimeInput?.value || "").trim();
           const exactBirthTime = normalizeExactBirthTime(rawBirthTime);
@@ -9627,6 +9617,8 @@ currentResultData = {
         const birthDateInput = document.getElementById("birthDateInput");
 
         const birthTimeBranch = document.getElementById("birthTimeBranch");
+        const birthTimeInput = document.getElementById("birthTimeInput");
+        const birthTimeUnknownButton = document.getElementById("birthTimeUnknownButton");
 
         const leapMonthCheck = document.getElementById("leapMonthCheck");
 
