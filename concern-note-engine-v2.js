@@ -752,7 +752,7 @@
       crush:"호감 표현보다 실제 약속을 잡고 지키는지 봐",
       relationship:"불편한 얘기를 꺼냈을 때 상대가 같이 조정하려는지 봐",
       breakup:"그리움보다 헤어진 핵심 이유가 실제로 달라졌는지 봐",
-      new:"첫 텐션보다 두세 번 만났을 때도 말과 행동이 같은지 봐",
+      new:"첫 느낌보다 만남이 이어져도 말과 행동이 같은지 봐",
     },
     path:{
       lost:"직접 해본 뒤에도 다시 해보고 싶은 마음이 남는지 봐",
@@ -829,7 +829,7 @@
       const contrast=assumed&&actual ? `<b>착각하기 쉬운 지점</b> — ${assumed}.<br><b>실제 핵심</b> — ${actual}.` : "";
       return `${focus}<br><br>${personal}${contrast ? "<br><br>"+contrast : ""}${certainty ? "<br><br>"+certainty : ""}`;
     }
-    const contrast=assumed&&actual ? `겉으로는 “${assumed}”처럼 느껴질 수 있어. 그런데 실제로는 <b>${actual}</b>.` : "";
+    const contrast=assumed&&actual ? `겉으로는 “${assumed}”처럼 느껴질 수 있어. 그런데 실제로는 <b>${actual}.</b>` : "";
     return `${focus}<br><br>${personal}${contrast ? "<br><br>"+contrast : ""}${certainty ? "<br><br>"+certainty : ""}`;
   }
 
