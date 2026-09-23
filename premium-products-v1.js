@@ -1486,19 +1486,86 @@
     return {};
   }
 
-  function grantStoreKey(data, productId) {
+  function compactGrantKey(value) {
+    let h = 2166136261;
+    const text = String(value || "");
+    for (let i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0).toString(36);
+  }
+
+  function ownerSubjectFromGrantUserKey(userKey) {
+    if (typeof userKey !== "string" || !userKey.startsWith("sazu_v2_")) return "";
+    const raw = userKey.slice("sazu_v2_".length);
+    let depth = 0, inString = false, escaped = false, end = -1;
+    for (let i = 0; i < raw.length; i++) {
+      const ch = raw[i];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (ch === "\\") escaped = true;
+        else if (ch === '"') inString = false;
+        continue;
+      }
+      if (ch === '"') { inString = true; continue; }
+      if (ch === "[") depth++;
+      else if (ch === "]") {
+        depth--;
+        if (depth === 0) { end = i + 1; break; }
+      }
+    }
+    if (end < 0) return "";
+    try {
+      const row = JSON.parse(raw.slice(0,end));
+      return Array.isArray(row) && row.length >= 6 ? JSON.stringify(row.slice(0,6)) : "";
+    } catch (_) { return ""; }
+  }
+
+  function grantStoreKey(data, productId, grant = null) {
     let base = "";
     try { base = typeof getUserUniqueKey === "function" ? getUserUniqueKey(data) : JSON.stringify([data?.userBirthStr, data?.userTimeKey, data?.userGender]); }
     catch (_) { base = JSON.stringify([data?.userBirthStr, data?.userTimeKey]); }
-    return "unni_product_grant_v1_" + productId + "_" + base;
+    const pairSuffix = productId === "compatibility" && grant?.userKey
+      ? "_" + compactGrantKey(grant.userKey)
+      : "";
+    return "unni_product_grant_v1_" + productId + "_" + base + pairSuffix;
   }
 
   function saveGrant(data, productId, grant) {
-    try { localStorage.setItem(grantStoreKey(data, productId), JSON.stringify(grant)); } catch (_) {}
+    try {
+      const stored = { ...grant, savedAt:Number(grant?.savedAt || Date.now()) };
+      localStorage.setItem(grantStoreKey(data, productId, stored), JSON.stringify(stored));
+    } catch (_) {}
+  }
+
+  function compatibilityStoredGrants(data) {
+    const owner = entitlementSubjectKey(data);
+    return collectStoredPremiumGrants()
+      .filter((row) =>
+        row.key.startsWith("unni_product_grant_v1_compatibility_") &&
+        ownerSubjectFromGrantUserKey(row.userKey) === owner &&
+        row.grant?.extra?.partner
+      )
+      .map((row) => row.grant)
+      .sort((a,b) => Number(b?.savedAt || 0) - Number(a?.savedAt || 0));
   }
 
   function readGrant(data, productId) {
+    if (productId === "compatibility") {
+      const rows = compatibilityStoredGrants(data);
+      if (rows.length) return rows[0];
+    }
     try { return JSON.parse(localStorage.getItem(grantStoreKey(data, productId)) || "null"); } catch (_) { return null; }
+  }
+
+  function verifiedCompatibilityGrants(data, state) {
+    const verifiedKeys = new Set(
+      (state?.verifiedPurchases || [])
+        .filter((row) => row.productId === "compatibility")
+        .map((row) => row.userKey)
+    );
+    return compatibilityStoredGrants(data).filter((grant) => verifiedKeys.has(grant.userKey));
   }
 
   function showReport(productId, data, extra) {
@@ -1672,8 +1739,9 @@
     };
   }
 
-  async function openProduct(productId) {
+  async function openProduct(productId, options = {}) {
     const data = getData();
+    const forceNewCompatibility = productId === "compatibility" && options?.forceNewCompatibility === true;
     const product = PRODUCTS[productId];
     if (!data || !product) return;
     const root = ensureModal();
@@ -1713,7 +1781,7 @@
     root.style.display = "block";
     document.body.style.overflow = "hidden";
 
-    const directStoredGrant = readGrant(data,productId);
+    const directStoredGrant = forceNewCompatibility ? null : readGrant(data,productId);
     let directGrantVerified = false;
     if (directStoredGrant?.token && directStoredGrant?.userKey && typeof verifyAccessToken === "function") {
       try { directGrantVerified = (await verifyAccessToken(directStoredGrant.userKey,directStoredGrant.token,productId)) === "valid"; }
@@ -1745,9 +1813,11 @@
       verifiedState = { verifiedPurchases:[], effectiveEntitlements:[], allInOneQuote:null };
     }
 
-    const state = directGrantVerified
-      ? { kind:"purchased", productId, amount:0, label:productId === "full_saju" ? "구매한 전체판 다시 보기" : "구매한 상품 다시 보기" }
-      : productStateFor(productId, verifiedState);
+    const state = forceNewCompatibility
+      ? { kind:"unpurchased", productId, amount:product.price, label:`${won(product.price)}에 열기` }
+      : directGrantVerified
+        ? { kind:"purchased", productId, amount:0, label:productId === "full_saju" ? "구매한 전체판 다시 보기" : "구매한 상품 다시 보기" }
+        : productStateFor(productId, verifiedState);
     const directGrant = directGrantVerified ? directStoredGrant : verifiedGrantFor(verifiedState, productId);
     action.disabled = false;
 
@@ -1771,6 +1841,44 @@
             });
           }
         };
+      } else if (productId === "compatibility") {
+        const grants = verifiedCompatibilityGrants(data, verifiedState);
+        const fallbackGrant = directGrant || grants[0] || null;
+        action.textContent = "구매한 궁합 다시 보기";
+        action.onclick = () => {
+          if (!fallbackGrant) {
+            productToast(data, {
+              F: "구매 정보를 다시 불러오지 못했어. 다시 결제하지 말고 저장된 구매 내역부터 확인해보자.",
+              T: "구매 정보를 다시 불러오지 못했어. 재결제하지 말고 저장된 구매 내역을 확인해줘.",
+            });
+            return;
+          }
+          showReport(productId,data,fallbackGrant.extra || {});
+        };
+
+        if (grants.length) {
+          const rows = grants.map((grant,index) => {
+            const partner = grant?.extra?.partner || {};
+            const name = esc(partner.n || "상대");
+            const birth = esc(partner.b || "");
+            return `<button type="button" data-compat-reopen="${index}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border:0;border-top:1px solid #ebe5df;background:transparent;text-align:left;cursor:pointer"><span style="font-size:11.5px;font-weight:800;color:#334155">${name}<span style="margin-left:6px;font-size:9.5px;font-weight:650;color:#94a3b8">${birth}</span></span><span style="font-size:10px;font-weight:800;color:#047857">다시 보기</span></button>`;
+          }).join("");
+          body.insertAdjacentHTML("beforeend", `<div id="unniCompatibilityPurchases" style="margin-top:12px;padding-top:2px"><div style="font-size:10.5px;font-weight:900;color:#59616c;margin-bottom:2px">구매한 궁합</div>${rows}</div>`);
+          body.querySelectorAll("[data-compat-reopen]").forEach((button) => {
+            button.addEventListener("click", () => {
+              const grant = grants[Number(button.dataset.compatReopen)];
+              if (grant) showReport(productId,data,grant.extra || {});
+            });
+          });
+        }
+
+        const newPair = document.createElement("button");
+        newPair.id = "unniCompatibilityNewPair";
+        newPair.type = "button";
+        newPair.textContent = `다른 상대 궁합 보기 · ${won(product.price)}`;
+        newPair.style.cssText = "width:100%;margin-top:12px;padding:12px;border:1px solid #e2e8f0;border-radius:13px;background:#fff;color:#475569;font-size:11.5px;font-weight:850;cursor:pointer";
+        newPair.onclick = () => openProduct("compatibility",{ forceNewCompatibility:true });
+        body.appendChild(newPair);
       } else {
         action.onclick = () => {
           if (!directGrant) {
@@ -1946,12 +2054,13 @@
     const border = recommended ? "#e8d7dc" : "#ebe5df";
     const bg = recommended ? "#fffaf9" : "transparent";
     const pad = recommended ? "14px 12px" : "12px 2px";
-    const priceLabel = resolvedState.kind === "purchased" ? "구매 완료"
+    const priceLabel = resolvedState.kind === "purchased"
+      ? (p.id === "compatibility" ? "구매한 궁합 있음" : "구매 완료")
       : resolvedState.kind === "included" ? "완전판 포함"
         : resolvedState.kind === "upgrade" ? `+${won(resolvedState.amount)}`
           : won(p.price);
     const stateCopy = resolvedState.kind === "purchased"
-      ? "구매한 내용 다시 이어보기"
+      ? (p.id === "compatibility" ? "구매내역 보기 · 다른 상대도 가능" : "구매한 내용 다시 이어보기")
       : resolvedState.kind === "included" ? "완전판에 포함 · 바로 이어보기"
         : resolvedState.kind === "upgrade" ? `완전판으로 이어보기 · +${won(resolvedState.amount)}`
           : "이어서 보기 →";
@@ -2136,7 +2245,7 @@
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
   global.__UNNI_PRODUCTS_V1__ = {
-    version:"2.1.1",
+    version:"2.2.0",
     products:PRODUCTS,
     contracts:global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.contracts || {},
     buildProductBody:productBody,

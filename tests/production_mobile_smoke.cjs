@@ -11,12 +11,12 @@ async function deployed(page) {
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.0' &&
         globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '3.2.1' &&
-        globalThis.__UNNI_PRODUCTS_V1__?.version === '2.1.1' &&
+        globalThis.__UNNI_PRODUCTS_V1__?.version === '2.2.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach NOTE v3 / paid 1.5.0 / products 2.1.1');
+  throw new Error('production did not reach NOTE v3 / paid 1.5.0 / products 2.2.0');
 }
 
 async function clickCatalogProduct(page, productId) {
