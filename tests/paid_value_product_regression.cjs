@@ -103,6 +103,7 @@ function norm(v) {
               timing:n.__timingQA||null,
             })),
             audit,
+            finalAudit:data.paidValueAudit||null,
             allText:notes.map(n=>`${n.badge} ${n.title} ${n.desc} ${n.checklist||''}`).join(' '),
           });
         }
@@ -176,8 +177,15 @@ function norm(v) {
     assert(n5.length >= 120 && n5.length <= 760, `${row.concern}/${row.situation}/${row.mode}: NOTE5 domain-fit size drift (${n5.length})`);
     assert(/시작|보통/.test(n2) && /갈림길|여기서|그리고/.test(n2), `${row.concern}/${row.situation}/${row.mode}: NOTE2 lacks concrete causal sequence`);
     assert(row.notes[5]?.timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: NOTE6 situation metadata missing`);
-    assert(norm(row.notes[5]?.timing?.firstBody) !== norm(row.notes[5]?.timing?.secondBody), `${row.concern}/${row.situation}/${row.mode}: NOTE6 timing roles duplicated`);
+    const firstTiming=norm(row.notes[5]?.timing?.firstBody);
+    const secondTiming=norm(row.notes[5]?.timing?.secondBody);
+    assert(
+      (firstTiming && secondTiming && firstTiming!==secondTiming) ||
+      row.allText.includes('특정 달을 억지로 찍지는 않을게'),
+      `${row.concern}/${row.situation}/${row.mode}: NOTE6 must either provide distinct evidence-backed timing roles or explicitly avoid fake month precision`
+    );
     assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: hard saju jargon leaked`);
+    assert(row.finalAudit && JSON.stringify(row.finalAudit)===JSON.stringify(row.audit), `${row.concern}/${row.situation}/${row.mode}: final NOTE QA hook is not auditing the actual rendered notes`);
     assert(!row.allText.includes('계산값 그대로'), `${row.concern}/${row.situation}/${row.mode}: raw calculation dump leaked`);
     assert(!/(undefined|NaN|null)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: bad token leaked`);
     for (const note of row.notes) assert((note.badge||'').length <= 16, `${row.concern}/${row.situation}/${row.mode}: NOTE badge too long ${note.badge}`);
@@ -438,7 +446,11 @@ function norm(v) {
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3 && !ui.otherToggle && ui.otherVisible, `premium catalog should show all four products immediately: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherVisible:ui.otherVisible})}`);
-  assert(norm(ui.note6First) !== norm(ui.note6Second), 'production-like NOTE6 copied');
+  assert(
+    (norm(ui.note6First) && norm(ui.note6Second) && norm(ui.note6First)!==norm(ui.note6Second)) ||
+    String(ui.note6Text||'').includes('특정 달을 억지로 찍지는 않을게'),
+    'production-like NOTE6 must not invent duplicate month precision'
+  );
   assert(ui.fGreeting.includes('언니가 보니까') && ui.fGreeting.includes('제일 먼저 눈에 들어오는 건 이거야') && !ui.fGreeting.includes('ㅎㅎ') && ui.fGreeting.length <= 90, `F result intro should feel warm and distinct: ${ui.fGreeting}`);
   assert(ui.tGreeting.includes('먼저 봐야 할 건 이거야') && ui.tGreeting.length <= 80, `T result intro should feel concise but caring: ${ui.tGreeting}`);
   assert(
