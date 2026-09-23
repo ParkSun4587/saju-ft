@@ -62,8 +62,8 @@
     <!-- 파비콘 (브라우저 탭 아이콘) -->
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <!-- 카카오톡 인앱 브라우저 광속 로딩용 이미지 프리로드 -->
-    <link rel="preload" as="image" href="./로아.webp" fetchpriority="high" />
-    <link rel="preload" as="image" href="./서아.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="./로아.webp" type="image/webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="./서아.webp" type="image/webp" fetchpriority="high" />
 
     <meta name="referrer" content="strict-origin" />
     <script>
@@ -145,10 +145,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.7.7/lunar.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/korean-lunar-calendar@0.4.0/dist/korean-lunar-calendar.min.js"></script>
-    <!-- 토스페이먼츠 결제창 SDK v1 -->
-    <script src="https://js.tosspayments.com/v1/payment-widget"></script>
-    <!-- 화면 캡처 라이브러리 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- 결제/캡처 SDK는 실제 사용 시점에만 동적 로드 -->
 
     <style>
       /* Pretendard 폰트 제거 - 시스템 폰트 사용으로 로딩 속도 개선 */
@@ -1859,6 +1856,9 @@
             id="imgRoa"
             src="./로아.webp"
             alt="로아"
+            loading="eager"
+            fetchpriority="high"
+            decoding="sync"
             class="panel-img absolute inset-0 w-full h-full object-cover object-[center_18%]"
           />
 
@@ -1920,6 +1920,9 @@
             id="imgSeoa"
             src="./서아.webp"
             alt="서아"
+            loading="eager"
+            fetchpriority="high"
+            decoding="sync"
             class="panel-img absolute inset-0 w-full h-full object-cover object-[center_20%]"
           />
 
@@ -6122,6 +6125,25 @@ function generateConcernNotes(data, mode) {
       const PAY_AMOUNT = 990;
       const CONFIRM_API = "/api/confirm-payment"; // 서버리스 결제 승인 엔드포인트
 
+      function ensurePaymentWidgetSDK() {
+        if (typeof PaymentWidget !== "undefined") return Promise.resolve(PaymentWidget);
+        if (window.__paymentWidgetLoading) return window.__paymentWidgetLoading;
+        window.__paymentWidgetLoading = new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://js.tosspayments.com/v1/payment-widget";
+          script.async = true;
+          script.onload = () =>
+            typeof PaymentWidget !== "undefined"
+              ? resolve(PaymentWidget)
+              : reject(new Error("PAYMENT_WIDGET_MISSING"));
+          script.onerror = () => reject(new Error("PAYMENT_WIDGET_LOAD_FAILED"));
+          document.head.appendChild(script);
+        }).finally(() => {
+          window.__paymentWidgetLoading = null;
+        });
+        return window.__paymentWidgetLoading;
+      }
+
       let isAnalyzing = false;
       let selectedSplitMode = null;
 
@@ -8251,24 +8273,20 @@ currentResultData = {
           showPaymentRetryBox(pendingApproval);
           return;
         }
-        if (typeof PaymentWidget === "undefined") {
-          showVoiceToast({
-            F: "결제 화면이 아직 준비 중이야. 잠깐 뒤에 한 번만 다시 눌러줘.",
-            T: "결제 화면을 아직 불러오는 중이야. 잠깐 뒤에 다시 눌러줘.",
-          });
-          return;
-        }
-        const area = document.getElementById("paymentWidgetArea");
-        const open = document.getElementById("directPaymentOpenButton");
-        const priceSummary = document.getElementById("paywallPriceSummary");
-        area.style.display = "block";
-        open.style.display = "none";
-        if (priceSummary) priceSummary.style.display = "none";
         const generation = widgetGeneration;
         const version = viewVersion;
         const key = getUserUniqueKey(currentResultData);
         paymentPreparing = true;
         try {
+          await ensurePaymentWidgetSDK();
+          if (!visibleResult(key, version) || generation !== widgetGeneration)
+            return;
+          const area = document.getElementById("paymentWidgetArea");
+          const open = document.getElementById("directPaymentOpenButton");
+          const priceSummary = document.getElementById("paywallPriceSummary");
+          area.style.display = "block";
+          open.style.display = "none";
+          if (priceSummary) priceSummary.style.display = "none";
           await widgetCleanup;
           if (!visibleResult(key, version) || generation !== widgetGeneration)
             return;
