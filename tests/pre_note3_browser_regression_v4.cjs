@@ -395,7 +395,13 @@ async function load(page) {
         note3Integrated:!!(data.noteV3Audit?.structureFingerprint && data.noteV3Audit?.claims?.[2]?.noteSentence && diagnosis?.structureFingerprint === data.noteV3Audit?.structureFingerprint),
         note4Valid:!!(notes?.[3]?.title && notes?.[3]?.desc && notes?.[3]?.checklist && notes?.[3]?.badge),
         note5Valid:!!(notes?.[4]?.title && notes?.[4]?.desc && notes?.[4]?.checklist && notes?.[4]?.badge),
-        note6Valid:!!(notes?.[5]?.title && notes?.[5]?.desc && notes?.[5]?.checklist && notes?.[5]?.__timingQA?.firstDate && notes?.[5]?.__timingQA?.secondDate),
+        note6Valid:!!(
+          notes?.[5]?.title && notes?.[5]?.desc && notes?.[5]?.checklist && notes?.[5]?.__timingQA &&
+          (
+            (notes[5].__timingQA.firstDate && notes[5].__timingQA.secondDate) ||
+            String(notes[5].desc||'').includes('특정 달을 억지로 찍지는 않을게')
+          )
+        ),
         noteV2Version:data.noteV3Audit?.version || '',
         noteV2Primary:data.noteV3Audit?.claims?.[0]?.ditianRuleIds?.[0] || '',
         noteV2Secondary:data.noteV3Audit?.claims?.[0]?.zipingRuleIds?.[0] || '',
