@@ -646,7 +646,6 @@ function norm(v) {
   );
   await page.evaluate(() => {
     isUnlocked=true;
-    document.getElementById('unniProductLadder')?.remove();
     renderUnniProductCatalog();
   });
   await page.waitForFunction(
