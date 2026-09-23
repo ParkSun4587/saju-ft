@@ -6143,6 +6143,7 @@ function generateConcernNotes(data, mode) {
         });
         return window.__paymentWidgetLoading;
       }
+      window.ensurePaymentWidgetSDK = ensurePaymentWidgetSDK;
 
       let isAnalyzing = false;
       let selectedSplitMode = null;
