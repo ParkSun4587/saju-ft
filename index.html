@@ -3784,10 +3784,52 @@
         }
       }
 
+      function hasStoredAllInOneGrant() {
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i) || "";
+            if (key.startsWith("unni_product_grant_v1_all_in_one_")) return true;
+          }
+        } catch {}
+        return false;
+      }
+
+      async function checkAllConcernsEntitlement(data, version = viewVersion) {
+        if (!hasStoredAllInOneGrant()) return false;
+        const api = window.__UNNI_PRODUCTS_V1__;
+        if (!api?.resolveVerifiedEntitlements) return false;
+        const key = getUserUniqueKey(data);
+        const attempt = ++accessVersion;
+        const open = document.getElementById("directPaymentOpenButton");
+        if (open) open.disabled = true;
+        try {
+          const state = await api.resolveVerifiedEntitlements(data, { force:true });
+          if (!visibleResult(key, version) || attempt !== accessVersion) return true;
+          if (Array.isArray(state?.effectiveEntitlements) && state.effectiveEntitlements.includes("all_concerns")) {
+            if (open) open.disabled = false;
+            unlockFullReport(null, true);
+            showVoiceToast({
+              F: "완전판에 포함된 고민이라 추가 결제 없이 바로 열었어.",
+              T: "완전판 권한 확인 완료. 추가 결제 없이 열었어.",
+            }, data.currentMode);
+            return true;
+          }
+          if (open) open.disabled = false;
+          return false;
+        } catch (_) {
+          if (!visibleResult(key, version) || attempt !== accessVersion) return true;
+          showAccessRetry(data, version);
+          return true;
+        }
+      }
+
       async function checkSavedAccess(data, version = viewVersion) {
         const key = getUserUniqueKey(data);
         const saved = savedAccess(data);
-        if (!saved) return;
+        if (!saved) {
+          await checkAllConcernsEntitlement(data, version);
+          return;
+        }
         const attempt = ++accessVersion;
         const open = document.getElementById("directPaymentOpenButton");
         if (open) open.disabled = true;
