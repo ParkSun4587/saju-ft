@@ -95,6 +95,13 @@
     geum:"기준을 세우고 골라내는 힘",
     su:"정보를 모으고 회복하며 다음을 준비하는 힘",
   };
+  const FLOW_SHORT = {
+    mok:"시작·확장",
+    hwa:"표현·노출",
+    to:"정리·유지",
+    geum:"기준·선택",
+    su:"정보·회복",
+  };
 
   const GYEOK_USER = {
     정관격:"기준과 책임을 지키면서 자리를 만들어가는 힘",
@@ -284,14 +291,14 @@
     const start = dominant?.facts?.strongestElement || chain?.facts?.sourceElement;
     const path = Array.isArray(chain?.facts?.path) ? chain.facts.path : [];
     const blocked = chain?.facts?.blockedAt;
-    const startText = FLOW_USER[start] || "한쪽 힘";
+    const startText = FLOW_SHORT[start] || "한쪽 힘";
     if (blocked?.from && blocked?.to) {
-      const from = FLOW_USER[blocked.from] || "앞 단계";
-      const to = FLOW_USER[blocked.to] || "다음 단계";
-      return `전체 흐름은 <b>${startText}</b>에서 시작하는데, <b>${from}</b>에서 <b>${to}</b>로 넘어가는 연결이 약해. 그래서 힘이 없는 게 아니라, 다음 단계로 넘기는 지점에서 막히기 쉬워`;
+      const from = FLOW_SHORT[blocked.from] || "앞 단계";
+      const to = FLOW_SHORT[blocked.to] || "다음 단계";
+      return `전체 흐름은 <b>${startText}</b>에서 시작하는데, <b>${from}</b> 다음에 <b>${to}</b>${josaSuffix(to,"이","가")} 이어지는 연결이 약해. 그래서 힘이 없는 게 아니라, 다음 단계로 넘기는 지점에서 막히기 쉬워`;
     }
     const labels = [start, ...path.filter(x=>x?.present).map(x=>x.to)]
-      .map(x=>FLOW_USER[x])
+      .map(x=>FLOW_SHORT[x])
       .filter(Boolean)
       .filter((x,i,a)=>a.indexOf(x)===i);
     if (labels.length >= 2) {
@@ -393,10 +400,11 @@
     const conflictLine = conflict
       ? "다만 몸이 감당하는 방향과 중심 구조가 요구하는 방향이 완전히 같진 않아서, 먼저 버틸 조건을 만든 다음 결과 쪽 힘을 써야 해."
       : "";
+    const resolution = String(conflictLine || zipingUser(reasoning)).replace(/[.!?]+$/,"");
     if (isT) {
-      return `원인은 성격 한 줄이 아니야. <b>${monthLine}</b>. ${supportLine}. ${harmLine}. ${rescueLine}<br><br>${bridgeLine} ${relationLine}<br><br>${conflictLine || zipingUser(reasoning)} 그래서 ${situation.object}에서 봐야 할 건 '내가 왜 이러지?'가 아니라 <b>어떤 조건이 중심을 살리고, 어떤 조건이 먼저 흐름을 깨는지</b>야.`;
+      return `원인은 성격 한 줄이 아니야. <b>${monthLine}</b>. ${supportLine}. ${harmLine}. ${rescueLine}<br><br>${bridgeLine} ${relationLine}<br><br>${resolution}. 그래서 ${situation.object}에서 봐야 할 건 '내가 왜 이러지?'가 아니라 <b>어떤 조건이 중심을 살리고, 어떤 조건이 먼저 흐름을 깨는지</b>야.`;
     }
-    return `진짜 원인은 ‘원래 네 성격이 이래서’가 아니야. <b>${monthLine}</b>${josaSuffix(monthLine,"이야","야")}. 그리고 여기서 더 중요한 건 그 힘이 살아남는 조건이야.<br><br>${supportLine}. ${harmLine}. ${rescueLine} ${bridgeLine}<br><br>${relationLine} ${conflictLine || zipingUser(reasoning)} 그래서 ${withJosa(situation.object,"을","를")} 볼 때도 ‘좋다/나쁘다’보다 <b>어떤 조건에서 네 중심이 살아나고, 어디서 먼저 꼬이는지</b>를 보는 게 맞아.`;
+    return `진짜 원인은 ‘원래 네 성격이 이래서’가 아니야. <b>${monthLine}</b>${josaSuffix(monthLine,"이야","야")}. 그리고 여기서 더 중요한 건 그 힘이 살아남는 조건이야.<br><br>${supportLine}. ${harmLine}. ${rescueLine} ${bridgeLine}<br><br>${relationLine} ${resolution}. 그래서 ${withJosa(situation.object,"을","를")} 볼 때도 ‘좋다/나쁘다’보다 <b>어떤 조건에서 네 중심이 살아나고, 어디서 먼저 꼬이는지</b>를 보는 게 맞아.`;
   }
 
   function changeOrder(reasoning, situation, isT) {
@@ -426,16 +434,46 @@
     return `한꺼번에 바꾸기보다 순서가 중요해. <b>먼저 ${firstAction}</b>. 그다음 <b>${secondAction}</b>을 붙여봐.<br><br>지금 고민에서는 ${situation.move}. <b>이번 7일의 확인 기준은 ‘${situation.metric}’</b>이야.<br><br>${harmful.length ? `${harmful.join("·")}이 너무 커지는 방식은 오히려 원래 구조를 더 힘들게 만들 수 있어.` : "변수를 여러 개 한꺼번에 바꾸면 뭐가 효과 있었는지 놓치기 쉬워."} ${conflictLine} ${caution}`;
   }
 
+  function godSpecificCondition(god, domain, kind) {
+    const name = domain?.name || "이 고민";
+    const help = {
+      비견:`내가 결정할 범위와 내 몫이 분명한 ${name} 조건`,
+      겁재:`경쟁·협업이 있어도 기여와 몫을 분명히 나눌 수 있는 ${name} 조건`,
+      식신:`꾸준히 만든 결과가 쌓이고 실제 반응으로 돌아오는 ${name} 조건`,
+      상관:`불편한 점을 말하고 바꿔도 불이익으로 돌아오지 않는 ${name} 조건`,
+      정재:`시간·돈·보상·약속이 예측 가능하게 반복되는 ${name} 조건`,
+      편재:`새 기회나 범위를 넓혀도 회수 기준이 분명한 ${name} 조건`,
+      정관:`역할·책임·평가 기준이 처음부터 명확한 ${name} 조건`,
+      편관:`난도와 압박이 있어도 권한·보호장치가 같이 주어지는 ${name} 조건`,
+      정인:`배울 시간·자료·피드백과 회복 여지가 보장되는 ${name} 조건`,
+      편인:`깊게 파거나 다른 방식을 시험할 재량이 있는 ${name} 조건`,
+    };
+    const harm = {
+      비견:`내 방식만 지키느라 필요한 조정까지 어려워지는 ${name} 조건`,
+      겁재:`경쟁만 세지고 기여·몫의 기준은 흐려지는 ${name} 조건`,
+      식신:`계속 만들고 내놓지만 결과를 회수할 기준이 없는 ${name} 조건`,
+      상관:`문제점을 말할수록 갈등이나 불이익이 커지는 ${name} 조건`,
+      정재:`안정을 지키는 데 매여 필요한 변화까지 못 하는 ${name} 조건`,
+      편재:`기회·사람·돈을 한꺼번에 벌려 회수 기준이 사라지는 ${name} 조건`,
+      정관:`규칙·책임은 늘지만 기준과 보상은 자꾸 바뀌는 ${name} 조건`,
+      편관:`압박·경쟁만 강하고 권한이나 보호장치는 없는 ${name} 조건`,
+      정인:`준비·검토만 늘고 실제로 움직일 기회는 없는 ${name} 조건`,
+      편인:`생각과 해석만 깊어지고 현실 확인은 계속 늦어지는 ${name} 조건`,
+    };
+    const table = kind === "harm" ? harm : help;
+    return table[god] || null;
+  }
+
   function domainFit(reasoning, situation, isT) {
     const domain = DOMAIN[situation.concern] || DOMAIN.money;
     const helpfulGods = reasoning?.integrated?.helpfulGods || [];
     const harmfulGods = reasoning?.integrated?.harmfulGods || [];
     const needed = reasoning?.integrated?.neededGroups || [];
     const goodRows = helpfulGods.length
-      ? helpfulGods.slice(0,2).map(g => `<b>${GOD_USER[g] || g}</b> → ${domain.help[godGroup(g)] || domain.help.unknown}`)
+      ? helpfulGods.slice(0,2).map(g => `<b>${GOD_USER[g] || g}</b> → ${godSpecificCondition(g,domain,"help") || domain.help[godGroup(g)] || domain.help.unknown}`)
       : needed.slice(0,2).map(g => `<b>${groupText(g).noun}</b> → ${domain.help[g] || domain.help.unknown}`);
     const badRows = harmfulGods.length
-      ? harmfulGods.slice(0,2).map(g => `<b>${GOD_USER[g] || g}</b>이 과해질 때 → ${domain.harm[godGroup(g)] || domain.harm.unknown}`)
+      ? harmfulGods.slice(0,2).map(g => `<b>${GOD_USER[g] || g}</b>이 과해질 때 → ${godSpecificCondition(g,domain,"harm") || domain.harm[godGroup(g)] || domain.harm.unknown}`)
       : [domain.harm.unknown];
     if (!goodRows.length) goodRows.push(domain.help.unknown);
     const state = reasoning?.integrated?.zipingState;
@@ -542,16 +580,17 @@
       return `${layer}에서 ${effect}`;
     }
 
+    const cautionActionBare = String(cautionAction).replace(/[.!?]+$/,"");
     function monthSentence(row) {
       const when = formatMonth(row);
       const supportWhy = timingReasonPhrase(row, true);
       const cautionWhy = timingReasonPhrase(row, false);
-      if (row.class==="supportive") return `<b>${when}</b> — ${supportWhy || "중요한 도움 근거가"} 뚜렷해. 크게 조심할 신호는 같이 잡히지 않아. ${actionExample(situation.move)} 실제 반응을 확인해보기 좋아.`;
-      if (row.class==="mild-support") return `<b>${when}</b> — ${supportWhy || "보조 도움 근거가"} 잡혀 있어. 크게 벌리기보다 ${situation.move}를 한 번 시험해보기 좋아.`;
-      if (row.class==="caution") return `<b>${when}</b> — ${cautionWhy || "중요한 주의 근거가"} 뚜렷해. ${cautionAction}`;
-      if (row.class==="mild-caution") return `<b>${when}</b> — ${cautionWhy || "보조 주의 근거가"} 있어. 속도를 줄이고 한 번 더 확인하는 편이 좋아.`;
-      if (row.class==="mixed") return `<b>${when}</b> — 도움과 주의 근거가 같이 잡혀 있어. 한 방향으로 단정하기보다 조건을 나눠서 움직여.`;
-      return `<b>${when}</b> — 한쪽으로 강하게 기울지 않아. 결과보다 준비 상태를 점검하기 좋아.`;
+      if (row.class==="supportive") return `<b>${when}</b> — ${supportWhy || "중요한 도움 근거가"} 뚜렷하고, 크게 조심할 신호는 같이 잡히지 않아.`;
+      if (row.class==="mild-support") return `<b>${when}</b> — ${supportWhy || "보조 도움 근거가"} 잡혀 있어서, 크게 벌리기보다 작은 확인을 해보기 좋아.`;
+      if (row.class==="caution") return `<b>${when}</b> — ${cautionWhy || "중요한 주의 근거가"} 뚜렷해서, ${cautionActionBare}.`;
+      if (row.class==="mild-caution") return `<b>${when}</b> — ${cautionWhy || "보조 주의 근거가"} 있어서, 속도를 줄이고 한 번 더 확인하는 편이 좋아.`;
+      if (row.class==="mixed") return `<b>${when}</b> — 도움과 주의 근거가 같이 잡혀 있어서, 한 방향으로 단정하기보다 조건을 나눠서 움직여.`;
+      return `<b>${when}</b> — 한쪽으로 강하게 기울지 않아서, 결과보다 준비 상태를 점검하기 좋아.`;
     }
 
     const nearBody = pickedMonths.length
@@ -568,20 +607,20 @@
           ? "큰 흐름의 바탕 자체가 교체되는 지점"
           : "앞선 해와 비교해 도움·주의 방향이 실제로 바뀌는 지점";
       if(pivot.class==="supportive"){
-        return `<b>${year}년 전후</b> — ${why}이야. ${situation.object}에서는 이전과 같은 방식만 반복하기보다, 힘이 붙는 새 조건을 확인해볼 가치가 있어. 지금 메모에서는 전환 시점만 먼저 짚을게.`;
+        return `<b>${year}년 전후</b> — ${why}이라, ${situation.object}에서는 이전과 같은 방식만 반복하기보다 힘이 붙는 새 조건을 확인해볼 가치가 있어.`;
       }
-      return `<b>${year}년 전후</b> — ${why}이야. ${situation.object}에서는 이전 속도를 그대로 유지하기보다 방식과 부담을 다시 조정해야 해. 지금 메모에서는 전환 시점만 먼저 짚을게.`;
+      return `<b>${year}년 전후</b> — ${why}이라, ${situation.object}에서는 이전 속도를 그대로 유지하기보다 방식과 부담을 다시 조정해야 해.`;
     }
 
     const pivotBody = longTermPivots.map(pivotSentence).filter(Boolean).join("<br><br>");
-    const pivotSection = pivotBody ? `<br><br><b>그 이후 큰 변곡점</b><br>${pivotBody}` : "";
+    const pivotSection = pivotBody ? `<br><br><b>그 이후 큰 변곡점</b><br>${pivotBody}<br><br>여기서는 실제로 흐름이 바뀌는 시점만 먼저 짚었어.` : "";
 
     const intro = isT
       ? "이 고민은 가까운 12~18개월을 가장 구체적으로 보는 게 실용적이야. 달까지 좁힐 근거가 있는 구간만 골랐어."
       : "이 고민은 멀리 있는 미래를 전부 늘어놓는 것보다, 앞으로 12~18개월에 언제 움직이고 언제 속도를 줄일지 아는 게 더 쓸모 있어. 언니가 달까지 좁힐 근거가 있는 구간만 골라봤어.";
     const close = isT
-      ? `움직이기 좋은 구간엔 ${situation.move}. 조심 구간엔 같은 속도로 밀지 마.`
-      : `움직이기 좋은 구간에는 ${situation.move}. 힘이 덜 받쳐주는 때는 같은 속도를 억지로 유지하지 않아도 돼.`;
+      ? `움직이기 좋은 구간엔 ${situation.move}. 조심 구간엔 ${cautionActionBare}.`
+      : `움직이기 좋은 구간에는 ${situation.move}. 힘이 덜 받쳐주는 때는 ${cautionActionBare}.`;
 
     const first=pickedMonths[0]||longTermPivots[0]||null;
     const second=pickedMonths[1]||longTermPivots[1]||pickedMonths[2]||null;
