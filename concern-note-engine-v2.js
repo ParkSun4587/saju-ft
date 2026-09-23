@@ -349,7 +349,7 @@
     const lastScene = situation.concern === "love" && situation.key === "relationship"
       ? `${situation.object}에서 반복되는 장면보다`
       : `${withJosa(situation.object,"이","가")} 꼬인 마지막 장면보다`;
-    return `보통 <b>${cueStart}</b> 시작돼.<br><br>${flow}. 그 과정에서 특히 <b>${p.pressure}</b>${josaSuffix(p.pressure,"이","가")} 크게 걸리고, ${middle}.<br><br>그래서 단순히 '내가 버티냐 못 버티냐'가 핵심이 아니야. ${end}.<br><br>언니는 ${lastScene} <b>어디에서 흐름이 막히거나 과해지는지</b>부터 잡고 싶어.`;
+    return `보통 <b>${cueStart}</b> 시작돼.<br><br>${flow}. 그리고 그 과정에서 특히 <b>${p.pressure}</b>${josaSuffix(p.pressure,"이","가")} 크게 걸리고, ${middle}.<br><br>그래서 단순히 '내가 버티냐 못 버티냐'가 핵심이 아니야. ${end}.<br><br>언니는 ${lastScene} <b>어디에서 흐름이 막히거나 과해지는지</b>부터 잡고 싶어.`;
   }
 
   function corePortrait(reasoning, situation, isT) {
@@ -432,10 +432,10 @@
     const harmfulGods = reasoning?.integrated?.harmfulGods || [];
     const needed = reasoning?.integrated?.neededGroups || [];
     const goodRows = helpfulGods.length
-      ? helpfulGods.slice(0,3).map(g => `<b>${GOD_USER[g] || g}</b> → ${domain.help[godGroup(g)] || domain.help.unknown}`)
+      ? helpfulGods.slice(0,2).map(g => `<b>${GOD_USER[g] || g}</b> → ${domain.help[godGroup(g)] || domain.help.unknown}`)
       : needed.slice(0,2).map(g => `<b>${groupText(g).noun}</b> → ${domain.help[g] || domain.help.unknown}`);
     const badRows = harmfulGods.length
-      ? harmfulGods.slice(0,3).map(g => `<b>${GOD_USER[g] || g}</b>이 과해질 때 → ${domain.harm[godGroup(g)] || domain.harm.unknown}`)
+      ? harmfulGods.slice(0,2).map(g => `<b>${GOD_USER[g] || g}</b>이 과해질 때 → ${domain.harm[godGroup(g)] || domain.harm.unknown}`)
       : [domain.harm.unknown];
     if (!goodRows.length) goodRows.push(domain.help.unknown);
     const state = reasoning?.integrated?.zipingState;
@@ -707,6 +707,11 @@
       }
       if (claim) claim.noteSentence=stripHtml(note.desc);
     });
+
+    const paidValueAudit = typeof global.auditPaidValueNotes === "function"
+      ? global.auditPaidValueNotes(notes, mode || "F")
+      : null;
+    if (paidValueAudit && data && typeof data === "object") data.paidValueAudit = paidValueAudit;
 
     const audit = {
       version:VERSION,
