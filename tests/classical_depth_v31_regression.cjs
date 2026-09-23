@@ -264,6 +264,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       },
       sangsin:{
         ruleP:zmain(sangPresent),ruleA:zmain(sangAbsent),
+        note5P:plain(sangPresent.notes[4].desc),note5A:plain(sangAbsent.notes[4].desc),
       },
       gisin:{
         ruleP:zmain(gisinPresent),ruleA:zmain(gisinAbsent),
@@ -282,6 +283,11 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       special:{
         finding:finding(specialCase,'DTS_SPECIAL_120'),
         unsupported:specialCase.audit.unsupported,
+        claims:specialCase.audit.claims.map(c=>({
+          noteNum:c.noteNum,certainty:c.certainty,
+          ditianRuleIds:c.ditianRuleIds,zipingRuleIds:c.zipingRuleIds,
+        })),
+        note1:plain(specialCase.notes[0].desc),
       },
       timing:{
         natal:[TIME_BASE,TIME_DAE,TIME_SEY,TIME_WOL].map(x=>x.audit.structureFingerprint),
@@ -341,6 +347,10 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         nearMonthCount:CANON.reasoning.timing.nearMonths.length,
         years:CANON.reasoning.timing.years.map(y=>({year:y.year,daeunGanZhi:y.daeunGanZhi,seyunGanZhi:y.seyunGanZhi,class:y.class,evidence:y.evidence})),
         turningPoints:CANON.reasoning.timing.turningPoints,
+        nearHighlights:CANON.reasoning.timing.concernNearTerm?.highlights||[],
+        longTermPivots:CANON.reasoning.timing.longTermPivots||[],
+        note2:plain(CANON.notes[1].desc),
+        note5:plain(CANON.notes[4].desc),
         note6:plain(CANON.notes[5].desc),
         note6Meta:CANON.notes[5].__timingQA,
       },
@@ -378,6 +388,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   assert(r.sangsin.ruleP?.gyeokName==='정관격'&&r.sangsin.ruleA?.gyeokName==='정관격','sangsin fixtures changed gyeok');
   assert((r.sangsin.ruleP.supportGods||[]).length>(r.sangsin.ruleA.supportGods||[]).length,'sangsin presence not reflected in support gods');
+  assert(r.sangsin.note5P!==r.sangsin.note5A,'different Ziping support gods collapsed into the same NOTE5 user condition');
 
   assert(r.gisin.ruleP?.harmGods?.includes('상관'),'gisin fixture did not fire harm god');
   assert(!(r.gisin.ruleA?.harmGods||[]).includes('상관'),'gisin-absent fixture still has harm god');
@@ -397,6 +408,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   assert(r.special.finding?.implementationStatus==='unimplemented','special structure candidate must remain unimplemented');
   assert(r.special.unsupported.some(x=>x.ruleId==='DTS_SPECIAL_120'),'special unimplemented provenance missing');
+  assert(r.special.claims.every(x=>x.certainty==='guarded'),'special-structure candidate did not lower NOTE certainty');
+  assert(r.special.claims.every(x=>!(x.ditianRuleIds||[]).includes('DTS_SPECIAL_120')&&!(x.zipingRuleIds||[]).includes('ZZ_CHANGE_130')),'unimplemented/detect-only rule leaked into NOTE provenance');
+  assert(/한쪽으로 아주 크게 몰린 후보/.test(r.special.note1),'special-structure uncertainty was not explained in user language');
 
   assert(new Set(r.timing.natal).size===1,'changing transit data changed natal structure');
   assert(r.timing.fps[0]!==r.timing.fps[1],'different Daewoon did not change timing fingerprint');
@@ -450,6 +464,14 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert((r.canonicalTiming.turningPoints.opportunities||[]).length<=3&&(r.canonicalTiming.turningPoints.cautions||[]).length<=2,'turning-point caps violated');
   assert((r.canonicalTiming.turningPoints.opportunities||[]).every(x=>['supportive','mild-support'].includes(x.class)),'opportunity turning point was produced by numeric averaging instead of support evidence class');
   assert((r.canonicalTiming.turningPoints.cautions||[]).every(x=>['caution','mild-caution'].includes(x.class)),'caution turning point was produced by numeric averaging instead of caution evidence class');
+  assert((r.canonicalTiming.nearHighlights||[]).every(x=>{
+    const ms=x.monthSpecific||{};
+    return Number(ms.support||0)>0||Number(ms.caution||0)>0;
+  }),'NOTE6 selected a month without month-specific evidence');
+  assert((r.canonicalTiming.longTermPivots||[]).every(x=>x.isStructuralPivot===true&&Array.isArray(x.pivotReasons)&&x.pivotReasons.length>0),'long-term teaser labeled a non-structural year as pivot');
+  assert((r.canonicalTiming.longTermPivots||[]).every((x,i,a)=>i===0||x.year!==a[i-1].year),'duplicate long-term pivot year');
+  assert(/흐름|이어지는|넘어가는 연결/.test(r.canonicalTiming.note2),'NOTE2 dropped dominant flow/blocked-chain translation');
+  assert(/잘 맞는 조건/.test(r.canonicalTiming.note5)&&/마지막 판단 기준/.test(r.canonicalTiming.note5),'NOTE5 lost explicit condition/decision structure');
   assert(/가까운 시기 상세/.test(r.canonicalTiming.note6),'NOTE6 near-term hierarchy missing');
   assert(!/앞으로 5년 큰 흐름|이후 큰 흐름/.test(r.canonicalTiming.note6),'basic NOTE6 leaked full five-year annual disclosure');
   assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관)/.test(r.canonicalTiming.note6),'NOTE6 leaked internal jargon');
