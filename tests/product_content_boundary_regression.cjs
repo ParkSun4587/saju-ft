@@ -177,15 +177,15 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     assert(!run.timingAnswer.includes('앞으로 5년 큰 흐름'),'basic timing answer leaked full_saju five-year heading: '+run.id);
     const shownYears=[...new Set((run.timingAnswer.match(/20\d{2}년/g)||[]).map(x=>Number(x.slice(0,4))))];
     const pivotYears=run.pivots.map(x=>x.year);
-    assert(shownYears.every(y=>pivotYears.includes(y)),'basic NOTE6 invented/non-pivot long-term year: '+run.id+' '+JSON.stringify({shownYears,pivotYears}));
+    assert(shownYears.every(y=>pivotYears.includes(y)),'basic timing answer invented/non-pivot long-term year: '+run.id+' '+JSON.stringify({shownYears,pivotYears}));
     if(!pivotYears.length) assert(!(run.timingMeta.longTermPivotYears||[]).length,'basic timing answer invented teaser without a real pivot: '+run.id);
-    if(pivotYears.length) assert(run.timingAnswerMeta.longTermPivotYears?.every(y=>pivotYears.includes(y)),'NOTE6 meta teaser not sourced from timing.longTermPivots: '+run.id);
+    if(pivotYears.length) assert(run.timingMeta.longTermPivotYears?.every(y=>pivotYears.includes(y)),'timing meta teaser not sourced from timing.longTermPivots: '+run.id);
     assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관|압박|구조)/.test(run.timingAnswer),'basic timing answer leaked internal jargon: '+run.id+' '+run.timingAnswer);
   }
 
   assert(r.products.full.sections===12&&r.products.full.contract==='full_saju','full_saju 12-section whole-chart report missing');
   assert(r.products.full.fp===r.baseIntegrity.beforeFp&&r.products.full.timingFp,'full_saju did not reuse same reasoning result');
-  assert(r.products.full.text.includes('앞으로 5년 큰 흐름'),'full_saju does not disclose the long-term detail hidden from basic NOTE6');
+  assert(r.products.full.text.includes('앞으로 5년 큰 흐름'),'full_saju does not disclose the long-term detail hidden from basic timing answer');
   const fullYears=[...new Set((r.products.full.text.match(/20\d{2}년/g)||[]))];
   assert(fullYears.length>=5,'full_saju must expose five annual flow rows, got '+JSON.stringify(fullYears));
 
