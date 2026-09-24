@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.3.3";
+  const VERSION = "1.4.0";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -118,6 +118,86 @@
     };
   }
 
+  function compactChartFacts(reasoning) {
+    const profile = reasoning?.profile || {};
+    const strength = profile?.strength || {};
+    const elements = profile?.elements || {};
+    const sipsin = profile?.sipsin || {};
+    const structure = profile?.structure || {};
+    const balance = profile?.balance || {};
+    const context = reasoning?.context || {};
+
+    return {
+      pillars: cloneJson(profile?.pillars || {}, {}),
+      dayMaster: {
+        gan: context?.dayGan || profile?.pillars?.day?.gan || "",
+        element: context?.dayElement || "",
+        strength: strength?.verdict || "",
+        extreme: strength?.extreme || null,
+        supportRatio: strength?.supportRatio ?? null,
+        supportForce: strength?.supportForce ?? null,
+        drainForce: strength?.drainForce ?? null,
+        deukryeong: cloneJson(strength?.deukryeong || null, null),
+        deukji: cloneJson(strength?.deukji || null, null),
+        deukse: cloneJson(strength?.deukse || null, null),
+        roots: cloneJson(strength?.roots || [], []),
+      },
+      fiveElements: {
+        rawCount: cloneJson(elements?.raw || {}, {}),
+        weightedInfluence: cloneJson(elements?.influence || {}, {}),
+        rawRank: cloneJson(elements?.rawRank || {}, {}),
+        weightedRank: cloneJson(elements?.influenceRank || {}, {}),
+        rawVsWeightedMismatch: elements?.rawVsInfluenceMismatch === true,
+        note:
+          "rawCount는 겉으로 보이는 천간·지지 개수이고 weightedInfluence는 월령·지장간·자리 가중치를 반영한 해석값이다. 0개/1개만 보고 결론내리지 않는다.",
+      },
+      tenGods: {
+        dominant: sipsin?.dominant || "",
+        secondary: sipsin?.secondary || "",
+        counts: cloneJson(sipsin?.counts || {}, {}),
+        placements: cloneJson(sipsin?.all || [], []),
+        occurrences: cloneJson(context?.godOccurrences || [], []),
+      },
+      structure: {
+        gyeokName: structure?.gyeokName || "",
+        gyeokSipsin: structure?.gyeokSipsin || "",
+        basisGan: structure?.basisGan || "",
+        basis: structure?.basis || "",
+        status: structure?.status || "",
+        flow: structure?.flow || "",
+        sangsin: structure?.sangsin || "",
+        gisin: structure?.gisin || "",
+        touchul: structure?.touchul === true,
+        branchType: structure?.branchType || "",
+        saryeongGan: structure?.saryeongGan || "",
+        hiddenGans: cloneJson(structure?.hiddenGans || [], []),
+        visibleHidden: cloneJson(structure?.visibleHidden || [], []),
+        candidates: cloneJson(structure?.candidates || [], []),
+      },
+      balance: {
+        primaryYongshin: balance?.primary || "",
+        secondaryYongshin: balance?.secondary || "",
+        avoidElement: balance?.avoid || "",
+        scores: cloneJson(balance?.scores || {}, {}),
+        bridge: cloneJson(balance?.bridge || null, null),
+        method: balance?.method || "",
+      },
+      relations: {
+        clashes: cloneJson(context?.clashes || [], []),
+        harms: cloneJson(context?.harms || [], []),
+        breaks: cloneJson(context?.breaks || [], []),
+        punishments: cloneJson(context?.punishments || [], []),
+        stemCombines: cloneJson(context?.stemCombines || [], []),
+        branchCombines: cloneJson(context?.branchCombines || [], []),
+        branchTriads: cloneJson(context?.branchTriads || [], []),
+        branchHalfTriads: cloneJson(context?.branchHalfTriads || [], []),
+      },
+      groupForces: cloneJson(context?.groupForces || {}, {}),
+      elementRanking: cloneJson(context?.elementRanking || [], []),
+      rawRanking: cloneJson(context?.rawRanking || [], []),
+    };
+  }
+
   function buildEvidencePacket(data, mode) {
     if (typeof global.buildConcernDiagnosisV2 !== "function") {
       throw new Error("CONCERN_DIAGNOSIS_ENGINE_MISSING");
@@ -168,7 +248,18 @@
       ...(claim.zipingRuleIds || []),
     ]);
 
+    const chartEvidenceIds = [
+      "CHART_PILLARS",
+      "CHART_ELEMENTS",
+      "CHART_STRENGTH",
+      "CHART_TENGODS",
+      "CHART_STRUCTURE",
+      "CHART_RELATIONS",
+      "CHART_BALANCE",
+    ];
+
     const allowedEvidenceIds = unique([
+      ...chartEvidenceIds,
       ...signals.map((signal) => signal.id),
       ...ruleIdsFromClaims,
       ...timingEvidenceIds,
@@ -187,6 +278,7 @@
       },
       structureFingerprint: reasoning.structureFingerprint || "",
       timingFingerprint: reasoning.timingFingerprint || "",
+      chartFacts: compactChartFacts(reasoning),
       synthesis: {
         mechanisms: cloneJson(synthesis.mechanisms || {}, {}),
         priorityMechanisms: cloneJson(synthesis.priorityMechanisms || [], []),
@@ -550,14 +642,14 @@
       element(
         "h3",
         "text-sm font-black text-slate-900 mb-1",
-        "사주에서 잡힌 차이부터 설명하는 새 6개 답변",
+        "오행·십신·격국까지 그대로 풀어쓴 새 6개 답변",
       ),
     );
     panel.appendChild(
       element(
         "p",
         "text-[11px] leading-5 text-slate-500 mb-4",
-        "먼저 이 사주에서 실제로 강한 것·약한 것·엇갈리는 지점을 보여주고, 그다음 지금 고민에서 무슨 뜻인지 풀어.",
+        "오행 개수, 실제 세력, 십신, 신강·신약, 격국과 합충까지 숨기지 않고 먼저 보여준 뒤 지금 고민에 연결해.",
       ),
     );
 
