@@ -1343,6 +1343,7 @@
       ditianRuleIds:r.ditian?.findings?.map(x=>x.id)||[],
       zipingRuleIds:r.ziping?.findings?.map(x=>x.id)||[],
       priorityMechanisms:r.synthesis?.priorityMechanisms||[],
+      tenGodEvidence:r.synthesis?.tenGodEvidence||[],
       contradictionFlags:r.synthesis?.contradictionFlags||[],
       claims:r.claims||[],
       unsupported:r.unsupported||[],
