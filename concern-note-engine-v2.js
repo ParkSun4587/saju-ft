@@ -912,11 +912,12 @@
     const syn=synthesisFor(reasoning);
     const st=syn.mechanisms?.structure||{};
     const prescription=syn.mechanisms?.adjustment?.prescription||{};
+    const godRank=Object.fromEntries((syn.tenGodEvidence||[]).map((row,i)=>[row.god,{score:Number(row.priorityScore||0),index:i}]));
     const gods=[...new Set([
       ...(st.rescueGods||[]),
       ...(st.helpfulGods||[]),
       ...(prescription.zipingGods||[]),
-    ].filter(Boolean))];
+    ].filter(Boolean))].sort((a,b)=>(godRank[b]?.score||0)-(godRank[a]?.score||0)||(godRank[a]?.index??999)-(godRank[b]?.index??999));
     const rows=gods.slice(0,3).map(g=>({
       god:g,
       label:GOD_USER[g]||g,
@@ -934,7 +935,8 @@
     const domain=DOMAIN[s.concern]||DOMAIN.money;
     const syn=synthesisFor(reasoning);
     const st=syn.mechanisms?.structure||{};
-    const gods=[...new Set(st.harmfulGods||[])];
+    const godRank=Object.fromEntries((syn.tenGodEvidence||[]).map((row,i)=>[row.god,{score:Number(row.priorityScore||0),index:i}]));
+    const gods=[...new Set(st.harmfulGods||[])].sort((a,b)=>(godRank[b]?.score||0)-(godRank[a]?.score||0)||(godRank[a]?.index??999)-(godRank[b]?.index??999));
     const rows=gods.slice(0,3).map(g=>({
       god:g,
       label:GOD_USER[g]||g,
