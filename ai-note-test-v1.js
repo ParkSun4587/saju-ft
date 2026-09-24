@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.3.2";
+  const VERSION = "1.3.3";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -253,6 +253,7 @@
         method: "GET",
         headers: { Accept: "application/json" },
         cache: "no-store",
+        credentials: "same-origin",
       });
     } catch {
       const error = new Error("AI NOTE 서버에 연결할 수 없습니다.");
@@ -297,8 +298,14 @@
     try {
       response = await fetch(ENDPOINT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({ evidencePacket }),
+        cache: "no-store",
+        credentials: "same-origin",
+        referrerPolicy: "strict-origin-when-cross-origin",
       });
     } catch {
       const error = new Error("AI NOTE 서버 호출에 실패했습니다.");
