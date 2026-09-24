@@ -285,6 +285,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     generateConcernNotes(d,'F');
     currentResultData=d;
     selectedSplitMode='F';
+    // This block validates the paid compatibility checkout payload itself.
+    // Force paid mode locally so the repository's launch-mode toggle cannot bypass the payment UI.
+    FREE_LAUNCH_MODE=false;
 
     const originalPaymentAPI=paymentAPI;
     globalThis.__techDebtPreparePayload=null;
