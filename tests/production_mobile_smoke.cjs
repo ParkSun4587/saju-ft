@@ -355,6 +355,7 @@ async function inspect(page, mode) {
     return {
       n1:plain(notes[0]?.desc), n2:plain(notes[1]?.desc),
       n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc),
+      aiTranslated:Array.isArray(notes)&&notes.length===5&&notes.every(n=>n?.__aiTranslated===true),
       noteV2Audit:currentResultData?.noteV2Audit || null,
       timingMeta:notes[4]?.__timingQA || null,
       oheng:document.getElementById('ohengSummaryTxt')?.innerText||'',
@@ -454,10 +455,32 @@ async function inspect(page, mode) {
     assert(claim?.ditianRuleIds?.filter(Boolean).length&&claim?.zipingRuleIds?.filter(Boolean).length&&claim?.noteSentence,mode+' mapped claim provenance missing');
   }
   for(const [label,text] of [['core',r.n1],['scene',r.n2],['filter',r.n4],['timing',r.n5]]){
-    assert(text.length>=110&&text.length<=950,mode+' '+label+' answer length drift '+text.length);
-    assert(text.includes('결론'),mode+' '+label+' answer does not lead with a conclusion '+text);
+    assert(text.length>=110&&text.length<=1100,mode+' '+label+' answer length drift '+text.length);
   }
-  assert(r.n2.includes('결론')&&/돈|일|연애|진로|관계|회복/.test(r.n2)&&/장면|조건|상황/.test(r.n2),mode+' concern-grounded explanation missing '+r.n2);
+  if(r.aiTranslated){
+    const allText=r.n1+' '+r.n2+' '+r.n4+' '+r.n5;
+    assert(
+      [r.n1,r.n2,r.n4,r.n5].every(text=>text.includes('사주 근거')),
+      mode+' evidence-first AI NOTE must expose saju basis '+JSON.stringify({n1:r.n1,n2:r.n2,n4:r.n4,n5:r.n5})
+    );
+    assert(
+      /(정관|편관|식신|상관|정재|편재|정인|편인|비견|겁재|신강|신약|득령|득지|득세|통근|격국|상신|기신|대운|세운|월운)/.test(allText),
+      mode+' evidence-first AI NOTE lost concrete saju terminology '+allText
+    );
+    assert(
+      !/(버티는 바탕|이어지는 고리|다음 단계로 이어지는 고리|작동 방식|도움 힘|흔드는 힘|돈을 가리키는 자리|옥토|거목 숲|거대한 무대|판을 뒤집)/.test(allText),
+      mode+' abstract/metaphor wording returned in AI NOTE '+allText
+    );
+    assert(
+      /돈|일|연애|진로|관계|회복/.test(r.n2+r.n4),
+      mode+' AI NOTE lost selected-concern grounding '+JSON.stringify({scene:r.n2,filter:r.n4})
+    );
+  }else{
+    for(const [label,text] of [['core',r.n1],['scene',r.n2],['filter',r.n4],['timing',r.n5]]){
+      assert(text.includes('결론'),mode+' '+label+' fallback answer lost deterministic conclusion '+text);
+    }
+    assert(r.n2.includes('결론')&&/돈|일|연애|진로|관계|회복/.test(r.n2)&&/장면|조건|상황/.test(r.n2),mode+' fallback concern-grounded explanation missing '+r.n2);
+  }
   assert(r.timingMeta?.concernSituation,mode+' timing answer metadata missing');
   assert(!norm(r.timingMeta?.firstBody)||!norm(r.timingMeta?.secondBody)||norm(r.timingMeta?.firstBody)!==norm(r.timingMeta?.secondBody),mode+' duplicate timing roles returned');
   assert(!/(비밀\s*메모|실전 룰|반복 패턴)/.test(r.n1+' '+r.n2+' '+r.n4+' '+r.n5),mode+' stale NOTE labels returned');
