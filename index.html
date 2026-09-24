@@ -7950,7 +7950,9 @@ currentResultData = {
 
         const aiNoteRuntime = globalThis.__UNNI_AI_NOTE_V4__ || globalThis.__UNNI_AI_NOTE_TEST_V1__;
         const alreadyTranslated = aiNoteRuntime?.getProductionNotes?.(data, mode);
+        const canAutoAi = aiNoteRuntime?.autoProductionEnabled?.() !== false;
         const canAttemptAi =
+          canAutoAi &&
           aiNoteRuntime?.canAttemptProductionNotes?.(data) !== false;
         let precisionStatus = document.getElementById("aiNotePrecisionStatus");
         if (alreadyTranslated) {
