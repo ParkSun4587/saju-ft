@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION="1.2.0";
+  const VERSION="2.0.0";
   const ELEMENTS=["mok","hwa","to","geum","su"];
   const GAN_ELEMENT={甲:"mok",乙:"mok",丙:"hwa",丁:"hwa",戊:"to",己:"to",庚:"geum",辛:"geum",壬:"su",癸:"su"};
   const ELEMENT_KR={mok:"목",hwa:"화",to:"토",geum:"금",su:"수"};
@@ -319,6 +319,242 @@
       specialStructureGuarded:special?.implementationStatus==="unimplemented",
       prescription,
     };
+  }
+
+  function implementedFindings(rows){
+    return (rows||[]).filter(r=>!["error","unimplemented","detect-only"].includes(r?.implementationStatus));
+  }
+
+  function findingPolarity(row){
+    const kind=row?.kind||"unknown";
+    const facts=row?.facts||{};
+    if(kind==="root"){
+      if(facts.quality==="rootless" || (facts.rootClashes||[]).length) return "caution";
+      return "support";
+    }
+    if(kind==="season-strength") return facts.active?"support":"context";
+    if(kind==="ground-strength") return facts.quality==="rootless"?"caution":"support";
+    if(kind==="party-strength") return facts.active?"support":"context";
+    if(kind==="flow-chain") return facts.blockedAt?"caution":"support";
+    if(kind==="pressure") return facts.overload?"caution":"context";
+    if(kind==="bridge") return facts.status==="missing"?"need":"support";
+    if(kind==="branch-relations"){
+      return (facts.clashes||[]).length?"caution":"context";
+    }
+    if(kind==="regulation") return "need";
+    if(kind==="gyeok"){
+      const state=row?.state||facts.state||"undetermined";
+      if(state==="damaged") return "caution";
+      if(state==="rescued"||state==="mixed") return "mixed";
+      if(state==="supported") return "support";
+      return "context";
+    }
+    return "context";
+  }
+
+  function findingSalience(row){
+    const kind=row?.kind||"unknown";
+    const facts=row?.facts||{};
+    const base={
+      strength:10,root:9.5,gyeok:9.5,pressure:9,regulation:8.8,"flow-chain":8.6,bridge:8.4,flow:8,
+      "branch-relations":7.5,"season-strength":7,"ground-strength":7,"party-strength":6.8,
+    }[kind]||6;
+    let bonus=0;
+    if(kind==="strength"){
+      const ratio=Number(facts.supportRatio);
+      if(facts.extreme || (Number.isFinite(ratio)&&(ratio<=0.25||ratio>=0.75))) bonus+=2;
+    }
+    if(kind==="root"){
+      if(facts.quality==="rootless") bonus+=2;
+      if((facts.rootClashes||[]).length) bonus+=1.5;
+      if(facts.quality==="month-rooted") bonus+=1;
+    }
+    if(kind==="pressure"&&facts.overload) bonus+=2;
+    if(kind==="flow-chain"&&facts.blockedAt) bonus+=1.8;
+    if(kind==="bridge"&&facts.status==="missing") bonus+=1.2;
+    if(kind==="branch-relations"){
+      bonus+=Math.min(2,(facts.clashes||[]).length*0.8);
+      bonus+=Math.min(1,(facts.monthClashes||[]).length);
+    }
+    if(kind==="gyeok"){
+      const state=row?.state||facts.state||"undetermined";
+      if(["damaged","rescued","mixed"].includes(state)) bonus+=2;
+      else if(state==="supported") bonus+=1;
+    }
+    return round(base+bonus,2);
+  }
+
+  function normalizedFindingSignal(row,system){
+    return {
+      id:row.id,
+      system,
+      kind:row.kind||"unknown",
+      salience:findingSalience(row),
+      polarity:findingPolarity(row),
+      conclusion:row.conclusion||"",
+      facts:row.facts||{},
+      conditions:row.conditions||[],
+      exceptions:row.exceptions||[],
+      sourceIds:row.sourceIds||[],
+      tags:row.tags||[],
+      state:row.state||row?.facts?.state||null,
+      supportGods:row.supportGods||[],
+      harmGods:row.harmGods||[],
+      rescueGods:row.rescueGods||[],
+      causalSteps:row.causalSteps||[],
+    };
+  }
+
+  function evidenceRolesForSignal(signal){
+    const kind=signal?.kind||"unknown";
+    if(kind==="strength"||kind==="season-strength"||kind==="ground-strength"||kind==="party-strength") return ["core"];
+    if(kind==="root") return ["core","fit","caution"];
+    if(kind==="flow") return ["core","pattern"];
+    if(kind==="flow-chain") return ["pattern","fit"];
+    if(kind==="pressure") return ["core","pattern","caution"];
+    if(kind==="regulation") return ["fit"];
+    if(kind==="bridge") return ["fit","timing"];
+    if(kind==="branch-relations") return ["pattern","caution","timing"];
+    if(kind==="gyeok") return ["core","pattern","fit","caution"];
+    return ["core"];
+  }
+
+  function buildEvidencePlan(signals){
+    const roles={core:[],pattern:[],fit:[],caution:[],timing:[]};
+    for(const signal of signals||[]){
+      for(const role of evidenceRolesForSignal(signal)){
+        if(!roles[role].includes(signal.id)) roles[role].push(signal.id);
+      }
+    }
+    for(const role of Object.keys(roles)){
+      roles[role].sort((a,b)=>{
+        const sa=(signals||[]).find(x=>x.id===a)?.salience||0;
+        const sb=(signals||[]).find(x=>x.id===b)?.salience||0;
+        return sb-sa||a.localeCompare(b);
+      });
+    }
+    const allRuleIds=uniq((signals||[]).map(x=>x.id));
+    const usedRuleIds=uniq(Object.values(roles).flat());
+    return {
+      roles,
+      allImplementedRuleIds:allRuleIds,
+      usedRuleIds,
+      unusedRuleIds:allRuleIds.filter(id=>!usedRuleIds.includes(id)),
+      coverageRate:allRuleIds.length?round(usedRuleIds.length/allRuleIds.length,3):1,
+    };
+  }
+
+  function buildInterpretiveSynthesis(ctx,ditianRows,zipingRows,cross){
+    const dSignals=implementedFindings(ditianRows).map(row=>normalizedFindingSignal(row,"ditian"));
+    const zSignals=implementedFindings(zipingRows).map(row=>normalizedFindingSignal(row,"ziping"));
+    const signals=[...dSignals,...zSignals].sort((a,b)=>b.salience-a.salience||a.id.localeCompare(b.id));
+    const strength=byKind(ditianRows,"strength");
+    const season=byKind(ditianRows,"season-strength");
+    const ground=byKind(ditianRows,"ground-strength");
+    const party=byKind(ditianRows,"party-strength");
+    const root=byKind(ditianRows,"root");
+    const dominant=byKind(ditianRows,"flow");
+    const flowChain=byKind(ditianRows,"flow-chain");
+    const pressure=byKind(ditianRows,"pressure");
+    const bridge=byKind(ditianRows,"bridge");
+    const relations=byKind(ditianRows,"branch-relations");
+    const zMain=mainZipingFinding(zipingRows);
+    const relationFacts=relations?.facts||{};
+    const supportRatio=Number(strength?.facts?.supportRatio);
+    const rootQuality=root?.facts?.quality||ground?.facts?.quality||"unknown";
+    const pressureGroup=pressure?.facts?.group||cross?.pressureGroup||"unknown";
+    const evidencePlan=buildEvidencePlan(signals);
+    const mechanisms={
+      capacity:{
+        verdict:cross?.strength||ctx.strength?.verdict||"중화",
+        supportRatio:Number.isFinite(supportRatio)?round(supportRatio,3):null,
+        rootQuality,
+        rootCount:Number(root?.facts?.rootCount||0),
+        rootClashCount:(root?.facts?.rootClashes||[]).length,
+        seasonSupported:!!season?.facts?.active,
+        groundQuality:ground?.facts?.quality||null,
+        partySupported:!!party?.facts?.active,
+        extreme:strength?.facts?.extreme||ctx.strength?.extreme||null,
+        ruleIds:uniq([strength?.id,season?.id,ground?.id,party?.id,root?.id]),
+      },
+      drive:{
+        strongestElement:dominant?.facts?.strongestElement||ctx.elementRanking?.[0]?.element||null,
+        strongestShare:dominant?.facts?.strongestShare??ctx.elementRanking?.[0]?.share??null,
+        rawStrongest:dominant?.facts?.rawStrongest||ctx.rawRanking?.[0]?.element||null,
+        rawInfluenceMismatch:!!dominant?.facts?.rawInfluenceMismatch,
+        flowPath:flowChain?.facts?.path||[],
+        blockedAt:flowChain?.facts?.blockedAt||null,
+        pressureGroup,
+        pressureOverload:!!pressure?.facts?.overload,
+        ruleIds:uniq([dominant?.id,flowChain?.id,pressure?.id]),
+      },
+      structure:{
+        gyeokName:ctx.structure?.gyeokName||"",
+        touchul:!!ctx.structure?.touchul,
+        state:cross?.zipingState||zMain?.state||zMain?.facts?.state||"undetermined",
+        path:cross?.zipingPath||zMain?.facts?.path||null,
+        helpfulGods:uniq(cross?.helpfulGods||[]),
+        rescueGods:uniq(cross?.rescueGods||[]),
+        harmfulGods:uniq(cross?.harmfulGods||[]),
+        structuralSupportGods:uniq(cross?.structuralSupportGods||[]),
+        structuralRescueGods:uniq(cross?.structuralRescueGods||[]),
+        structuralHarmGods:uniq(cross?.structuralHarmGods||[]),
+        causalSteps:zMain?.causalSteps||[],
+        ruleIds:uniq([zMain?.id,zipingRows.find(r=>r.id==="ZZ_MONTH_101")?.id]),
+      },
+      adjustment:{
+        bridgeElement:cross?.bridgeElement||null,
+        bridgeStatus:cross?.bridgeStatus||null,
+        prescription:cross?.prescription||{},
+        conflicts:cross?.conflicts||[],
+        priorityPolicy:cross?.priorityPolicy||"",
+        ruleIds:uniq([
+          bridge?.id,
+          byKind(ditianRows,"regulation")?.id,
+          ...(cross?.prescription?.conflicts?.length?[zMain?.id]:[]),
+        ]),
+      },
+      friction:{
+        clashCount:(relationFacts.clashes||[]).length,
+        punishmentCount:(relationFacts.punishments||[]).length,
+        harmCount:(relationFacts.harms||[]).length,
+        breakCount:(relationFacts.breaks||[]).length,
+        monthClashCount:(relationFacts.monthClashes||[]).length,
+        relationCount:(relationFacts.clashes||[]).length+(relationFacts.punishments||[]).length+(relationFacts.harms||[]).length+(relationFacts.breaks||[]).length,
+        ruleIds:uniq([relations?.id]),
+      },
+    };
+    const priorityMechanisms=signals.slice(0,6).map((signal,index)=>({
+      rank:index+1,
+      ruleId:signal.id,
+      system:signal.system,
+      kind:signal.kind,
+      salience:signal.salience,
+      polarity:signal.polarity,
+      conclusion:signal.conclusion,
+    }));
+    const contradictionFlags=[];
+    if(mechanisms.drive.rawInfluenceMismatch) contradictionFlags.push("visible-vs-actual-force");
+    if((mechanisms.adjustment.conflicts||[]).length) contradictionFlags.push("body-vs-structure");
+    if(mechanisms.capacity.verdict==="신약"&&rootQuality!=="rootless"&&rootQuality!=="unknown") contradictionFlags.push("weak-but-rooted");
+    if(mechanisms.capacity.verdict==="신강"&&!mechanisms.capacity.seasonSupported) contradictionFlags.push("strong-without-season-support");
+    if(cross?.specialStructureGuarded) contradictionFlags.push("special-structure-guarded");
+    const synthesis={
+      version:"1.0.0",
+      signals,
+      mechanisms,
+      priorityMechanisms,
+      contradictionFlags,
+      evidencePlan,
+      guarded:!!cross?.specialStructureGuarded,
+    };
+    synthesis.fingerprint=stableHash({
+      mechanisms,
+      priorityMechanisms:priorityMechanisms.map(x=>({ruleId:x.ruleId,salience:x.salience,polarity:x.polarity})),
+      contradictionFlags,
+      evidencePlan,
+    });
+    return synthesis;
   }
 
   function actualRuleIds(rows,requested){
@@ -840,6 +1076,7 @@
     const dRows=runRulePack(global.__DITIAN_SUI_RULES__,global.__DITIAN_SUI_SOURCES__,ctx);
     const zRows=runRulePack(global.__ZIPING_ZHENQUAN_RULES__,global.__ZIPING_ZHENQUAN_SOURCES__,ctx);
     const cross=buildCrossValidation(ctx,dRows,zRows);
+    const synthesis=buildInterpretiveSynthesis(ctx,dRows,zRows,cross);
     const claims=buildIntegratedClaims(ctx,dRows,zRows,cross);
     const timing=buildTiming(ctx,cross);
     const unsupported=[
@@ -854,6 +1091,7 @@
       ditian:dRows.map(r=>({id:r.id,conclusion:r.conclusion,facts:r.facts,implementationStatus:r.implementationStatus||"implemented"})),
       ziping:zRows.map(r=>({id:r.id,conclusion:r.conclusion,facts:r.facts,state:r.state,causalSteps:r.causalSteps,implementationStatus:r.implementationStatus||"implemented"})),
       prescription:cross.prescription,
+      synthesis:synthesis.fingerprint,
     });
     const result={
       version:VERSION,structureFingerprint,timingFingerprint:timing.fingerprint,profile:ctx.profile,
@@ -863,7 +1101,7 @@
         monthRelations:ctx.monthRelations,stemCombines:ctx.stemCombines,branchCombines:ctx.branchCombines,branchTriads:ctx.branchTriads,branchHalfTriads:ctx.branchHalfTriads,
         bridge:ctx.bridge,godOccurrences:ctx.godOccurrences,monthHidden:ctx.monthHidden,
       },
-      ditian:{findings:dRows},ziping:{findings:zRows},integrated:cross,claims,timing,unsupported,
+      ditian:{findings:dRows},ziping:{findings:zRows},integrated:cross,synthesis,claims,timing,unsupported,
     };
     if(data&&typeof data==="object")data.classicalReasoningV1=result;
     return result;
