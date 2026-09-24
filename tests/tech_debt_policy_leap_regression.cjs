@@ -95,7 +95,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     let routeCount=0;
     let answerChecks=0;
     const signatures=new Set();
-    const plain=(v)=>String(v||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    const plain=(v)=>String(v||'').replace(/<br\s*\/?\s*>/gi,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
     const forbidden=/(비밀\s*메모|실전 룰|반복 패턴|압박|구조|원국|격국|용신|상신|기신|통관|월령|지장간|신강|신약)/;
     const badJoins=[
       /[가-힣]\s+(?:이야|야)(?=[.!?]|$)/,
@@ -126,10 +126,13 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           if(forbidden.test(visible)) failures.push(concern+'/'+key+'/'+mode+': old/abstract wording leaked');
           notes.forEach((note,i)=>{
             const text=plain(note?.desc);
-            if(text.length<55||text.length>420) failures.push(concern+'/'+key+'/'+mode+': answer '+(i+1)+' length '+text.length);
+            if(text.length<110||text.length>950) failures.push(concern+'/'+key+'/'+mode+': answer '+(i+1)+' length '+text.length);
+            if(!text.includes('결론')) failures.push(concern+'/'+key+'/'+mode+': answer '+(i+1)+' missing conclusion');
             for(const pattern of badJoins){ if(pattern.test(text)) failures.push(concern+'/'+key+'/'+mode+': Korean join error '+text); pattern.lastIndex=0; }
             answerChecks+=1;
           });
+          const coverage=d.noteV3Audit?.evidenceCoverage;
+          if(coverage?.coverageRate!==1 || coverage?.missingRuleIds?.length) failures.push(concern+'/'+key+'/'+mode+': supported evidence dropped '+JSON.stringify(coverage));
           const links=d.noteV3Audit?.outputClaimMap||[];
           if(links.length!==5) failures.push(concern+'/'+key+'/'+mode+': output claim map missing');
           for(const link of links){
