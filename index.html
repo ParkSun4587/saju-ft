@@ -6111,9 +6111,9 @@ function generateConcernNotes(data, mode) {
         午:"오시", 未:"미시", 申:"신시", 酉:"유시", 戌:"술시", 亥:"해시"
       };
 
-      function selectBirthTimeBranch(select) {
+      function selectBirthTimeBranch() {
         const input=document.getElementById("birthTimeInput");
-        if(input && select?.value !== birthTimeKeyToBranch(input.value)) input.value="";
+        if(input) input.value="";
         saveInputDraft();
       }
 
