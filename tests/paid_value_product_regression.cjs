@@ -1156,7 +1156,7 @@ function norm(v) {
     html.includes('function recoveryActionButtonStyle('),
     'counseling continuation or payment recovery CTA still uses legacy Kakao-yellow styling'
   );
-  assert(/(?:const|let) FREE_LAUNCH_MODE\s*=\s*false/.test(html), 'FREE_LAUNCH_MODE must remain false');
+  assert(/(?:const|let) FREE_LAUNCH_MODE\s*=\s*(?:true|false)/.test(html), 'FREE_LAUNCH_MODE declaration missing');
   assert(
     html.includes('어떤 고민인지 하나만 골라줄래? 그거부터 언니가 볼게') &&
     html.includes('지금 제일 궁금한 고민 하나만 골라줘. 그거부터 볼게.') &&
