@@ -492,6 +492,30 @@ function pricingFor(model) {
   return null;
 }
 
+function mergeUsage(usages) {
+  const rows = (usages || []).filter(Boolean);
+  if (!rows.length) return null;
+  const total = {
+    input_tokens: 0,
+    output_tokens: 0,
+    total_tokens: 0,
+    input_tokens_details: { cached_tokens: 0 },
+    output_tokens_details: { reasoning_tokens: 0 },
+  };
+  for (const usage of rows) {
+    total.input_tokens += Number(usage.input_tokens || 0);
+    total.output_tokens += Number(usage.output_tokens || 0);
+    total.total_tokens += Number(usage.total_tokens || 0);
+    total.input_tokens_details.cached_tokens += Number(
+      usage.input_tokens_details?.cached_tokens || 0,
+    );
+    total.output_tokens_details.reasoning_tokens += Number(
+      usage.output_tokens_details?.reasoning_tokens || 0,
+    );
+  }
+  return total;
+}
+
 function usageBreakdown(usage, model, env) {
   if (!usage || typeof usage !== "object") return null;
   const inputTokens = Number(usage.input_tokens || 0);
@@ -626,7 +650,7 @@ export async function onRequestPost(context) {
 
   const model = String(context.env.OPENAI_MODEL || "gpt-6-sol").trim();
   const translationInstruction = buildTranslationInstruction(packet);
-  const requestPayload = {
+  const baseRequestPayload = {
     model,
     store: false,
     reasoning: { effort: "high" },
@@ -660,78 +684,175 @@ export async function onRequestPost(context) {
     },
   };
 
-  let openaiResponse;
-  try {
-    openaiResponse = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: "Bearer " + context.env.OPENAI_API_KEY,
-      },
-      body: JSON.stringify(requestPayload),
-    });
-  } catch {
-    return reply(502, {
-      ok: false,
-      code: "OPENAI_NETWORK_ERROR",
-      message: "OpenAI 연결에 실패했습니다.",
-    });
+  async function callOpenAI(extraInstruction = "") {
+    const requestPayload = {
+      ...baseRequestPayload,
+      input: extraInstruction
+        ? [
+            ...baseRequestPayload.input,
+            {
+              role: "user",
+              content: [
+                {
+                  type: "input_text",
+                  text:
+                    "[재작성 지시]\n" +
+                    extraInstruction +
+                    "\n처음 결과를 고치는 데만 집중하고, 같은 evidencePacket 밖의 사실은 추가하지 마.",
+                },
+              ],
+            },
+          ]
+        : baseRequestPayload.input,
+    };
+
+    let openaiResponse;
+    try {
+      openaiResponse = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: "Bearer " + context.env.OPENAI_API_KEY,
+        },
+        body: JSON.stringify(requestPayload),
+      });
+    } catch {
+      return {
+        ok: false,
+        response: reply(502, {
+          ok: false,
+          code: "OPENAI_NETWORK_ERROR",
+          message: "OpenAI 연결에 실패했습니다.",
+        }),
+      };
+    }
+
+    let payload;
+    try {
+      payload = await openaiResponse.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!openaiResponse.ok) {
+      return {
+        ok: false,
+        response: reply(502, {
+          ok: false,
+          code: payload?.error?.code || "OPENAI_API_ERROR",
+          message:
+            payload?.error?.message ||
+            "OpenAI가 테스트 NOTE를 생성하지 못했습니다.",
+        }),
+      };
+    }
+
+    const outputText = extractOutputText(payload);
+    if (!outputText) {
+      return {
+        ok: false,
+        response: reply(502, {
+          ok: false,
+          code: "OPENAI_EMPTY_OUTPUT",
+          message: "OpenAI 응답에 NOTE 본문이 없습니다.",
+        }),
+      };
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(outputText);
+    } catch {
+      return {
+        ok: false,
+        response: reply(502, {
+          ok: false,
+          code: "OPENAI_INVALID_JSON",
+          message: "OpenAI 응답을 구조화된 NOTE로 읽지 못했습니다.",
+        }),
+      };
+    }
+
+    try {
+      return {
+        ok: true,
+        payload,
+        notes: validateGeneratedNotes(parsed, packet),
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        validationError: String(
+          error?.message || "AI_NOTE_VALIDATION_FAILED",
+        ),
+        payload,
+      };
+    }
   }
 
-  let payload;
-  try {
-    payload = await openaiResponse.json();
-  } catch {
-    payload = null;
+  const attempts = [];
+  let generated = await callOpenAI();
+  if (generated.payload?.usage) attempts.push(generated.payload.usage);
+
+  if (!generated.ok && generated.response) return generated.response;
+
+  if (!generated.ok && generated.validationError) {
+    const repairMap = {
+      SAJU_BASIS_MISSING:
+        "각 NOTE의 basis를 반드시 '네 사주에서는'으로 시작하고, 실제 강한 것과 약한 것/엇갈리는 점을 쉬운 말로 먼저 적어.",
+      ADVICE_REPLACED_DIAGNOSIS:
+        "title과 basis에서 조언·명령형을 제거하고, 사주 진단형 문장으로 다시 써.",
+      GENERIC_ADVICE_TITLE:
+        "누구에게나 할 수 있는 조언 제목을 버리고 이 사주에서 잡힌 비대칭 자체를 제목으로 써.",
+      INTERNAL_JARGON_LEAK:
+        "내부 명리용어를 쉬운 현실 언어로 바꾸되 사주 근거 자체는 숨기지 마.",
+      CONCERN_FOCUS_LOST:
+        "사용자가 고른 고민 범위 안에서만 번역하고 다른 영역으로 새지 마.",
+      INSUFFICIENT_STRUCTURAL_EVIDENCE:
+        "각 NOTE가 서로 독립된 사주 근거를 최소 2개 연결하도록 다시 구성해.",
+      TIMING_EVIDENCE_MISMATCH:
+        "시기 NOTE에 실제 timingEvidence ID를 포함하고 날짜와 그 신호의 의미를 정확히 연결해.",
+      TIMING_NATAL_LINK_MISSING:
+        "시기 NOTE에서 평소 사주 근거와 시기 근거를 함께 연결해.",
+      DUPLICATE_NOTE_FOCUS:
+        "6개 NOTE가 서로 다른 질문을 답하도록 focus를 완전히 분리해.",
+      DUPLICATE_NOTE_CLAIM:
+        "제목들이 같은 결론을 반복하지 않도록 각각 다른 발견을 뽑아.",
+      DUPLICATE_EVIDENCE_SET:
+        "같은 근거 묶음을 여러 NOTE에 재사용하지 말고 역할별로 다른 핵심 근거를 선택해.",
+      WEAK_NOTE_OUTPUT:
+        "사주 진단과 이유를 생략하지 말고 basis와 body를 충분히 구체적으로 써.",
+    };
+    const repairInstruction =
+      repairMap[generated.validationError] ||
+      "사주 근거가 먼저 보이고, 6개 NOTE가 서로 다른 발견이 되도록 전체를 다시 써.";
+    generated = await callOpenAI(
+      "첫 생성은 검증에서 " +
+        generated.validationError +
+        " 오류가 났어. " +
+        repairInstruction,
+    );
+    if (generated.payload?.usage) attempts.push(generated.payload.usage);
   }
 
-  if (!openaiResponse.ok) {
+  if (!generated.ok) {
+    if (generated.response) return generated.response;
     return reply(502, {
       ok: false,
-      code: payload?.error?.code || "OPENAI_API_ERROR",
+      code: generated.validationError || "AI_NOTE_VALIDATION_FAILED",
       message:
-        payload?.error?.message ||
-        "OpenAI가 테스트 NOTE를 생성하지 못했습니다.",
+        "AI NOTE가 사주 근거·고민 집중도·중복 검증을 두 번 연속 통과하지 못했습니다.",
     });
   }
 
-  const outputText = extractOutputText(payload);
-  if (!outputText) {
-    return reply(502, {
-      ok: false,
-      code: "OPENAI_EMPTY_OUTPUT",
-      message: "OpenAI 응답에 NOTE 본문이 없습니다.",
-    });
-  }
-
-  let parsed;
-  try {
-    parsed = JSON.parse(outputText);
-  } catch {
-    return reply(502, {
-      ok: false,
-      code: "OPENAI_INVALID_JSON",
-      message: "OpenAI 응답을 구조화된 NOTE로 읽지 못했습니다.",
-    });
-  }
-
-  let notes;
-  try {
-    notes = validateGeneratedNotes(parsed, packet);
-  } catch (error) {
-    return reply(502, {
-      ok: false,
-      code: String(error?.message || "AI_NOTE_VALIDATION_FAILED"),
-      message: "AI NOTE가 사주 근거·고민 집중도·중복 검증을 통과하지 못했습니다. 한 번 더 생성해줘.",
-    });
-  }
-
+  const combinedUsage = mergeUsage(attempts);
   return reply(200, {
     ok: true,
     model,
-    responseId: payload?.id || "",
-    usage: payload?.usage || null,
-    usageBreakdown: usageBreakdown(payload?.usage || null, model, context.env),
-    notes,
+    responseId: generated.payload?.id || "",
+    attempts: attempts.length,
+    usage: combinedUsage,
+    usageBreakdown: usageBreakdown(combinedUsage, model, context.env),
+    notes: generated.notes,
   });
 }
