@@ -464,6 +464,39 @@
     const rootQuality=root?.facts?.quality||ground?.facts?.quality||"unknown";
     const pressureGroup=pressure?.facts?.group||cross?.pressureGroup||"unknown";
     const evidencePlan=buildEvidencePlan(signals);
+    const godEvidence={};
+    for(const occ of ctx.godOccurrences||[]){
+      if(!occ?.god) continue;
+      if(!godEvidence[occ.god]) godEvidence[occ.god]={
+        god:occ.god,group:occ.group||groupForGod(occ.god),weight:0,visibleWeight:0,hiddenWeight:0,visibleCount:0,hiddenCount:0,positions:[],
+      };
+      const row=godEvidence[occ.god];
+      const weight=Number(occ.weight||0);
+      row.weight=round(Number(row.weight||0)+weight,3);
+      if(occ.visible){
+        row.visibleWeight=round(Number(row.visibleWeight||0)+weight,3);
+        row.visibleCount+=1;
+      }else{
+        row.hiddenWeight=round(Number(row.hiddenWeight||0)+weight,3);
+        row.hiddenCount+=1;
+      }
+      row.positions.push({pillar:occ.pillar,position:occ.position,sourceType:occ.sourceType,weight});
+    }
+    const structuralSupport=new Set([...(cross?.structuralSupportGods||[]),...(cross?.helpfulGods||[])]);
+    const structuralRescue=new Set([...(cross?.structuralRescueGods||[]),...(cross?.rescueGods||[])]);
+    const structuralHarm=new Set([...(cross?.structuralHarmGods||[]),...(cross?.harmfulGods||[])]);
+    for(const row of Object.values(godEvidence)){
+      row.roles=[];
+      if(structuralSupport.has(row.god)) row.roles.push("support");
+      if(structuralRescue.has(row.god)) row.roles.push("rescue");
+      if(structuralHarm.has(row.god)) row.roles.push("harm");
+      row.priorityScore=round(
+        Number(row.weight||0)+Number(row.visibleWeight||0)*0.35+
+        (row.roles.includes("rescue")?2.5:0)+(row.roles.includes("support")?1.5:0)+(row.roles.includes("harm")?1.5:0),
+        3,
+      );
+    }
+    const rankedGodEvidence=Object.values(godEvidence).sort((a,b)=>b.priorityScore-a.priorityScore||b.weight-a.weight||a.god.localeCompare(b.god,"ko"));
     const mechanisms={
       capacity:{
         verdict:cross?.strength||ctx.strength?.verdict||"중화",
@@ -540,9 +573,10 @@
     if(mechanisms.capacity.verdict==="신강"&&!mechanisms.capacity.seasonSupported) contradictionFlags.push("strong-without-season-support");
     if(cross?.specialStructureGuarded) contradictionFlags.push("special-structure-guarded");
     const synthesis={
-      version:"1.0.0",
+      version:"1.1.0",
       signals,
       mechanisms,
+      tenGodEvidence:rankedGodEvidence,
       priorityMechanisms,
       contradictionFlags,
       evidencePlan,
