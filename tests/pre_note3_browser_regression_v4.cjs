@@ -46,7 +46,7 @@ async function load(page) {
     typeof renderConcernNotesV2 === 'function' &&
     globalThis.generateConcernNotes?.__classicalCausal === true &&
     typeof buildConcernDiagnosisV2 === 'function' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.0.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.1.0' &&
     typeof analyzeDayMasterStrengthV2 === 'function' &&
     globalThis.__MANSE_KOREA_V2__?.version === '2.2.0',
     null, {timeout:60000}
@@ -431,6 +431,33 @@ async function load(page) {
       await page.close();
     }
     console.log('BIRTH_TIME_FINAL_RESULT_PASS', JSON.stringify(mapped));
+
+    // 12시진만 고른 경우도 같은 날 일주를 유지하고, 서머타임·UTC+8:30 시기에도 고른 시진 그대로 나와야 한다.
+    const branchPage = await browser.newPage();
+    await branchPage.goto(BASE, { waitUntil: 'load', timeout: 60000 });
+    await branchPage.waitForFunction(() => typeof calculateAccurateManse === 'function', null, { timeout: 60000 });
+    const branchDay = await branchPage.evaluate(() => {
+      const gz = (p) => p ? p.gan + p.zhi : '';
+      const rows = [];
+      for (const [y, m, d, exact] of [[1990, 5, 10, '00:40'], [2000, 1, 1, '00:30'], [1988, 7, 15, '01:40']]) {
+        const byBranch = calculateAccurateManse(y, m, d, '子', 'female');
+        const byExact = calculateAccurateManse(y, m, d, exact, 'female');
+        rows.push({ date: `${y}-${m}-${d}`, branchDay: gz(byBranch.pillars.day), exactDay: gz(byExact.pillars.day), branchHour: byBranch.pillars.hour?.zhi });
+      }
+      const mismatches = [];
+      for (const b of '子丑寅卯辰巳午未申酉戌亥') {
+        for (const [y, m, d] of [[1988, 7, 15], [1958, 6, 1], [2024, 12, 31]]) {
+          const r = calculateAccurateManse(y, m, d, b, 'male');
+          const sameDay = r.calendarMeta.manseClock.startsWith(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+          if (r.pillars.hour?.zhi !== b || !sameDay) mismatches.push(`${y}-${m}-${d} ${b}: ${r.pillars.hour?.zhi} ${r.calendarMeta.manseClock}`);
+        }
+      }
+      return { rows, mismatches };
+    });
+    await branchPage.close();
+    assert(branchDay.rows.every((x) => x.branchDay === x.exactDay && x.branchHour === '子') && branchDay.mismatches.length === 0,
+      `branch-only birth time must keep the entered day and chosen hour: ${JSON.stringify(branchDay)}`);
+    console.log('BRANCH_ONLY_DAY_PILLAR_PASS', JSON.stringify(branchDay.rows));
   }
 
   // D. Full production-like UI path across all six concerns, F/T, solar/lunar/leap/time variants.
@@ -566,7 +593,7 @@ async function load(page) {
     assert(report.note2Valid, `${c.id}: real-scene answer missing`);
     assert(report.note3Valid, `${c.id}: fit answer missing`);
     assert(report.note3Integrated, `${c.id}: classical diagnosis not integrated into five answers`);
-    assert(report.noteV2Version === '5.0.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
+    assert(report.noteV2Version === '5.1.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
     assert(report.note4Valid, `${c.id}: filter answer missing`);
     assert(report.note5Valid, `${c.id}: timing/action answer missing`);
     assert(!report.forbiddenVisible, `${c.id}: removed meta/explanation copy leaked into UI`);

@@ -9,6 +9,11 @@
     return Math.round(n*p)/p;
   }
   function nextElement(e){ return ELEMENTS[(ELEMENTS.indexOf(e)+1)%5]; }
+  // 결론 문장에는 내부 코드(mok, officer 등) 대신 한국어 이름을 쓴다.
+  const ELEMENT_NAME={mok:"목(木)",hwa:"화(火)",to:"토(土)",geum:"금(金)",su:"수(水)"};
+  const GROUP_NAME={self:"비겁",print:"인성",output:"식상",wealth:"재성",officer:"관성"};
+  function el(e){ return ELEMENT_NAME[e]||e; }
+  function grp(g){ return GROUP_NAME[g]||g; }
 
   const RULES=[
     {
@@ -72,7 +77,9 @@
         if(!d) return null;
         return {
           conclusion:d.quality==="month-rooted"
-            ?"월지에 직접 뿌리를 두어 지지 기반이 가장 강하게 확인된다."
+            ?(Number(d.monthRootWeight||0)>=Math.max(Number(d.dayRootWeight||0),Number(d.otherRootWeight||0))
+              ?"월지에 직접 뿌리를 두어 지지 기반이 가장 강하게 확인된다."
+              :"월지에도 뿌리가 있지만 비중은 작고, 더 큰 뿌리는 다른 지지에 있다.")
             :d.quality==="day-rooted"
               ?"일지에 직접 뿌리를 두어 가까운 자리의 기반이 확인된다."
               :d.quality==="other-rooted"
@@ -102,7 +109,9 @@
             :rootClashes.length&&ctx.strength?.verdict==="신약"
               ?"통근은 있지만 약한 일간이 의지하는 뿌리에 충이 걸려 있어 기반이 흔들리는 조건을 별도로 봐야 한다."
               :quality==="month-rooted"
-                ?"월지에 직접 뿌리가 있어 같은 신약 판정 안에서도 버티는 축이 분명하다."
+                ?(ctx.strength?.verdict==="신약"
+                  ?"월지에 직접 뿌리가 있어 같은 신약 판정 안에서도 버티는 축이 확인된다."
+                  :"월지에 직접 뿌리가 있어 버티는 축이 확인된다.")
                 :quality==="day-rooted"
                   ?"일지에 뿌리가 있어 완전히 떠 있는 구조는 아니다."
                   :"월지·일지보다는 약하지만 다른 지지에 통근이 있어 완전 무근은 아니다.",
@@ -139,7 +148,7 @@
         const top=ctx.elementRanking?.[0], second=ctx.elementRanking?.[1];
         if(!top) return null;
         return {
-          conclusion:`${top.element}의 실제 세력이 가장 크며, 겉 글자 수보다 월령·지장간 가중치를 반영한 기세를 우선한다.`,
+          conclusion:`${el(top.element)}의 실제 세력이 가장 크며, 겉 글자 수보다 월령·지장간 가중치를 반영한 기세를 우선한다.`,
           facts:{
             strongestElement:top.element,strongestForce:round(top.force,2),strongestShare:round(top.share,3),
             secondElement:second?.element||null,secondForce:round(second?.force,2),
@@ -171,8 +180,8 @@
         const blocked=path.find(x=>!x.present)||null;
         return {
           conclusion:blocked
-            ?`가장 강한 ${top.element}에서 생의 흐름을 따라가면 ${blocked.from}→${blocked.to} 구간에서 연결 기운이 비어 흐름이 끊긴다.`
-            :`가장 강한 ${top.element}에서 시작한 생의 연결이 원국 안에서 다음 단계들까지 존재한다.`,
+            ?`가장 강한 ${el(top.element)}에서 생의 흐름을 따라가면 ${el(blocked.from)}→${el(blocked.to)} 구간에서 연결 기운이 비어 흐름이 끊긴다.`
+            :`가장 강한 ${el(top.element)}에서 시작한 생의 연결이 원국 안에서 다음 단계들까지 존재한다.`,
           facts:{sourceElement:top.element,path,blockedAt:blocked?{from:blocked.from,to:blocked.to}:null},
           conditions:["실제 오행 세력 순위의 최강 오행을 원류의 출발점으로 사용","생의 다음 오행이 원국 세력값에 실제 존재하는지 확인"],
           exceptions:["세력의 존재만으로 흐름의 질을 완전 확정하지 않고 위치·충합 조건을 별도 보존"],
@@ -193,8 +202,8 @@
         const overload=force>support*0.9;
         return {
           conclusion:overload
-            ?`${group} 계열의 힘이 일간을 받치는 힘에 비해 크게 작동해 현재 압력의 주된 원인이 된다.`
-            :`${group} 계열이 가장 큰 외부 작용이지만 받치는 힘이 함께 있어 곧바로 과부하로 보지는 않는다.`,
+            ?`${grp(group)} 계열의 힘이 일간을 받치는 힘에 비해 크게 작동해 현재 압력의 주된 원인이 된다.`
+            :`${grp(group)} 계열이 가장 큰 외부 작용이지만 받치는 힘이 함께 있어 곧바로 과부하로 보지는 않는다.`,
           facts:{group,force:round(force,2),supportGroupForce:round(support,2),overload},
           conditions:["설기·재성·관성의 실제 가중 합을 서로 비교"],
           exceptions:[],
@@ -237,8 +246,8 @@
         const status=bridgeForce>0?"present-candidate":"missing";
         return {
           conclusion:status==="present-candidate"
-            ?`${b.controller}와 ${b.controlled}의 직접 제어 사이에 ${b.bridge}가 원국에 존재해 통관 후보는 성립하지만, 실제 효과의 충분성은 위치·세력 조건을 더 봐야 한다.`
-            :`${b.controller}와 ${b.controlled}가 맞서지만 필요한 중간 기운 ${b.bridge}가 원국에서 비어 있어 운에서 연결될 때 변화 가능성을 본다.`,
+            ?`${el(b.controller)}와 ${el(b.controlled)}의 직접 제어 사이에 ${el(b.bridge)}가 원국에 존재해 통관 후보는 성립하지만, 실제 효과의 충분성은 위치·세력 조건을 더 봐야 한다.`
+            :`${el(b.controller)}와 ${el(b.controlled)}가 맞서지만 필요한 중간 기운 ${el(b.bridge)}가 원국에서 비어 있어 운에서 연결될 때 변화 가능성을 본다.`,
           facts:{controller:b.controller,controlled:b.controlled,bridge:b.bridge,pressure:round(b.pressure,2),bridgeForce:round(bridgeForce,2),status},
           conditions:["서로 제어 관계인 두 오행의 실제 세력이 함께 확인됨","통관 오행이 원국에 존재하는지 별도 확인"],
           exceptions:["통관 오행이 존재해도 실제 효과의 충분성을 단순 세력 임계값으로 확정하지 않음","합화·회국을 통관 성립 근거로 자동 사용하지 않음"],
@@ -324,5 +333,5 @@
     },
   ];
 
-  global.__DITIAN_SUI_RULES__={version:"1.1.0",rules:RULES};
+  global.__DITIAN_SUI_RULES__={version:"1.2.0",rules:RULES};
 })(globalThis);

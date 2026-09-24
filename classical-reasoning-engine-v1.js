@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION="2.0.0";
+  const VERSION="2.1.0";
   const ELEMENTS=["mok","hwa","to","geum","su"];
   const GAN_ELEMENT={甲:"mok",乙:"mok",丙:"hwa",丁:"hwa",戊:"to",己:"to",庚:"geum",辛:"geum",壬:"su",癸:"su"};
   const ELEMENT_KR={mok:"목",hwa:"화",to:"토",geum:"금",su:"수"};
@@ -485,18 +485,23 @@
     const structuralSupport=new Set([...(cross?.structuralSupportGods||[]),...(cross?.helpfulGods||[])]);
     const structuralRescue=new Set([...(cross?.structuralRescueGods||[]),...(cross?.rescueGods||[])]);
     const structuralHarm=new Set([...(cross?.structuralHarmGods||[]),...(cross?.harmfulGods||[])]);
+    const actualSupport=new Set(cross?.helpfulGods||[]);
+    const actualRescue=new Set(cross?.rescueGods||[]);
+    const actualHarm=new Set(cross?.harmfulGods||[]);
     for(const row of Object.values(godEvidence)){
+      // roles는 격의 규칙상 후보까지 포함하고, actualRoles는 원국 배합에서 실제로 확인된 역할만 담는다.
       row.roles=[];
       if(structuralSupport.has(row.god)) row.roles.push("support");
       if(structuralRescue.has(row.god)) row.roles.push("rescue");
       if(structuralHarm.has(row.god)) row.roles.push("harm");
-      row.priorityScore=round(
-        Number(row.weight||0)+Number(row.visibleWeight||0)*0.35+
-        (row.roles.includes("rescue")?2.5:0)+(row.roles.includes("support")?1.5:0)+(row.roles.includes("harm")?1.5:0),
-        3,
-      );
+      row.actualRoles=[];
+      if(actualSupport.has(row.god)) row.actualRoles.push("support");
+      if(actualRescue.has(row.god)) row.actualRoles.push("rescue");
+      if(actualHarm.has(row.god)) row.actualRoles.push("harm");
+      // 순위는 실제 세력(가중치)만으로 정한다. 역할 가산점을 섞으면 약한 후보가 가장 큰 힘처럼 보인다.
+      row.priorityScore=round(Number(row.weight||0)+Number(row.visibleWeight||0)*0.35,3);
     }
-    const rankedGodEvidence=Object.values(godEvidence).sort((a,b)=>b.priorityScore-a.priorityScore||b.weight-a.weight||a.god.localeCompare(b.god,"ko"));
+    const rankedGodEvidence=Object.values(godEvidence).sort((a,b)=>b.weight-a.weight||b.visibleWeight-a.visibleWeight||a.god.localeCompare(b.god,"ko"));
     const mechanisms={
       capacity:{
         verdict:cross?.strength||ctx.strength?.verdict||"중화",

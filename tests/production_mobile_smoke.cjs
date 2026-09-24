@@ -10,14 +10,14 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
-        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.0.0' &&
+        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.1.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.2.0' &&
-        globalThis.__UNNI_AI_NOTE_V4__?.version === '2.1.3' &&
+        globalThis.__UNNI_AI_NOTE_V4__?.version === '2.2.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach five-answer NOTE 5.0.0 / paid 1.5.1 / products 2.2.0');
+  throw new Error('production did not reach five-answer NOTE 5.1.0 / paid 1.5.1 / products 2.2.0');
 }
 
 async function clickCatalogProduct(page, productId) {
@@ -445,7 +445,7 @@ async function inspect(page, mode) {
   },mode);
   r.resultLayout=await resultLayoutSnapshot(page);
   assertResultLayout(r.resultLayout,mode+' primary result');
-  assert(r.noteV2Audit?.version==='5.0.0'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
+  assert(r.noteV2Audit?.version==='5.1.0'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
   assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
   assert(r.noteV2Audit?.evidenceCoverage?.coverageRate===1&&r.noteV2Audit?.evidenceCoverage?.missingRuleIds?.length===0,mode+' supported classical evidence dropped '+JSON.stringify(r.noteV2Audit?.evidenceCoverage));
   assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six internal causal claims missing');
@@ -581,6 +581,8 @@ async function inspect(page, mode) {
     try { action=req.postDataJSON()?.action||''; } catch {}
     httpErrors.push({status:res.status(),url:res.url(),action});
   });
+  const aiNoteRequests=[];
+  page.on('request',req=>{ if(req.url().includes('/api/ai-notes')) aiNoteRequests.push(req.method()+' '+req.url()); });
   await deployed(page);
   await enter(page,'F','love','relationship');
 
@@ -603,98 +605,36 @@ async function inspect(page, mode) {
   });
   assert(
     packetBuild.ok &&
-    packetBuild.schemaVersion==='2.1.3' &&
+    packetBuild.schemaVersion==='2.2.0' &&
     packetBuild.planRoles.join('|')==='foundation|mechanism|fit|caution|timing' &&
     packetBuild.coverageCount>=2 &&
     packetBuild.weightedRankIsArray,
     'AI NOTE evidence packet must build before any network call '+JSON.stringify(packetBuild)
   );
 
-  const requiresLiveAi = /^https:\/\//i.test(BASE);
-  if (requiresLiveAi) {
-    const endpoint = new URL('/api/ai-notes', BASE).toString();
-    const endpointHealth = await page.request.get(endpoint, {
-      headers: { Accept: 'application/json' },
-      timeout: 30000,
-    });
-    const endpointPayload = await endpointHealth.json().catch(()=>null);
-    assert(
-      endpointHealth.ok() && endpointPayload?.ok && endpointPayload?.configured,
-      'live AI NOTE endpoint is not configured '+JSON.stringify({
-        status:endpointHealth.status(),
-        payload:endpointPayload,
-      })
-    );
-
-    let aiOutcome = null;
-    try {
-      const handle = await page.waitForFunction(
-        () => {
-          const ready =
-            currentResultData?.__aiNoteV4?.version === '2.1.3' &&
-            Array.isArray(currentResultData?.__aiNoteV4?.notes) &&
-            currentResultData.__aiNoteV4.notes.length === 5 &&
-            currentResultData.__aiNoteV4.notes.every((n)=>n?.__aiTranslated === true);
-          const status =
-            globalThis.__UNNI_AI_NOTE_V4__?.productionNoteStatus?.(currentResultData) || null;
-          if (ready) return { ready:true, status };
-          if (status?.lastError) {
-            return {
-              ready:false,
-              status,
-              precisionStatus:document.getElementById('aiNotePrecisionStatus')?.innerText||'',
-            };
-          }
-          return null;
-        },
-        null,
-        { timeout: 118000 }
-      );
-      aiOutcome = await handle.jsonValue();
-    } catch {
-      aiOutcome = await page.evaluate(()=>({
-        ready:false,
-        status:globalThis.__UNNI_AI_NOTE_V4__?.productionNoteStatus?.(currentResultData)||null,
-        precisionStatus:document.getElementById('aiNotePrecisionStatus')?.innerText||'',
-        runtimeVersion:globalThis.__UNNI_AI_NOTE_V4__?.version||'',
-        cachedVersion:currentResultData?.__aiNoteV4?.version||'',
-      }));
-    }
-    assert(
-      aiOutcome?.ready === true,
-      'live AI NOTE did not become ready '+JSON.stringify({
-        outcome:aiOutcome,
-        httpErrors:httpErrors.filter(x=>x.url.includes('/api/ai-notes')),
-      })
-    );
-    await page.waitForFunction(
-      () => (document.getElementById('notesListContainer')?.innerText || '').includes('사주 근거'),
-      null,
-      { timeout: 10000 }
-    );
-    const liveAi = await page.evaluate(()=>({
-      version:currentResultData?.__aiNoteV4?.version||'',
-      attempts:currentResultData?.__aiNoteV4?.attempts||0,
-      model:currentResultData?.__aiNoteV4?.model||'',
-      count:currentResultData?.__aiNoteV4?.notes?.length||0,
-      translated:(currentResultData?.__aiNoteV4?.notes||[]).every((n)=>n?.__aiTranslated===true),
-      visibleText:document.getElementById('notesListContainer')?.innerText||'',
-      status:globalThis.__UNNI_AI_NOTE_V4__?.productionNoteStatus?.(currentResultData)||null,
-    }));
-    assert(
-      liveAi.version==='2.1.3' &&
-      liveAi.count===5 &&
-      liveAi.translated &&
-      liveAi.visibleText.includes('사주 근거'),
-      'live default URL did not replace fallback NOTE with AI NOTE '+JSON.stringify(liveAi)
-    );
-    console.log('PRODUCTION_AI_NOTE_V4_PASS', JSON.stringify({
-      version:liveAi.version,
-      attempts:liveAi.attempts,
-      model:liveAi.model,
-      count:liveAi.count,
-    }));
-  }
+  // 실시간 AI NOTE는 비용 때문에 자동 호출하지 않는다. 결과 화면 NOTE는 명리 엔진 문장이어야 한다.
+  await sleep(2500);
+  const engineNotes = await page.evaluate(()=>({
+    cachedAi:!!currentResultData?.__aiNoteV4,
+    precisionStatus:!!document.getElementById('aiNotePrecisionStatus'),
+    autoAi:globalThis.__UNNI_AI_NOTE_V4__?.autoProductionEnabled?.(),
+    visibleText:document.getElementById('notesListContainer')?.innerText||'',
+  }));
+  assert(
+    aiNoteRequests.length===0 &&
+    !engineNotes.cachedAi &&
+    !engineNotes.precisionStatus &&
+    engineNotes.autoAi===false &&
+    engineNotes.visibleText.includes('결론') &&
+    /일주 [가-힣]{2}/.test(engineNotes.visibleText) &&
+    !/작동 방식|압력군|과부하 후보/.test(engineNotes.visibleText),
+    'result NOTE must come from the saju engine without an automatic AI NOTE call '+JSON.stringify({
+      aiNoteRequests,
+      ...engineNotes,
+      visibleText:engineNotes.visibleText.slice(0,300),
+    })
+  );
+  console.log('ENGINE_NOTE_NO_AUTO_AI_PASS');
 
   const f=await inspect(page,'F');
 
