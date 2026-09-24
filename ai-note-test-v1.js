@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.1.0";
+  const VERSION = "1.2.0";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -277,6 +277,14 @@
     return node;
   }
 
+  function previewText(body) {
+    const flat = String(body || "").replace(/\s+/g, " ").trim();
+    if (!flat) return "";
+    const firstSentence = flat.match(/^.{1,92}?[.!?](?:\s|$)/)?.[0]?.trim() || "";
+    const base = firstSentence || flat;
+    return base.length > 74 ? base.slice(0, 74).trimEnd() + "…" : base;
+  }
+
   function renderAiNotes(panel, result) {
     const resultBox = panel.querySelector("[data-ai-note-result]");
     resultBox.replaceChildren();
@@ -334,41 +342,116 @@
       decision: "06 · 판단 기준",
     };
 
-    for (const note of result.notes || []) {
-      const card = element(
+    const list = element(
+      "div",
+      "overflow-hidden rounded-2xl border border-violet-100 bg-white",
+      "",
+    );
+    resultBox.appendChild(list);
+
+    const closeOtherItems = (except) => {
+      for (const item of list.querySelectorAll("[data-ai-accordion-item]")) {
+        if (item === except) continue;
+        item.dataset.open = "0";
+        item.querySelector("[data-ai-accordion-body]")?.classList.add("hidden");
+        item.querySelector("[data-ai-accordion-preview]")?.classList.remove("hidden");
+        const icon = item.querySelector("[data-ai-accordion-icon]");
+        if (icon) icon.style.transform = "rotate(0deg)";
+        item.classList.remove("bg-violet-50/40");
+      }
+    };
+
+    (result.notes || []).forEach((note, index) => {
+      const item = element(
         "section",
-        "rounded-2xl border border-violet-100 bg-white p-4 shadow-sm",
+        "border-b border-slate-100 last:border-b-0 transition-colors",
+        "",
       );
-      card.appendChild(
+      item.setAttribute("data-ai-accordion-item", "");
+      item.dataset.open = index === 0 ? "1" : "0";
+
+      const button = element(
+        "button",
+        "w-full text-left px-4 py-3.5 bg-transparent border-0 cursor-pointer flex items-start gap-3",
+        "",
+      );
+      button.type = "button";
+      button.setAttribute("aria-expanded", index === 0 ? "true" : "false");
+
+      const textWrap = element("div", "min-w-0 flex-1", "");
+      textWrap.appendChild(
         element(
           "div",
-          "text-[10px] font-black tracking-wide text-violet-500 mb-1",
+          "text-[9px] font-black tracking-wide text-violet-500 mb-1",
           roleLabels[note.role] || note.role,
         ),
       );
-      card.appendChild(
+      textWrap.appendChild(
         element(
           "h4",
-          "text-sm font-black text-slate-900 leading-snug mb-3",
+          "text-[13.5px] font-black text-slate-900 leading-[1.45] break-keep",
           note.title,
         ),
       );
 
+      const preview = element(
+        "p",
+        "mt-1.5 text-[10.5px] leading-[1.6] text-slate-400 break-keep",
+        previewText(note.body),
+      );
+      preview.setAttribute("data-ai-accordion-preview", "");
+      if (index === 0) preview.classList.add("hidden");
+      textWrap.appendChild(preview);
+
+      const icon = element(
+        "span",
+        "shrink-0 mt-5 text-[15px] leading-none text-slate-400 transition-transform duration-200",
+        "⌄",
+      );
+      icon.setAttribute("data-ai-accordion-icon", "");
+      if (index === 0) icon.style.transform = "rotate(180deg)";
+
+      button.append(textWrap, icon);
+      item.appendChild(button);
+
+      const detail = element(
+        "div",
+        "px-4 pb-4 pt-0",
+        "",
+      );
+      detail.setAttribute("data-ai-accordion-body", "");
+      if (index !== 0) detail.classList.add("hidden");
+
       const body = element(
         "div",
-        "text-[13px] leading-7 text-slate-700 whitespace-pre-line break-keep",
+        "pt-1 text-[12.5px] leading-7 text-slate-700 whitespace-pre-line break-keep",
         note.body,
       );
-      card.appendChild(body);
+      detail.appendChild(body);
 
       const evidence = element(
         "div",
         "mt-3 pt-3 border-t border-slate-100 text-[9px] leading-4 text-slate-400",
         "근거 " + (note.evidenceIds || []).join(" · "),
       );
-      card.appendChild(evidence);
-      resultBox.appendChild(card);
-    }
+      detail.appendChild(evidence);
+      item.appendChild(detail);
+
+      if (index === 0) item.classList.add("bg-violet-50/40");
+
+      button.addEventListener("click", () => {
+        const willOpen = item.dataset.open !== "1";
+        if (willOpen) closeOtherItems(item);
+        item.dataset.open = willOpen ? "1" : "0";
+        button.setAttribute("aria-expanded", willOpen ? "true" : "false");
+        detail.classList.toggle("hidden", !willOpen);
+        preview.classList.toggle("hidden", willOpen);
+        icon.style.transform = willOpen ? "rotate(180deg)" : "rotate(0deg)";
+        item.classList.toggle("bg-violet-50/40", willOpen);
+      });
+
+      list.appendChild(item);
+    });
   }
 
   function mountTestPanel(data, mode) {
