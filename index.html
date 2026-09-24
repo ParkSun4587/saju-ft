@@ -7974,9 +7974,11 @@ currentResultData = {
           .join("·");
 
         if (summaryTxt) {
+          const maxSubject = attachJosa(maxOheng.name, "이/가");
+          const minTopic = attachJosa(minNames, "은/는");
           summaryTxt.innerHTML = isT
-            ? `<b>${maxOheng.name}</b> 비중이 가장 커. 반대로 <b>${minNames}</b>은 겉으로 적게 보여. 이건 오행 개수만 보여주는 화면이고, 실제 판단은 계절·뿌리·위치까지 따로 계산해. <b>아래에서는 그걸 지금 네 고민에 맞는 말로만 짧게 정리했어.</b>`
-            : `<b>${maxOheng.name}</b>이 겉으로 가장 많이 보여. 반대로 <b>${minNames}</b>은 적게 보이고. 이건 눈에 보이는 오행 분포야. 실제 힘은 계절·뿌리·위치까지 따로 계산한 다음, <b>아래에서는 지금 네 고민에 필요한 얘기만 짧게 풀어줄게.</b>`;
+            ? `<b>${maxOheng.name}</b> 비중이 가장 커. 반대로 <b>${minTopic}</b> 겉으로 적게 보여. 이건 오행 개수만 보여주는 화면이고, 실제 판단은 계절·뿌리·위치까지 따로 계산해. <b>아래에서는 그걸 지금 네 고민에 맞는 말로만 짧게 정리했어.</b>`
+            : `<b>${maxSubject}</b> 겉으로 가장 많이 보여. 반대로 <b>${minTopic}</b> 적게 보이고. 이건 눈에 보이는 오행 분포야. 실제 힘은 계절·뿌리·위치까지 따로 계산한 다음, <b>아래에서는 지금 네 고민에 필요한 얘기만 짧게 풀어줄게.</b>`;
         }
       }
 
