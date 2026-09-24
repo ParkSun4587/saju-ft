@@ -1082,8 +1082,8 @@ function norm(v) {
   const html = fs.readFileSync('index.html','utf8');
   const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.1'), 'paid value script include missing');
-  assert(html.includes('./concern-note-engine-v2.js?v=5.0.0'), 'five-answer NOTE script include missing');
-  assert(html.includes('./classical-reasoning-engine-v1.js?v=2.0.0'), 'full-evidence reasoning script include missing');
+  assert(html.includes('./concern-note-engine-v2.js?v=5.1.0'), 'five-answer NOTE script include missing');
+  assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.0'), 'full-evidence reasoning script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.2.0'), 'entitlement/product script include missing');
   assert(
