@@ -17,9 +17,9 @@ function norm(v) {
 
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil:'load' });
   await page.waitForFunction(() =>
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '4.0.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.0.0' &&
     globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version === '2.1.0' &&
-    globalThis.__CLASSICAL_REASONING_V1__?.version === '1.2.0' &&
+    globalThis.__CLASSICAL_REASONING_V1__?.version === '2.0.0' &&
     typeof buildIntegratedSajuProfile === 'function' &&
     typeof buildConcernDiagnosisV2 === 'function' &&
     typeof buildClassicalReasoningV1 === 'function' &&
@@ -99,9 +99,9 @@ function norm(v) {
     };
   });
 
-  assert(result.engine?.version === '4.0.0', 'NOTE v3 engine missing');
+  assert(result.engine?.version === '5.0.0', 'NOTE v3 engine missing');
   assert(result.integrated?.version === '2.1.0', 'integrated profile v2 missing');
-  assert(result.reasoning?.version === '1.2.0', 'classical reasoning engine missing');
+  assert(result.reasoning?.version === '2.0.0', 'classical reasoning engine missing');
   assert(result.wrapper, 'classical-causal NOTE wrapper missing');
   assert(result.exactPillars.join(',') === '戊寅,甲寅,己亥,乙丑', 'canonical pillars drift: '+result.exactPillars.join(','));
   assert(JSON.stringify(result.exactRaw) === JSON.stringify({mok:4,hwa:0,to:3,geum:0,su:1}), 'canonical raw elements drift');
@@ -121,7 +121,7 @@ function norm(v) {
     for (const [mode,notes,audit] of [['F',row.notesF,row.auditF],['T',row.notesT,row.auditT]]) {
       assert(notes.length === 5, row.concern+'/'+row.situation+'/'+mode+': expected five answers');
       assert(notes.map(n=>n.themeNum).join(',') === '01,02,03,04,05', row.concern+'/'+row.situation+'/'+mode+': five-answer numbering drift');
-      assert(audit?.version === '4.0.0' && audit?.engine === 'classical-causal', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
+      assert(audit?.version === '5.0.0' && audit?.engine === 'classical-causal-full-evidence', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
       assert(audit.genericClusterDependency === false, row.concern+'/'+row.situation+'/'+mode+': generic cluster dependency returned');
       assert(audit.structureFingerprint && audit.timingFingerprint, row.concern+'/'+row.situation+'/'+mode+': fingerprints missing');
       assert(Array.isArray(audit.claims) && audit.claims.length === 6, row.concern+'/'+row.situation+'/'+mode+': six internal causal claims missing');
