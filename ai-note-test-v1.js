@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.0.0";
+  const VERSION = "1.1.0";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -181,8 +181,9 @@
         concern: diagnosis.situation?.concern || "",
         situationKey: diagnosis.situation?.key || "",
         situationLabel: diagnosis.situation?.label || "",
+        situationObject: diagnosis.situation?.object || "",
         instruction:
-          "이 선택값은 답변 범위를 정하는 질문 정보일 뿐이며 명리 근거의 우선순위를 미리 정하지 않는다.",
+          "이 선택값은 답변 범위와 현실 번역의 초점만 정하며 명리 근거의 우선순위를 미리 정하지 않는다.",
       },
       structureFingerprint: reasoning.structureFingerprint || "",
       timingFingerprint: reasoning.timingFingerprint || "",
@@ -280,14 +281,47 @@
     const resultBox = panel.querySelector("[data-ai-note-result]");
     resultBox.replaceChildren();
 
+    const usage = result.usageBreakdown || null;
+    const metaLines = ["모델 " + (result.model || "-")];
+    if (usage) {
+      const tokenParts = [
+        "입력 " + Number(usage.inputTokens || 0).toLocaleString(),
+        "출력 " + Number(usage.outputTokens || 0).toLocaleString(),
+        "추론 " + Number(usage.reasoningTokens || 0).toLocaleString(),
+        "실제 답변 " + Number(usage.visibleOutputTokens || 0).toLocaleString(),
+        "총 " + Number(usage.totalTokens || 0).toLocaleString() + " tokens",
+      ];
+      if (Number(usage.cachedInputTokens || 0) > 0) {
+        tokenParts.splice(
+          1,
+          0,
+          "캐시 입력 " + Number(usage.cachedInputTokens || 0).toLocaleString(),
+        );
+      }
+      metaLines.push(tokenParts.join(" · "));
+      if (usage.estimatedKrw != null) {
+        metaLines.push(
+          "이번 호출 예상 약 " +
+            Number(usage.estimatedKrw).toLocaleString() +
+            "원" +
+            (usage.estimatedUsd != null
+              ? " ($" + Number(usage.estimatedUsd).toFixed(4) + ")"
+              : "") +
+            " · 환율 " +
+            Number(usage.usdKrwRate || 1400).toLocaleString() +
+            "원 가정",
+        );
+      }
+    } else if (result.usage?.total_tokens) {
+      metaLines.push(
+        "총 " + result.usage.total_tokens.toLocaleString() + " tokens",
+      );
+    }
+
     const meta = element(
       "div",
-      "text-[10px] text-slate-400 font-medium mb-3",
-      "모델 " +
-        (result.model || "-") +
-        (result.usage?.total_tokens
-          ? " · 총 " + result.usage.total_tokens.toLocaleString() + " tokens"
-          : ""),
+      "text-[10px] text-slate-400 font-medium leading-5 mb-3 whitespace-pre-line",
+      metaLines.join("\n"),
     );
     resultBox.appendChild(meta);
 
@@ -362,14 +396,14 @@
       element(
         "h3",
         "text-sm font-black text-slate-900 mb-1",
-        "현재 엔진 근거만으로 새 6개 답변 비교",
+        "현재 엔진 근거를 고민별 현실 언어로 바꾼 새 6개 답변",
       ),
     );
     panel.appendChild(
       element(
         "p",
         "text-[11px] leading-5 text-slate-500 mb-4",
-        "기존 NOTE는 그대로 두고, 같은 명리 근거를 GPT가 다시 종합한 결과만 아래에 붙여서 비교해.",
+        "돈·직장·연애·진로·관계·마음 모두 같은 원칙으로, 사주 근거가 실제 고민에서 무엇을 뜻하는지 풀어서 비교해.",
       ),
     );
 
