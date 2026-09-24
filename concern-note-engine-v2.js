@@ -806,6 +806,9 @@
           helpfulGods:reasoning?.integrated?.helpfulGods||[],
           rescueGods:reasoning?.integrated?.rescueGods||[],
           harmfulGods:reasoning?.integrated?.harmfulGods||[],
+          structuralSupportGods:reasoning?.integrated?.structuralSupportGods||[],
+          structuralRescueGods:reasoning?.integrated?.structuralRescueGods||[],
+          structuralHarmGods:reasoning?.integrated?.structuralHarmGods||[],
         },
         adjustment:{
           bridgeElement:reasoning?.integrated?.bridgeElement||null,
@@ -938,22 +941,52 @@
     const syn=synthesisFor(reasoning);
     const st=syn.mechanisms?.structure||{};
     const prescription=syn.mechanisms?.adjustment?.prescription||{};
-    const godRank=Object.fromEntries((syn.tenGodEvidence||[]).map((row,i)=>[row.god,{score:Number(row.priorityScore||0),index:i}]));
-    const gods=[...new Set([
-      ...(st.rescueGods||[]),
-      ...(st.helpfulGods||[]),
-      ...(prescription.zipingGods||[]),
-    ].filter(Boolean))].sort((a,b)=>(godRank[b]?.score||0)-(godRank[a]?.score||0)||(godRank[a]?.index??999)-(godRank[b]?.index??999));
-    const rows=gods.slice(0,3).map(g=>({
-      god:g,
-      label:GOD_USER[g]||g,
-      text:godSpecificCondition(g,domain,"help")||domain.help[godGroup(g)]||domain.help.unknown,
-    }));
+    const actual=[...new Set([...(st.rescueGods||[]),...(st.helpfulGods||[])].filter(Boolean))];
+    const structural=[...new Set([...(prescription.zipingGods||[]),...(st.structuralRescueGods||[]),...(st.structuralSupportGods||[])].filter(Boolean))];
+    const evidence=Object.fromEntries((syn.tenGodEvidence||[]).map((row,i)=>[row.god,{...row,index:i}]));
+    const candidates=[...new Set([...actual,...structural])].map(g=>{
+      const ev=evidence[g]||null;
+      const isActual=actual.includes(g);
+      const isPresent=!!ev;
+      const visibility=Number(ev?.visibleWeight||0)>0 ? "visible" : Number(ev?.hiddenWeight||0)>0 ? "hidden" : "absent";
+      const tier=isActual ? 0 : isPresent ? 1 : 2;
+      return {god:g,ev,isActual,isPresent,visibility,tier};
+    }).sort((a,b)=>
+      a.tier-b.tier ||
+      Number(b.ev?.visibleWeight||0)-Number(a.ev?.visibleWeight||0) ||
+      Number(b.ev?.priorityScore||0)-Number(a.ev?.priorityScore||0) ||
+      String(a.god).localeCompare(String(b.god),"ko")
+    );
+
+    const rows=candidates.slice(0,3).map(row=>{
+      const base=godSpecificCondition(row.god,domain,"help")||domain.help[godGroup(row.god)]||domain.help.unknown;
+      let availability="";
+      if(row.isActual&&row.visibility==="visible") availability="이 힘은 평소 선택이나 행동으로 비교적 바로 꺼내 쓰기 쉬운 편이야";
+      else if(row.isActual&&row.visibility==="hidden") availability="이 힘은 분명히 있지만 처음부터 겉으로 나오기보다 익숙한 상황에서 더 잘 살아나는 편이야";
+      else if(row.isPresent) availability="이 힘은 사주 안에 있긴 하지만 중심 역할로 바로 쓰이기보다 조건이 맞을 때 보조로 살아나는 편이야";
+      else availability="이 힘은 저절로 강하게 나오기보다 사람·환경·규칙 쪽에서 확보해줄수록 좋아";
+      return {
+        god:row.god,
+        label:GOD_USER[row.god]||row.god,
+        text:base,
+        availability,
+        evidenceStatus:row.isActual?"actual":row.isPresent?"present-secondary":"needed-external",
+      };
+    });
+
     if(!rows.length){
       const groups=[...new Set(reasoning?.integrated?.neededGroups||[])];
-      groups.slice(0,2).forEach(g=>rows.push({god:null,label:groupText(g).noun,text:domain.help[g]||domain.help.unknown}));
+      groups.slice(0,2).forEach(g=>rows.push({
+        god:null,label:groupText(g).noun,text:domain.help[g]||domain.help.unknown,
+        availability:"이 조건은 네가 힘을 덜 잃고 움직이게 해주는 기본 받침대에 가까워",
+        evidenceStatus:"needed-group",
+      }));
     }
-    if(!rows.length) rows.push({god:null,label:"확인 가능한 조건",text:domain.help.unknown});
+    if(!rows.length) rows.push({
+      god:null,label:"확인 가능한 조건",text:domain.help.unknown,
+      availability:"한 번의 느낌보다 반복했을 때 실제로 편해지는지를 확인하는 게 중요해",
+      evidenceStatus:"fallback",
+    });
     return rows;
   }
 
@@ -1051,8 +1084,8 @@
         : "처음 느낌보다 같은 조건이 반복됐을 때도 네 힘이 남는지를 보는 게 정확해.";
     return [
       isT
-        ? `<b>결론</b> — 맞는 조건 1순위는 <b>${first.text}</b>`
-        : `<b>결론</b> — 너한테 제일 편하게 맞는 건 <b>${first.text}</b>`,
+        ? `<b>결론</b> — 맞는 조건 1순위는 <b>${first.text}</b>. ${first.availability}`
+        : `<b>결론</b> — 너한테 제일 편하게 맞는 건 <b>${first.text}</b>. ${first.availability}`,
       rest.length
         ? (isT ? `추가 조건 — ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}` : `그리고 ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}까지 같이 있으면 훨씬 덜 지쳐.`)
         : "",
