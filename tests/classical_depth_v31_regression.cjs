@@ -475,9 +475,10 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   }),'NOTE6 selected a month without month-specific evidence');
   assert((r.canonicalTiming.longTermPivots||[]).every(x=>x.isStructuralPivot===true&&Array.isArray(x.pivotReasons)&&x.pivotReasons.length>0),'long-term teaser labeled a non-structural year as pivot');
   assert((r.canonicalTiming.longTermPivots||[]).every((x,i,a)=>i===0||x.year!==a[i-1].year),'duplicate long-term pivot year');
-  assert(/결론/.test(r.canonicalTiming.scene)&&/초반 장면|같은 순간/.test(r.canonicalTiming.scene)&&/예를 들면|이런 상황/.test(r.canonicalTiming.scene),'second answer lost grounded real-life scene explanation');
+  assert(/결론/.test(r.canonicalTiming.scene)&&/반복이 갈리는 첫 지점|네 반복은 마지막 결과보다/.test(r.canonicalTiming.scene),
+    'second answer lost chart-derived pattern explanation');
   assert(/결론/.test(r.canonicalTiming.fit)&&/잘 맞는|맞는 조건|편하게 맞는/.test(r.canonicalTiming.fit),'fit answer lost concrete matching conditions');
-  assert(/지금 할 것/.test(r.canonicalTiming.timingAnswer),'timing answer lost immediate action');
+  assert(/지금 비교 기준/.test(r.canonicalTiming.timingAnswer),'timing answer lost chart-derived comparison criterion');
   assert(!/앞으로 5년 큰 흐름|이후 큰 흐름/.test(r.canonicalTiming.timingAnswer),'basic timing answer leaked full five-year annual disclosure');
   assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관|압박|구조)/.test(r.canonicalTiming.timingAnswer),'timing answer leaked internal jargon');
 
