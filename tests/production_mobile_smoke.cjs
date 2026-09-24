@@ -589,7 +589,7 @@ async function inspect(page, mode) {
   });
   assert(
     packetBuild.ok &&
-    packetBuild.schemaVersion==='2.1.2' &&
+    packetBuild.schemaVersion==='2.1.3' &&
     packetBuild.planRoles.join('|')==='foundation|mechanism|fit|caution|timing' &&
     packetBuild.coverageCount>=2 &&
     packetBuild.weightedRankIsArray,
