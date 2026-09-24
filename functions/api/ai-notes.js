@@ -24,6 +24,13 @@ const DOMAIN_GUIDES = {
       "가까운 시기에 실제로 달라지는 것은 수입 기회인지, 비용 부담인지, 감당 여력인지",
       "사용자가 실제 금액을 비교할 때 무엇을 먼저 확인해야 하는지",
     ],
+    diagnosticAxes: [
+      "돈을 만들어내는 힘 ↔ 실제로 남기는 힘",
+      "기회가 늘어나는 쪽 ↔ 비용·책임·고정 부담이 같이 커지는 쪽",
+      "한 번 들어오는 돈 ↔ 반복해서 유지되는 돈",
+      "수입의 크기 ↔ 수입 뒤에 실제로 남는 몫",
+    ],
+    genericAdvice: ["지출을 관리하세요", "예산을 세우세요", "저축하세요", "무리한 투자를 피하세요"],
     guardrails: [
       "재성 하나만으로 부자·가난을 단정하지 않는다.",
       "도움 운이 들어온다고 곧바로 돈이 들어온다고 번역하지 않는다.",
@@ -41,6 +48,13 @@ const DOMAIN_GUIDES = {
       "가까운 시기에는 준비, 실행, 평가, 이동 중 어느 축이 변하는지",
       "합격·퇴사·이직을 대신 결정하지 않고 어떤 기준을 비교해야 하는지",
     ],
+    diagnosticAxes: [
+      "준비하는 힘 ↔ 실제로 제출·실행하는 힘",
+      "실력을 쌓는 힘 ↔ 평가받는 자리에서 드러나는 힘",
+      "책임을 맡는 힘 ↔ 책임을 오래 감당하는 여력",
+      "성과를 내는 방식 ↔ 그 성과가 보상으로 연결되는 방식",
+    ],
+    genericAdvice: ["열심히 준비하세요", "성과를 보여주세요", "자신감을 가지세요", "도전해보세요"],
     guardrails: [
       "합격·불합격, 채용·해고, 승진을 단정하지 않는다.",
       "특정 직업명을 근거 없이 만들어내지 않는다.",
@@ -57,6 +71,13 @@ const DOMAIN_GUIDES = {
       "가까운 시기에 내 관계 대응이나 만남 조건이 어떻게 달라지는지",
       "상대의 속마음 대신 내가 확인할 수 있는 행동과 기준이 무엇인지",
     ],
+    diagnosticAxes: [
+      "마음이 생기는 속도 ↔ 마음이 밖으로 보이는 속도",
+      "관계를 진지하게 받아들이는 힘 ↔ 관계를 시작하는 속도",
+      "끌림 ↔ 오래 편하게 이어지는 조건",
+      "표현 ↔ 약속·책임·거리 조절",
+    ],
+    genericAdvice: ["상대의 말보다 행동을 보세요", "서두르지 마세요", "솔직하게 표현하세요", "좋은 사람을 기다리세요"],
     guardrails: [
       "상대방의 속마음·바람·재회 의사를 사주만으로 단정하지 않는다.",
       "이별·결혼·재회를 확정적으로 예언하지 않는다.",
@@ -73,6 +94,13 @@ const DOMAIN_GUIDES = {
       "가까운 시기에 탐색·실행·전환 중 어느 축이 살아나는지",
       "특정 직업을 찍기보다 어떤 방식의 일에서 강점이 재현되는지",
     ],
+    diagnosticAxes: [
+      "잘하는 힘 ↔ 실제 성과로 바꾸는 힘",
+      "흥미가 붙는 방식 ↔ 오래 지속할 수 있는 방식",
+      "혼자 파고드는 힘 ↔ 밖에서 평가·보상받는 방식",
+      "현재 강점을 유지하는 것 ↔ 다른 분야로 옮겨도 재현되는 강점",
+    ],
+    genericAdvice: ["작게 경험해보세요", "다양하게 도전하세요", "좋아하는 일을 하세요", "천천히 찾아보세요"],
     guardrails: [
       "사주만으로 하나의 직업을 정답처럼 지정하지 않는다.",
       "돈이 된다는 이유만으로 적성을 단정하지 않는다.",
@@ -89,6 +117,13 @@ const DOMAIN_GUIDES = {
       "가까운 시기에 관계 대응 방식이 달라지는 구간이 있는지",
       "끊기/유지를 대신 결정하지 않고 거리 조절 기준을 무엇으로 잡아야 하는지",
     ],
+    diagnosticAxes: [
+      "내 몫을 지키는 힘 ↔ 상대에게 맞추는 힘",
+      "불편함을 알아차리는 것 ↔ 밖으로 말하는 것",
+      "책임을 맡는 것 ↔ 관계의 책임을 나누는 것",
+      "관계를 유지하는 힘 ↔ 거리를 조절하는 힘",
+    ],
+    genericAdvice: ["경계를 세우세요", "거리 두세요", "솔직하게 말하세요", "좋은 사람만 만나세요"],
     guardrails: [
       "상대의 성격·의도·악의를 근거 없이 단정하지 않는다.",
       "가족·친구·직장 사람과의 단절을 지시하지 않는다.",
@@ -105,6 +140,13 @@ const DOMAIN_GUIDES = {
       "가까운 시기에 부담/회복 조건이 실제로 달라지는 구간이 있는지",
       "의학적 판단 대신 생활에서 비교할 수 있는 부담·회복 기준이 무엇인지",
     ],
+    diagnosticAxes: [
+      "버티는 힘 ↔ 회복하는 힘",
+      "부담을 안으로 들이는 방식 ↔ 밖으로 빼내는 방식",
+      "생각을 쌓는 힘 ↔ 생각을 정리하고 멈추는 힘",
+      "책임을 감당하는 힘 ↔ 생활 리듬을 지키는 여력",
+    ],
+    genericAdvice: ["쉬세요", "무리하지 마세요", "마음을 편하게 가지세요", "생활 습관을 관리하세요"],
     guardrails: [
       "우울증·불안장애·번아웃 등 의학적 진단을 하지 않는다.",
       "치료나 약물 조언을 사주 근거로 하지 않는다.",
@@ -152,56 +194,74 @@ const SITUATION_FOCUS = {
 };
 
 const SYSTEM_PROMPT = `
-너는 '어떤언니'의 최종 사주 해석 편집기다.
+너는 '어떤언니'의 최종 사주 해석기다. 목표는 좋은 조언을 하는 것이 아니라,
+"이 사람 사주에서 실제로 무엇이 강하고, 무엇이 약하거나 엇갈리며, 그래서 지금 고민에서 어떻게 드러나는지"
+를 일반인이 바로 이해하게 증명하는 것이다.
 
-[역할 분리]
-- 생년월일시 계산과 명리 판단은 이미 외부 엔진에서 끝났다.
-- 너는 사주를 새로 계산하지 않는다.
-- evidencePacket 안의 검증된 사실, 고전 규칙 결과, 교차검증, 시기 근거만 사용한다.
-- 사용자가 고른 고민/세부상황은 "질문의 범위와 현실 번역 어휘"만 정한다. 어떤 명리 근거가 중요하다고 미리 결정하는 장치가 아니다.
-- 먼저 사주 전체 근거에서 핵심을 고른 뒤 그 근거를 현재 고민으로 번역한다.
+[절대 역할 분리]
+- 생년월일시 계산과 고전 명리 판단은 이미 어떤언니 엔진에서 끝났다.
+- 너는 사주를 새로 계산하거나 새로운 명리 사실을 만들지 않는다.
+- evidencePacket의 검증된 사실·규칙 결과·교차검증·시기 근거만 사용한다.
+- 고민/세부상황은 현실 번역의 범위만 정한다. "연애니까 표현", "취업이니까 준비"처럼 고민에서 명리 결론을 역으로 만들지 않는다.
 
-[정확도 우선 규칙]
-- 한 가지 십신이나 한 가지 규칙을 곧바로 특정 행동으로 치환하지 않는다.
-- 서로 독립된 근거가 같은 결론을 지지할수록 강하게 말하고, 근거가 엇갈리면 조건 차이 자체를 설명한다.
-- 근거가 약하면 '가능성이 있다/이 조건에서는 더 두드러진다'처럼 강도를 낮춘다.
-- 사용자가 실제로 하지 않았을 행동, 사건, 소비습관, 연락습관, 상대방 속마음, 합격·이별·수입액 등을 발명하지 않는다.
-- timingEvidence가 보여주는 것이 '사용자를 받쳐주는 시기'인지 '해당 고민의 결과가 직접 늘어나는 시기'인지 구분한다. 전자를 후자로 과장하지 않는다.
-- 특정 날짜/월은 실제 timingEvidence에 있을 때만 쓴다.
-- 특별 구조가 guarded라면 일반 규칙만으로 단정하지 않는다.
+[가장 중요한 출력 원칙]
+- 모든 NOTE는 반드시 "사주 진단 → 왜 그런지 → 현재 고민에서의 의미" 순서로 간다.
+- 먼저 이 사주의 비대칭을 잡는다. 예: 강한 것 ↔ 약한 것, 시작 ↔ 유지, 안쪽 판단 ↔ 바깥 표현, 기회 ↔ 감당, 버팀 ↔ 회복.
+- 비대칭이 실제 근거에서 잡히지 않으면 억지로 만들지 않는다. 그때는 가장 설명력이 큰 한 방향과 조건 차이를 쓴다.
+- 사용자에게는 내부 명리 용어 대신 쉬운 한국어로 그 비대칭을 보여준다.
+- "좋은 조언"만 남으면 실패다. 사주 근거를 지워도 성립하는 문장은 핵심 결론으로 쓰지 않는다.
+- 각 NOTE의 basis는 반드시 "네 사주에서는..." 또는 "이 사주에서는..."처럼 시작해, 실제 사주에서 잡힌 차이를 1~2문장으로 먼저 밝힌다.
+- basis와 title에 명령형 조언을 쓰지 않는다. "하세요/마세요/보세요/두세요/지키세요/기다리세요" 식 제목은 금지한다.
 
-[현실어 번역 규칙]
-- 최종 사용자는 명리 용어를 몰라도 바로 이해해야 한다.
-- 신강·신약·격국·용신·상신·기신·통관·월령·지장간·세력 같은 전문어를 사용자 문장에 쓰지 않는다.
-- '받쳐주는 힘', '보완 요소', '작동 방식', '실제 세력' 같은 내부 표현을 쓰지 않는다.
-- 추상적으로 '압박이 크다'에서 끝내지 말고 현재 고민에서 무엇을 유지하거나 감당해야 해서 부담이 커지는지 설명한다.
-- '힘/흐름/구조/기세'만으로 문장을 끝내지 말고 수입·비용·평가·표현·경계·회복 등 현재 고민의 현실 변수로 번역한다.
+[정확도 규칙]
+- 한 가지 십신/규칙을 곧바로 현실 행동 하나로 치환하지 않는다.
+- 서로 독립된 근거 2개 이상이 같은 결론을 지지할 때 그 결론을 우선한다.
+- 근거가 충돌하면 한쪽을 지우지 말고 "왜 같은 사람에게 두 모습이 함께 가능한지"를 설명한다.
+- 근거가 약하면 확정 표현을 낮춘다.
+- 사용자가 실제로 하지 않았을 소비습관, 연락습관, 지원행동, 가족행동, 감정상태를 지어내지 않는다.
+- 상대방의 속마음, 합격·불합격, 결혼·이별, 특정 수입액, 투자 성과, 의학적 진단을 사주만으로 확정하지 않는다.
+- specialStructureGuarded가 true면 일반 규칙만으로 강하게 단정하지 않는다.
+
+[시기 해석]
+- timingEvidence가 보여주는 "나를 받쳐주는 시기"와 "고민 결과가 직접 발생하는 시기"를 구분한다.
+- 도움 신호가 있다고 돈이 들어온다/합격한다/연애가 생긴다고 번역하지 않는다.
+- timing NOTE는 "평소 사주에서 A가 핵심인데 → 이 시기에 B가 보태지거나 흔들려 → 그래서 현재 고민에서 무엇이 상대적으로 쉬워지거나 어려워지는지"까지 연결한다.
+- 실제 날짜 근거가 없으면 날짜를 만들지 않는다.
+
+[사용자 언어]
+- 신강·신약·격국·용신·상신·기신·통관·월령·지장간·세력 등 전문용어를 최종 문장에 쓰지 않는다.
+- "받쳐주는 힘", "보완 요소", "작동 방식", "실제 세력", "운에서 같은 방향" 같은 내부 표현도 그대로 쓰지 않는다.
+- "압박/흐름/힘/구조"만 반복하지 말고 돈·평가·표현·약속·경계·회복처럼 현재 고민의 실제 변수로 풀어 쓴다.
 - 한자 표기는 쓰지 않는다.
+- 단, 쉬운 말로 바꾼다고 사주 근거 자체를 숨기면 안 된다.
 
-[6개 답변의 기승전결]
-1) conclusion: 사용자가 선택한 세부질문에 바로 답한다. 첫 문단부터 결론을 말한다.
-2) cause: 그 결론이 생기는 원인을 A → B → 결과의 인과로 설명한다. 1번 결론을 단순 반복하지 않는다.
-3) contrast: 이 사람에게서 특히 갈리는 반전이나 조건 차이를 하나 보여준다. 실제 contradiction이 약하면 억지 반전을 만들지 말고 가장 선명한 조건 차이를 쓴다.
-4) conditions: '잘 풀리는 쪽'과 '오래 두면 소모되는 쪽'을 같은 기준으로 정면 비교한다.
-5) timing: 가까운 시기에서 실제로 달라지는 것만 말한다. 시기 근거가 약하면 날짜를 만들지 않는다.
-6) decision: 사용자의 결정을 대신하지 않고 지금부터 비교할 수 있는 현실 기준을 2~3개로 정리한다.
+[6개 NOTE의 서로 다른 역할]
+1) conclusion — 세부질문에 대한 사주상 핵심 답. "이 사람은 무엇이 강하고 무엇이 상대적으로 약하거나 늦게 붙는가"를 먼저 보여준다.
+2) cause — 1번 결론이 생기는 원인 사슬. 서로 다른 근거 A+B가 어떻게 C를 만드는지 설명한다.
+3) contrast — 이 사람에게 동시에 존재하는 두 면이나, 조건에 따라 반대로 보이는 지점을 설명한다. 실제 근거가 있어야 한다.
+4) conditions — 앞에서 나온 사주 특징이 살아나는 조건과 소모되는 조건을 같은 기준으로 정면 비교한다.
+5) timing — 평소 사주와 가까운 시기의 차이를 연결한다. 사건 예언이 아니라 무엇이 상대적으로 달라지는지 설명한다.
+6) decision — 1~5에서 확인된 사주 진단을 바탕으로 현재 고민에서 실제로 비교할 기준 2~3개를 준다. 여기서 처음으로 조언 비중이 높아져도 된다.
 
-[중복 금지]
-- 여섯 답변은 같은 핵심 문장을 표현만 바꿔 반복하면 안 된다.
-- 각 답변은 새로운 질문 하나를 해결해야 한다.
-- 이미 앞 답변에서 말한 결론은 다음 답변에서 한 문장 이상 재설명하지 않는다.
-- 작성 후 스스로 여섯 답변의 핵심 주장만 뽑아 비교하고, 두 개 이상이 사실상 같은 주장이라면 다시 분리한 뒤 최종 JSON만 출력한다.
+[중복 방지]
+- 여섯 NOTE는 같은 결론을 표현만 바꿔 반복하지 않는다.
+- conclusion/cause/contrast/conditions는 최소 2개의 비시기 근거를 사용한다.
+- timing은 시기 근거와 평소 사주 근거를 함께 사용한다.
+- decision도 최소 2개의 사주 근거를 사용해 앞 진단에서 파생된 기준임을 보여준다.
+- 작성 후 여섯 title과 focus를 비교해 사실상 같은 주장 둘이 있으면 다시 분리한다.
 
 [문체]
-- 제목은 고정 라벨이 아니라 그 사람의 실제 결론을 12~34자 정도로 요약한다.
-- 본문은 2~4개의 짧은 문단으로 쓴다. 길게 설명하기보다 구체적으로 설명한다.
-- F는 부드럽고 함께 풀어주는 말투, T는 짧고 명확한 정리형 말투. 사실 내용은 동일하다.
-- 근거 때문에 확정할 수 없는 부분은 솔직하게 선을 긋되, 모든 문단을 면책 문장으로 끝내지 않는다.
+- 제목은 진단형으로 쓴다. 조언형 제목 금지.
+- 제목은 12~36자 정도의 자연스러운 문장.
+- basis는 1~2문장. 사주에서 잡힌 강약/엇갈림/조건 차이가 분명해야 한다.
+- body는 2~4개의 짧은 문단. basis의 이유와 현재 고민에서의 의미를 설명한다.
+- F는 부드럽고 함께 풀어주는 말투, T는 짧고 명확한 정리형 말투. 사실은 동일하다.
+- "누구에게나 맞는 말"보다 이 사주에만 설명력이 있는 차이를 우선한다.
 
 [evidenceIds]
-- 각 답변은 allowedEvidenceIds에 실제 존재하는 ID만 사용한다.
-- 본문을 직접 뒷받침하는 ID만 1개 이상 넣는다.
-- timing은 timingEvidenceIds가 존재하면 그중 최소 1개를 포함한다.
+- allowedEvidenceIds에 실제 존재하는 ID만 사용한다.
+- 각 NOTE의 basis/body를 직접 뒷받침하는 ID만 넣는다.
+- timing은 timingEvidenceIds가 있으면 그중 최소 1개를 포함한다.
 
 출력은 지정된 JSON 스키마만 따른다.
 `.trim();
@@ -220,6 +280,7 @@ function noteSchema() {
     properties: {
       title: { type: "string" },
       focus: { type: "string" },
+      basis: { type: "string" },
       body: { type: "string" },
       evidenceIds: {
         type: "array",
@@ -230,7 +291,7 @@ function noteSchema() {
         enum: ["supported", "guarded"],
       },
     },
-    required: ["title", "focus", "body", "evidenceIds", "certainty"],
+    required: ["title", "focus", "basis", "body", "evidenceIds", "certainty"],
   };
 }
 
@@ -291,17 +352,41 @@ function normalizeClaim(text) {
     .slice(0, 90);
 }
 
+function isImperativeAdvice(text) {
+  return /(하세요|마세요|보세요|두세요|지키세요|기다리세요|해보세요|하세요$|마세요$)/.test(
+    String(text || ""),
+  );
+}
+
+function hasSajuAnchor(text) {
+  return /(네 사주에서는|이 사주에서는|사주에서 보면|사주를 보면)/.test(
+    String(text || ""),
+  );
+}
+
+function genericAdviceOnly(text, guide) {
+  const normalized = String(text || "").replace(/\s+/g, "");
+  return (guide?.genericAdvice || []).some((line) =>
+    normalized.includes(String(line).replace(/\s+/g, "")),
+  );
+}
+
 function validateGeneratedNotes(parsed, packet) {
   if (!parsed || typeof parsed !== "object") {
     throw new Error("INVALID_STRUCTURED_OUTPUT");
   }
 
-  const allowed = new Set(uniqueStrings(packet.allowedEvidenceIds));
+  const allowedIds = uniqueStrings(packet.allowedEvidenceIds);
+  const allowed = new Set(allowedIds);
   const timingAllowed = new Set(uniqueStrings(packet.timingEvidenceIds));
+  const structuralAllowed = new Set(
+    allowedIds.filter((id) => !timingAllowed.has(id)),
+  );
   const guide = domainGuide(packet);
   const notes = [];
   const usedFocus = new Set();
   const usedClaims = new Set();
+  const evidenceSignatures = new Set();
 
   for (const role of NOTE_ROLES) {
     const item = parsed[role];
@@ -311,18 +396,49 @@ function validateGeneratedNotes(parsed, packet) {
 
     const title = String(item.title || "").trim();
     const focus = String(item.focus || "").trim();
+    const basis = String(item.basis || "").trim();
     const body = String(item.body || "").trim();
     const evidenceIds = uniqueStrings(item.evidenceIds).filter((id) => allowed.has(id));
     const certainty = item.certainty === "guarded" ? "guarded" : "supported";
+    const structuralIds = evidenceIds.filter((id) => structuralAllowed.has(id));
+    const timingIds = evidenceIds.filter((id) => timingAllowed.has(id));
 
-    if (title.length < 6 || body.length < 60 || focus.length < 3 || evidenceIds.length === 0) {
+    if (
+      title.length < 6 ||
+      basis.length < 30 ||
+      body.length < 70 ||
+      focus.length < 3 ||
+      evidenceIds.length === 0
+    ) {
       throw new Error("WEAK_NOTE_OUTPUT");
     }
-    if (hasInternalJargon(title + " " + body)) {
+
+    if (!hasSajuAnchor(basis)) {
+      throw new Error("SAJU_BASIS_MISSING");
+    }
+    if (isImperativeAdvice(title) || isImperativeAdvice(basis)) {
+      throw new Error("ADVICE_REPLACED_DIAGNOSIS");
+    }
+    if (genericAdviceOnly(title, guide)) {
+      throw new Error("GENERIC_ADVICE_TITLE");
+    }
+    if (hasInternalJargon(title + " " + basis + " " + body)) {
       throw new Error("INTERNAL_JARGON_LEAK");
     }
-    if (!containsDomainLanguage(title + " " + body, guide)) {
+    if (!containsDomainLanguage(title + " " + basis + " " + body, guide)) {
       throw new Error("CONCERN_FOCUS_LOST");
+    }
+
+    const requiredStructural = Math.min(2, structuralAllowed.size);
+    if (role === "timing") {
+      if (timingAllowed.size > 0 && timingIds.length < 1) {
+        throw new Error("TIMING_EVIDENCE_MISMATCH");
+      }
+      if (requiredStructural > 0 && structuralIds.length < 1) {
+        throw new Error("TIMING_NATAL_LINK_MISSING");
+      }
+    } else if (requiredStructural > 0 && structuralIds.length < requiredStructural) {
+      throw new Error("INSUFFICIENT_STRUCTURAL_EVIDENCE");
     }
 
     const focusKey = normalizeClaim(focus);
@@ -337,18 +453,19 @@ function validateGeneratedNotes(parsed, packet) {
     }
     usedClaims.add(claimKey);
 
-    if (
-      role === "timing" &&
-      timingAllowed.size > 0 &&
-      !evidenceIds.some((id) => timingAllowed.has(id))
-    ) {
-      throw new Error("TIMING_EVIDENCE_MISMATCH");
+    if (role !== "decision") {
+      const signature = [...evidenceIds].sort().join("|");
+      if (signature && evidenceSignatures.has(signature)) {
+        throw new Error("DUPLICATE_EVIDENCE_SET");
+      }
+      if (signature) evidenceSignatures.add(signature);
     }
 
     notes.push({
       role,
       title,
       focus,
+      basis,
       body,
       evidenceIds,
       certainty,
@@ -423,15 +540,23 @@ function buildTranslationInstruction(packet) {
   return [
     "[현재 고민 영역] " + guide.label,
     "[사용자가 고른 세부질문] " + (packet?.question?.situationLabel || ""),
-    "[이번 답변의 초점] " + focus,
+    "[이번 답변의 정확한 초점] " + focus,
     "",
-    "[현실 변수 체크리스트 — 사실 목록이 아니라 번역할 때 확인할 질문]",
+    "[이 고민에서 사주 근거를 현실로 번역할 때 비교할 축]",
+    ...(guide.diagnosticAxes || []).map((q) => "- " + q),
+    "",
+    "[반드시 확인할 질문 — 답은 evidencePacket에 있을 때만]",
     ...guide.questions.map((q) => "- " + q),
+    "",
+    "[누구에게나 할 수 있는 말 — 이것만으로 NOTE를 끝내면 실패]",
+    ...(guide.genericAdvice || []).map((g) => "- " + g),
     "",
     "[이 영역의 과장 금지]",
     ...guide.guardrails.map((g) => "- " + g),
     "",
-    "위 체크리스트는 새로운 사실을 만들어내는 근거가 아니다. evidencePacket에서 실제로 확인되는 항목만 골라 답해.",
+    "위 비교축과 질문은 새로운 사실을 만들어내는 템플릿이 아니다.",
+    "반드시 evidencePacket에서 먼저 실제 강점·약점·엇갈림을 고른 뒤, 그 근거가 현재 고민에서 무엇을 뜻하는지 설명해.",
+    "각 basis는 쉬운 한국어로 '사주에 무엇이 강하고/약하고/엇갈리는지'를 먼저 보여줘.",
   ].join("\n");
 }
 
@@ -520,7 +645,7 @@ export async function onRequestPost(context) {
               translationInstruction +
               "\n\n[검증된 evidencePacket]\n" +
               encoded +
-              "\n\n이 근거만 사용해 서로 다른 발견 6개를 기승전결로 작성해.",
+              "\n\n이 근거만 사용해 서로 다른 발견 6개를 작성해. 조언보다 사주 진단이 먼저 보여야 하고, 각 NOTE basis에서 왜 이 사람 사주 이야기인지 증명해.",
           },
         ],
       },
@@ -528,7 +653,7 @@ export async function onRequestPost(context) {
     text: {
       format: {
         type: "json_schema",
-        name: "unni_six_notes_v2",
+        name: "unni_six_notes_v3",
         strict: true,
         schema: OUTPUT_SCHEMA,
       },
@@ -597,7 +722,7 @@ export async function onRequestPost(context) {
     return reply(502, {
       ok: false,
       code: String(error?.message || "AI_NOTE_VALIDATION_FAILED"),
-      message: "AI NOTE가 고민 집중도·근거·중복 검증을 통과하지 못했습니다. 한 번 더 생성해줘.",
+      message: "AI NOTE가 사주 근거·고민 집중도·중복 검증을 통과하지 못했습니다. 한 번 더 생성해줘.",
     });
   }
 
