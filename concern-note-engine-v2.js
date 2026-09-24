@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "5.1.0";
+  const VERSION = "5.0.0";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   function hasBatchim(value) {
@@ -1566,7 +1566,7 @@
     )).length;
     const audit={
       version:VERSION,
-      engine:"classical-causal-semantic-evidence",
+      engine:"classical-causal-full-evidence",
       fingerprint:r.structureFingerprint+"|"+s.concern+"|"+s.key,
       genericClusterDependency:false,
       genericSituationDependency:false,
