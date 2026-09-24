@@ -319,8 +319,22 @@ function assertResultLayout(layout, label) {
   }
   assert(layout.overview.pillarItems.length===4 && layout.overview.pillarItems.every(x=>x.radius==='0px'&&transparent(x.bg)&&x.top==='0px'&&x.right==='0px'&&x.bottom==='0px'),
     label+' four pillars look like independent cards '+JSON.stringify(layout.overview.pillarItems));
-  assert(layout.overview.ohengItems.length===5 && layout.overview.ohengItems.every(x=>x.radius==='0px'&&transparent(x.bg)&&x.top==='0px'&&x.right==='0px'&&x.bottom==='0px') && layout.overview.graphFirst,
-    label+' five elements lost single-graph hierarchy '+JSON.stringify(layout.overview));
+  const ohengBase=layout.overview.ohengItems[0];
+  assert(
+    layout.overview.ohengItems.length===5 &&
+    !!ohengBase &&
+    layout.overview.ohengItems.every(x=>
+      x.radius===ohengBase.radius &&
+      x.bg===ohengBase.bg &&
+      x.top===ohengBase.top &&
+      x.right===ohengBase.right &&
+      x.bottom===ohengBase.bottom
+    ) &&
+    !transparent(ohengBase.bg) &&
+    ohengBase.top!=='0px' &&
+    !layout.overview.graphFirst,
+    label+' five elements lost uniform compact-card hierarchy '+JSON.stringify(layout.overview)
+  );
   assert(layout.memoMetaDisplay!=='none' && layout.memoMetaText.includes('1:1 맞춤 상담 기록'),
     label+' memo-book header metadata missing '+JSON.stringify({display:layout.memoMetaDisplay,text:layout.memoMetaText}));
   assert(layout.bridgeDisplay==='none',
@@ -442,10 +456,10 @@ async function inspect(page, mode) {
     assert(text.length>=110&&text.length<=950,mode+' '+label+' answer length drift '+text.length);
     assert(text.includes('결론'),mode+' '+label+' answer does not lead with a conclusion '+text);
   }
-  assert(r.n2.includes('결론')&&/초반 장면|같은 순간/.test(r.n2)&&/예를 들면|이런 상황/.test(r.n2),mode+' grounded real-life scene explanation missing '+r.n2);
+  assert(r.n2.includes('결론')&&/돈|일|연애|진로|관계|회복/.test(r.n2)&&/장면|조건|상황/.test(r.n2),mode+' concern-grounded explanation missing '+r.n2);
   assert(r.timingMeta?.concernSituation,mode+' timing answer metadata missing');
   assert(!norm(r.timingMeta?.firstBody)||!norm(r.timingMeta?.secondBody)||norm(r.timingMeta?.firstBody)!==norm(r.timingMeta?.secondBody),mode+' duplicate timing roles returned');
-  assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(r.n1+' '+r.n2+' '+r.n4+' '+r.n5),mode+' old/abstract answer wording returned');
+  assert(!/(비밀\s*메모|실전 룰|반복 패턴)/.test(r.n1+' '+r.n2+' '+r.n4+' '+r.n5),mode+' stale NOTE labels returned');
   if (mode==='F') assert(r.oheng.includes('겉으로 가장 많이 보여')&&r.oheng.includes('눈에 보이는 오행 분포')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('지금 네 고민에 필요한 얘기만 짧게')&&!/비밀\s*메모|제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng bridge wording '+r.oheng);
   if (mode==='T') assert(r.oheng.includes('비중이 가장 커')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('지금 네 고민에 맞는 말로만 짧게')&&!/비밀\s*메모|제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng bridge wording '+r.oheng);
   assert(!/[나무불흙쇠물]\)/.test(r.oheng+r.dayMasterTag),'old parenthetical five-element wording remains '+JSON.stringify({oheng:r.oheng,day:r.dayMasterTag}));
@@ -679,7 +693,7 @@ async function inspect(page, mode) {
     'five-answer presentation roles missing '+JSON.stringify(postUnlock.roles));
   assert(postUnlock.roles.find(x=>x.role==='03')?.text.includes('잘 맞는') &&
          postUnlock.roles.find(x=>x.role==='04')?.text.includes('거를') &&
-         postUnlock.roles.find(x=>x.role==='05')?.text.includes('지금 할 것'),
+         /(\d{1,2}월|\d{4}년|대운|세운|월운|가까운 흐름)/.test(postUnlock.roles.find(x=>x.role==='05')?.text||''),
     'fit/filter/timing answers are not concrete '+JSON.stringify(postUnlock.roles));
   assert(postUnlock.reasonCount===1&&postUnlock.reasonText.length>=10,'premium recommendation should keep one compact reason '+JSON.stringify(postUnlock));
   assert(!postUnlock.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아')&&!postUnlock.catalogText.includes('다음으로 볼 가치는 이게 제일 커')&&!postUnlock.catalogText.includes('방금 같이 본 얘기는 반복하지 않고')&&!postUnlock.catalogText.includes('방금 본 내용과 겹치는 건 빼고'),

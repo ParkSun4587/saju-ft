@@ -1245,7 +1245,7 @@ function norm(v) {
     html.includes('aria-label="정확한 출생 시간"') &&
     !html.includes('id="birthTimeUnknownButton"') &&
     !html.includes('id="birthTimeHelp"') &&
-    html.includes('function selectBirthTimeBranch()') &&
+    html.includes('function selectBirthTimeBranch(') &&
     html.includes('function toggleExactBirthTime()') &&
     html.includes('function normalizeExactBirthTime(value)') &&
     html.includes('function formatBirthTime(input)'),

@@ -976,6 +976,40 @@
     overflow-wrap:anywhere
   }
   .note-body b{font-weight:700;color:#344052}
+  .saju-term-help{
+    display:inline;
+    padding:0;
+    border:0;
+    border-bottom:1px dotted currentColor;
+    background:transparent;
+    color:inherit;
+    font:inherit;
+    font-weight:700;
+    line-height:inherit;
+    cursor:pointer
+  }
+  .saju-term-help:focus-visible{outline:2px solid currentColor;outline-offset:2px;border-radius:3px}
+  #sajuTermHelpSheet{
+    position:fixed;
+    inset:0;
+    z-index:100001;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    padding:16px;
+    background:rgba(15,23,42,.28)
+  }
+  #sajuTermHelpSheet .saju-term-sheet{
+    width:min(100%,390px);
+    padding:16px 17px calc(16px + env(safe-area-inset-bottom,0px));
+    border:1px solid #e8e2dc;
+    border-radius:20px;
+    background:#fffdfa;
+    box-shadow:0 18px 50px rgba(35,29,27,.18)
+  }
+  #sajuTermHelpSheet .saju-term-title{font-size:16px;font-weight:850;color:#1f2937}
+  #sajuTermHelpSheet .saju-term-copy{margin-top:8px;font-size:12px;line-height:1.7;color:#596273;word-break:keep-all}
+  #sajuTermHelpSheet .saju-term-personal{margin-top:10px;padding-top:10px;border-top:1px solid #eee8e2;font-size:11.5px;line-height:1.7;color:#394558;word-break:keep-all}
   .note-body p{margin:0 0 13px}
   .note-body p+p{padding-top:1px}
   .note-body p:last-child{margin-bottom:0}
@@ -5286,7 +5320,69 @@ function getConcernSituationLabel(concernKey, situationKey) {
 }
 
 
+const SAJU_TERM_GLOSSARY = {
+  "비견":"나와 같은 기운. 내 기준·독립성·자기 몫과 관련해 봐.",
+  "겁재":"나와 같은 편이면서 경쟁도 되는 기운. 협업·경쟁·몫 나누기와 연결해 봐.",
+  "식신":"내 생각과 능력을 꾸준한 결과물로 밖에 내는 힘이야.",
+  "상관":"문제점을 드러내고 기존 기준을 바꾸려는 표현·개선의 힘이야.",
+  "정재":"예측 가능한 수입·지출·보상처럼 안정적으로 관리되는 재물을 뜻해.",
+  "편재":"기회·거래·확장처럼 범위가 넓고 움직임이 큰 재물을 뜻해.",
+  "정관":"규칙·책임·평가처럼 정해진 기준 안에서 역할을 맡는 힘이야.",
+  "편관":"경쟁·압박·큰 책임처럼 나를 강하게 움직이게 만드는 힘이야.",
+  "정인":"배움·보호·회복처럼 나를 안정적으로 받쳐주는 힘이야.",
+  "편인":"깊이 파고 다르게 해석하고 새로운 방식을 시험하는 힘이야.",
+  "신강":"나 자신을 받쳐주는 세력이 상대적으로 강한 상태야.",
+  "신약":"나 자신보다 밖에서 들어오는 요구·소모 세력이 상대적으로 강한 상태야.",
+  "중화":"나를 받치는 힘과 밖으로 빠지는 힘이 한쪽으로 크게 치우치지 않은 상태야.",
+  "득령":"태어난 계절이 내 일간을 직접 받쳐주는지 보는 기준이야.",
+  "득지":"지지에서 내 일간이 실제 뿌리를 얻는 정도를 보는 기준이야.",
+  "득세":"사주 다른 자리들이 내 일간 편에 얼마나 붙는지 보는 기준이야.",
+  "통근":"일간이 지지 속에 자기 뿌리를 가지고 있는지 보는 거야.",
+  "월령":"태어난 달의 계절 힘. 사주 전체 세력 판단에서 가장 중요한 기준 중 하나야.",
+  "지장간":"지지 안에 숨어 있는 천간 기운이야. 겉에 안 보여도 실제 세력에 반영돼.",
+  "격국":"태어난 달을 중심으로 사주의 주된 구조를 분류한 거야.",
+  "상신":"격국의 장점을 실제로 살려주는 핵심 십신이야.",
+  "기신":"격국의 장점을 깨거나 흐트러뜨리기 쉬운 십신이야.",
+  "용신":"사주의 불균형을 실제로 조절하는 데 우선해서 보는 기운이야.",
+  "대운":"약 10년 단위로 바뀌는 큰 환경 흐름이야.",
+  "세운":"해마다 들어오는 기운이 원래 사주를 어떻게 건드리는지 보는 흐름이야.",
+  "월운":"달마다 들어오는 기운이 원래 사주와 해의 흐름에 어떻게 겹치는지 보는 거야."
+};
+
+function decorateSajuTerms(html) {
+  const source=String(html||"");
+  const terms=Object.keys(SAJU_TERM_GLOSSARY).sort((a,b)=>b.length-a.length);
+  return source.split(/(<[^>]+>)/g).map((part)=>{
+    if(!part || part.startsWith("<")) return part;
+    let out=part;
+    for(const term of terms){
+      const safe=term.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+      const re=new RegExp(safe+"(?=(?:이|가|은|는|을|를|과|와|도|의|에|에서|으로|이며|이고|이라|격|·|,|\\.|\\s|$))","g");
+      out=out.replace(re,()=>'<button type="button" class="saju-term-help" onclick="event.stopPropagation();showSajuTermHelp(\''+term+'\')">'+term+'</button>');
+    }
+    return out;
+  }).join("");
+}
+
+function showSajuTermHelp(term){
+  const label=String(term||"");
+  const generic=SAJU_TERM_GLOSSARY[label]||"이 용어는 사주 구조 안에서 다른 근거와 함께 해석해야 해.";
+  const runtime=globalThis.__UNNI_AI_NOTE_V4__||globalThis.__UNNI_AI_NOTE_TEST_V1__;
+  const personal=runtime?.describeTerm?.(currentResultData,label)||"";
+  document.getElementById("sajuTermHelpSheet")?.remove();
+  const layer=document.createElement("div");
+  layer.id="sajuTermHelpSheet";
+  const personalHtml=personal?'<div class="saju-term-personal"><b>내 사주에서는</b><br>'+personal+'</div>':"";
+  layer.innerHTML='<div class="saju-term-sheet" role="dialog" aria-modal="true"><div class="saju-term-title">'+label+'</div><div class="saju-term-copy">'+generic+'</div>'+personalHtml+'</div>';
+  layer.addEventListener("click",(event)=>{if(event.target===layer)layer.remove();});
+  document.body.appendChild(layer);
+}
+window.showSajuTermHelp=showSajuTermHelp;
+
 function generateConcernNotes(data, mode) {
+  const runtime=globalThis.__UNNI_AI_NOTE_V4__||globalThis.__UNNI_AI_NOTE_TEST_V1__;
+  const translated=runtime?.getProductionNotes?.(data||{},mode||"F");
+  if(Array.isArray(translated)&&translated.length===5) return translated;
   if (typeof globalThis.renderConcernNotesV2 !== "function") {
     throw new Error("최신 고민 NOTE 엔진을 아직 불러오지 못했어.");
   }
@@ -5294,7 +5390,6 @@ function generateConcernNotes(data, mode) {
 }
 
 
-      
       // 개별 아코디언 열기/닫기 이벤트 핸들러
       window.toggleAccordion = function (btn) {
         if (!btn) return;
@@ -7756,7 +7851,8 @@ currentResultData = {
             .filter(Boolean);
 
         const renderNoteBody = (item) => {
-          const parts = splitNoteParagraphs(item.desc);
+          const source = item.__aiTranslated ? decorateSajuTerms(item.desc) : item.desc;
+          const parts = splitNoteParagraphs(source);
           if (String(item.themeNum) === "05") {
             return `<div class="note-body note-body-timeline">${parts
               .map((part)=>`<div class="note-time-row"><span class="note-time-dot"></span><div>${part}</div></div>`)
@@ -7797,7 +7893,7 @@ currentResultData = {
                           <span class="note-role-label">${meta.label}</span>
                           ${badgeHtml}
                         </div>
-                        <h4 class="note-editorial-title">${item.title}</h4>
+                        <h4 class="note-editorial-title">${item.__aiTranslated ? decorateSajuTerms(item.title) : item.title}</h4>
                         ${renderNoteBody(item)}
                         ${checkHtml}
                     </div>`;
@@ -7817,7 +7913,7 @@ currentResultData = {
               const nextNote = notesData[1];
               const paywallCopy = getPaywallConversionCopy(data, isT);
               const firstPreviewPart = splitNoteParagraphs(nextNote.desc)[0] || paywallCopy.preview;
-              const previewDesc = firstPreviewPart;
+              const previewDesc = nextNote.__aiTranslated ? decorateSajuTerms(firstPreviewPart) : firstPreviewPart;
               const paywallNextTeaser = document.getElementById("paywallNextTeaser");
               if (paywallNextTeaser) {
                 paywallNextTeaser.textContent = "“" + paywallCopy.teaser + "”";
@@ -7833,7 +7929,7 @@ currentResultData = {
                           ${String(nextNote.badge || "") !== "실제 장면" ? `<span class="note-badge">${nextNote.badge}</span>` : ""}
                       </div>
                       <h4 class="note-editorial-title">
-                          ${nextNote.title}
+                          ${nextNote.__aiTranslated ? decorateSajuTerms(nextNote.title) : nextNote.title}
                       </h4>
                       <div id="note2PreviewBody" class="note-body note-body-flow">
                         ${previewDesc}
@@ -7851,7 +7947,31 @@ currentResultData = {
             }
           }
         }
-      } // <--- 바로 이 중괄호 밑에 엔터 치고 붙여넣기!
+
+        const aiNoteRuntime = globalThis.__UNNI_AI_NOTE_V4__ || globalThis.__UNNI_AI_NOTE_TEST_V1__;
+        const alreadyTranslated = aiNoteRuntime?.getProductionNotes?.(data, mode);
+        if (
+          aiNoteRuntime?.ensureProductionNotes &&
+          !alreadyTranslated &&
+          !data.__aiNoteV4Failed &&
+          !data.__aiNoteV4Requested
+        ) {
+          data.__aiNoteV4Requested = true;
+          aiNoteRuntime.ensureProductionNotes(data, mode)
+            .then((translatedNotes) => {
+              data.__aiNoteV4Requested = false;
+              if (!Array.isArray(translatedNotes) || translatedNotes.length !== 5) return;
+              if (currentResultData !== data || (data.currentMode || "F") !== mode) return;
+              saveCurrentResult();
+              updateResultContentByMode(mode);
+            })
+            .catch((error) => {
+              data.__aiNoteV4Requested = false;
+              data.__aiNoteV4Failed = true;
+              console.warn("AI_NOTE_V4_FALLBACK", error?.code || error?.message || error);
+            });
+        }
+      }
 
       function renderPillarTable(data) {
         const GAN_KR = {
@@ -9932,7 +10052,7 @@ currentResultData = {
     <script src="./classical-reasoning-engine-v1.js?v=2.0.0"></script>
     <script src="./paid-value-layer-v1.js?v=1.5.1"></script>
     <script src="./concern-note-engine-v2.js?v=5.0.0"></script>
-    <script src="./ai-note-test-v1.js?v=1.4.0"></script>
+    <script src="./ai-note-test-v1.js?v=2.0.0"></script>
     <script src="./product-content-policy-v1.js?v=1.1.0"></script>
     <script src="./product-entitlements-v1.js?v=1.0.1"></script>
     <script src="./premium-products-v1.js?v=2.2.0"></script>

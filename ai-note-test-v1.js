@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.4.0";
+  const VERSION = "2.0.0";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -28,6 +28,222 @@
   function unique(values) {
     return [...new Set((values || []).filter(Boolean))];
   }
+
+  const ROLE_TO_ENGINE_ROLE = {
+    foundation: "core",
+    mechanism: "pattern",
+    fit: "fit",
+    caution: "caution",
+    timing: "timing",
+  };
+
+  const ROLE_CHART_EVIDENCE = {
+    foundation: ["CHART_ELEMENTS", "CHART_STRENGTH", "CHART_TENGODS", "CHART_STRUCTURE"],
+    mechanism: ["CHART_STRENGTH", "CHART_TENGODS", "CHART_RELATIONS"],
+    fit: ["CHART_TENGODS", "CHART_STRUCTURE", "CHART_BALANCE"],
+    caution: ["CHART_TENGODS", "CHART_RELATIONS", "CHART_STRENGTH"],
+    timing: ["CHART_STRENGTH", "CHART_STRUCTURE", "CHART_RELATIONS"],
+  };
+
+  function buildNotePlan(reasoning, timingEvidenceIds, timingRows) {
+    const synthesis = reasoning?.synthesis || {};
+    const chart = compactChartFacts(reasoning);
+    const evidenceRoles = synthesis?.evidencePlan?.roles || {};
+    const topGod = (synthesis?.tenGodEvidence || [])[0] || null;
+    const mechanism = synthesis?.mechanisms || {};
+    const rolePlan = {};
+
+    for (const role of Object.keys(ROLE_TO_ENGINE_ROLE)) {
+      const engineRole = ROLE_TO_ENGINE_ROLE[role];
+      const ruleIds = unique(evidenceRoles?.[engineRole] || []).slice(0, 4);
+      const required = unique([
+        ...(ROLE_CHART_EVIDENCE[role] || []),
+        ...ruleIds,
+        ...(role === "timing" ? unique(timingEvidenceIds).slice(0, 2) : []),
+      ]);
+      rolePlan[role] = {
+        requiredEvidenceIds: required,
+        factDigest: {},
+      };
+    }
+
+    rolePlan.foundation.factDigest = {
+      dayMaster: {
+        gan: chart.dayMaster?.gan || "",
+        element: chart.dayMaster?.element || "",
+        strength: chart.dayMaster?.strength || "",
+        deukryeong: chart.dayMaster?.deukryeong || null,
+        deukji: chart.dayMaster?.deukji || null,
+        deukse: chart.dayMaster?.deukse || null,
+        rootCount: (chart.dayMaster?.roots || []).length,
+      },
+      fiveElements: {
+        rawCount: chart.fiveElements?.rawCount || {},
+        weightedRank: (chart.fiveElements?.weightedRank || []).slice(0, 5),
+        rawVsWeightedMismatch: chart.fiveElements?.rawVsWeightedMismatch === true,
+      },
+      dominantTenGod: topGod
+        ? {
+            god: topGod.god || "",
+            group: topGod.group || "",
+            weight: topGod.weight ?? null,
+            visibleWeight: topGod.visibleWeight ?? null,
+            hiddenWeight: topGod.hiddenWeight ?? null,
+            roles: topGod.roles || [],
+          }
+        : null,
+      structure: {
+        gyeokName: chart.structure?.gyeokName || "",
+        status: chart.structure?.status || "",
+        sangsin: chart.structure?.sangsin || "",
+        gisin: chart.structure?.gisin || "",
+        touchul: chart.structure?.touchul === true,
+      },
+    };
+    rolePlan.mechanism.factDigest = {
+      capacity: {
+        verdict: mechanism.capacity?.verdict || "",
+        rootQuality: mechanism.capacity?.rootQuality || "",
+        rootCount: mechanism.capacity?.rootCount ?? null,
+        rootClashCount: mechanism.capacity?.rootClashCount ?? null,
+        seasonSupported: mechanism.capacity?.seasonSupported === true,
+        partySupported: mechanism.capacity?.partySupported === true,
+      },
+      drive: {
+        strongestElement: mechanism.drive?.strongestElement || "",
+        rawStrongest: mechanism.drive?.rawStrongest || "",
+        rawInfluenceMismatch: mechanism.drive?.rawInfluenceMismatch === true,
+        blockedAt: mechanism.drive?.blockedAt || null,
+        pressureGroup: mechanism.drive?.pressureGroup || "",
+        pressureOverload: mechanism.drive?.pressureOverload === true,
+      },
+      friction: mechanism.friction || {},
+      contradictionFlags: synthesis?.contradictionFlags || [],
+    };
+    rolePlan.fit.factDigest = {
+      helpfulGods: mechanism.structure?.helpfulGods || [],
+      rescueGods: mechanism.structure?.rescueGods || [],
+      zipingState: mechanism.structure?.state || "",
+      zipingPath: mechanism.structure?.path || null,
+      bridgeElement: mechanism.adjustment?.bridgeElement || null,
+      bridgeStatus: mechanism.adjustment?.bridgeStatus || null,
+      prescriptionSequence: (mechanism.adjustment?.prescription?.sequence || []).map((x) => x?.element).filter(Boolean),
+    };
+    rolePlan.caution.factDigest = {
+      harmfulGods: mechanism.structure?.harmfulGods || [],
+      pressureGroup: mechanism.drive?.pressureGroup || "",
+      pressureOverload: mechanism.drive?.pressureOverload === true,
+      conflictCount: (mechanism.adjustment?.conflicts || []).length,
+      rootClashCount: mechanism.capacity?.rootClashCount ?? null,
+      friction: mechanism.friction || {},
+    };
+    rolePlan.timing.factDigest = {
+      natalStrength: chart.dayMaster?.strength || "",
+      natalStructure: chart.structure?.gyeokName || "",
+      rows: (timingRows || []).slice(0, 5).map((row) => ({
+        startYmd: row?.startYmd || row?.date || "",
+        endYmd: row?.endYmd || "",
+        class: row?.class || "",
+        daeunGanZhi: row?.daeunGanZhi || "",
+        seyounGanZhi: row?.seyounGanZhi || "",
+        majorSupport: Number(row?.evidence?.majorSupport || 0),
+        support: Number(row?.evidence?.support || 0),
+        majorCaution: Number(row?.evidence?.majorCaution || 0),
+        caution: Number(row?.evidence?.caution || 0),
+        wolunSupportCodes: (row?.layers?.wolun?.supportSignals || []).map((x) => x?.code).filter(Boolean),
+        wolunCautionCodes: (row?.layers?.wolun?.cautionSignals || []).map((x) => x?.code).filter(Boolean),
+      })),
+    };
+
+    const requiredEvidenceCoverageIds = unique([
+      ...Object.values(rolePlan).flatMap((row) => row.requiredEvidenceIds || []),
+      ...(synthesis?.priorityMechanisms || []).slice(0, 6).map((row) => row?.ruleId).filter(Boolean),
+    ]);
+
+    return { rolePlan, requiredEvidenceCoverageIds };
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function runtimeKey(data, mode) {
+    const diagnosis = data?.noteDiagnosisV2 || {};
+    const reasoning = diagnosis?.reasoning || data?.classicalReasoningV1 || {};
+    return [
+      VERSION,
+      reasoning?.structureFingerprint || diagnosis?.structureFingerprint || "",
+      reasoning?.timingFingerprint || diagnosis?.timingFingerprint || "",
+      data?.concernKey || "",
+      data?.concernSituation || "",
+      mode === "T" ? "T" : "F",
+    ].join("|");
+  }
+
+  function buildTermContext(packet) {
+    const out = {};
+    for (const row of packet?.synthesis?.tenGodEvidence || []) {
+      if (!row?.god) continue;
+      const where = Number(row.visibleWeight || 0) > Number(row.hiddenWeight || 0) * 1.15
+        ? "겉으로 드러난 자리의 비중이 더 커"
+        : Number(row.hiddenWeight || 0) > Number(row.visibleWeight || 0) * 1.15
+          ? "지장간처럼 안쪽에 숨어 있는 비중이 더 커"
+          : "겉과 안쪽 비중이 비슷해";
+      const roles = Array.isArray(row.roles) && row.roles.length
+        ? " 구조상 역할은 " + row.roles.join("·") + "로 잡혀 있어."
+        : "";
+      out[row.god] = "이번 사주에서는 실제 가중치 " + Number(row.weight || 0).toFixed(2) + "로 계산되고, " + where + "." + roles;
+    }
+    const strength = packet?.crossValidation?.strength;
+    if (strength) {
+      const root = packet?.crossValidation?.rootQuality || "확인 중";
+      out[strength] = "이번 사주는 " + strength + "으로 계산됐고, 뿌리 상태는 " + root + "로 잡혀 있어.";
+    }
+    const gyeok = packet?.chartFacts?.structure?.gyeokName;
+    if (gyeok) {
+      out[gyeok] = "이번 사주에서는 태어난 달의 구조를 기준으로 " + gyeok + "으로 판정돼.";
+    }
+    const structure = packet?.chartFacts?.structure || {};
+    if (structure.sangsin) out.상신 = "이번 사주에서 상신으로 잡힌 십신은 " + structure.sangsin + "이야.";
+    if (structure.gisin) out.기신 = "이번 사주에서 기신으로 잡힌 십신은 " + structure.gisin + "이야.";
+    const roots = packet?.chartFacts?.dayMaster?.roots || [];
+    if (roots.length) out.통근 = "이번 사주에서는 일간의 뿌리가 " + roots.length + "곳에서 확인돼.";
+    return out;
+  }
+
+  function mapAiNotesToProduction(result, data, mode) {
+    const meta = {
+      foundation: { badge: "핵심", themeNum: "01" },
+      mechanism: { badge: "실제 장면", themeNum: "02" },
+      fit: { badge: "잘 맞는 조건", themeNum: "03" },
+      caution: { badge: "거를 신호", themeNum: "04" },
+      timing: { badge: "가까운 흐름", themeNum: "05" },
+    };
+    return (result?.notes || []).map((note) => {
+      const m = meta[note.role] || { badge: "핵심", themeNum: "01" };
+      const safeBasis = escapeHtml(note.basis);
+      const safeBody = escapeHtml(note.body).replace(/\n{2,}/g, "<br><br>").replace(/\n/g, "<br>");
+      return {
+        badge: m.badge,
+        themeNum: m.themeNum,
+        title: escapeHtml(note.title),
+        desc: "<b>사주 근거</b> — " + safeBasis + "<br><br>" + safeBody,
+        checklist: "",
+        __aiTranslated: true,
+        __aiRole: note.role,
+        __evidenceRuleIds: unique(note.evidenceIds || []),
+        __personalizationFacts: { aiTranslated: true, evidenceIds: unique(note.evidenceIds || []) },
+        ...(note.role === "timing" ? { __timingQA: { aiTranslated: true } } : {}),
+      };
+    }).sort((a, b) => Number(a.themeNum) - Number(b.themeNum));
+  }
+
+  const productionInflight = new Map();
 
   function timingSignalSummary(signal) {
     if (!signal || typeof signal !== "object") return null;
@@ -264,6 +480,11 @@
       ...ruleIdsFromClaims,
       ...timingEvidenceIds,
     ]);
+    const { rolePlan: notePlan, requiredEvidenceCoverageIds } = buildNotePlan(
+      reasoning,
+      timingEvidenceIds,
+      timingRows,
+    );
 
     return {
       schemaVersion: VERSION,
@@ -327,6 +548,8 @@
         structuralPivots: pivotRows,
       },
       unsupported: cloneJson(reasoning.unsupported || [], []),
+      notePlan,
+      requiredEvidenceCoverageIds,
       allowedEvidenceIds,
       timingEvidenceIds,
       privacy: {
@@ -490,12 +713,11 @@
     resultBox.appendChild(meta);
 
     const roleLabels = {
-      conclusion: "01 · 결론",
-      cause: "02 · 반복 원인",
-      contrast: "03 · 나만의 반전",
-      conditions: "04 · 잘됨 / 소모 조건",
+      foundation: "01 · 사주 원본",
+      mechanism: "02 · 원인 구조",
+      fit: "03 · 잘 맞는 조건",
+      caution: "04 · 거를 신호",
       timing: "05 · 가까운 시기",
-      decision: "06 · 판단 기준",
     };
 
     const list = element(
@@ -617,6 +839,56 @@
     });
   }
 
+  function getProductionNotes(data, mode) {
+    const cached = data?.__aiNoteV4;
+    if (!cached || !Array.isArray(cached.notes)) return null;
+    const key = runtimeKey(data, mode);
+    return cached.key === key ? cached.notes : null;
+  }
+
+  async function ensureProductionNotes(data, mode) {
+    if (!data || typeof data !== "object") return null;
+    const normalizedMode = mode === "T" ? "T" : "F";
+    const existing = getProductionNotes(data, normalizedMode);
+    if (existing?.length) return existing;
+
+    const packet = buildEvidencePacket(data, normalizedMode);
+    const key = [
+      VERSION,
+      packet.structureFingerprint || "",
+      packet.timingFingerprint || "",
+      packet.question?.concern || "",
+      packet.question?.situationKey || "",
+      normalizedMode,
+    ].join("|");
+
+    if (productionInflight.has(key)) return productionInflight.get(key);
+
+    const promise = generateAiNotes(data, normalizedMode)
+      .then((result) => {
+        const notes = mapAiNotesToProduction(result, data, normalizedMode);
+        if (notes.length !== 5) throw new Error("AI_NOTE_COUNT_MISMATCH");
+        data.__aiNoteV4 = {
+          key,
+          version: VERSION,
+          mode: normalizedMode,
+          generatedAt: new Date().toISOString(),
+          model: result?.model || "",
+          notes,
+          termContext: buildTermContext(result?.evidencePacket || packet),
+        };
+        return notes;
+      })
+      .finally(() => productionInflight.delete(key));
+
+    productionInflight.set(key, promise);
+    return promise;
+  }
+
+  function describeTerm(data, term) {
+    return String(data?.__aiNoteV4?.termContext?.[term] || "");
+  }
+
   function mountTestPanel(data, mode) {
     if (!testEnabled()) return;
 
@@ -642,7 +914,7 @@
       element(
         "h3",
         "text-sm font-black text-slate-900 mb-1",
-        "오행·십신·격국까지 그대로 풀어쓴 새 6개 답변",
+        "오행·십신·격국을 근거 그대로 풀어쓴 새 5개 답변",
       ),
     );
     panel.appendChild(
@@ -656,7 +928,7 @@
     const button = element(
       "button",
       "w-full rounded-2xl bg-violet-600 px-4 py-3 text-xs font-black text-white border-0 cursor-pointer",
-      "AI 6개 NOTE 생성하기",
+      "AI 5개 NOTE 생성하기",
     );
     button.type = "button";
     panel.appendChild(button);
@@ -683,7 +955,7 @@
       try {
         const result = await generateAiNotes(data, mode);
         status.textContent =
-          "완료. 위 기존 NOTE와 아래 AI 6개 NOTE를 내용만 보고 비교해봐.";
+          "완료. 위 기존 NOTE와 아래 근거 우선 5개 NOTE를 내용만 보고 비교해봐.";
         renderAiNotes(panel, result);
       } catch (error) {
         status.textContent =
@@ -693,7 +965,7 @@
           (error?.detail ? "\n" + error.detail : "");
       } finally {
         button.disabled = false;
-        button.textContent = "AI 6개 NOTE 다시 생성하기";
+        button.textContent = "AI 5개 NOTE 다시 생성하기";
       }
     });
 
@@ -703,22 +975,35 @@
   const originalGenerate = global.generateConcernNotes;
   if (typeof originalGenerate === "function") {
     const wrappedGenerate = function (data, mode) {
-      const notes = originalGenerate(data, mode);
+      const normalizedMode = mode === "T" ? "T" : "F";
+      const translated = getProductionNotes(data || {}, normalizedMode);
+      const notes = Array.isArray(translated) && translated.length === 5
+        ? translated
+        : originalGenerate(data, normalizedMode);
       if (testEnabled()) {
-        setTimeout(() => mountTestPanel(data || {}, mode || "F"), 0);
+        setTimeout(() => mountTestPanel(data || {}, normalizedMode), 0);
       }
       return notes;
     };
     wrappedGenerate.__aiNoteTestWrapped = true;
     wrappedGenerate.__base = originalGenerate;
+    wrappedGenerate.__classicalCausal = originalGenerate.__classicalCausal === true;
+    wrappedGenerate.__noteV2Wrapped = originalGenerate.__noteV2Wrapped === true;
+    wrappedGenerate.__legacyBase = originalGenerate.__legacyBase;
     global.generateConcernNotes = wrappedGenerate;
   }
 
-  global.__UNNI_AI_NOTE_TEST_V1__ = {
+  const runtime = {
     version: VERSION,
     enabled: testEnabled,
     buildEvidencePacket,
     generateAiNotes,
+    mapAiNotesToProduction,
+    getProductionNotes,
+    ensureProductionNotes,
+    describeTerm,
     mountTestPanel,
   };
+  global.__UNNI_AI_NOTE_V4__ = runtime;
+  global.__UNNI_AI_NOTE_TEST_V1__ = runtime;
 })(globalThis);
