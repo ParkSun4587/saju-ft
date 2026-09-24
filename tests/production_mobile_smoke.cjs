@@ -586,15 +586,29 @@ async function inspect(page, mode) {
       })
     );
 
-    await page.waitForFunction(
+    const liveAiReady = await page.waitForFunction(
       () =>
         currentResultData?.__aiNoteV4?.version === '2.1.0' &&
         Array.isArray(currentResultData?.__aiNoteV4?.notes) &&
         currentResultData.__aiNoteV4.notes.length === 5 &&
         currentResultData.__aiNoteV4.notes.every((n)=>n?.__aiTranslated === true),
       null,
-      { timeout: 120000 }
-    );
+      { timeout: 45000 }
+    ).then(()=>true).catch(()=>false);
+    if (!liveAiReady) {
+      const diagnosis = await page.evaluate(()=>({
+        currentMode:currentResultData?.currentMode||'',
+        noteStatus:globalThis.__UNNI_AI_NOTE_V4__?.productionNoteStatus?.(currentResultData)||null,
+        precisionText:document.getElementById('aiNotePrecisionStatus')?.innerText||'',
+        hasV4:!!currentResultData?.__aiNoteV4,
+        v4:currentResultData?.__aiNoteV4||null,
+        engineVersion:globalThis.__UNNI_AI_NOTE_V4__?.version||'',
+        reasoning:!!(currentResultData?.noteDiagnosisV2?.reasoning||currentResultData?.classicalReasoningV1),
+        structureFingerprint:currentResultData?.noteDiagnosisV2?.reasoning?.structureFingerprint||currentResultData?.classicalReasoningV1?.structureFingerprint||'',
+      }));
+      console.log('PRODUCTION_AI_NOTE_V4_DIAG', JSON.stringify({diagnosis,errors,httpErrors}));
+      throw new Error('live AI NOTE did not become ready '+JSON.stringify(diagnosis));
+    }
     await page.waitForFunction(
       () => (document.getElementById('notesListContainer')?.innerText || '').includes('사주 근거'),
       null,
