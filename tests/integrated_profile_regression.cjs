@@ -102,7 +102,7 @@ function norm(v) {
   assert(result.engine?.version === '5.0.0', 'NOTE v3 engine missing');
   assert(result.integrated?.version === '2.1.0', 'integrated profile v2 missing');
   assert(result.reasoning?.version === '2.0.0', 'classical reasoning engine missing');
-  assert(result.wrapper, 'classical-causal NOTE wrapper missing');
+  assert(result.wrapper, 'full-evidence classical NOTE wrapper missing');
   assert(result.exactPillars.join(',') === '戊寅,甲寅,己亥,乙丑', 'canonical pillars drift: '+result.exactPillars.join(','));
   assert(JSON.stringify(result.exactRaw) === JSON.stringify({mok:4,hwa:0,to:3,geum:0,su:1}), 'canonical raw elements drift');
   assert(result.exactProfile.audit.missing.length === 0, 'profile coverage missing: '+result.exactProfile.audit.missing.join(','));
@@ -123,7 +123,13 @@ function norm(v) {
       assert(notes.map(n=>n.themeNum).join(',') === '01,02,03,04,05', row.concern+'/'+row.situation+'/'+mode+': five-answer numbering drift');
       assert(audit?.version === '5.0.0' && audit?.engine === 'classical-causal-full-evidence', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
       assert(audit.genericClusterDependency === false, row.concern+'/'+row.situation+'/'+mode+': generic cluster dependency returned');
-      assert(audit.structureFingerprint && audit.timingFingerprint, row.concern+'/'+row.situation+'/'+mode+': fingerprints missing');
+      assert(audit.structureFingerprint && audit.timingFingerprint && audit.synthesisFingerprint, row.concern+'/'+row.situation+'/'+mode+': fingerprints missing');
+      assert(audit.evidenceCoverage?.coverageRate === 1 && audit.evidenceCoverage?.missingRuleIds?.length === 0,
+        row.concern+'/'+row.situation+'/'+mode+': supported classical evidence was dropped '+JSON.stringify(audit.evidenceCoverage));
+      assert(Array.isArray(audit.noteEvidence) && audit.noteEvidence.length === 5,
+        row.concern+'/'+row.situation+'/'+mode+': five-answer evidence plan missing');
+      assert(Array.isArray(audit.priorityMechanisms) && audit.priorityMechanisms.length >= 4,
+        row.concern+'/'+row.situation+'/'+mode+': priority mechanism synthesis too thin');
       assert(Array.isArray(audit.claims) && audit.claims.length === 6, row.concern+'/'+row.situation+'/'+mode+': six internal causal claims missing');
       assert(Array.isArray(audit.outputClaimMap) && audit.outputClaimMap.length === 5, row.concern+'/'+row.situation+'/'+mode+': five-answer claim map missing');
       for (const claim of audit.claims) {
@@ -148,7 +154,8 @@ function norm(v) {
       assert(!/(undefined|NaN|null)/.test(all), row.concern+'/'+row.situation+'/'+mode+': bad token leaked');
       for (const [i,note] of notes.entries()) {
         const len=plain(note.desc).length;
-        assert(len >= 55 && len <= 420, row.concern+'/'+row.situation+'/'+mode+': answer '+(i+1)+' length drift '+len);
+        assert(len >= 110 && len <= 950, row.concern+'/'+row.situation+'/'+mode+': answer '+(i+1)+' length drift '+len);
+        assert(plain(note.desc).includes('결론'), row.concern+'/'+row.situation+'/'+mode+': answer '+(i+1)+' does not lead with a conclusion');
       }
       assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(all), row.concern+'/'+row.situation+'/'+mode+': old/abstract consultation wording leaked');
       assert(notes[4]?.__timingQA?.structureFingerprint === audit.structureFingerprint,
