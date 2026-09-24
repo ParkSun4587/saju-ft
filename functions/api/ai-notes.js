@@ -4,12 +4,11 @@ const JSON_HEADERS = {
 };
 
 const NOTE_ROLES = [
-  "conclusion",
-  "cause",
-  "contrast",
-  "conditions",
+  "foundation",
+  "mechanism",
+  "fit",
+  "caution",
   "timing",
-  "decision",
 ];
 
 const DOMAIN_GUIDES = {
@@ -193,7 +192,51 @@ const SITUATION_FOCUS = {
   },
 };
 
-const SYSTEM_PROMPT = ["너는 '어떤언니'의 최종 사주 해석기다.","이번 버전의 목표는 어려운 말을 숨기는 것이 아니라, 계산된 명리 사실을 숨김없이 보여주고 바로 옆에서 뜻을 풀어주는 것이다.","","[최우선 원칙]","- 조언부터 하지 않는다. 먼저 '이 사주에 실제로 무엇이 몇 개 있고, 무엇이 강하고 약한지, 어떤 십신과 구조가 잡히는지'를 말한다.","- 오행은 목·화·토·금·수의 rawCount와 weightedInfluence를 구분해서 쓴다. rawCount는 글자 개수, weightedInfluence는 월령·지장간·자리 가중치를 반영한 실제 해석값이다.","- 십신은 비견·겁재·식신·상관·정재·편재·정관·편관·정인·편인을 숨기지 말고 실제 해당되는 것만 이름 그대로 쓴다.","- 신강·신약·중화, 월령, 득령·득지·득세, 통근, 격국, 상신·기신, 성패·구응, 용신/보완 방향, 합·충·형·파·해, 대운·세운·월운도 evidencePacket에 있을 때는 그대로 쓴다.","- 전문용어를 쓴 직후에는 일반인이 알아듣게 한 문장으로 뜻을 풀어라. 전문용어를 없애기 위해 '버티는 바탕', '결과로 잇는 고리' 같은 추상어로 덮지 않는다.","- 각 NOTE는 최소 하나 이상의 구체 사주 사실을 앞부분에 박는다. 예: '화 0개', '수 1개', '정관이 강함', '상관이 겉에 드러남', '신약인데 통근은 있음'.","","[중요한 정확도 규칙]","- 오행 0개/1개 자체가 곧 성격이나 사건을 뜻하지 않는다. 반드시 월령·지장간·가중 세력·십신 역할·강약·격국과 같이 본다.","- '수가 부족하니 돈이 안 모인다', '화가 없으니 열정이 없다'처럼 오행 이름을 생활 의미에 고정 대응하지 않는다.","- 돈은 이 사람의 일간 기준 재성(정재·편재)과 그 실제 세력·감당력·구조가 뒷받침될 때만 돈 문제와 연결한다.","- 표현/실행은 식신·상관과 관련 오행, 책임·평가는 정관·편관, 학습·보호는 정인·편인, 자기 힘/경쟁은 비견·겁재처럼 실제 십신 구조를 확인하고 연결한다.","- 같은 오행 개수라도 월령·지장간·통근 때문에 실제 세력은 다를 수 있다. rawCount와 weightedInfluence가 다르면 그 차이를 반드시 설명한다.","- 한 가지 십신이나 오행 하나만으로 '무조건 이런 사람'이라고 단정하지 않는다. 서로 독립된 근거 2개 이상이 같은 방향일 때 강하게 말한다.","- 근거가 충돌하면 숨기지 말고 '겉으로는 A인데 실제 세력은 B'처럼 그대로 보여준다.","- 사용자가 실제로 하지 않았을 소비, 연락, 공부, 가족행동을 지어내지 않는다.","- 상대의 속마음, 합격·불합격, 결혼·이별, 특정 수입액, 투자 성과, 의학적 진단을 확정하지 않는다.","- specialStructureGuarded가 true면 미구현 특수격을 확정하지 않는다.","","[NOTE 작성 순서]","각 NOTE는 반드시 다음 순서로 쓴다.","1. 명리 사실: 오행 개수/가중 세력/십신/신강약/격국/합충 등 실제 값","2. 해석: 그 명리 사실이 이 사주 안에서 무슨 역할인지","3. 현재 고민: 돈·직장·연애·진로·관계·마음 중 사용자가 고른 고민에서 어떻게 읽히는지","4. 필요한 경우 조건/시기: 어떤 조건에서 달라지고 언제 운에서 보강·충돌하는지","","[6개 NOTE 역할]","1) conclusion — 가장 큰 사주 결론. 오행 분포 + 핵심 십신/강약을 직접 제시한다.","2) cause — 왜 그런 결론이 나오는지 월령·지장간·통근·득령/득지/득세·십신 배치를 풀어낸다.","3) contrast — 겉으로 보이는 오행 개수와 실제 세력의 차이, 또는 서로 충돌하는 십신/구조를 보여준다.","4) conditions — 어떤 오행·십신·격국 조건이 살아날 때 잘 풀리고, 어떤 조건에서 소모되는지 말한다.","5) timing — 대운·세운·월운에서 어떤 오행/십신이 들어와 평소 사주를 보강하거나 흔드는지 실제 시기 근거로 설명한다.","6) decision — 앞의 명리 진단을 바탕으로 지금 고민에서 무엇을 비교해야 하는지 정리한다. 조언은 여기서만 상대적으로 많아도 된다.","","[시기]","- 운에서 특정 오행이나 십신이 들어온다고 사건 발생을 확정하지 않는다.","- 반드시 '평소 사주 A → 운에서 B가 추가/충돌 → 현재 고민에서 C가 쉬워지거나 어려워질 가능성' 순서로 쓴다.","- 실제 timingEvidence가 없는 날짜는 만들지 않는다.","","[문체]","- 쉬운 말만 쓰려고 명리 용어를 지우지 않는다. 오히려 명리 용어를 먼저 쓰고 뜻을 바로 풀어준다.","- 추상 표현만 단독으로 쓰지 않는다: '바탕', '고리', '흐름', '힘', '압박', '구조'라고만 말하면 실패다.","- 제목도 가능하면 구체 명리 사실을 드러낸다. 예: '수 1개보다 정재의 실제 세력이 더 중요하다', '상관은 드러나고 정관은 안쪽에 있다'.","- 한 NOTE당 핵심 발견 하나. 같은 오행/십신 설명을 6번 반복하지 않는다.","- F는 부드럽게 설명하고 T는 간결하게 정리하되, 명리 사실은 동일하다.","","[evidenceIds]","- allowedEvidenceIds에 실제 존재하는 ID만 사용한다.","- CHART_* ID는 오행·십신·강약·격국·합충 같은 직접 사주 사실의 근거다.","- 모든 NOTE는 최소 1개의 CHART_* ID를 포함한다.","- conclusion/cause/contrast/conditions는 추가로 고전 규칙 근거를 가능한 한 함께 쓴다.","- timing은 CHART_* 근거와 timingEvidenceIds를 함께 사용한다.","","출력은 지정된 JSON 스키마만 따른다."].join("\n");
+const SYSTEM_PROMPT = [
+  "너는 '어떤언니'의 최종 명리 번역기다.",
+  "판단은 evidencePacket 안의 계산 엔진이 이미 끝냈다. 너는 새로운 사주 판단을 만들지 않고, 확정된 사실과 교차검증 결론을 사람이 바로 이해하게 번역한다.",
+  "",
+  "[절대 원칙]",
+  "- 사주를 새로 점치지 않는다. evidencePacket.notePlan과 chartFacts, synthesis, crossValidation, timingEvidence 밖의 사실을 추가하지 않는다.",
+  "- 각 NOTE는 반드시 '실제 명리 사실 → 그 사실끼리의 원인·결과 → 현실에서의 의미' 순서로 쓴다.",
+  "- 정관·편관·식신·상관·정재·편재·정인·편인·비견·겁재, 신강·신약, 득령·득지·득세, 통근, 격국, 상신·기신, 합·충·형·파·해 같은 용어를 숨기지 않는다.",
+  "- 전문용어를 쓴 즉시 쉬운 한국어로 뜻을 붙인다. 예: '편관은 경쟁·압박·큰 책임을 뜻하는 힘이야.'",
+  "- '버티는 바탕', '다음 단계로 이어지는 고리', '작동 방식', '도움 힘', '흔드는 힘', '돈을 가리키는 자리'처럼 명리 사실을 지운 인공 번역어를 쓰지 않는다.",
+  "- 옥토·거목 숲·무대·파도·불씨·그릇처럼 멋있지만 검증 불가능한 비유로 본문을 채우지 않는다.",
+  "- 한 NOTE에서 핵심 근거는 2~4개만 전면에 보여주되, notePlan.requiredEvidenceIds는 evidenceIds에 빠짐없이 포함한다.",
+  "- 같은 결론을 표현만 바꿔 여러 NOTE에 반복하지 않는다.",
+  "",
+  "[정확도]",
+  "- 오행 rawCount와 weightedInfluence를 구분한다. 개수와 실제 세력이 다르면 그 차이를 직접 설명한다.",
+  "- 오행 하나만으로 성격·돈·연애를 단정하지 않는다. 십신·강약·격국·뿌리·관계 중 독립된 근거를 교차검증한다.",
+  "- 재물은 재성의 실제 세력과 일간의 감당력, 구조의 성패를 같이 볼 때만 연결한다.",
+  "- 표현·실행은 식신·상관, 책임·평가는 정관·편관, 학습·보호는 정인·편인, 자기 힘·경쟁은 비견·겁재를 실제 배치와 세력으로 확인한다.",
+  "- 합·충·형·파·해는 다른 구조 근거 없이 단독 길흉으로 과장하지 않는다.",
+  "- 특정 수입액, 합격·불합격, 결혼·이별, 상대 속마음, 의학적 진단을 확정하지 않는다.",
+  "- specialStructureGuarded가 true면 특수격을 확정하지 않는다.",
+  "",
+  "[5개 NOTE 역할]",
+  "1) foundation — 이 사람 사주의 원본 판독. 일간, 오행 실제 세력, 강약, 득령·득지·득세, 통근, 핵심 십신·격국 중 가장 중요한 사실을 제시한다.",
+  "2) mechanism — 왜 이런 패턴이 생기는지 적천수식 원인→결론을 설명한다. 생극 흐름, 압박, 뿌리, 막힌 연결, 합충을 근거로 한다.",
+  "3) fit — 어떤 조건에서 장점이 살아나는지 자평진전의 도움·구응·통관·보완 순서와 현재 고민을 연결한다.",
+  "4) caution — 어떤 조건에서 구조가 깨지거나 소모되는지 기신·과부하·충돌 근거와 현재 고민을 연결한다.",
+  "5) timing — 원국 결론을 유지한 채 대운·세운·월운이 무엇을 추가·충돌시키는지 실제 timingEvidence만으로 설명한다.",
+  "",
+  "[문장 형식]",
+  "- title: 사용자가 3초 안에 이해할 수 있는 결론 한 줄. 시적인 문구 금지.",
+  "- basis: 반드시 '네 사주에서는'으로 시작한다. 실제 명리 사실 2개 이상을 이름 그대로 적고, 수치가 의미 있을 때만 수치를 쓴다.",
+  "- body: basis의 사실들이 왜 같은 결론으로 이어지는지 2~4문장으로 설명하고 마지막 1문장에서 현재 고민에 연결한다.",
+  "- 한 NOTE 전체를 길게 늘이지 않는다. 반복되는 설명은 삭제한다.",
+  "- F는 부드럽고 친절하게, T는 짧고 단정하게 쓰되 사실은 동일하다.",
+  "",
+  "[근거]",
+  "- notePlan의 해당 role에 있는 requiredEvidenceIds를 evidenceIds에 모두 포함한다.",
+  "- requiredEvidenceCoverageIds는 5개 NOTE 전체에서 하나도 빠뜨리지 않는다.",
+  "- allowedEvidenceIds에 없는 ID를 만들지 않는다.",
+  "- timing NOTE는 timingEvidenceIds 중 실제 사용한 근거를 반드시 포함한다.",
+  "",
+  "출력은 지정된 JSON 스키마만 따른다."
+].join("\n");
 
 function reply(status, body) {
   return new Response(JSON.stringify(body), {
@@ -309,6 +352,32 @@ function genericAdviceOnly(text, guide) {
   );
 }
 
+const FORBIDDEN_ABSTRACT =
+  /버티는 바탕|이어지는 고리|다음 단계로 이어지는 고리|작동 방식|도움 힘|흔드는 힘|돈을 가리키는 자리|바탕을 흔드는 자리|결과로 잇는 고리/;
+const FORBIDDEN_METAPHOR =
+  /옥토|거목|숲에 둘러싸|거대한 무대|판을 뒤집|기름진 논밭|불씨|파도처럼|운명의 파도|재물 그릇/;
+
+function countConcreteSajuFacts(text) {
+  const value = String(text || "");
+  const terms = value.match(
+    /비견|겁재|식신|상관|정재|편재|정관|편관|정인|편인|재성|관성|인성|식상|비겁|신강|신약|중화|월령|득령|득지|득세|통근|지장간|격국|상신|기신|용신|합|충|형|파|해|대운|세운|월운|일간/g,
+  ) || [];
+  const elementFacts = value.match(
+    /(목|화|토|금|수)\s*(?:기운|오행|[0-9]+(?:\.[0-9]+)?\s*(?:개|%))/g,
+  ) || [];
+  return new Set([...terms, ...elementFacts]).size;
+}
+
+function planForRole(packet, role) {
+  const plan = packet?.notePlan?.[role];
+  return plan && typeof plan === "object" ? plan : {};
+}
+
+function hasForbiddenTranslationLanguage(text) {
+  const value = String(text || "");
+  return FORBIDDEN_ABSTRACT.test(value) || FORBIDDEN_METAPHOR.test(value);
+}
+
 function validateGeneratedNotes(parsed, packet) {
   if (!parsed || typeof parsed !== "object") {
     throw new Error("INVALID_STRUCTURED_OUTPUT");
@@ -317,16 +386,11 @@ function validateGeneratedNotes(parsed, packet) {
   const allowedIds = uniqueStrings(packet.allowedEvidenceIds);
   const allowed = new Set(allowedIds);
   const timingAllowed = new Set(uniqueStrings(packet.timingEvidenceIds));
-  const structuralAllowed = new Set(
-    allowedIds.filter((id) => !timingAllowed.has(id)),
-  );
-  const chartAllowed = new Set(
-    allowedIds.filter((id) => id.startsWith("CHART_")),
-  );
   const guide = domainGuide(packet);
   const notes = [];
   const usedFocus = new Set();
   const usedClaims = new Set();
+  const usedEvidence = new Set();
 
   for (const role of NOTE_ROLES) {
     const item = parsed[role];
@@ -340,14 +404,18 @@ function validateGeneratedNotes(parsed, packet) {
     const body = String(item.body || "").trim();
     const evidenceIds = uniqueStrings(item.evidenceIds).filter((id) => allowed.has(id));
     const certainty = item.certainty === "guarded" ? "guarded" : "supported";
-    const structuralIds = evidenceIds.filter((id) => structuralAllowed.has(id));
-    const timingIds = evidenceIds.filter((id) => timingAllowed.has(id));
-    const chartIds = evidenceIds.filter((id) => chartAllowed.has(id));
+    const plan = planForRole(packet, role);
+    const requiredEvidenceIds = uniqueStrings(plan.requiredEvidenceIds).filter((id) =>
+      allowed.has(id),
+    );
 
     if (
       title.length < 6 ||
-      basis.length < 30 ||
-      body.length < 70 ||
+      title.length > 52 ||
+      basis.length < 35 ||
+      basis.length > 260 ||
+      body.length < 55 ||
+      body.length > 520 ||
       focus.length < 3 ||
       evidenceIds.length === 0
     ) {
@@ -357,8 +425,15 @@ function validateGeneratedNotes(parsed, packet) {
     if (!hasSajuAnchor(basis)) {
       throw new Error("SAJU_BASIS_MISSING");
     }
-    if (!hasConcreteSajuFact(title + " " + basis)) {
+
+    const concreteFactCount = countConcreteSajuFacts(title + " " + basis);
+    const minimumFacts = role === "timing" ? 1 : 2;
+    if (concreteFactCount < minimumFacts) {
       throw new Error("DIRECT_SAJU_FACT_MISSING");
+    }
+
+    if (hasForbiddenTranslationLanguage(title + " " + basis + " " + body)) {
+      throw new Error("ABSTRACT_OR_METAPHOR_TRANSLATION");
     }
     if (isImperativeAdvice(title) || isImperativeAdvice(basis)) {
       throw new Error("ADVICE_REPLACED_DIAGNOSIS");
@@ -370,19 +445,15 @@ function validateGeneratedNotes(parsed, packet) {
       throw new Error("CONCERN_FOCUS_LOST");
     }
 
-    const requiredStructural = Math.min(2, structuralAllowed.size);
-    if (role === "timing") {
-      if (timingAllowed.size > 0 && timingIds.length < 1) {
+    for (const id of requiredEvidenceIds) {
+      if (!evidenceIds.includes(id)) {
+        throw new Error("REQUIRED_EVIDENCE_OMITTED");
+      }
+    }
+
+    if (role === "timing" && timingAllowed.size > 0) {
+      if (!evidenceIds.some((id) => timingAllowed.has(id))) {
         throw new Error("TIMING_EVIDENCE_MISMATCH");
-      }
-      if (requiredStructural > 0 && structuralIds.length < 1) {
-        throw new Error("TIMING_NATAL_LINK_MISSING");
-      }
-    } else {
-      const minimumStructural =
-        role === "decision" ? Math.min(1, structuralAllowed.size) : requiredStructural;
-      if (minimumStructural > 0 && structuralIds.length < minimumStructural) {
-        throw new Error("INSUFFICIENT_STRUCTURAL_EVIDENCE");
       }
     }
 
@@ -397,6 +468,7 @@ function validateGeneratedNotes(parsed, packet) {
       throw new Error("DUPLICATE_NOTE_CLAIM");
     }
     usedClaims.add(claimKey);
+    evidenceIds.forEach((id) => usedEvidence.add(id));
 
     notes.push({
       role,
@@ -407,6 +479,14 @@ function validateGeneratedNotes(parsed, packet) {
       evidenceIds,
       certainty,
     });
+  }
+
+  const coverageIds = uniqueStrings(packet.requiredEvidenceCoverageIds).filter((id) =>
+    allowed.has(id),
+  );
+  const missingCoverage = coverageIds.filter((id) => !usedEvidence.has(id));
+  if (missingCoverage.length) {
+    throw new Error("ENGINE_EVIDENCE_COVERAGE_GAP");
   }
 
   return notes;
@@ -535,6 +615,12 @@ function buildTranslationInstruction(packet) {
     "반드시 evidencePacket의 chartFacts에서 오행 개수·가중 세력·십신·강약·격국·합충을 먼저 확인한 뒤 현재 고민으로 연결해.",
     "각 basis는 '네 사주에서는'으로 시작하고, 오행 또는 십신 또는 신강약/격국 같은 실제 명리 사실을 이름 그대로 최소 하나 적어.",
     "전문용어는 숨기지 말고 바로 뒤에서 쉬운 말로 뜻을 설명해.",
+    "",
+    "[엔진이 확정한 NOTE 설계]",
+    JSON.stringify(packet?.notePlan || {}),
+    "",
+    "[5개 NOTE 전체에서 반드시 한 번 이상 사용해야 하는 근거]",
+    uniqueStrings(packet?.requiredEvidenceCoverageIds).join(" · "),
   ].join("\n");
 }
 
@@ -623,7 +709,7 @@ async function handlePost(context) {
               translationInstruction +
               "\n\n[검증된 evidencePacket]\n" +
               encoded +
-              "\n\n이 근거만 사용해 서로 다른 발견 6개를 작성해. 오행 rawCount와 실제 가중 세력, 십신 이름, 신강약·격국·합충 등 계산된 명리 사실을 숨기지 말고 각 NOTE 앞부분에 직접 써. 단, 오행 개수 하나만으로 생활 결과를 단정하지 말고 반드시 십신·강약·구조와 교차검증해.",
+              "\n\nnotePlan에 확정된 5개 NOTE만 작성해. 각 NOTE의 requiredEvidenceIds와 factDigest를 먼저 읽고, 그 사실을 빠뜨리거나 다른 말로 추상화하지 마. 전문용어를 그대로 쓰고 바로 쉬운 뜻을 붙여. 새로운 사주 판단, 시적인 비유, 인공적인 추상어는 만들지 마.",
           },
         ],
       },
@@ -631,7 +717,7 @@ async function handlePost(context) {
     text: {
       format: {
         type: "json_schema",
-        name: "unni_six_notes_v3",
+        name: "unni_five_notes_v4",
         strict: true,
         schema: OUTPUT_SCHEMA,
       },
