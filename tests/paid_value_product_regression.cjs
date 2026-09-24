@@ -1215,18 +1215,19 @@ function norm(v) {
   ]) assert(!html.includes(staleGeneric), `generic/system voice remains: ${staleGeneric}`);
   assert(!html.includes('내 보관함 ♡') && !html.includes('내 사주 ♡'), 'vault copy still uses decorative heart as dialogue text');
   assert(
+    html.includes('<select\n                    id="birthTimeBranch"') &&
+    html.includes('<option value="unknown" selected>(모름)</option>') &&
+    html.includes('<option value="子">자시 · 23:30~01:29</option>') &&
+    html.includes('<option value="亥">해시 · 21:30~23:29</option>') &&
     html.includes('id="birthTimeInput"') &&
-    html.includes('placeholder="예: 09:42"') &&
-    html.includes('id="birthTimeUnknownButton"') &&
-    html.includes('type="checkbox"') &&
-    html.includes('>시간 모름</span>') &&
+    html.includes('placeholder="정확한 시간"') &&
+    html.includes('aria-label="정확한 출생 시간"') &&
+    !html.includes('id="birthTimeUnknownButton"') &&
     !html.includes('id="birthTimeHelp"') &&
-    html.includes('type="hidden" id="birthTimeBranch"') &&
+    html.includes('function selectBirthTimeBranch()') &&
     html.includes('function normalizeExactBirthTime(value)') &&
-    html.includes('function formatBirthTime(input)') &&
-    html.includes('function setBirthTimeUnknown()') &&
-    !html.includes('<select\n                    id="birthTimeBranch"'),
-    'exact HH:MM primary birth-time input or unknown-time fallback missing'
+    html.includes('function formatBirthTime(input)'),
+    'branch-first birth-time selector or exact-time override missing'
   );
   assert(html.includes('BIRTH_TIME_BRANCHES') && html.includes('BIRTH_TIME_BRANCH_LABELS'), 'branch-time parsing/restore support missing');
   assert(
