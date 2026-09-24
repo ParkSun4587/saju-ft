@@ -37,8 +37,9 @@ async function enter(page, mode) {
   await page.waitForSelector('#concernSituationBox',{state:'visible'});
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.fill('#birthDateInput','19980221');
-  await page.fill('#birthTimeInput','0310');
-  assert((await page.locator('#birthTimeInput').inputValue())==='03:10','longshot exact birth-time input failed');
+  await page.selectOption('#birthTimeBranch','寅');
+  assert((await page.locator('#birthTimeBranch').inputValue())==='寅','longshot branch birth-time selection failed');
+  assert(!(await page.locator('#birthTimeUnknownButton').isChecked()),'longshot branch choice should clear unknown-time checkbox');
   await page.locator('#splitNextButton button').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
   const freeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
