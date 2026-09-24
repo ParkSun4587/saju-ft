@@ -39,7 +39,7 @@ async function enter(page, mode) {
   await page.fill('#birthDateInput','19980221');
   await page.selectOption('#birthTimeBranch','寅');
   assert((await page.locator('#birthTimeBranch').inputValue())==='寅','longshot branch birth-time selection failed');
-  assert(!(await page.locator('#birthTimeUnknownButton').isChecked()),'longshot branch choice should clear unknown-time checkbox');
+  assert((await page.locator('#birthTimeInput').inputValue())==='','longshot branch selection should not leave an exact-time override');
   await page.locator('#splitNextButton button').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
   const freeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
