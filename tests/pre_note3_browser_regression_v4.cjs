@@ -369,11 +369,17 @@ async function load(page) {
       document.getElementById('calendarSelect').value = c.calendar;
       document.getElementById('genderValue').value = c.gender;
       const branch = document.getElementById('birthTimeBranch');
+      const exactToggle = document.getElementById('birthTimeExactToggle');
+      const exactWrap = document.getElementById('birthTimeExactWrap');
       const exactInput = document.getElementById('birthTimeInput');
       if (/^([01]\d|2[0-3]):[0-5]\d$/.test(c.time)) {
+        exactToggle.checked = true;
+        exactWrap.classList.remove('hidden');
         exactInput.value = c.time;
         formatBirthTime(exactInput);
       } else {
+        exactToggle.checked = false;
+        exactWrap.classList.add('hidden');
         exactInput.value = '';
         branch.value = c.time;
       }
