@@ -471,10 +471,26 @@ function validateGeneratedNotes(parsed, packet) {
 }
 
 function sameOrigin(request) {
-  const origin = request.headers.get("Origin");
-  if (!origin) return false;
   const requestUrl = new URL(request.url);
-  return origin === requestUrl.origin;
+  const origin = request.headers.get("Origin");
+
+  // Normal browsers: require an exact same-origin match.
+  if (origin && origin !== "null") {
+    return origin === requestUrl.origin;
+  }
+
+  // Some iOS/Safari/Kakao in-app WebViews can omit Origin (or send "null")
+  // for same-site fetches. In that case, fall back to Referer instead of
+  // rejecting a legitimate request. We still reject when neither proves
+  // that the call started from this exact site.
+  const referer = request.headers.get("Referer");
+  if (!referer) return false;
+
+  try {
+    return new URL(referer).origin === requestUrl.origin;
+  } catch {
+    return false;
+  }
 }
 
 function pricingFor(model) {
