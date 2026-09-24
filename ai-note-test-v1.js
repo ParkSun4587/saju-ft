@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "2.1.0";
+  const VERSION = "2.1.1";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
