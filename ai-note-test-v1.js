@@ -17,6 +17,15 @@
     }
   }
 
+  function autoProductionEnabled() {
+    try {
+      const host = String(global.location?.hostname || "").toLowerCase();
+      return host !== "localhost" && host !== "127.0.0.1" && host !== "0.0.0.0";
+    } catch {
+      return true;
+    }
+  }
+
   function cloneJson(value, fallback) {
     try {
       return JSON.parse(JSON.stringify(value ?? fallback));
@@ -1066,6 +1075,7 @@
   const runtime = {
     version: VERSION,
     enabled: testEnabled,
+    autoProductionEnabled,
     buildEvidencePacket,
     generateAiNotes,
     mapAiNotesToProduction,
