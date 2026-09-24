@@ -366,7 +366,7 @@
     const printGod = godFacts(["정인","편인"]);
 
     const label = (t, f2) => `<b>${isT ? t : f2}</b> · `;
-    const why = (text) => `${label("근거", "왜 그러냐면")}${text}`;
+    const why = (text) => `${label("근거(왜냐면)", "왜 그러냐면")}${text}`;
     const use = (text) => `${label("이렇게 써", "그래서")}${text}`;
     const shareWord = (share) => share >= 30 ? "커" : share >= 10 ? "적당히 있어" : "적은 편이야";
     const groupLine = (group) => `${f.groupMeaning(group)}(${f.groupName(group)})${josa(f.groupMeaning(group), "은", "는").slice(f.groupMeaning(group).length)} ${f.shares[group] || 0}%로 ${shareWord(f.shares[group] || 0)}`;
@@ -532,12 +532,12 @@
       },
       {
         title:"11 · 앞으로 5년",
-        body:`${isT ? "기본 NOTE에서 공개하지 않은 연도별 흐름이야. 해마다 방향·이유·할 일까지 본다." : "기본 NOTE에서는 다 보여주지 않았던 연도별 흐름도 여기서는 이어서 볼게. 해마다 좋다/나쁘다로 끝내지 않고 이유와 할 일까지 같이 볼게."}<br><br>${yearTimelineCopy()}`,
+        body:`${isT ? "기본 NOTE에서 공개하지 않은 연도별 흐름이야. 해마다 방향·이유·할 일까지 본다." : "기본 NOTE에서는 다 보여주지 않았던 연도별 흐름도 여기서는 이어서 볼게. 해마다 좋다/나쁘다로 끝내지 않고 이유와 할 일까지 같이 볼게."}<br><br>${yearTimelineCopy()}<br><br>${use("좋은 해에는 준비한 걸 실제로 확정하고, 조심할 해에는 범위를 줄이는 식으로 5년을 나눠 써.")}`,
         claim:{ section:11,sourceRuleIds:timingRuleIds(years),newFacts:years.slice(0,6).map((x) => textFact("year",`${x.year}:${x.class}`)),conclusion:"5년 흐름은 각 연도의 방향·발화 근거·활용 또는 주의 행동까지 묶어서 공개한다." },
       },
       {
         title:"12 · 큰 흐름 전환 + 평생 사용법",
-        body:`${label("큰 흐름", "큰 흐름부터 보면")}${daeunCopy()}<br><br><b>${isT ? "평생 가져갈 사용법" : "언니가 마지막으로 남길 기준"}</b><br><b>1.</b> ${f.top ? `${f.top.god}(${f.top.meaning}) 쪽 일이 몰릴수록, 네 기본 체력보다 큰 일인지 먼저 확인해.` : "일이 몰릴수록 네 기본 체력보다 큰 일인지 먼저 확인해."}<br><b>2.</b> ${weakAction ? `${weakAction}. 제일 약한 한 칸을 채우는 게 제일 크게 바뀌어.` : "중간 과정을 빼먹지 마."}<br><b>3.</b> ${f.balance ? `${f.balance.name} 기운을 보태는 사람·환경·습관을 곁에 둬.` : "좋은 시기에도 작게 확인하고 확정하는 순서를 지켜."}<br><br>이 세 가지는 돈·일·관계·마음이 달라져도 같은 사주에서 반복해서 남는 사용법이야.`,
+        body:`${label("큰 흐름부터 보면", "큰 흐름부터 보면")}${daeunCopy()}<br><br><b>${isT ? "평생 활용 기준" : "언니가 마지막으로 남길 기준"}</b><br><b>1.</b> ${f.top ? `${f.top.god}(${f.top.meaning}) 쪽 일이 몰릴수록, 네 기본 체력보다 큰 일인지 먼저 확인해.` : "일이 몰릴수록 네 기본 체력보다 큰 일인지 먼저 확인해."}<br><b>2.</b> ${weakAction ? `${weakAction}. 제일 약한 한 칸을 채우는 게 제일 크게 바뀌어.` : "중간 과정을 빼먹지 마."}<br><b>3.</b> ${f.balance ? `${f.balance.name} 기운을 보태는 사람·환경·습관을 곁에 둬.` : "좋은 시기에도 작게 확인하고 확정하는 순서를 지켜."}<br><br>이 세 가지는 돈·일·관계·마음이 달라져도 같은 사주에서 반복해서 남는 사용법이야.`,
         claim:{ section:12,sourceRuleIds:uniq([...timingRuleIds(years),...ids(pressure,flow,bridge,balance)]),newFacts:[textFact("daeunPeriods",daeunPeriods.map((x) => `${x.startYear}-${x.endYear}:${x.ganZhi}`).join("|")),textFact("prescription",actions.join("→"))],conclusion:"현재 큰 흐름과 다음 전환을 평생 반복되는 행동 순서에 연결한다." },
       },
     ];
