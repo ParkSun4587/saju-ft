@@ -531,7 +531,9 @@
         renderAiNotes(panel, result);
       } catch (error) {
         status.textContent =
-          "생성 실패: " + (error?.message || "알 수 없는 오류");
+          "생성 실패: " +
+          (error?.message || "알 수 없는 오류") +
+          (error?.code ? " (" + error.code + ")" : "");
       } finally {
         button.disabled = false;
         button.textContent = "AI 6개 NOTE 다시 생성하기";
