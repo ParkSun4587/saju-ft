@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "2.1.1";
+  const VERSION = "2.1.2";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -25,8 +25,14 @@
     }
   }
 
+  function asArray(value) {
+    if (Array.isArray(value)) return value;
+    if (value === null || value === undefined || value === "") return [];
+    return [value];
+  }
+
   function unique(values) {
-    return [...new Set((values || []).filter(Boolean))];
+    return [...new Set(asArray(values).filter(Boolean))];
   }
 
   const ROLE_TO_ENGINE_ROLE = {
@@ -49,7 +55,7 @@
     const synthesis = reasoning?.synthesis || {};
     const chart = compactChartFacts(reasoning);
     const evidenceRoles = synthesis?.evidencePlan?.roles || {};
-    const topGod = (synthesis?.tenGodEvidence || [])[0] || null;
+    const topGod = asArray(synthesis?.tenGodEvidence)[0] || null;
     const mechanism = synthesis?.mechanisms || {};
     const rolePlan = {};
 
@@ -127,20 +133,20 @@
       zipingPath: mechanism.structure?.path || null,
       bridgeElement: mechanism.adjustment?.bridgeElement || null,
       bridgeStatus: mechanism.adjustment?.bridgeStatus || null,
-      prescriptionSequence: (mechanism.adjustment?.prescription?.sequence || []).map((x) => x?.element).filter(Boolean),
+      prescriptionSequence: asArray(mechanism.adjustment?.prescription?.sequence).map((x) => x?.element).filter(Boolean),
     };
     rolePlan.caution.factDigest = {
       harmfulGods: mechanism.structure?.harmfulGods || [],
       pressureGroup: mechanism.drive?.pressureGroup || "",
       pressureOverload: mechanism.drive?.pressureOverload === true,
-      conflictCount: (mechanism.adjustment?.conflicts || []).length,
+      conflictCount: asArray(mechanism.adjustment?.conflicts).length,
       rootClashCount: mechanism.capacity?.rootClashCount ?? null,
       friction: mechanism.friction || {},
     };
     rolePlan.timing.factDigest = {
       natalStrength: chart.dayMaster?.strength || "",
       natalStructure: chart.structure?.gyeokName || "",
-      rows: (timingRows || []).slice(0, 5).map((row) => ({
+      rows: asArray(timingRows).slice(0, 5).map((row) => ({
         startYmd: row?.startYmd || row?.date || "",
         endYmd: row?.endYmd || "",
         class: row?.class || "",
@@ -150,14 +156,14 @@
         support: Number(row?.evidence?.support || 0),
         majorCaution: Number(row?.evidence?.majorCaution || 0),
         caution: Number(row?.evidence?.caution || 0),
-        wolunSupportCodes: (row?.layers?.wolun?.supportSignals || []).map((x) => x?.code).filter(Boolean),
-        wolunCautionCodes: (row?.layers?.wolun?.cautionSignals || []).map((x) => x?.code).filter(Boolean),
+        wolunSupportCodes: asArray(row?.layers?.wolun?.supportSignals).map((x) => x?.code).filter(Boolean),
+        wolunCautionCodes: asArray(row?.layers?.wolun?.cautionSignals).map((x) => x?.code).filter(Boolean),
       })),
     };
 
     const requiredEvidenceCoverageIds = unique([
       ...Object.values(rolePlan).flatMap((row) => row.requiredEvidenceIds || []),
-      ...(synthesis?.priorityMechanisms || []).slice(0, 6).map((row) => row?.ruleId).filter(Boolean),
+      ...asArray(synthesis?.priorityMechanisms).slice(0, 6).map((row) => row?.ruleId).filter(Boolean),
     ]);
 
     return { rolePlan, requiredEvidenceCoverageIds };
@@ -250,7 +256,7 @@
     if (!data || typeof data !== "object") return null;
     let state = productionAttemptState.get(data);
     if (!state) {
-      state = { attempts: 0, lastAttemptAt: 0, lastError: "", success: false };
+      state = { attempts: 0, lastAttemptAt: 0, lastError: "", lastDetail: "", success: false };
       productionAttemptState.set(data, state);
     }
     return state;
@@ -270,7 +276,7 @@
     const state = productionState(data);
     return state
       ? { ...state, hasNotes: !!getProductionNotes(data, data?.currentMode || "F")?.length }
-      : { attempts: 0, lastAttemptAt: 0, lastError: "", success: false, hasNotes: false };
+      : { attempts: 0, lastAttemptAt: 0, lastError: "", lastDetail: "", success: false, hasNotes: false };
   }
 
   function timingSignalSummary(signal) {
@@ -384,7 +390,7 @@
         deukryeong: cloneJson(strength?.deukryeong || null, null),
         deukji: cloneJson(strength?.deukji || null, null),
         deukse: cloneJson(strength?.deukse || null, null),
-        roots: cloneJson(strength?.roots || [], []),
+        roots: cloneJson(asArray(strength?.roots), []),
       },
       fiveElements: {
         rawCount: cloneJson(elements?.raw || {}, {}),
@@ -453,15 +459,15 @@
     const timing = reasoning.timing || {};
     const near = timing.concernNearTerm || {};
 
-    const highlightRows = (near.highlights || [])
+    const highlightRows = asArray(near.highlights)
       .map(timingRowSummary)
       .filter(Boolean)
       .slice(0, 8);
-    const salientRows = (timing.salientMonths || [])
+    const salientRows = asArray(timing.salientMonths)
       .map(timingRowSummary)
       .filter(Boolean)
       .slice(0, 8);
-    const pivotRows = (timing.longTermPivots || [])
+    const pivotRows = asArray(timing.longTermPivots)
       .map(timingRowSummary)
       .filter(Boolean)
       .slice(0, 3);
@@ -469,7 +475,7 @@
     const timingRows = [...highlightRows, ...salientRows, ...pivotRows];
     const timingEvidenceIds = collectTimingEvidenceIds(timingRows);
 
-    const signals = (synthesis.signals || []).map((signal) => ({
+    const signals = asArray(synthesis.signals).map((signal) => ({
       id: signal.id || "",
       system: signal.system || "",
       kind: signal.kind || "",
@@ -486,7 +492,7 @@
       causalSteps: cloneJson(signal.causalSteps || [], []),
     }));
 
-    const claims = (reasoning.claims || []).map(compactClaim).filter(Boolean);
+    const claims = asArray(reasoning.claims).map(compactClaim).filter(Boolean);
     const ruleIdsFromClaims = claims.flatMap((claim) => [
       ...(claim.ditianRuleIds || []),
       ...(claim.zipingRuleIds || []),
@@ -533,7 +539,7 @@
         priorityMechanisms: cloneJson(synthesis.priorityMechanisms || [], []),
         contradictionFlags: cloneJson(synthesis.contradictionFlags || [], []),
         signals,
-        tenGodEvidence: cloneJson((synthesis.tenGodEvidence || []).slice(0, 12), []),
+        tenGodEvidence: cloneJson(asArray(synthesis.tenGodEvidence).slice(0, 12), []),
         guarded: synthesis.guarded === true,
       },
       crossValidation: {
@@ -887,7 +893,25 @@
       throw error;
     }
 
-    const packet = buildEvidencePacket(data, normalizedMode);
+    if (state) {
+      state.attempts += 1;
+      state.lastAttemptAt = Date.now();
+      state.lastError = "";
+      state.lastDetail = "";
+    }
+
+    let packet;
+    try {
+      packet = buildEvidencePacket(data, normalizedMode);
+    } catch (error) {
+      if (state) {
+        state.success = false;
+        state.lastError = String(error?.code || error?.message || "EVIDENCE_PACKET_BUILD_FAILED");
+        state.lastDetail = String(error?.stack || error?.message || error || "").slice(0, 1000);
+      }
+      throw error;
+    }
+
     const key = [
       VERSION,
       packet.structureFingerprint || "",
@@ -898,12 +922,6 @@
     ].join("|");
 
     if (productionInflight.has(key)) return productionInflight.get(key);
-
-    if (state) {
-      state.attempts += 1;
-      state.lastAttemptAt = Date.now();
-      state.lastError = "";
-    }
 
     const promise = generateAiNotes(data, normalizedMode)
       .then((result) => {
