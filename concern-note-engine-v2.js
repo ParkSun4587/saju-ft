@@ -1035,7 +1035,7 @@
   }
 
 
-    function capacitySentence(reasoning){
+      function capacitySentence(reasoning){
     const m=synthesisFor(reasoning).mechanisms?.capacity||{};
     const verdict=m.verdict||"중화";
     const root=m.rootQuality||"unknown";
@@ -1054,11 +1054,11 @@
     else if(season&&!party) second="계절의 중심 도움은 있지만 다른 자리까지 항상 같은 방향으로 받쳐주는 건 아니야.";
     else if(!season&&party) second="계절이 바로 받쳐주진 않지만 다른 자리에서 보완하는 힘이 실제로 붙어 있어.";
     else second="계절과 다른 자리의 생조가 동시에 강하게 붙는 작동 방식은 아니라서, 무리한 조건에서는 같은 일도 체감 차이가 커질 수 있어.";
-    if(clash) second+=" 여기에 실제 뿌리를 흔드는 충까지 있어서 평소의 버팀력만 보고 계속 밀면 오판하기 쉬워.";
-    return first+" "+second;
+    if(clash) second+=" 여기에 실제 뿌리를 흔드는 부딪힘까지 있어서 평소의 버팀력만 보고 계속 밀면 오판하기 쉬워.";
+    return first.replace(/[.!?]+$/,"")+". "+second;
   }
 
-      function dominantFunctionSentence(reasoning,s){
+        function dominantFunctionSentence(reasoning,s){
     const row=s ? situationGodEvidence(reasoning,s) : topGodEvidence(reasoning);
     if(!row?.god) return "";
     const functionMap={
@@ -1074,13 +1074,14 @@
       편인:"남들이 그냥 넘기는 지점을 깊게 파고 다른 방법을 찾을 때 강점이 드러나는 쪽",
     };
     const role=(row.roles||[]).includes("rescue")
-      ?" 특히 이 힘은 작동 방식이 흔들렸을 때 다시 살려주는 역할까지 잡혀 있어."
+      ?" 이 힘은 사주가 흔들렸을 때 다시 살려주는 역할까지 잡혀 있어."
       :(row.roles||[]).includes("support")
-        ?" 특히 이 힘은 사주의 중심 작동 방식을 받치는 역할까지 잡혀 있어."
+        ?" 이 힘은 사주의 중심 작동 방식을 받치는 역할까지 잡혀 있어."
         :(row.roles||[]).includes("harm")
-          ?" 다만 이 힘은 지금 작동 방식에서는 과해질 때 장점을 흔드는 역할도 같이 잡혀 있어."
+          ?" 다만 이 힘은 지금 사주에서는 과해질 때 장점을 흔드는 역할도 같이 잡혀 있어."
           :"";
-    return (GOD_USER[row.god]||row.god)+"이 이 고민과 연결되는 실제 세력에서 우선순위가 높아. "+(functionMap[row.god]||"조건에 따라 방식 조절이 중요한 쪽")+"이고, "+evidenceLocationText(row)+"이야."+role;
+    const lead=s?.label ? "지금 고른 ‘"+s.label+"’에서는 " : "";
+    return lead+(GOD_USER[row.god]||row.god)+"이 실제 세력에서 우선순위가 높아. "+(functionMap[row.god]||"조건에 따라 방식 조절이 중요한 쪽")+"이고, "+evidenceLocationText(row)+"이야."+role;
   }
 
   function patternPressureSentence(reasoning){
@@ -1291,16 +1292,14 @@
     return parts.join(". ");
   }
 
-      function noteOneDesc(reasoning,s,p,isT){
+        function noteOneDesc(reasoning,s,p,isT){
     const core=plainSentence(distinctiveCoreSentence(reasoning));
     const capacity=capacitySentence(reasoning);
     const top=dominantFunctionSentence(reasoning,s);
-    const lens=situationLensSentence(reasoning,s);
     const guard=guardSentence(reasoning,isT);
     return [
       isT ? "<b>결론</b> — "+core : "<b>결론</b> — 언니가 제일 먼저 본 건 이거야. "+core,
       capacity,
-      lens,
       top,
       guard,
     ].filter(Boolean).join("<br><br>");
