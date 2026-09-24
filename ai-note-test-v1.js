@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.2.0";
+  const VERSION = "1.3.0";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -397,7 +397,7 @@
       const preview = element(
         "p",
         "mt-1.5 text-[10.5px] leading-[1.6] text-slate-400 break-keep",
-        previewText(note.body),
+        previewText(note.basis || note.body),
       );
       preview.setAttribute("data-ai-accordion-preview", "");
       if (index === 0) preview.classList.add("hidden");
@@ -422,9 +422,16 @@
       detail.setAttribute("data-ai-accordion-body", "");
       if (index !== 0) detail.classList.add("hidden");
 
+      const basis = element(
+        "div",
+        "pt-1 pb-3 text-[12.5px] leading-7 font-bold text-slate-800 whitespace-pre-line break-keep",
+        note.basis || "",
+      );
+      detail.appendChild(basis);
+
       const body = element(
         "div",
-        "pt-1 text-[12.5px] leading-7 text-slate-700 whitespace-pre-line break-keep",
+        "text-[12.5px] leading-7 text-slate-700 whitespace-pre-line break-keep",
         note.body,
       );
       detail.appendChild(body);
@@ -479,14 +486,14 @@
       element(
         "h3",
         "text-sm font-black text-slate-900 mb-1",
-        "현재 엔진 근거를 고민별 현실 언어로 바꾼 새 6개 답변",
+        "사주에서 잡힌 차이부터 설명하는 새 6개 답변",
       ),
     );
     panel.appendChild(
       element(
         "p",
         "text-[11px] leading-5 text-slate-500 mb-4",
-        "돈·직장·연애·진로·관계·마음 모두 같은 원칙으로, 사주 근거가 실제 고민에서 무엇을 뜻하는지 풀어서 비교해.",
+        "먼저 이 사주에서 실제로 강한 것·약한 것·엇갈리는 지점을 보여주고, 그다음 지금 고민에서 무슨 뜻인지 풀어.",
       ),
     );
 
