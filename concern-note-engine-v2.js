@@ -1100,7 +1100,7 @@
     const relation=relationSentence(reasoning);
     const conclusion=isT
       ? `<b>결론</b> — 이 고민은 결과가 나빠지는 마지막 순간보다, <b>${trigger}</b> 같은 초반 장면에서 먼저 갈려.`
-      : `<b>결론</b> — 네 경우엔 마지막 결과보다 <b>${trigger}</b> 같은 순간에서 이미 방향이 갈리기 쉬워.`;
+      : `<b>결론</b> — 네 경우엔 마지막 결과보다 <b>${trigger}</b> 같은 순간부터 이미 방향이 갈리기 쉬워.`;
     const scene=reaction&&cost
       ? `예를 들면 이런 상황에서는 <b>${reaction}</b> 같은 반응으로 이어질 수 있고, 그게 계속되면 ${cost} 같은 체감이 남기 쉬워. 이건 과거에 꼭 그랬다는 뜻이 아니라, 지금 사주에서 가장 먼저 경계할 반복 방식이야.`
       : "";
