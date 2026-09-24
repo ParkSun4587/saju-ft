@@ -95,14 +95,14 @@ async function enter(page, mode, concern, situation) {
     concern:document.getElementById('selectedConcernKey')?.value || '',
     timeInput:(()=>{
       const select=document.getElementById('birthTimeBranch');
-      const unknown=document.getElementById('birthTimeUnknownButton');
-      return select&&unknown?{
+      const input=document.getElementById('birthTimeInput');
+      return select&&input?{
         branchValue:select.value||'',
         branchText:select.options[select.selectedIndex]?.text||'',
         optionCount:select.options.length,
-        unknownChecked:!!unknown.checked,
-        unknownType:unknown.type||'',
-        unknownLabel:document.querySelector('label[for="birthTimeUnknownButton"]')?.innerText||'',
+        exactValue:input.value||'',
+        exactPlaceholder:input.getAttribute('placeholder')||'',
+        unknownCheckbox:!!document.getElementById('birthTimeUnknownButton'),
       }:null;
     })(),
     selected:document.querySelectorAll('#concernGrid .concern-chip.selected').length,
@@ -120,11 +120,11 @@ async function enter(page, mode, concern, situation) {
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
-  assert(firstState.timeInput && firstState.timeInput.branchValue==='' &&
-         firstState.timeInput.branchText==='태어난 시간대 선택' &&
-         firstState.timeInput.optionCount===13 && firstState.timeInput.unknownChecked &&
-         firstState.timeInput.unknownType==='checkbox' && firstState.timeInput.unknownLabel.includes('시간 모름'),
-    '12-branch selector should be primary with unknown-time checkbox beside it '+JSON.stringify(firstState.timeInput));
+  assert(firstState.timeInput && firstState.timeInput.branchValue==='unknown' &&
+         firstState.timeInput.branchText==='(모름)' &&
+         firstState.timeInput.optionCount===13 && firstState.timeInput.exactValue==='' &&
+         firstState.timeInput.exactPlaceholder==='정확한 시간' && !firstState.timeInput.unknownCheckbox,
+    '12-branch selector should be primary with exact-time input beside it '+JSON.stringify(firstState.timeInput));
   assert(firstState.submitOpacity<=0.4,'disabled consultation CTA is still too visually active '+JSON.stringify(firstState));
   if (mode==='F') assert(
     firstState.sisterText==='응, 편하게 적어줘.' &&
@@ -157,11 +157,11 @@ async function enter(page, mode, concern, situation) {
   await page.waitForSelector('#concernSituationBox',{state:'visible'});
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.fill('#birthDateInput','19980221');
-  assert(await page.locator('#birthTimeBranch option').count()===13,'birth-time selector should include placeholder and 12 branches');
-  assert((await page.locator('#birthTimeBranch option').first().innerText())==='태어난 시간대 선택','birth-time placeholder missing');
+  assert(await page.locator('#birthTimeBranch option').count()===13,'birth-time selector should include unknown and 12 branches');
+  assert((await page.locator('#birthTimeBranch option').first().innerText())==='(모름)','birth-time unknown default missing');
   assert((await page.locator('#birthTimeBranch option[value="子"]').innerText()).includes('23:30~01:29'),'manse-corrected 子 range missing');
-  assert(await page.locator('#birthTimeInput').count()===0,'exact birth-time field should stay removed');
-  assert(await page.locator('#birthTimeUnknownButton').count()===1,'unknown-time checkbox missing');
+  assert(await page.locator('#birthTimeInput').count()===1,'exact birth-time input missing');
+  assert(await page.locator('#birthTimeUnknownButton').count()===0,'separate unknown-time checkbox should stay removed');
   const branchEngineCheck=await page.evaluate(()=>{
     const branches=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
     return branches.map(branch=>{
@@ -171,9 +171,14 @@ async function enter(page, mode, concern, situation) {
   });
   assert(branchEngineCheck.every(x=>x.hourKnown && x.zhi===x.branch),
     'one or more 12-branch birth times failed to reach the full saju engine '+JSON.stringify(branchEngineCheck));
-  const chosenBranch=mode==='F'?'寅':'巳';
-  await page.selectOption('#birthTimeBranch',chosenBranch);
-  assert(!(await page.locator('#birthTimeUnknownButton').isChecked()),'branch choice should clear unknown-time checkbox');
+  if(mode==='F') {
+    await page.selectOption('#birthTimeBranch','寅');
+    assert((await page.locator('#birthTimeInput').inputValue())==='','branch selection should clear exact-time override');
+  } else {
+    await page.fill('#birthTimeInput','0942');
+    assert((await page.locator('#birthTimeInput').inputValue())==='09:42','exact HH:MM auto-format failed');
+    assert((await page.locator('#birthTimeBranch').inputValue())==='巳','exact time should sync the visible 12-branch selector');
+  }
   await page.locator('#splitNextButton button').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
   const appliedTime=await page.evaluate(()=>({
@@ -181,9 +186,10 @@ async function enter(page, mode, concern, situation) {
     hourKnown:currentResultData?.calendarMeta?.hourKnown,
     hourZhi:currentResultData?.pillars?.hour?.zhi||'',
   }));
-  const expectedBranch=mode==='F'?'寅':'巳';
-  assert(appliedTime.key===expectedBranch && appliedTime.hourKnown===true && appliedTime.hourZhi===expectedBranch,
+  if(mode==='F') assert(appliedTime.key==='寅' && appliedTime.hourKnown===true && appliedTime.hourZhi==='寅',
     'selected branch birth time did not propagate through full saju result '+JSON.stringify(appliedTime));
+  else assert(appliedTime.key==='09:42' && appliedTime.hourKnown===true && appliedTime.hourZhi==='巳',
+    'exact birth time did not propagate through full saju result '+JSON.stringify(appliedTime));
   const sourceFreeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
   if(sourceFreeLaunch){
     await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
