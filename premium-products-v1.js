@@ -285,41 +285,49 @@
       || { kind:"unpurchased", productId, amount:PRODUCTS[productId]?.price || 0, label:`${won(PRODUCTS[productId]?.price || 0)}에 열기` };
   }
 
-  const TEN_GOD_WORD = {
-    비견:"내 기준과 버티는 힘",겁재:"내 몫을 확보하는 힘",
-    식신:"꾸준히 만들어 밖으로 빼는 힘",상관:"막힌 걸 표현하고 바꾸는 힘",
-    정재:"안정적으로 현실 조건을 관리하는 힘",편재:"기회와 자원을 넓게 움직이는 힘",
-    정관:"기준과 책임을 세우는 힘",편관:"강한 압박을 다루는 힘",
-    정인:"배우고 보호받아 기반을 세우는 힘",편인:"깊게 파고들어 다른 길을 찾는 힘",
-  };
-
-  function stripTags(v) {
-    return String(v || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-  }
-
   function reasoningMainZiping(reasoning) {
     return reasoning?.ziping?.findings?.find((x) => x.id !== "ZZ_MONTH_101" && x.kind === "gyeok" && x.implementationStatus !== "unimplemented")
       || reasoning?.ziping?.findings?.find((x) => x.id === "ZZ_MONTH_101")
       || null;
   }
 
-  function strengthCopy(profile, isT) {
-    if (!profile) return isT ? "한 가지 장면만 보고 판단하지 말고 반복되는 반응을 봐." : "한 장면만으로 너를 단정하지 않아도 돼.";
-    return isT ? profile.strength?.T : profile.strength?.F;
+  function josa(word, withBatchim, withoutBatchim) {
+    const chars = Array.from(String(word || "").trim());
+    for (let i = chars.length - 1; i >= 0; i -= 1) {
+      const code = chars[i].charCodeAt(0);
+      if (code >= 0xAC00 && code <= 0xD7A3) return String(word || "") + ((code - 0xAC00) % 28 !== 0 ? withBatchim : withoutBatchim);
+    }
+    return String(word || "") + withoutBatchim;
   }
+
+  function chartFacts(data) {
+    const api = global.__CONCERN_NOTE_ENGINE_V2__;
+    if (typeof api?.facts !== "function") return null;
+    try { return api.facts(data); } catch (_) { return null; }
+  }
+
+  // 전체판·궁합 문장은 NOTE와 같은 순서로 쓴다: 그 사람에게 실제로 보일 장면 → 왜 그러냐면 → 이렇게 써봐.
+  const STRENGTH_ENDURANCE = {
+    신약: "처음 며칠은 잘 버티는데, 같은 부담이 몇 주 이어지면 갑자기 바닥나는 느낌 알지?",
+    신강: "웬만한 일엔 잘 안 흔들리고, 남들이 지칠 때 오히려 네가 끝까지 남는 편이지?",
+    중화: "잘 버틸 때와 확 지칠 때가 상황 따라 꽤 갈리지? 같은 일도 겹치는 게 많으면 갑자기 버거워져.",
+  };
+  const GROUP_ACTION = {
+    self: "내가 감당할 범위와 기준을 먼저 정해",
+    print: "배우고 쉬는 시간을 일정에 먼저 넣어",
+    output: "생각을 작은 결과물 하나로 먼저 꺼내",
+    wealth: "한 일을 돈·보상 기준으로 먼저 적어봐",
+    officer: "역할과 마감을 스스로라도 먼저 정해",
+  };
 
   function fullSajuSections(data, mode) {
     const p = getProfile(data);
     const r = getReasoning(data);
+    const f = chartFacts(data);
     const isT = mode === "T";
-    if (!p || !r) return [];
+    if (!p || !r || !f) return [];
 
-    const dom = p.sipsin?.dominantHuman || "자기 기준을 찾고 움직이는 성향";
-    const second = p.sipsin?.secondaryHuman || "";
-    const strongEl = p.elements?.influenceRank?.strongest || r.context?.elementRanking?.[0]?.element || "";
-    const weakEl = p.elements?.influenceRank?.weakest || r.context?.elementRanking?.at?.(-1)?.element || "";
-    const strong = ELEMENT_WORD[strongEl] || "익숙한 방식으로 밀어가는 힘";
-    const weak = ELEMENT_WORD[weakEl] || "일부러 챙겨야 하는 힘";
+    const dom = f.top ? `${f.top.god}(${f.top.meaning})` : "고르게 나뉜 힘";
     const strength = r.profile?.strength || {};
     const finding = (id) => r.ditian?.findings?.find((x) => x.id === id) || null;
     const force = finding("DTS_FORCE_101");
@@ -351,117 +359,96 @@
       const placements = uniq(rows.map((row) => `${row.pillar || ""}${row.position ? "/" + row.position : ""}`).filter(Boolean));
       return { count, placements };
     }
-
     const wealth = godFacts(["정재","편재"]);
     const officer = godFacts(["정관","편관"]);
     const selfGod = godFacts(["비견","겁재"]);
     const outputGod = godFacts(["식신","상관"]);
     const printGod = godFacts(["정인","편인"]);
 
-    function forceCopy() {
-      const verdict = strength.verdict || "중화";
-      if (verdict === "신약") return isT
-        ? "받치는 힘보다 밖으로 빠지거나 눌리는 힘이 더 커서, 무조건 버티는 방식보다 먼저 기반과 연결을 만들어야 해."
-        : "너는 못 버티는 사람이 아니라, 처음부터 네 힘보다 바깥 압력이 더 크게 들어오는 쪽이야. 더 세게 참는 것보다 먼저 받쳐주는 힘과 연결을 만들어야 편해져.";
-      if (verdict === "신강") return isT
-        ? "스스로 버티고 밀어붙일 힘이 충분해서, 더 채우기보다 어디로 빼고 정리할지가 중요해."
-        : "기본 힘이 약한 편은 아니야. 더 많이 쥐는 것보다 가진 힘을 어디에 쓰고 어디서 덜어낼지가 훨씬 중요해.";
-      return isT
-        ? "받치는 힘과 소모되는 힘이 한쪽으로 극단적이지 않아, 강약 하나보다 흐름이 막히는 지점을 보는 게 중요해."
-        : "한쪽으로 너무 치우친 편은 아니라서 ‘강하다/약하다’보다 네 힘이 어디서 막히고 어디서 잘 이어지는지를 보는 게 더 정확해.";
-    }
-
-    function rootCopy() {
-      const q = root?.facts?.quality || strength.deukji?.quality || "rootless";
-      const seasonOn = !!(season?.facts?.active ?? strength.deukryeong?.active);
-      const partyOn = !!(party?.facts?.active ?? strength.deukse?.active);
-      const qCopy = q === "month-rooted" ? "태어난 계절 자리에도 직접 뿌리가 있어"
-        : q === "day-rooted" ? "가까운 생활 자리에서 직접 뿌리가 확인돼"
-          : q === "other-rooted" ? "바깥 자리에는 뿌리가 있지만 중심 자리보다 간접적이야"
-            : "직접 기대는 뿌리가 선명하지 않아";
-      return `${qCopy}. 계절의 도움은 <b>${seasonOn ? "받는 쪽" : "바로 받는 쪽은 아니고"}</b>, 다른 자리의 지원은 <b>${partyOn ? "붙는 쪽" : "크게 우세하지 않은 쪽"}</b>이야.`;
-    }
-
-    function structureCopy() {
-      if (!z) return "태어난 계절의 중심은 잡히지만, 그 구조가 잘 굴러가는 조건은 근거 부족 때문에 한쪽으로 단정하지 않았어.";
-      const support = uniq([...(z.supportGods || []),...(z.rescueGods || [])]).map((g) => TEN_GOD_WORD[g] || g);
-      const harm = uniq(z.harmGods || []).map((g) => TEN_GOD_WORD[g] || g);
-      const state = z.sequenceStatus || z.state || "판단 보류";
-      const supportText = support.length ? `살리는 쪽은 <b>${support.slice(0,2).join(" · ")}</b>` : "살리는 힘은 현재 확인된 범위에서 뚜렷하게 하나로 못 박지 않았고";
-      const harmText = harm.length ? `흔드는 쪽은 <b>${harm.slice(0,2).join(" · ")}</b>` : "크게 흔드는 힘도 한쪽으로 과장하지 않았어";
-      return `중심 구조의 현재 판정은 <b>${state}</b>이야. ${supportText}, ${harmText}. 그래서 ‘좋은 요소 하나 더하기’보다 무엇이 구조를 세우고 무엇이 끊는지 순서를 봐야 해.`;
-    }
-
-    function flowCopy() {
-      const blocked = flow?.facts?.blockedAt;
-      if (blocked?.to) {
-        const bridgeName = ELEMENT_WORD[blocked.to] || blocked.to;
-        return `가장 강한 힘이 다음 단계로 넘어갈 때 <b>${bridgeName}</b> 쪽 연결이 비어 있어. 잘하는 걸 더 세게 하는 것만으로는 풀리지 않고, 그 힘을 다음 단계로 넘기는 장치가 필요해.`;
-      }
-      return "강한 힘이 다음 단계로 이어질 길이 사주 안에 어느 정도 있어. 힘의 총량보다 그 흐름을 중간에서 끊지 않고 현실 결과까지 연결하는 게 핵심이야.";
-    }
-
-    function prescriptionSteps() {
-      return (prescription.sequence || []).map((x) => ELEMENT_WORD[x.element]).filter(Boolean);
-    }
-
-    function firstPrescriptionCopy() {
-      const actions = prescriptionSteps();
-      if (actions.length >= 2) return `먼저 <b>${actions[0]}</b>을 만들고, 다음에 <b>${actions[1]}</b>으로 넘기는 순서가 반복해서 유효해.`;
-      if (actions.length === 1) return `가장 먼저 챙길 건 <b>${actions[0]}</b>이야.`;
-      return "한 가지 처방을 억지로 고르지 않고 실제로 막히는 지점을 먼저 확인하는 게 맞아.";
-    }
+    const label = (t, f2) => `<b>${isT ? t : f2}</b> · `;
+    const why = (text) => `${label("근거", "왜 그러냐면")}${text}`;
+    const use = (text) => `${label("이렇게 써", "그래서")}${text}`;
+    const shareWord = (share) => share >= 30 ? "커" : share >= 10 ? "적당히 있어" : "적은 편이야";
+    const groupLine = (group) => `${f.groupMeaning(group)}(${f.groupName(group)})${josa(f.groupMeaning(group), "은", "는").slice(f.groupMeaning(group).length)} ${f.shares[group] || 0}%로 ${shareWord(f.shares[group] || 0)}`;
+    const balanceSide = f.balance ? `${f.balance.name} 기운(너한텐 ${f.groupMeaning(f.balance.group)} 쪽)` : "";
+    const firstSupport = f.supportGods.find((g) => f.presentGods.includes(g)) || f.supportGods[0] || "";
+    const firstHarm = f.harmGods[0] || "";
 
     function signalWhy(row, positive) {
       const rows = positive ? row?.supportSignals : row?.cautionSignals;
       const sig = (rows || []).find((x) => x.severity === "major") || (rows || [])[0];
-      if (!sig) return positive ? "도움 조건이 겹침" : "주의 조건이 겹침";
-      const code = sig.code || "";
-      if (/rescue|generate/.test(code)) return "기반과 회복을 보태는 힘이 들어옴";
-      if (/assist|root-add/.test(code)) return "버티는 힘과 뿌리가 보강됨";
-      if (/bridge|flow-unblock/.test(code)) return "막혔던 연결이 이어짐";
-      if (/discharge/.test(code)) return "쌓인 힘을 밖으로 빼는 길이 생김";
-      if (/control/.test(code)) return "힘을 역할과 기준으로 정리하는 조건이 생김";
-      if (/ziping-support/.test(code)) return "중심 구조를 살리는 힘이 붙음";
-      if (/root-clash/.test(code)) return "기존 버팀목이 흔들림";
-      if (/body-cost/.test(code)) return "내가 감당할 부담이 커짐";
-      if (/ziping-harm/.test(code)) return "중심 구조를 흔드는 힘이 붙음";
-      return positive ? "도움 조건이 겹침" : "주의 조건이 겹침";
+      const code = sig?.code || "";
+      if (/rescue|generate/.test(code)) return "부족한 쪽을 채워주는 글자가 들어와";
+      if (/assist|root-add/.test(code)) return "너와 같은 기운이 보태져서 버티는 힘이 붙어";
+      if (/bridge|flow-unblock/.test(code)) return "평소 끊기던 연결을 이어주는 글자가 들어와";
+      if (/discharge/.test(code)) return "쌓인 생각을 말·결과로 빼기 쉬워";
+      if (/control/.test(code)) return "흩어진 힘을 기준과 우선순위로 묶기 쉬워";
+      if (/ziping-support/.test(code)) return `사주 중심인 ${josa(f.centerGod || "중심 글자", "을", "를")} 살려주는 글자가 들어와`;
+      if (/root-clash/.test(code)) return "평소 버티게 해주던 뿌리를 건드리는 글자가 들어와";
+      if (/body-cost/.test(code)) return "약한 쪽에 부담을 더 얹는 글자가 들어와";
+      if (/ziping-harm/.test(code)) return `사주 중심인 ${josa(f.centerGod || "중심 글자", "을", "를")} 흔드는 글자가 들어와`;
+      return positive ? "도움이 되는 글자가 겹쳐" : "조심할 글자가 겹쳐";
     }
 
     function nearTimelineCopy() {
       const rows = nearHighlights.slice(0,3);
-      if (!rows.length) return "가까운 18개월에서는 특정 달 하나를 억지로 고르지 않고 준비 상태를 보면서 움직이는 편이 맞아.";
+      if (!rows.length) return "가까운 18개월에서는 특정 달 하나를 억지로 고르지 않을게. 준비 상태를 보면서 움직이는 편이 맞아.";
+      // 같은 이유·같은 할 일이 두 번 나오지 않도록, 반복되면 앞 구간을 가리키고 할 일은 순서대로 바꾼다.
+      const monthTips = {
+        pos: ["일·돈·관계 중 실제 반응이 오는 곳부터 작게 확정해봐.", "앞에서 반응이 온 쪽을 한 단계 더 키워봐.", "미뤄둔 일 하나를 이 구간 안에 실제로 끝내봐."],
+        neg: ["새 판을 크게 벌리기보다 일정·지출·약속 중 제일 무거운 것부터 줄여.", "줄여둔 일정과 지출은 아직 다시 늘리지 마.", "무리한 약속은 미루고 쉬는 시간을 먼저 잡아."],
+        mix: ["잘되는 영역과 버거운 영역을 나눠서 움직여.", "잘되는 쪽만 조금 더 밀고, 버거운 쪽은 속도를 늦춰."],
+      };
+      const used = { pos:0, neg:0, mix:0 };
+      let prevReason = "";
+      const seenReason = new Set();
       return rows.map((row) => {
-        const when = row.startMonth ? `${row.startMonth}월 ${row.startDay ? row.startDay+"일 무렵" : ""}` : (row.startYmd || "가까운 시기");
-        if (["supportive","mild-support"].includes(row.class)) {
-          return `<b>${when}</b><br>왜: ${signalWhy(row,true)}.<br>전체판에서의 쓰임: 한 영역에만 몰지 말고 일·돈·관계 중 실제 반응이 오는 곳부터 작게 확정해.`;
-        }
-        if (["caution","mild-caution"].includes(row.class)) {
-          return `<b>${when}</b><br>왜: ${signalWhy(row,false)}.<br>전체판에서의 쓰임: 새 판을 크게 벌리기보다 일정·지출·관계 약속 중 과부하가 큰 것부터 줄여.`;
-        }
-        return `<b>${when}</b><br>왜: 도움과 주의 신호가 함께 잡혀.<br>전체판에서의 쓰임: 잘되는 영역과 버거운 영역을 분리해서 움직여.`;
+        const when = f.formatMonth(row);
+        const positive = ["supportive","mild-support"].includes(row.class);
+        const negative = ["caution","mild-caution"].includes(row.class);
+        const key = positive ? "pos" : negative ? "neg" : "mix";
+        const tip = monthTips[key][used[key]++ % monthTips[key].length];
+        if (key === "mix") { prevReason = ""; return `<b>${when}</b><br>${used.mix > 1 ? "이번에도 도움과 주의가 같이 잡혀" : "도움과 주의가 같이 잡혀"}. ${tip}`; }
+        const reason = f.monthReason(row, positive);
+        const lead = reason === prevReason
+          ? (positive ? (seenReason.has("repeat:pos") ? "같은 좋은 흐름이 계속 이어져" : "앞 구간의 좋은 흐름이 한 번 더 이어져") : (seenReason.has("repeat:neg") ? "같은 부담이 계속 이어져" : "앞 구간의 부담이 한 번 더 이어져"))
+          : seenReason.has(reason) ? `앞에서처럼 ${reason}` : reason;
+        if (reason === prevReason) seenReason.add(positive ? "repeat:pos" : "repeat:neg");
+        prevReason = reason;
+        seenReason.add(reason);
+        return `<b>${when}</b><br>${lead}. ${tip}`;
       }).join("<br><br>");
     }
 
     function yearTimelineCopy() {
-      if (!years.length) return "5년 흐름 데이터가 충분하지 않아 연도별 이야기를 억지로 만들지 않았어.";
+      if (!years.length) return "5년 흐름 자료가 충분하지 않아서 연도별 이야기를 억지로 만들지 않았어.";
       const currentYear = Number(String(r.timing?.today || "").slice(0,4)) || 0;
       const annualRows = years.filter((y) => y.year > currentYear).slice(0,5);
+      const seenTip = {};
+      const seenSignal = {};
       return annualRows.map((y) => {
         const positive = ["supportive","mild-support"].includes(y.class);
         const negative = ["caution","mild-caution"].includes(y.class);
-        const direction = positive ? "준비한 걸 현실 선택으로 옮기기 쉬운 쪽"
-          : negative ? "확장보다 조정과 방어를 먼저 보는 쪽"
-            : y.class === "mixed" ? "잘되는 부분과 부담되는 부분이 동시에 커지는 쪽"
-              : "한쪽으로 크게 기울지 않는 쪽";
-        const why = positive ? signalWhy(y,true) : negative ? signalWhy(y,false)
-          : `${signalWhy(y,true)} / ${signalWhy(y,false)}`;
-        const use = positive ? "활용: 이미 검증한 일·돈·관계 선택을 한 단계 확정해."
-          : negative ? "주의: 손실·과로·갈등이 커지기 전에 범위와 속도를 줄여."
-            : y.class === "mixed" ? "활용: 잘되는 영역만 키우고 부담이 큰 영역은 같은 속도로 밀지 마."
-              : "활용: 새 판보다 앞에서 만든 기반을 유지하고 다음 강한 구간을 준비해.";
-        return `<b>${y.year}년 · ${direction}</b><br>왜: ${why}.<br>${use}`;
+        const direction = positive ? "준비한 걸 실제 선택으로 옮기기 좋은 해"
+          : negative ? "넓히기보다 지키고 조정할 해"
+            : y.class === "mixed" ? "잘되는 일과 부담되는 일이 같이 커지는 해"
+              : "한쪽으로 크게 기울지 않는 해";
+        const mark = (text) => {
+          const before = seenSignal[text] || [];
+          seenSignal[text] = [...before, y.year];
+          return before.length ? `${before.join("·")}년처럼 ${text}` : text;
+        };
+        const reason = positive ? mark(signalWhy(y,true)) : negative ? mark(signalWhy(y,false)) : `${mark(signalWhy(y,true))}. 그런데 동시에 ${mark(signalWhy(y,false))}`;
+        const key = positive ? "pos" : negative ? "neg" : y.class === "mixed" ? "mix" : "flat";
+        const again = seenTip[key] = (seenTip[key] || 0) + 1;
+        const tips = {
+          pos: ["이미 검증한 일·돈·관계 선택을 한 단계 확정해.", "앞의 좋은 해에 해본 것 중 반응이 온 걸 한 번 더 키워.", "미뤄둔 결정 하나를 이 해 안에 실제로 끝내.", "새 사람·새 자리 제안이 오면 조건을 확인하고 받아들여 봐.", "그동안 쌓은 걸 밖으로 보여주고 평가받아 봐."],
+          neg: ["손실·과로·갈등이 커지기 전에 범위와 속도를 줄여.", "새로 벌이기보다 이미 가진 일·돈·관계를 지키는 데 힘을 써.", "무리한 약속은 미루고, 쉬는 시간을 먼저 일정에 넣어.", "큰돈이 드는 결정은 한 번 더 미루고 비교해.", "부딪히는 사람과는 거리를 조금 두고 지켜봐."],
+          mix: ["잘되는 영역만 키우고, 부담이 큰 영역은 같은 속도로 밀지 마.", "잘되는 쪽과 버거운 쪽을 나눠 적고, 버거운 쪽은 속도를 늦춰.", "좋은 기회가 와도 한 번에 다 받지 말고, 감당할 만큼만 골라.", "한 영역이 잘될 때 다른 영역에서 빠지는 게 없는지 같이 봐.", "좋은 소식에 들뜨기보다 체력과 돈의 여유부터 확인해."],
+          flat: ["새 판보다 앞에서 만든 기반을 지키면서 다음 좋은 해를 준비해.", "크게 바꾸기보다 지금 방식을 다듬는 데 써.", "눈에 띄는 변화보다 기본 체력과 돈 관리를 챙기는 해로 써.", "배우고 싶던 걸 하나 시작해 두기 좋은 해로 써.", "관계와 일의 정리할 부분을 조용히 정리해."],
+        }[key];
+        const tip = tips[(again - 1) % tips.length];
+        return `<b>${y.year}년 · ${direction}</b><br>${reason}. ${tip}`;
       }).join("<br><br>");
     }
 
@@ -469,123 +456,106 @@
       if (!daeunPeriods.length) return "10년 단위 큰 흐름을 읽을 자료가 충분하지 않아 전환점을 만들지 않았어.";
       const current = daeunPeriods[0];
       const next = daeunPeriods[1];
-      const currentGod = TEN_GOD_WORD[current.god] || "현재 삶의 과제를 밀어주는 힘";
+      const now = current?.god ? f.godLabel(current.god) : "지금 삶의 과제를 밀어주는 힘";
       const nextText = next
-        ? `<br><br><b>${next.startYear}년 무렵</b> 계산 범위 안에서 큰 흐름의 결이 바뀌면 <b>${TEN_GOD_WORD[next.god] || "다른 방식의 힘"}</b>이 더 앞에 나와. 지금 잘되던 방식 그대로만 밀기보다 역할과 선택 기준을 다시 맞추는 전환점으로 보는 게 좋아.`
-        : "<br><br>계산 범위 안에서는 다음 큰 흐름 전환을 억지로 만들지 않았어.";
-      return `지금 큰 흐름에서는 <b>${currentGod}</b>이 반복해서 개입해. 지금의 장점도 이 힘을 잘 쓸 때 커지고, 과부하도 이 힘이 지나칠 때 먼저 보여.${nextText}`;
+        ? `<br><br><b>${next.startYear}년 무렵</b>부터는 ${next.god ? f.godLabel(next.god) : "다른 힘"} 쪽이 더 앞에 나와. 그때는 지금 잘되던 방식 그대로만 밀기보다 역할과 선택 기준을 다시 맞추는 게 좋아.`
+        : "<br><br>지금 보는 범위 안에서는 다음 10년 흐름 전환을 억지로 만들지 않았어.";
+      return `지금 10년 단위 큰 흐름에서는 <b>${now}</b> 쪽이 계속 앞에 나와. 요즘 잘되는 일도, 지치는 일도 이 힘과 관련된 장면에서 먼저 보일 거야.${nextText}`;
     }
 
-    const pressureHuman = r.integrated?.pressureHuman || "여러 조건이 한꺼번에 들어오는 압박";
-    const mismatch = !!p.elements?.rawVsInfluenceMismatch;
-    const mismatchCopy = mismatch
-      ? "겉으로 보이는 오행 개수와 실제 힘의 순위가 달라. 그래서 ‘몇 개 있나’보다 계절·뿌리·위치까지 반영한 실제 세력을 기준으로 봐야 해."
-      : "겉으로 보이는 오행 개수와 실제 힘의 방향이 크게 어긋나진 않지만, 계절·뿌리·위치가 최종 세기를 결정해.";
     const bridgeStatus = bridge?.facts?.status || "unknown";
     const blockedTo = flow?.facts?.blockedAt?.to || "";
     const relationRaw = p.relations?.raw || {};
     const hasClash = !!p.relations?.hasClash;
-    const actions = prescriptionSteps();
+    const actions = (prescription.sequence || []).map((x) => x?.element).filter(Boolean);
     const timingRuleIds = (rows) => uniq((rows || []).flatMap((row) => [...(row.supportSignals || []),...(row.cautionSignals || [])].flatMap((sig) => sig.sourceRuleIds || [])));
+    const strongEl = f.strongest?.el || "";
+    const weakEl = f.weakest?.el || "";
+    const pressureHuman = f.pressureLabel || "여러 조건이 한꺼번에 들어오는 부담";
+    const weakAction = f.weakest ? GROUP_ACTION[f.weakest.group] || "" : "";
+    const moneyScene = f.concernLine("money");
+    const careerScene = f.concernLine("career");
+    const loveScene = f.concernLine("love");
+    const peopleScene = f.concernLine("people");
+    const mentalScene = f.concernLine("mental");
 
     const sections = [
       {
         title:"01 · 내 사주 전체 핵심",
-        body:`<b>핵심</b> · ${dom}${second ? `, 그 안에 ${second}` : ""}.<br><br><b>왜</b> · ${forceCopy()} 지금 가장 크게 걸리는 쪽은 <b>${pressureHuman}</b>이야.<br><br><b>실제</b> · 한 고민에서만 나타나는 성격이 아니라 선택·관계·성과를 다룰 때 같은 구조가 반복될 가능성이 커.<br><br><b>이렇게 써</b> · 전체판에서는 ‘무슨 성격인가’보다 압박을 어떤 순서로 받아내고 결과로 바꾸는지를 기준으로 볼게.`,
+        body:`${isT ? "" : "언니가 딱 보니까 이거야. "}<b>${esc(f.headline || "한쪽으로 치우치지 않은 사주")}</b>.<br>${f.coreScene} ${f.strengthScene}<br><br>${why(`네 사주에서 <b>${dom}</b>${f.top ? josa(f.top.god, "이", "가").slice(f.top.god.length) : "이"} 힘의 ${f.top?.share ?? 0}%로 가장 크고, 너 자신(${f.dayPillar}의 ${f.dm})은 ${f.strengthPlain}이라서 그래.`)}<br><br>${use("돈·일·관계·마음 어디서든 이 모습이 먼저 나와. 아래 장마다 이 힘이 각 영역에서 어떻게 보이는지 이어서 볼게.")}`,
         claim:{ section:1,sourceRuleIds:ids(force,pressure,z),newFacts:[textFact("strength",strength.verdict),textFact("pressure",pressure?.facts?.group),textFact("gyeok",z?.gyeokName)],conclusion:`전체 선택을 묶는 핵심은 ${dom}과 ${pressureHuman}의 결합이다.` },
       },
       {
         title:"02 · 계절·뿌리·버티는 힘",
-        body:`<b>핵심</b> · ${rootCopy()}<br><br><b>왜</b> · 계절의 지원, 실제 뿌리 위치, 다른 자리의 도움이 각각 따로 계산돼 있어. ${mismatchCopy}<br><br><b>실제</b> · 같은 일을 맡아도 ‘처음부터 버틸 수 있는 양’과 ‘밖에서 받쳐줘야 버틸 수 있는 양’이 달라져.<br><br><b>이렇게 써</b> · 힘들 때 의지부터 탓하지 말고, 지금 과제가 네 기본 버팀보다 큰지부터 확인해.`,
+        body:`${STRENGTH_ENDURANCE[f.verdict] || STRENGTH_ENDURANCE.중화}<br><br>${why(`${f.supportPercent !== null ? `너를 돕는 힘과 빠져나가거나 누르는 힘이 ${f.supportPercent} : ${100 - f.supportPercent}야. ` : ""}${f.season} ${f.root}`)}<br><br>${use(f.verdict === "신약" ? "힘들 때 의지부터 탓하지 말고, 지금 일이 네 기본 체력보다 큰지부터 확인해. 한꺼번에 받지 말고 나눠서 받는 게 맞아." : f.verdict === "신강" ? "버티는 힘은 충분하니까, 더 쥐기보다 어디로 빼고 어디서 덜어낼지를 먼저 정해." : "일이 겹치는 시기를 미리 알아두고, 그때만큼은 새 일을 더 받지 마.")}`,
         claim:{ section:2,sourceRuleIds:ids(season,root,party),newFacts:[textFact("deukryeong",season?.facts?.active),textFact("rootQuality",root?.facts?.quality || strength.deukji?.quality),textFact("deukse",party?.facts?.active)],conclusion:"버티는 힘은 계절·뿌리·주변 지원을 분리해서 봐야 한다." },
       },
       {
         title:"03 · 실제 기세의 흐름",
-        body:`<b>핵심</b> · 가장 자연스럽게 커지는 쪽은 <b>${strong}</b>, 의식적으로 챙겨야 하는 쪽은 <b>${weak}</b>이야.<br><br><b>왜</b> · ${flowCopy()}<br><br><b>실제</b> · 강한 힘이 많아도 다음 단계로 못 넘어가면 ‘열심히 하는데 결과가 안 붙는’ 느낌이 날 수 있어.<br><br><b>이렇게 써</b> · ${blockedTo ? `막힌 다음 단계인 <b>${ELEMENT_WORD[blockedTo] || blockedTo}</b>을 실제 행동으로 하나 넣어.` : "이미 이어지는 흐름을 끊지 않도록 중간 과정을 생략하지 마."}`,
+        body:`${f.weakScene || "잘하는 쪽은 저절로 커지는데, 약한 쪽은 일부러 챙기지 않으면 계속 비어 있어."}<br><br>${why(`${f.strongest ? `가장 센 기운은 ${f.strongest.name} ${f.strongest.share}%로, 너한텐 ${f.strongest.groupLabel} 쪽이야. ` : ""}${f.weakest ? `가장 약한 기운은 ${f.weakest.name} ${f.weakest.share}%로, 너한텐 ${f.weakest.groupLabel} 쪽이야.` : ""}`)}<br><br>${use(weakAction ? `${weakAction}. 센 쪽을 더 세게 쓰는 것보다 약한 쪽 한 칸을 채우는 게 결과를 더 크게 바꿔.` : "센 쪽을 더 세게 쓰기보다 중간 과정을 빼먹지 않는 게 중요해.")}`,
         claim:{ section:3,sourceRuleIds:ids(flow,bridge),newFacts:[textFact("strongElement",strongEl),textFact("weakElement",weakEl),textFact("blockedTo",blockedTo),textFact("bridge",bridgeStatus)],conclusion:"강한 힘의 양보다 다음 단계로 이어지는지 여부가 현실 결과를 좌우한다." },
       },
       {
         title:"04 · 중심 구조가 서는 조건과 깨지는 조건",
-        body:`<b>핵심</b> · ${structureCopy()}<br><br><b>왜</b> · 태어난 계절에서 잡힌 중심과, 그 중심을 살리는 힘·흔드는 힘·다시 살리는 힘의 순서를 따로 확인했어.<br><br><b>실제</b> · 같은 압박도 받쳐주는 연결이 있으면 책임과 성과로 바뀌고, 그 연결이 끊기면 부담으로 먼저 느껴질 수 있어.<br><br><b>이렇게 써</b> · 구조가 흔들릴 때는 좋은 걸 더 얹기 전에 무엇이 먼저 깨졌는지부터 찾아.`,
+        body:`${firstSupport && f.fitScene(firstSupport) ? f.fitScene(firstSupport) : "맞는 조건에서는 같은 노력도 훨씬 덜 힘들게 결과가 나와."}${firstHarm ? ` 반대로 ${f.godLabel(firstHarm)} 쪽이 세지는 환경에서는 잘되던 것도 흔들려.` : ""}<br><br>${why(`${f.center || "태어난 달이 이 사주의 중심을 정해."}${f.supportGods.length ? ` 이 중심을 살려주는 짝은 ${f.supportGods.slice(0,3).join("·")}${f.presentGods.includes(firstSupport) ? "" : ""}${f.presentGods.includes(firstSupport) ? `이고, 그중 ${josa(firstSupport, "은", "는")} ${f.godPlaces(firstSupport)}에 있어` : `인데 네 사주엔 뚜렷하지 않아`}.` : ""}${firstHarm ? ` 흔드는 글자는 ${josa(firstHarm, "이고", "고")}${f.presentGods.includes(firstHarm) ? " 네 사주에도 있어" : ", 네 사주엔 없어"}.` : ""}`)}<br><br>${use("일이 꼬일 때는 좋은 걸 더 얹기 전에, 살려주는 조건이 빠졌는지부터 확인해.")}`,
         claim:{ section:4,sourceRuleIds:ids(z,relationFinding),newFacts:[textFact("zipingState",z?.sequenceStatus || z?.state),textFact("supportGods",(z?.supportGods || []).join(",")),textFact("harmGods",(z?.harmGods || []).join(",")),textFact("rescueGods",(z?.rescueGods || []).join(","))],conclusion:"중심 구조는 세우는 힘→깨뜨리는 힘→다시 구하는 힘의 순서로 읽는다." },
       },
       {
         title:"05 · 돈과 현실 결과",
-        body:`<b>핵심</b> · 돈을 직접 다루는 신호는 현재 계산에서 <b>${wealth.count}개</b> 잡혀 있어. 이 숫자만으로 돈복을 정하지 않고, 돈이 네 힘을 빼는지 결과로 연결하는지까지 같이 봐.<br><br><b>왜</b> · 돈 관련 힘의 분포와 <b>${pressureHuman}</b>, 그리고 실제 흐름이 결과 단계까지 이어지는지를 함께 봤어.<br><br><b>실제</b> · ${wealth.count >= 2 ? "기회·가격·지출처럼 돈과 관련된 선택이 여러 장면에서 동시에 들어오면 관리 기준이 흐려질 수 있어." : wealth.count === 1 ? "돈 문제는 한 번의 큰 승부보다 조건 하나를 정확히 관리할 때 결과가 더 선명해질 수 있어." : "돈 신호가 전면에 많이 드러난 구조는 아니라서 ‘돈 자체를 쫓는 것’보다 네 강점을 결과·가격으로 연결하는 과정이 더 중요해."}<br><br><b>이렇게 써</b> · 수입·가격·지출을 한 덩어리로 보지 말고 각각 기준을 정해. ${firstPrescriptionCopy()}`,
+        body:`${moneyScene}<br><br>${why(`${groupLine("wealth")}. ${f.top && f.top.group !== "wealth" ? `그보다 ${f.top.god}(${f.top.share}%)${josa(f.top.god, "이", "가").slice(f.top.god.length)} 더 커서, 돈보다 ${f.top.meaning} 쪽이 먼저 움직여.` : "돈 쪽 힘이 사주에서 가장 큰 편이라, 없어서보다 너무 신경 써서 지치는 쪽이야."}`)}<br><br>${use(`수입·지출·저축을 한 덩어리로 보지 말고 각각 숫자 기준을 정해.${f.balance ? ` 그리고 ${balanceSide}을 보태는 쪽으로 움직이면 균형이 좋아져.` : ""}`)}`,
         claim:{ section:5,sourceRuleIds:ids(pressure,flow,balance,z),newFacts:[textFact("wealthCount",wealth.count),textFact("wealthPlacements",wealth.placements.join(",")),textFact("pressureGroup",pressure?.facts?.group)],conclusion:"돈은 추상적인 돈복보다 자원·가격·성과가 현실 결과로 이어지는 방식으로 판단한다." },
       },
       {
         title:"06 · 일·직업·진로",
-        body:`<b>핵심</b> · 역할·기준·책임을 다루는 신호는 <b>${officer.count}개</b> 잡혀 있어. 특정 직업명을 찍기보다 어떤 평가 구조에서 네 힘이 살아나는지가 중요해.<br><br><b>왜</b> · 역할 압력의 위치와 네 기본 버팀, 강한 힘이 다음 결과로 넘어가는 흐름을 같이 봤어.<br><br><b>실제</b> · ${officer.count >= 2 ? "책임과 평가가 동시에 커지는 환경에서는 잘해도 업무 범위가 계속 넓어질 수 있어서 권한·보상 기준이 중요해." : officer.count === 1 ? "명확한 역할 하나를 맡고 결과를 확인받는 구조에서 강점이 보이기 쉬워." : "직함 자체보다 실제 성과를 만들어 역할을 확보하는 과정이 더 중요하게 작동할 수 있어."}<br><br><b>이렇게 써</b> · <b>${strong}</b>을 쓸 수 있으면서 역할·평가·보상의 기준이 분명한 환경을 골라.`,
+        body:`${careerScene}<br><br>${why(`${groupLine("officer")}. ${groupLine("output")}.`)}<br><br>${use(f.shares.officer >= 30 ? "책임이 늘 때 권한·보상도 같이 늘어나는지 꼭 확인해. 역할 기준이 분명한 곳이 너한텐 훨씬 편해." : f.shares.output >= 20 ? "만든 결과가 눈에 보이고 바로 반응이 오는 일에서 강점이 제일 잘 드러나." : "특정 직업명보다, 잘한 게 숫자·평가로 돌아오는 구조인지를 먼저 봐.")}`,
         claim:{ section:6,sourceRuleIds:ids(pressure,flow,force,z),newFacts:[textFact("officerCount",officer.count),textFact("officerPlacements",officer.placements.join(",")),textFact("forceVerdict",strength.verdict)],conclusion:"일은 직업명보다 역할 압력과 평가 구조가 개인의 힘과 맞는지로 판단한다." },
       },
       {
         title:"07 · 연애와 가까운 관계",
-        body:`<b>핵심</b> · 이 장은 특정 상대 궁합이 아니라 <b>너 한 사람의 가까운 관계 패턴</b>만 봐. 네 기준을 지키는 힘은 <b>${selfGod.count}개</b>, 관계에서 밖으로 표현하는 힘은 <b>${outputGod.count}개</b>로 잡혀 있어.<br><br><b>왜</b> · 내 기준을 지키는 힘, 표현하는 힘, 실제 합·충 같은 관계 신호를 같이 보되 상대방 성격은 만들어내지 않아.<br><br><b>실제</b> · ${hasClash ? "관계 안에서 기준이 부딪히는 장면이 생기면 감정을 오래 참기보다 무엇이 충돌했는지 빨리 확인하는 편이 중요해." : "관계 신호 하나만으로 충돌을 과장하지 않고, 표현을 미루는지 기준을 너무 단단히 잡는지 같은 네 반응을 더 중요하게 봐."}<br><br><b>이렇게 써</b> · 상대 마음을 추측하기보다 불편함이 시작된 장면과 말한 뒤 실제 조정 반응을 확인해. 특정 사람과의 궁합은 별도 상품에서만 계산해.`,
+        body:`${loveScene}<br><br>${why(`나와 같은 힘(비겁)은 ${f.shares.self || 0}%, 표현·결과물(식상)은 ${f.shares.output || 0}%야.${f.bond ? " " + f.bond : ""}`)}<br><br>${use("상대 마음을 추측하기보다 불편함이 시작된 장면과, 말한 뒤 실제로 달라지는지를 확인해. 특정 사람과의 궁합은 별도 상품에서만 계산해.")}`,
         claim:{ section:7,sourceRuleIds:ids(relationFinding,pressure),newFacts:[textFact("selfGodCount",selfGod.count),textFact("outputCount",outputGod.count),textFact("hasClash",hasClash),textFact("relationKeys",Object.keys(relationRaw).sort().join(","))],conclusion:"가까운 관계는 본인의 기준·표현·충돌 신호만 해석하고 특정 상대 정보는 생성하지 않는다." },
       },
       {
         title:"08 · 사람과 환경",
-        body:`<b>핵심</b> · 사람을 많이 만나는지보다 <b>네 힘을 쓰고 다음 단계로 넘길 수 있는 환경인지</b>가 중요해.<br><br><b>왜</b> · 다른 자리의 지원 여부와 뿌리의 질, 실제 흐름을 함께 보면 ‘혼자 버티는 환경’과 ‘받쳐주면서 결과를 내는 환경’의 차이가 보여.<br><br><b>실제</b> · ${party?.facts?.active ? "주변 도움을 실제 자원으로 바꿀 여지가 있어서 역할과 피드백이 분명한 조직에서 힘을 덜 낭비할 수 있어." : "주변 도움을 기본값으로 기대하기보다 역할·요청·경계를 명시적으로 만드는 편이 안정적이야."}<br><br><b>이렇게 써</b> · ${root?.facts?.quality === "rootless" ? "사람 수보다 반복해서 기대어도 되는 한두 개의 기준과 지원선을 먼저 만들어." : "이미 있는 버팀목을 유지하면서 네 강점을 다음 결과로 넘겨주는 사람·환경을 남겨."}`,
+        body:`${peopleScene}<br><br>${why(`너를 돕는 힘(비겁·인성)은 ${(f.shares.self || 0) + (f.shares.print || 0)}%${f.pressureLabel ? `, 바깥 힘 중에선 ${f.pressureLabel}이 가장 커` : ""}.${f.relationRisk ? " " + f.relationRisk : ""}`)}<br><br>${use((f.shares.self || 0) + (f.shares.print || 0) >= 45 ? "혼자서도 버티는 힘은 있으니, 네 방식을 존중해주는 사람을 곁에 남겨." : "주변 도움을 기본값으로 기대하기보다, 부탁·역할·경계를 말로 분명히 해두는 편이 훨씬 편해.")}`,
         claim:{ section:8,sourceRuleIds:ids(party,root,flow),newFacts:[textFact("partyActive",party?.facts?.active),textFact("rootQuality",root?.facts?.quality),textFact("flowBlocked",!!flow?.facts?.blockedAt)],conclusion:"환경 적합성은 주변 지원·뿌리·흐름이 실제 결과를 돕는지로 판단한다." },
       },
       {
         title:"09 · 마음·스트레스·회복",
-        body:`<b>핵심</b> · 의료 진단이 아니라 <b>과부하가 생기는 구조와 회복 순서</b>만 봐. 받아들이고 기반을 만드는 힘은 <b>${printGod.count}개</b>, 밖으로 빼고 표현하는 힘은 <b>${outputGod.count}개</b> 잡혀 있어.<br><br><b>왜</b> · 기본 버팀보다 압력이 큰지, 쌓인 힘을 밖으로 빼는 통로가 있는지를 같이 확인했어.<br><br><b>실제</b> · ${strength.verdict === "신약" ? "과제가 한꺼번에 늘면 회복 전에 버티는 데 에너지를 써버릴 수 있어." : strength.verdict === "신강" ? "버티는 힘이 있어도 계속 쥐고만 있으면 쉬는 동안에도 머리와 몸이 일을 놓지 못하는 느낌이 생길 수 있어." : "힘의 총량보다 여러 요구가 동시에 겹칠 때 회복 리듬이 깨지는지 보는 게 중요해."}<br><br><b>이렇게 써</b> · ${firstPrescriptionCopy()} 이 장은 질병이나 정신건강 진단을 대신하지 않아.`,
+        body:`${mentalScene}<br><br>${why(`배움·보호·회복(인성)은 ${f.shares.print || 0}%, 표현·결과물(식상)은 ${f.shares.output || 0}%야. 너 자신은 ${f.strengthPlain}이야.`)}<br><br>${use(`${f.balance ? `${balanceSide}을 채우는 쪽이 회복에 도움이 돼. ` : ""}부담을 한 번에 줄이기보다 하나씩 빼고 달라지는지 봐. 이 장은 질병이나 정신건강 진단을 대신하지 않아.`)}`,
         claim:{ section:9,sourceRuleIds:ids(force,pressure,balance),newFacts:[textFact("printCount",printGod.count),textFact("outputCount",outputGod.count),textFact("strength",strength.verdict)],conclusion:"회복은 진단이 아니라 과부하와 배출·기반의 순서를 조정하는 문제로 해석한다." },
       },
       {
         title:"10 · 가까운 18개월",
-        body:`<b>핵심</b> · 기본 NOTE6는 지금 고른 고민에 필요한 달만 골랐다면, 전체판에서는 <b>삶 전체에 영향을 주는 가까운 구간</b>을 본다.<br><br>${nearTimelineCopy()}<br><br><b>이렇게 써</b> · 같은 달이어도 돈·일·관계 중 실제 반응이 먼저 오는 영역부터 작게 움직이고, 나머지는 그 결과를 본 뒤 따라가.`,
+        body:`${isT ? "기본 NOTE는 지금 고른 고민에 필요한 달만 골랐다면, 전체판에서는 <b>삶 전체에 영향을 주는 가까운 구간</b>을 본다." : "기본 NOTE에서는 지금 고른 고민에 필요한 달만 봤지. 여기서는 <b>삶 전체에 영향을 주는 가까운 구간</b>까지 같이 볼게."}<br><br>${nearTimelineCopy()}<br><br>${use("같은 달이어도 돈·일·관계 중 실제 반응이 먼저 오는 영역부터 작게 움직이고, 나머지는 그 결과를 본 뒤 따라가.")}`,
         claim:{ section:10,sourceRuleIds:timingRuleIds(nearHighlights),newFacts:nearHighlights.slice(0,3).map((x) => textFact("near",`${x.startYmd}:${x.class}`)),conclusion:"가까운 시기는 특정 고민 하나가 아니라 한 사람 전체판의 동시 반응 가능성을 기준으로 사용한다." },
       },
       {
         title:"11 · 앞으로 5년",
-        body:`<b>핵심</b> · 여기부터는 기본 NOTE6에서 전부 공개하지 않았던 연도별 큰 흐름이야. 각 해를 ‘좋다/나쁘다’로 끝내지 않고 방향·근거·활용 또는 주의까지 이어서 볼게.<br><br>${yearTimelineCopy()}`,
+        body:`${isT ? "기본 NOTE에서 공개하지 않은 연도별 흐름이야. 해마다 방향·이유·할 일까지 본다." : "기본 NOTE에서는 다 보여주지 않았던 연도별 흐름도 여기서는 이어서 볼게. 해마다 좋다/나쁘다로 끝내지 않고 이유와 할 일까지 같이 볼게."}<br><br>${yearTimelineCopy()}`,
         claim:{ section:11,sourceRuleIds:timingRuleIds(years),newFacts:years.slice(0,6).map((x) => textFact("year",`${x.year}:${x.class}`)),conclusion:"5년 흐름은 각 연도의 방향·발화 근거·활용 또는 주의 행동까지 묶어서 공개한다." },
       },
       {
         title:"12 · 큰 흐름 전환 + 평생 사용법",
-        body:`<b>핵심 · 큰 흐름</b><br>${daeunCopy()}<br><br><b>왜</b> · 지금과 다음 큰 흐름에서 앞에 나오는 힘이 달라지면 같은 장점도 쓰는 방식과 과부하 지점이 달라져.<br><br><b>이렇게 써 · 반복해서 가져갈 사용법</b><br><b>1.</b> ${pressureHuman}이 커질수록 무작정 버티지 말고 네 기본 버팀보다 과제가 큰지 먼저 확인해.<br><b>2.</b> ${blockedTo ? `${ELEMENT_WORD[blockedTo] || blockedTo} 쪽 연결을 생략하지 마.` : `${strong}을 현실 결과까지 넘기는 중간 단계를 지켜.`}<br><b>3.</b> ${actions.length ? `${actions.slice(0,2).join(" → ")} 순서를 기억해.` : "좋은 시기에도 작은 검증 → 확정 순서를 지켜."}<br><br>이 세 가지는 돈·일·관계·마음이 달라져도 같은 사주판에서 반복해서 남는 사용법이야.`,
+        body:`${label("큰 흐름", "큰 흐름부터 보면")}${daeunCopy()}<br><br><b>${isT ? "평생 가져갈 사용법" : "언니가 마지막으로 남길 기준"}</b><br><b>1.</b> ${f.top ? `${f.top.god}(${f.top.meaning}) 쪽 일이 몰릴수록, 네 기본 체력보다 큰 일인지 먼저 확인해.` : "일이 몰릴수록 네 기본 체력보다 큰 일인지 먼저 확인해."}<br><b>2.</b> ${weakAction ? `${weakAction}. 제일 약한 한 칸을 채우는 게 제일 크게 바뀌어.` : "중간 과정을 빼먹지 마."}<br><b>3.</b> ${f.balance ? `${f.balance.name} 기운을 보태는 사람·환경·습관을 곁에 둬.` : "좋은 시기에도 작게 확인하고 확정하는 순서를 지켜."}<br><br>이 세 가지는 돈·일·관계·마음이 달라져도 같은 사주에서 반복해서 남는 사용법이야.`,
         claim:{ section:12,sourceRuleIds:uniq([...timingRuleIds(years),...ids(pressure,flow,bridge,balance)]),newFacts:[textFact("daeunPeriods",daeunPeriods.map((x) => `${x.startYear}-${x.endYear}:${x.ganZhi}`).join("|")),textFact("prescription",actions.join("→"))],conclusion:"현재 큰 흐름과 다음 전환을 평생 반복되는 행동 순서에 연결한다." },
       },
     ];
-
-    if (isT) return sections;
-    const roaBody = (body) => String(body || "")
-      .replace(/<b>핵심<\/b> ·/g, "<b>먼저 보면</b> ·")
-      .replace(/<b>왜<\/b> ·/g, "<b>왜냐면</b> ·")
-      .replace(/<b>실제<\/b> ·/g, "<b>현실에서는</b> ·")
-      .replace(/<b>이렇게 써<\/b> ·/g, "<b>그래서</b> ·")
-      .replace(/<b>핵심 · 큰 흐름<\/b>/g, "<b>큰 흐름부터 보면</b>")
-      .replace(/<b>이렇게 써 · 반복해서 가져갈 사용법<\/b>/g, "<b>언니가 마지막으로 남길 기준</b>")
-      .replace("기준으로 볼게.", "기준으로 같이 볼게.")
-      .replace("지금 과제가 네 기본 버팀보다 큰지부터 확인해.", "지금 과제가 네 기본 버팀보다 큰지부터 확인해보자.")
-      .replace("실제 행동으로 하나 넣어.", "실제 행동으로 하나 넣어보자.")
-      .replace("무엇이 먼저 깨졌는지부터 찾아.", "무엇이 먼저 흔들렸는지부터 같이 보자.")
-      .replace("계절의 지원, 실제 뿌리 위치, 다른 자리의 도움이 각각 따로 계산돼 있어.", "언니는 계절에서 받는 힘, 실제 뿌리, 다른 자리의 도움을 따로 봤어.")
-      .replace(/돈을 직접 다루는 신호는 현재 계산에서 <b>(\d+)개<\/b> 잡혀 있어\./g, "돈을 직접 다루는 신호는 <b>$1개</b> 보여.")
-      .replace("돈 관련 힘의 분포와", "언니는 돈 관련 힘이 어디에 있는지와")
-      .replace(/역할·기준·책임을 다루는 신호는 <b>(\d+)개<\/b> 잡혀 있어\./g, "역할·기준·책임 쪽 신호는 <b>$1개</b> 보여.")
-      .replace("역할 압력의 위치와 네 기본 버팀, 강한 힘이 다음 결과로 넘어가는 흐름을 같이 봤어.", "언니는 역할·평가가 어디서 들어오는지, 네가 얼마나 버틸 수 있는지, 그 힘이 결과까지 이어지는지를 같이 봤어.")
-      .replace("이 장은 특정 상대 궁합이 아니라", "여기서는 특정 상대 궁합이 아니라")
-      .replace("내 기준을 지키는 힘, 표현하는 힘, 실제 합·충 같은 관계 신호를 같이 보되 상대방 성격은 만들어내지 않아.", "언니는 내 기준을 지키는 힘, 표현하는 힘, 실제 합·충 신호까지만 같이 보고 상대 성격은 지어내지 않을게.")
-      .replace("다른 자리의 지원 여부와 뿌리의 질, 실제 흐름을 함께 보면", "언니는 다른 자리에서 받는 도움, 뿌리의 상태, 실제 흐름을 같이 봤어. 그래서")
-      .replace("의료 진단이 아니라", "여기서는 의료 진단을 하는 게 아니라")
-      .replace("기본 버팀보다 압력이 큰지, 쌓인 힘을 밖으로 빼는 통로가 있는지를 같이 확인했어.", "언니는 네가 버틸 수 있는 힘보다 압박이 큰지, 쌓인 힘을 밖으로 뺄 길이 있는지 같이 봤어.")
-      .replace("기본 NOTE6는 지금 고른 고민에 필요한 달만 골랐다면, 전체판에서는", "NOTE6에서는 지금 고른 고민에 필요한 달만 봤지. 여기서는")
-      .replace("삶 전체에 영향을 주는 가까운 구간</b>을 본다.", "삶 전체에 영향을 주는 가까운 구간</b>까지 같이 볼게.")
-      .replace("여기부터는 기본 NOTE6에서 전부 공개하지 않았던 연도별 큰 흐름이야.", "NOTE6에서는 다 보여주지 않았던 연도별 큰 흐름도 여기서는 이어서 볼게.")
-      .replace("실제 흐름이 결과 단계까지 이어지는지를 함께 봤어.", "실제 흐름이 결과까지 이어지는지도 같이 봤어.")
-      .replace(/네 기준을 지키는 힘은 <b>(\d+)개<\/b>, 관계에서 밖으로 표현하는 힘은 <b>(\d+)개<\/b>로 잡혀 있어\./g, "네 기준을 지키는 힘은 <b>$1개</b>, 관계에서 표현하는 힘은 <b>$2개</b> 보여.")
-      .replace(/받아들이고 기반을 만드는 힘은 <b>(\d+)개<\/b>, 밖으로 빼고 표현하는 힘은 <b>(\d+)개<\/b> 잡혀 있어\./g, "받아들이고 기반을 만드는 힘은 <b>$1개</b>, 밖으로 표현하는 힘은 <b>$2개</b> 보여.")
-      .replace("반복해서 개입해.", "계속 앞에 나와.")
-      .replace("계산 범위 안에서 큰 흐름의 결이 바뀌면", "지금 보는 범위 안에서 큰 흐름의 결이 바뀌면");
-    return sections.map((section) => ({ ...section, body:roaBody(section.body) }));
+    return sections;
   }
 
-  function noteCards(notes) {
-    return (notes || []).map((n) => `<article style="padding:16px 0;border-bottom:1px solid #eef2f7"><div style="font-size:11px;font-weight:900;color:#f43f5e;margin-bottom:7px">${esc(n.badge || n.themeNum || "NOTE")}</div><h4 style="font-size:16px;font-weight:900;line-height:1.45;margin:0 0 9px">${n.title || ""}</h4><div style="font-size:13px;line-height:1.8;color:#475569">${n.desc || ""}</div>${n.checklist ? `<div style="margin-top:11px;padding:10px 12px;border-radius:12px;background:#f8fafc;font-size:12px;line-height:1.6;color:#334155"><b>이번에 해볼 것</b><br>${esc(n.checklist)}</div>` : ""}</article>`).join("");
+  // 여러 고민을 이어 보여줄 때 NOTE1의 같은 첫 장면이 반복되지 않게, 두 번째부터는 한 줄로 줄인다.
+  function shortenCoreDesc(desc, headline, isT) {
+    const parts = String(desc || "").split("<br><br>");
+    if (parts.length < 3 || !/^<b>결론<\/b>/.test(parts[0]) || !/^<b>(왜 그러냐면|근거)<\/b>/.test(parts[1])) return desc;
+    const line = isT
+      ? `<b>결론</b> — 앞에서 본 기본 성향(<b>${esc(headline)}</b>)이 이 고민에도 그대로 적용돼.`
+      : `<b>결론</b> — 앞에서 본 그 모습(<b>${esc(headline)}</b>)이 이 고민에서도 똑같이 먼저 나와.`;
+    return [line, ...parts.slice(2)].join("<br><br>");
+  }
+
+  function noteCards(notes, shortCore) {
+    return (notes || []).map((n, i) => ({ ...n, desc: shortCore && i === 0 ? shortenCoreDesc(n.desc, shortCore.headline, shortCore.isT) : n.desc })).map((n) => `<article style="padding:16px 0;border-bottom:1px solid #eef2f7"><div style="font-size:11px;font-weight:900;color:#f43f5e;margin-bottom:7px">${esc(n.badge || n.themeNum || "NOTE")}</div><h4 style="font-size:16px;font-weight:900;line-height:1.45;margin:0 0 9px">${n.title || ""}</h4><div style="font-size:13px;line-height:1.8;color:#475569">${n.desc || ""}</div>${n.checklist ? `<div style="margin-top:11px;padding:10px 12px;border-radius:12px;background:#f8fafc;font-size:12px;line-height:1.6;color:#334155"><b>이번에 해볼 것</b><br>${esc(n.checklist)}</div>` : ""}</article>`).join("");
   }
 
   function fullSajuHtml(data, mode) {
@@ -614,16 +584,18 @@
       return { key, concernSituation, data:d, notes, reasoning:d.classicalReasoningV1 || getReasoning(d) };
     });
     const firstR = runs[0]?.reasoning;
-    const pressure = firstR?.integrated?.pressureHuman || "여러 조건이 동시에 들어오는 압박";
-    const firstActionEl = firstR?.integrated?.prescription?.sequence?.[0]?.element || "";
-    const firstAction = ELEMENT_WORD[firstActionEl] || "작게 확인하고 다음 행동을 고르는 힘";
+    const facts = chartFacts(data);
     const sharedFp = firstR?.structureFingerprint || "";
+    const commonLine = facts?.top
+      ? `세 고민 모두 같은 사주라서 먼저 나오는 모습도 같아. 너는 <b>${esc(facts.headline)}</b>야 — ${esc(facts.top.god)}(${esc(facts.top.meaning)})${josa(facts.top.god, "이", "가").slice(facts.top.god.length)} 힘의 ${facts.top.share}%로 가장 커서, 어느 고민에서든 이 모습이 먼저 튀어나와.`
+      : "세 고민 모두 같은 사주라서 먼저 나오는 모습도 같아.";
     const shared = runs.length
-      ? `<div data-product-exclusive="concern_bundle3" data-product-contract="concern_bundle3" data-structure-fingerprint="${esc(sharedFp)}" style="padding:14px 15px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0;margin-bottom:18px;font-size:12.5px;line-height:1.8;color:#475569"><b>세 고민을 같이 보면 보이는 공통축</b><br>세 고민에서 사주 전체 구조 자체는 바뀌지 않아. 공통으로 먼저 걸리는 건 <b>${esc(pressure)}</b>이고, 풀 때는 <b>${esc(firstAction)}</b> 쪽을 먼저 만드는 흐름이 반복돼. 아래에서는 그 같은 구조가 돈·일·관계 같은 서로 다른 고민에서 어떻게 다르게 나타나는지만 각각 깊게 풀어.</div>`
+      ? `<div data-product-exclusive="concern_bundle3" data-product-contract="concern_bundle3" data-structure-fingerprint="${esc(sharedFp)}" style="padding:14px 15px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0;margin-bottom:18px;font-size:12.5px;line-height:1.8;color:#475569"><b>세 고민을 같이 보면 보이는 공통축</b><br>${commonLine} 아래에서는 이 같은 모습이 고민마다 어떻게 다르게 나타나는지 각각 깊게 풀어.</div>`
       : "";
-    const body = runs.map(({key,concernSituation,notes}) => {
+    const shortCore = facts?.headline ? { headline:facts.headline, isT:mode === "T" } : null;
+    const body = runs.map(({key,concernSituation,notes}, idx) => {
       const situLabel = situationLabel(key, concernSituation);
-      return `<section data-export-kind="concern" data-concern="${esc(key)}" data-concern-situation="${esc(concernSituation)}" style="margin-bottom:26px"><h3 style="font-size:19px;font-weight:950;margin:0 0 5px">${esc(CONCERNS[key] || key)}</h3>${situLabel ? `<div style="font-size:11px;font-weight:850;color:#f43f5e;margin-bottom:10px">지금 상황 · ${esc(situLabel)}</div>` : ""}${noteCards(notes)}</section>`;
+      return `<section data-export-kind="concern" data-concern="${esc(key)}" data-concern-situation="${esc(concernSituation)}" style="margin-bottom:26px"><h3 style="font-size:19px;font-weight:950;margin:0 0 5px">${esc(CONCERNS[key] || key)}</h3>${situLabel ? `<div style="font-size:11px;font-weight:850;color:#f43f5e;margin-bottom:10px">지금 상황 · ${esc(situLabel)}</div>` : ""}${noteCards(notes, idx > 0 ? shortCore : null)}</section>`;
     }).join("");
     return shared + body;
   }
@@ -640,15 +612,15 @@
       const notes = typeof global.generateConcernNotes === "function" ? global.generateConcernNotes(d, mode) : [];
       return { key, concernSituation, notes, reasoning:d.classicalReasoningV1 || getReasoning(d) };
     });
-    const commonPressure = baseReasoning?.integrated?.pressureHuman || "여러 조건이 동시에 들어오는 압박";
+    const facts = chartFacts(data);
+    const commonPressure = facts?.top ? `${facts.top.god}(${facts.top.meaning})` : "여러 조건이 한꺼번에 들어오는 부담";
     const pivots = baseReasoning?.timing?.longTermPivots || [];
     const pivotText = pivots.length ? pivots.map((x) => `${x.year}년`).join(" · ") : "강한 장기 변곡점 없음";
-    const actions = (baseReasoning?.integrated?.prescription?.sequence || []).map((x) => ELEMENT_WORD[x.element]).filter(Boolean);
-    const firstAction = actions[0] || "현재 부담을 줄이고 실제 반응을 확인하는 것";
-    const secondAction = actions[1] || "확인된 선택만 다음 단계로 확정하는 것";
+    const firstAction = facts?.weakest ? `제일 약한 ${facts.weakest.groupMeaning} 쪽 한 칸부터 채워` : "지금 부담 하나를 줄이고 실제 반응을 확인해";
+    const secondAction = facts?.balance ? `${facts.balance.name} 기운(너한텐 ${facts.groupMeaning(facts.balance.group)} 쪽)을 보태는 사람·환경·습관을 곁에 둬` : "확인된 선택만 다음 단계로 확정해";
     const domains = Object.keys(CONCERNS).map((key) => CONCERNS[key]).join(" · ");
 
-    const crossDomain = `<div data-product-exclusive="all_in_one" data-product-contract="all_in_one" data-structure-fingerprint="${esc(baseReasoning?.structureFingerprint || "")}" style="padding:15px;border-radius:18px;background:#fff1f2;border:1px solid #fecdd3;margin:22px 0;font-size:12.5px;line-height:1.85;color:#881337"><b>6개 고민을 가로지르는 공통 구조</b><br>${domains}. 이 6개 고민은 서로 다른 문제처럼 보여도 <b>${esc(commonPressure)}</b>이 커질 때 비슷한 반응이 반복돼. 완전판에서는 같은 사주 구조가 각 고민에서 어디서 다르게 나타나는지까지 나란히 비교해.<br><span style="font-size:10.5px;color:#be123c">이 완전판은 나 한 사람 전체 분석이야. 두 사람 궁합은 포함하지 않아.</span></div>`;
+    const crossDomain = `<div data-product-exclusive="all_in_one" data-product-contract="all_in_one" data-structure-fingerprint="${esc(baseReasoning?.structureFingerprint || "")}" style="padding:15px;border-radius:18px;background:#fff1f2;border:1px solid #fecdd3;margin:22px 0;font-size:12.5px;line-height:1.85;color:#881337"><b>6개 고민을 가로지르는 공통 구조</b><br>${domains}. 이 6개 고민은 서로 다른 문제처럼 보여도, 네 사주에서 가장 큰 <b>${esc(commonPressure)}</b> 쪽 일이 몰릴 때 비슷한 모습이 반복돼. 완전판에서는 이 같은 모습이 각 고민에서 어떻게 다르게 나타나는지 나란히 비교해.<br><span style="font-size:10.5px;color:#be123c">이 완전판은 나 한 사람 전체 분석이야. 두 사람 궁합은 포함하지 않아.</span></div>`;
 
     const simultaneous = `<div data-product-exclusive="all_in_one-timing" style="padding:15px;border-radius:18px;background:#f8fafc;border:1px solid #e2e8f0;margin:14px 0;font-size:12.5px;line-height:1.85;color:#334155"><b>여러 영역이 같이 움직이는 시점</b><br>${pivots.length ? `현재 5년 계산에서 공통으로 강하게 잡힌 변곡점은 <b>${esc(pivotText)}</b>이야. 같은 시기라도 돈은 조건 조정, 일은 역할 선택, 관계는 거리·약속 조정처럼 적용 방식이 달라져. 그래서 한 영역의 변화만 보고 인생 전체가 좋아지거나 나빠진다고 단정하지 않아.` : "5년 안에서 여러 영역을 동시에 크게 흔드는 강한 변곡점이 따로 잡히지 않아. 없는 변곡점을 만들지 않고 각 고민의 가까운 시기를 따로 쓰는 편이 맞아."}</div>`;
 
@@ -656,7 +628,7 @@
 
     const all = allRuns.map(({key,concernSituation,notes}) => {
       const situLabel = situationLabel(key, concernSituation);
-      return `<section data-export-kind="concern" data-concern="${esc(key)}" data-concern-situation="${esc(concernSituation)}" style="margin:26px 0"><h3 style="font-size:19px;font-weight:950;margin:0 0 5px">${esc(CONCERNS[key])}</h3>${situLabel ? `<div style="font-size:11px;font-weight:850;color:#f43f5e;margin-bottom:10px">지금 상황 · ${esc(situLabel)}</div>` : ""}${noteCards(notes)}</section>`;
+      return `<section data-export-kind="concern" data-concern="${esc(key)}" data-concern-situation="${esc(concernSituation)}" style="margin:26px 0"><h3 style="font-size:19px;font-weight:950;margin:0 0 5px">${esc(CONCERNS[key])}</h3>${situLabel ? `<div style="font-size:11px;font-weight:850;color:#f43f5e;margin-bottom:10px">지금 상황 · ${esc(situLabel)}</div>` : ""}${noteCards(notes, facts?.headline ? { headline:facts.headline, isT:mode === "T" } : null)}</section>`;
     }).join("");
     return `<h3 style="font-size:19px;font-weight:950;margin:0 0 10px">내 전체 사주판</h3>${fullSajuHtml(data, mode)}${crossDomain}${simultaneous}${strategy}<div style="height:8px"></div>${all}`;
   }
@@ -692,6 +664,57 @@
     return isT ? "두 사람의 기본 오행 관계만으로 관계 방식을 단정하기 어려워. 실제 궁합 신호와 역할·기대치를 같이 봐." : "기본 오행 관계 하나만으로 둘의 관계 방식을 정하진 않을게. 실제 궁합 신호와 서로 기대하는 걸 같이 보는 게 더 정확해.";
   }
 
+  // 궁합 장면 문장: 각자 사주에서 가장 큰 힘(십신 그룹)으로 고른다.
+  const LOVE_SCENE = {
+    officer: "좋아하면 약속을 잘 지키고 챙겨주는 걸로 마음을 보여줘. 대신 서운한 건 바로 말 안 하고 참다가 한 번에 쌓여 나와.",
+    wealth: "좋아하면 시간·돈·배려를 실제 행동으로 많이 써. 대신 주고받는 게 기울면 속으로 계산이 시작돼.",
+    output: "좋아하면 말과 표현이 먼저 나와. 대신 상대 반응이 미지근하면 온도 차이를 크게 느껴.",
+    print: "좋아해도 바로 다가가기보다 상대를 오래 살피고 확인한 뒤에 마음을 열어. 애매한 반응엔 혼자 해석하는 시간이 길어져.",
+    self: "좋아해도 자기 페이스와 기준은 지키려고 해. 다 맞춰주기보다 ‘나는 나대로’가 편한 쪽이야.",
+  };
+  // 같은 그룹이어도 가장 큰 십신이 다르면 장면이 달라지도록 한 줄씩 더 붙인다.
+  const LOVE_TWIST = {
+    비견: "연인이어도 친구처럼 대등할 때 제일 편해해.",
+    겁재: "관계에서도 지기 싫은 마음이 있어서, 서운하면 오히려 더 세게 굴 때가 있어.",
+    식신: "같이 맛있는 거 먹고 편하게 노는 시간에서 사랑을 제일 크게 느껴.",
+    상관: "마음에 안 드는 건 참기보다 바로 짚고 넘어가려고 해.",
+    편재: "이벤트나 깜짝 선물처럼 크게 한 번에 마음을 쓰는 편이야.",
+    정재: "기념일·연락 같은 작은 약속을 꾸준히 지키는 게 사랑이라고 생각해.",
+    편관: "힘든 티를 잘 안 내고, 관계 안의 문제도 혼자 짊어지려고 해.",
+    정관: "관계에서도 ‘제대로 된 사람’으로 보이고 싶은 마음이 커서 선을 잘 지켜.",
+    편인: "말로 다 설명하기보다 혼자 생각을 정리한 뒤에 마음을 보여줘.",
+    정인: "챙김받고 보살핌받을 때 마음이 제일 크게 열려.",
+  };
+  const TALK_NEED = {
+    officer: "약속과 역할을 분명히 말해주는 것",
+    wealth: "막연한 말보다 현실적인 계획을 같이 짜는 것",
+    output: "생각을 바로 말해도 받아주는 것",
+    print: "대답하기 전에 생각할 시간을 주는 것",
+    self: "자기 방식을 존중받는 것",
+  };
+  // "~ 편이야", "~ 버릇"에 그대로 붙는 형태로 쓴다.
+  const FIGHT_HABIT = {
+    officer: "참고 맞춰주다가 한 번에 터지는",
+    wealth: "서운함을 누가 더 했나 따지듯 말하는",
+    output: "말이 먼저 세게 나가는",
+    print: "말 안 하고 혼자 곱씹는",
+    self: "누가 맞나 고집 싸움으로 끌고 가는",
+  };
+  const LIFE_RHYTHM = {
+    officer: "할 일을 먼저 끝내고 쉬는 리듬",
+    wealth: "계획한 대로 시간과 돈을 쓰는 리듬",
+    output: "하고 싶은 걸 그때그때 해보는 리듬",
+    print: "혼자 조용히 충전하는 시간이 있는 리듬",
+    self: "내 일정은 내가 정하는 리듬",
+  };
+  const LOVE_SIGN = {
+    officer: "약속 지키기·챙겨주기",
+    wealth: "시간과 돈을 실제로 쓰기",
+    output: "말로 표현해주기",
+    print: "곁에 있어주고 들어주기",
+    self: "각자 공간을 존중해주기",
+  };
+
   function compatibilityHtml(data, mode, extra) {
     const secondPersonPresent = !!extra?.partner?.b;
     const gate = policyGate("compatibility", ["compatibility","second-person","monthly-detail"], { months:18, secondPersonPresent, concernCount:0 });
@@ -703,45 +726,37 @@
 
     const pName = extra?.partner?.n || "상대";
     const safeName = esc(pName);
+    const nameIs = esc(josa(pName, "은", "는"));
+    const nameGa = esc(josa(pName, "이", "가"));
     const a = elementOf(data);
     const b = elementOf(partner);
     const myP = getProfile(data);
     const partnerP = getProfile(partner);
     const myR = getReasoning(data);
     const partnerR = getReasoning(partner);
+    const me = chartFacts(data);
+    const you = chartFacts(partner);
     const overlay = typeof global.buildCompatibilityOverlayV1 === "function"
       ? global.buildCompatibilityOverlayV1(data, partner)
       : null;
 
-    if (!myP || !partnerP || !myR || !partnerR || !overlay) {
+    if (!myP || !partnerP || !myR || !partnerR || !overlay || !me || !you) {
       return `<p data-content-blocked="compatibility" style="font-size:13px;line-height:1.8;color:#475569">두 사람의 사주 정보를 충분히 읽지 못했어. 상대 사주까지 계산돼야 둘 사이 결과를 만들 수 있어.</p>`;
     }
 
     const relation = relationCopy(a, b, isT);
-
-    const myDom = myP.sipsin?.dominantHuman || "내 기준을 찾고 움직이는 성향";
-    const partnerDom = partnerP.sipsin?.dominantHuman || "자기 기준을 찾고 움직이는 성향";
-    const mySecond = myP.sipsin?.secondaryHuman || "";
-    const partnerSecond = partnerP.sipsin?.secondaryHuman || "";
-    const myStrong = ELEMENT_WORD[myP.elements?.influenceRank?.strongest] || "익숙한 방식으로 밀어가는 힘";
-    const partnerStrong = ELEMENT_WORD[partnerP.elements?.influenceRank?.strongest] || "익숙한 방식으로 밀어가는 힘";
-    const myWeak = ELEMENT_WORD[myP.elements?.influenceRank?.weakest] || "일부러 챙겨야 하는 힘";
-    const partnerWeak = ELEMENT_WORD[partnerP.elements?.influenceRank?.weakest] || "일부러 챙겨야 하는 힘";
-    const myNeed = myP.elements?.primaryBehavior?.verb || "내 기준을 먼저 확인하는 것";
-    const partnerNeed = partnerP.elements?.primaryBehavior?.verb || "자기 기준을 먼저 확인하는 것";
-    const mySecondNeed = myP.elements?.secondaryBehavior?.verb || myNeed;
-    const partnerSecondNeed = partnerP.elements?.secondaryBehavior?.verb || partnerNeed;
-    const myAvoid = myP.elements?.avoidBehavior?.verb || "한 가지 방식만 계속 밀어붙이는 것";
-    const partnerAvoid = partnerP.elements?.avoidBehavior?.verb || "한 가지 방식만 계속 밀어붙이는 것";
-    const myClimate = myP.balance?.climateHuman || "속도를 조절하면서 현실 반응을 확인하는 쪽";
-    const partnerClimate = partnerP.balance?.climateHuman || "속도를 조절하면서 현실 반응을 확인하는 쪽";
-    const myWeakStat = myP.behavior?.weakStatHuman || "내가 실제로 소모되는 지점을 확인하는 것";
-    const partnerWeakStat = partnerP.behavior?.weakStatHuman || "자기가 실제로 소모되는 지점을 확인하는 것";
-    const myClash = !!myP.relations?.hasClash;
-    const partnerClash = !!partnerP.relations?.hasClash;
-    const sameStrength = myP.strength?.code === partnerP.strength?.code;
-    const sameStrongElement = myP.elements?.influenceRank?.strongest === partnerP.elements?.influenceRank?.strongest;
-    const bothClash = myClash && partnerClash;
+    const myG = me.top?.group || "self";
+    const yourG = you.top?.group || "self";
+    const myType = me.headline || "한쪽으로 치우치지 않은 사주";
+    const yourType = you.headline || "한쪽으로 치우치지 않은 사주";
+    const myWho = `${me.dm}(${me.dayElementPlain})`;
+    const yourWho = `${you.dm}(${you.dayElementPlain})`;
+    const why = (text) => `<br><br><b>${isT ? "근거" : "왜 그러냐면"}</b> · ${text}`;
+    const same = myG === yourG;
+    // 둘이 같은 유형이면 "너는 A, 상대는 A" 대신 "둘 다 A"로 쓴다.
+    const pair = (table, tail) => same
+      ? `둘 다 <b>${table[myG]}</b>${tail}`
+      : `너는 <b>${table[myG]}</b>, ${nameIs} <b>${table[yourG]}</b>${tail}`;
 
     const dayRelations = overlay.dayBranchRelations || [];
     const directPairRelation = dayRelations.find(x=>x.type==="clash")
@@ -749,120 +764,93 @@
       || dayRelations.find(x=>["harm","break","punishment"].includes(x.type))
       || null;
     const directPairCopy = directPairRelation?.type === "clash"
-      ? (isT ? "둘의 가까운 관계 자리가 직접 부딪히는 신호가 있어, 감정이 커졌을 때 바로 결론내리면 충돌이 증폭될 수 있어." : "둘의 가까운 관계 자리가 정면으로 부딪히는 신호가 있어서, 좋아하는 마음과 별개로 감정이 커진 순간엔 서로를 밀어내듯 반응할 수 있어.")
+      ? "둘의 일주 아랫글자(가장 가까운 관계 자리)가 정면으로 부딪히는 관계(충)라, 좋아하는 마음과 별개로 감정이 커진 순간엔 서로를 밀어내듯 반응할 수 있어."
       : directPairRelation?.type === "combine"
-        ? (isT ? "둘의 가까운 관계 자리에 서로 묶이는 신호가 있어 반응을 빠르게 의식할 수 있어. 다만 실제 합화까지 확정하진 않아." : "둘의 가까운 관계 자리에 서로를 의식하고 묶이기 쉬운 신호가 있어. 다만 ‘무조건 잘 맞는다’로 단정하지는 않을게.")
+        ? "둘의 일주 아랫글자(가장 가까운 관계 자리)가 서로 묶이는 관계(합)라, 서로를 금방 의식하고 끌리기 쉬워. 그렇다고 무조건 잘 맞는다는 뜻은 아니야."
         : directPairRelation
-          ? (isT ? "둘의 가까운 관계 자리에 미세한 마찰 신호가 있어. 이 관계 하나만으로 길흉을 확정하지 않고 실제 반복패턴과 함께 봐." : "둘의 가까운 관계 자리에는 작은 마찰 신호가 있어. 이 신호 하나로 관계를 나쁘다고 말하지 않고, 실제로 어떤 장면에서 반복되는지 같이 봐야 해.")
-          : (isT ? "가까운 관계 자리에서 직접적인 합·충 신호가 강하게 잡히진 않아. 실제 차이는 두 사람의 힘 쓰는 방식에서 더 본다." : "가까운 관계 자리끼리 바로 부딪히거나 강하게 묶이는 신호는 두드러지지 않아. 그래서 둘 사이 차이는 서로 힘을 쓰는 방식에서 더 선명하게 보여.");
+          ? "둘의 일주 아랫글자(가장 가까운 관계 자리)에 작은 마찰 신호가 있어. 이것만으로 나쁘다고 보진 않고, 실제로 반복되는 장면을 같이 봐야 해."
+          : "둘의 일주 아랫글자(가장 가까운 관계 자리)끼리 바로 부딪히거나 묶이는 신호는 두드러지지 않아. 그래서 차이는 각자 힘을 쓰는 방식에서 더 선명하게 보여.";
 
     const complement = overlay.complement || {};
     const complementCopy = complement.aStrongSupportsB && complement.bStrongSupportsA
-      ? (isT ? "서로의 강점이 상대에게 필요한 방향과 양쪽 모두 맞물리는 부분이 있어. 도움은 되지만 대신 결정해주지는 않는 게 중요해." : "서로 잘하는 힘이 상대에게 필요한 방향과 양쪽 모두 맞물리는 부분이 있어. 잘 쓰면 ‘내가 없는 걸 저 사람이 채워준다’는 느낌이 들 수 있어.")
+      ? "서로 센 기운이 상대에게 부족한 쪽을 채워주는 부분이 양쪽 다 있어. 잘 쓰면 ‘내가 없는 걸 저 사람이 채워준다’는 느낌이 들어."
       : complement.aStrongSupportsB || complement.bStrongSupportsA
-        ? (isT ? "한쪽의 강점이 다른 쪽에게 필요한 방향과 맞물리는 비대칭 보완이 있어. 도움과 의존을 구분해." : "한 사람의 강점이 다른 사람에게 필요한 방향과 맞물리는 부분이 있어. 그래서 한쪽이 자연스럽게 끌어주거나 정리해주는 장면이 생길 수 있어.")
-        : (isT ? "서로의 강점이 상대의 필요한 방향을 바로 채우는 구조는 아니야. 보완을 기대하기보다 역할과 기대를 명확히 맞추는 게 중요해." : "서로 잘하는 힘이 상대가 필요한 방향을 바로 채워주는 조합은 아니야. 그래서 ‘알아서 채워주겠지’보다 필요한 걸 직접 말해주는 게 더 중요해.");
+        ? "한 사람의 센 기운이 다른 사람에게 부족한 쪽을 채워주는 부분이 있어. 그래서 한쪽이 자연스럽게 끌어주거나 정리해주는 장면이 생겨."
+        : "서로 센 기운이 상대의 부족한 쪽을 바로 채워주는 조합은 아니야. 그래서 ‘알아서 채워주겠지’보다 필요한 걸 직접 말해주는 게 더 중요해.";
 
     const intro = isT
       ? `궁합은 ‘좋다/나쁘다’ 한 줄로 끝내면 쓸모가 없어. 너와 ${safeName}의 사주를 따로 본 다음, 실제 관계에서 어디가 맞고 어디서 충돌하는지 처음부터 오래 가는 방식까지 나눠서 볼게.`
       : `궁합은 그냥 “둘이 잘 맞아” 한마디 듣고 끝내면 너무 아깝잖아. 언니가 너랑 ${safeName} 사주를 따로 펼쳐놓고, 왜 끌리고 어디서 서운해지고 어떻게 해야 오래 편한지까지 관계 흐름대로 차근차근 풀어줄게.`;
 
+    const sameVerdict = me.verdict === you.verdict;
+    const strengthLine = (f) => f.verdict === "신약" ? "겉으론 괜찮아 보여도 혼자 있을 때 확 지치는 날이 있는 쪽이야" : f.verdict === "신강" ? "한번 정하면 잘 안 꺾이는 쪽이야" : "컨디션 따라 여유가 꽤 달라지는 쪽이야";
+
     const cards = [
       {
         title: "01 · 둘 사이를 한 문장으로 보면",
-        body: isT
-          ? `${relation} ${directPairCopy} 너는 <b>${myDom}</b> 쪽, ${safeName}은 <b>${partnerDom}</b> 쪽이 강하다. 둘의 차이는 애정의 크기보다 반응 방식 차이로 보는 게 정확해.`
-          : `${relation} ${directPairCopy} 너는 <b>${myDom}</b> 쪽으로 마음이 움직이고, ${safeName}은 <b>${partnerDom}</b> 쪽으로 반응하는 편이야. 그래서 같은 마음이어도 표현되는 모양은 꽤 다를 수 있어.`
+        body: `너는 <b>${esc(myType)}</b>, ${nameIs} <b>${esc(yourType)}</b>야. ${directPairCopy}${why(`너는 ${me.dayPillar}의 ${myWho}, ${nameIs} ${you.dayPillar}의 ${yourWho}야. ${relation}`)}`
       },
       {
         title: "02 · 서로에게 먼저 보이는 강점",
-        body: isT
-          ? `너는 <b>${myStrong}</b>, ${safeName}은 <b>${partnerStrong}</b>이 각자 강하게 드러나는 힘이야. ${complementCopy}`
-          : `너한테는 <b>${myStrong}</b>, ${safeName}한테는 <b>${partnerStrong}</b>이 각자 강하게 드러나. ${complementCopy}`
+        body: `${complementCopy}${why(`${me.strongest ? `너는 ${me.strongest.name} 기운이 ${me.strongest.share}%로 가장 세고` : "너는 기운이 고르게 나뉘어 있고"}, ${you.strongest ? `${nameIs} ${you.strongest.name} 기운이 ${you.strongest.share}%로 가장 세.` : "상대는 기운이 고르게 나뉘어 있어."}`)}`
       },
       {
         title: "03 · 내가 사랑할 때 나오는 모습",
-        body: isT
-          ? `너는 연애에서도 <b>${myDom}</b>이 기본 반응으로 나온다. ${myP.strength?.T || ""}. 사랑한다고 해서 네 기본 작동 방식이 사라지지는 않아.`
-          : `너는 좋아하는 사람이 생겨도 기본적으로 <b>${myDom}</b> 쪽으로 마음을 써. ${myP.strength?.F || ""}. 그러니까 사랑할수록 잘해주려고 애쓰는 부분과, 혼자 견디려고 하는 부분을 같이 봐줘야 해.`
+        body: `${LOVE_SCENE[myG]} ${LOVE_TWIST[me.top?.god] || ""} 그리고 ${strengthLine(me)}.${why(`네 사주에서 ${me.top ? `${me.top.god}(${me.top.meaning})${josa(me.top.god, "이", "가").slice(me.top.god.length)}` : "한 가지 힘이"} ${me.top?.share ?? 0}%로 가장 커서 그래.`)}`
       },
       {
-        title: `04 · ${safeName}이 사랑할 때 나오는 모습`,
-        body: isT
-          ? `${safeName}은 <b>${partnerDom}</b> 쪽이 먼저 나온다${partnerSecond ? `, 그다음에는 ${partnerSecond}` : ""}. ${partnerP.strength?.T || ""}. 상대 반응을 네 방식으로만 해석하면 오판할 수 있어.`
-          : `${safeName}은 마음이 생겼을 때 <b>${partnerDom}</b> 쪽으로 먼저 표현하는 편이야${partnerSecond ? `. 그 안에는 ${partnerSecond}도 같이 있고` : ""}. ${partnerP.strength?.F || ""}. 네가 기대한 표현이 아니어도 저 사람 나름의 사랑 방식일 수 있다는 걸 같이 봐야 해.`
+        title: `04 · ${safeName}${josa(pName, "이", "가").slice(pName.length)} 사랑할 때 나오는 모습`,
+        body: `${same ? `${nameIs} 사랑하는 방식이 너랑 꽤 닮았어. 다만` : `${nameIs} ${LOVE_SCENE[yourG]}`} ${LOVE_TWIST[you.top?.god] || ""} ${sameVerdict ? "지치는 방식도 너랑 비슷한 편이야." : `그리고 ${strengthLine(you)}.`} 네가 기대한 표현이 아니어도, 저 사람 나름의 사랑 방식일 수 있어.${why(`${esc(josa(pName, "의", "의"))} 사주에서 ${you.top ? `${you.top.god}(${you.top.meaning})${josa(you.top.god, "이", "가").slice(you.top.god.length)}` : "한 가지 힘이"} ${you.top?.share ?? 0}%로 가장 커서 그래.`)}`
       },
       {
         title: "05 · 말이 잘 통할 때와 엇갈릴 때",
-        body: isT
-          ? `대화가 잘 될 때는 서로 결론보다 기준을 먼저 공개할 때다. 너는 <b>${myNeed}</b>, ${safeName}은 <b>${partnerNeed}</b>이 필요하다. 상대가 알아서 눈치채길 기다리지 마.`
-          : `둘이 대화할 때 제일 중요한 건 “왜 그것밖에 몰라?”가 아니라 각자 필요한 걸 먼저 말해주는 거야. 너는 <b>${myNeed}</b>이 필요하고, ${safeName}은 <b>${partnerNeed}</b>이 필요해. 서로 마음을 맞히는 게임처럼 만들지 않았으면 좋겠어.`
+        body: `대화가 잘 풀리는 건 각자 필요한 걸 먼저 말해줄 때야. ${pair(TALK_NEED, "이 필요해.")} ${same ? "필요한 게 비슷해서 한번 맞추면 금방 편해져." : "필요한 게 달라서, 말 안 하면 서로 엉뚱한 걸 해주고 서운해하기 쉬워."}${why(`너는 ${me.top ? me.top.god : "고른 힘"}, ${nameIs} ${josa(you.top ? you.top.god : "고른 힘", "이", "가")} 가장 큰 사주야.`)}`
       },
       {
         title: "06 · 서로 부담이 커질 수 있는 포인트",
-        body: isT
-          ? `너는 <b>${myWeak}</b> 쪽을 일부러 챙겨야 하고, ${safeName}은 <b>${partnerWeak}</b> 쪽을 따로 챙겨야 해. 둘 사이에서 이 힘이 필요한 상황이 겹치면 상대 반응을 추측하지 말고 실제로 무엇이 부족한지 확인해.`
-          : `너는 <b>${myWeak}</b> 쪽을 일부러 챙겨야 하고, ${safeName}은 <b>${partnerWeak}</b> 쪽을 따로 챙겨야 해. 둘 사이에서 이 힘이 필요한 상황이 겹치면 “왜 저래?”라고 해석하기 전에 지금 뭐가 부족한지 먼저 확인해보자.`
+        body: `${me.weakScene ? `너: ${me.weakScene}` : ""}${you.weakest?.groupMeaning ? `<br>${safeName}: ${esc(you.weakest.groupMeaning)} 쪽이 약해서, 그 부분은 자꾸 미루거나 버거워할 수 있어.` : ""}<br>이 약한 부분이 동시에 필요한 상황이 오면 “왜 저래?” 하기 전에 지금 뭐가 비었는지 먼저 확인해.${why(`${me.weakest ? `너는 ${me.weakest.name} 기운이 ${me.weakest.share}%` : ""}${you.weakest ? `, ${nameIs} ${you.weakest.name} 기운이 ${you.weakest.share}%로 가장 약해.` : "."}`)}`
       },
       {
         title: "07 · 갈등이 생겼을 때 확인할 신호",
-        body: isT
-          ? `${bothClash ? "둘 다 각자 사주 안에 충 신호가 있어." : myClash ? "너의 사주 안에 충 신호가 있어." : partnerClash ? safeName + "의 사주 안에 충 신호가 있어." : "두 사람 모두 사주 안의 충 신호가 핵심 변수로 잡히진 않아."} 이 신호만으로 ‘참다가 폭발한다’ 같은 반응을 단정하진 않아. 갈등이 생기면 너의 <b>${myAvoid}</b>, 상대의 <b>${partnerAvoid}</b>이 실제로 겹치는지부터 확인해.`
-          : `${bothClash ? "둘 다 각자 사주 안에 충 신호가 있어." : myClash ? "네 사주 안에 충 신호가 있어." : partnerClash ? `${safeName}의 사주 안에 충 신호가 있어.` : "둘 다 사주 안의 충 신호가 핵심 변수로 잡히진 않아."} 이것만 보고 누가 참다가 폭발한다거나 갑자기 선을 긋는다고 정하진 않을게. 실제 갈등에서는 네 <b>${myAvoid}</b>과 상대의 <b>${partnerAvoid}</b>이 겹치는지부터 보자.`
+        body: `싸울 때 ${same ? `둘 다 <b>${FIGHT_HABIT[myG]}</b> 편이야.` : `너는 <b>${FIGHT_HABIT[myG]}</b> 편이고, ${nameIs} <b>${FIGHT_HABIT[yourG]}</b> 편이야.`} ${same ? "둘 다 같은 방식이라, 한 사람이 먼저 멈추는 규칙을 정해두는 게 제일 중요해." : "이 둘이 겹치는 순간이 제일 위험해."}${why(`${me.hasClash && you.hasClash ? "둘 다 각자 사주 안에 정면으로 부딪히는 관계(충)가 있어." : me.hasClash ? "네 사주 안에 정면으로 부딪히는 관계(충)가 있어." : you.hasClash ? `${esc(josa(pName, "의", "의"))} 사주 안에 정면으로 부딪히는 관계(충)가 있어.` : "둘 다 사주 안에 정면으로 부딪히는 관계(충)는 두드러지지 않아."} 싸우는 방식은 각자 가장 큰 힘(${me.top?.god || "-"} / ${you.top?.god || "-"})에서 나와.`)}`
       },
       {
         title: "08 · 싸운 뒤 화해하는 법",
-        body: isT
-          ? `화해 순서는 감정 정리 → 사실 확인 → 다음 규칙 합의가 맞다. 너는 <b>${mySecondNeed}</b>, ${safeName}은 <b>${partnerSecondNeed}</b>을 넣어야 같은 싸움이 반복되지 않는다.`
-          : `화해할 때 “미안해, 됐지?”로 빨리 덮기보다 서로 뭐가 아팠는지 한 번은 확인해줘. 너한테는 <b>${mySecondNeed}</b>이 도움이 되고, ${safeName}에게는 <b>${partnerSecondNeed}</b>이 필요해. 사과보다 다음번에 달라지는 행동이 둘 마음을 더 안심시켜줘.`
+        body: `화해할 때 “미안해, 됐지?”로 빨리 덮기보다 서로 뭐가 아팠는지 한 번은 확인해줘. ${same ? `둘 다 <b>${TALK_NEED[myG]}</b>이 화해의 열쇠야.` : `너한테는 <b>${TALK_NEED[myG]}</b>, ${esc(josa(pName, "에게는", "에게는"))} <b>${TALK_NEED[yourG]}</b>이 화해의 열쇠야.`} 사과보다 다음번에 달라지는 행동이 더 안심시켜줘.`
       },
       {
         title: "09 · 애정 표현이 어긋나는 순간",
-        body: isT
-          ? `${sameStrength ? "둘의 기본적인 힘 쓰는 방식은 비슷하게 잡혀 있어. 다만 이게 애정 표현 방식까지 같다는 뜻은 아니야." : "둘의 기본적인 힘 쓰는 방식은 다르게 잡혀 있어. 이 차이만으로 애정 표현 방식까지 다르다고 단정할 수는 없어."} 말, 연락, 행동 중 무엇을 애정의 증거로 보는지 직접 맞춰.`
-          : `${sameStrength ? "둘은 기본적인 힘 쓰는 방식이 비슷하게 잡혀 있어. 그렇다고 마음을 표현하는 속도까지 같다고 보진 않을게." : "둘은 기본적인 힘 쓰는 방식이 다르게 잡혀 있어. 그렇다고 애정 표현이 꼭 어긋난다고 단정하진 않을게."} 그래서 “난 연락이 이 정도면 안심돼”, “난 말보다 행동이 더 중요해”처럼 사랑받는 느낌이 드는 방식을 구체적으로 말해주는 게 좋아.`
+        body: `${same ? `둘 다 <b>${LOVE_SIGN[myG]}</b>로 사랑을 보여줘.` : `너는 <b>${LOVE_SIGN[myG]}</b>로 사랑을 보여주고, ${nameIs} <b>${LOVE_SIGN[yourG]}</b>로 보여줘.`} ${same ? "표현 방식이 비슷해서 서로 알아보기 쉬운 편이야." : "방식이 달라서, 서로 사랑을 줘도 상대는 못 알아챌 수 있어. “난 이렇게 해줄 때 사랑받는 느낌이야”를 구체적으로 말해줘."}`
       },
       {
         title: "10 · 연락과 혼자 있는 시간",
-        body: isT
-          ? `너는 <b>${myClimate}</b>, ${safeName}은 <b>${partnerClimate}</b>이 편하다. 연락 빈도를 사랑의 점수로 쓰지 말고 각자 회복에 필요한 시간을 먼저 정해.`
-          : `연락이 많아야 사랑이고 혼자 있고 싶으면 식은 마음이라고 단정하지 말자. 너는 <b>${myClimate}</b>일 때 편하고, ${safeName}은 <b>${partnerClimate}</b>일 때 자기 리듬을 찾기 쉬워. 서로 숨 돌릴 시간을 인정해주면 오히려 관계가 덜 불안해져.`
+        body: `${sameVerdict ? (me.verdict === "신강" ? "둘 다 혼자 있는 시간이 있어야 다시 충전돼." : "둘 다 자주 확인받을 때 마음이 놓이는 편이야.") : `${me.verdict === "신강" ? "너는 혼자 있는 시간이 있어야 다시 충전돼." : "너는 자주 확인받을 때 마음이 놓이는 편이야."} ${you.verdict === "신강" ? `${nameIs} 혼자 있는 시간이 있어야 다시 충전돼.` : `${nameIs} 자주 확인받을 때 마음이 놓이는 편이야.`}`} 연락 횟수를 사랑의 점수로 쓰지 말고, 각자 편한 리듬을 먼저 말해두자.${why(sameVerdict ? `둘 다 자기 힘(일간)이 ${me.strengthPlain}이야.` : `너 자신의 힘은 ${me.strengthPlain}, ${esc(josa(pName, "의", "의"))} 힘은 ${you.strengthPlain}이야.`)}`
       },
       {
         title: "11 · 일상에서 같이 살기 편하려면",
-        body: isT
-          ? `일정, 약속시간, 집안일, 휴식 방식처럼 생활 기준은 감정과 별개로 미리 맞춰두는 편이 안전해. 실제로 반복해서 부딪히는 항목이 있다면 담당과 기준을 명확히 해.`
-          : `좋아하는 마음이 커도 생활 리듬이 계속 안 맞으면 사소한 일로 지치기 쉬워. 약속시간, 쉬는 방식, 집안일, 주말 계획 같은 건 “사랑하면 알아서 맞겠지” 하지 말고 둘만의 기준을 만들어두는 게 훨씬 편해.`
+        body: `좋아하는 마음이 커도 생활 리듬이 계속 안 맞으면 사소한 일로 지치기 쉬워. 약속시간, 쉬는 방식, 집안일, 주말 계획 같은 건 “사랑하면 알아서 맞겠지” 하지 말고 둘만의 기준을 만들어두는 게 훨씬 편해.${same ? ` 특히 둘 다 <b>${LIFE_RHYTHM[myG]}</b>이 편해서, 이 부분은 쉽게 맞아.` : ` 특히 너는 <b>${LIFE_RHYTHM[myG]}</b>, ${nameIs} <b>${LIFE_RHYTHM[yourG]}</b>이 편해. 이 차이를 미리 알면 덜 부딪혀.`}`
       },
       {
         title: "12 · 돈과 현실 문제를 같이 다룰 때",
-        body: isT
-          ? `관계에서 돈은 감정보다 기준 문제다. 너는 <b>${myWeakStat}</b>, ${safeName}은 <b>${partnerWeakStat}</b>을 놓치면 현실 스트레스가 관계 감정으로 번질 수 있다. 비용·선물·여행·저축 기준을 미리 말해.`
-          : `돈 얘기는 사랑이 부족해서 불편한 게 아니라 서로 기준이 다르면 누구나 조심스러워져. 너는 <b>${myWeakStat}</b>을, ${safeName}은 <b>${partnerWeakStat}</b>을 놓치지 않는 게 중요해. 데이트비, 선물, 여행, 큰 지출은 마음 눈치 보지 말고 미리 얘기하는 게 오히려 덜 상처받아.`
+        body: `${(me.shares.wealth || 0) >= (you.shares.wealth || 0) ? `둘 중엔 네가 돈·현실 계산을 더 많이 신경 쓰는 쪽이야.` : `둘 중엔 ${nameGa} 돈·현실 계산을 더 많이 신경 쓰는 쪽이야.`} 데이트비, 선물, 여행, 큰 지출은 눈치 보지 말고 미리 얘기하는 게 오히려 덜 상처받아.${why(`돈을 뜻하는 재성이 너는 ${me.shares.wealth || 0}%, ${nameIs} ${you.shares.wealth || 0}%야.`)}`
       },
       {
         title: "13 · 질투·경계·사생활",
-        body: isT
-          ? `경계선은 애매하게 두지 마. 친구 관계, 전 연인, SNS, 연락 공개 범위처럼 싸움이 날 수 있는 항목은 허용/불편 기준을 구체적으로 맞춰. 통제와 배려를 섞지 않는 게 핵심이다.`
-          : `사랑하면 다 보여줘야 한다거나, 믿으면 아무 말도 하면 안 된다는 식으로 극단적으로 가지 않았으면 좋겠어. 친구, 전 연인, SNS, 개인시간처럼 민감한 부분은 “난 여기까지는 괜찮고 여기부터는 불편해”라고 말해도 돼. 경계를 말하는 건 상대를 못 믿는다는 뜻이 아니야.`
+        body: `사랑하면 다 보여줘야 한다거나, 믿으면 아무 말도 하면 안 된다는 식으로 극단적으로 가지 않았으면 좋겠어. 친구, 전 연인, SNS, 개인시간처럼 민감한 부분은 “난 여기까지는 괜찮고 여기부터는 불편해”라고 말해도 돼.${myG === "self" || yourG === "self" ? " 특히 둘 중 자기 공간이 중요한 사람이 있어서, 경계를 존중해주는 게 곧 애정이야." : " 경계를 말하는 건 상대를 못 믿는다는 뜻이 아니야."}`
       },
       {
         title: "14 · 오래 만날수록 좋아지는 부분",
-        body: isT
-          ? `${sameStrongElement ? "두 사람의 실제 세력에서 가장 강한 오행이 같아 공통된 강점 축이 있어. 그렇다고 잘하는 역할까지 같다는 뜻은 아니야." : "두 사람의 실제 세력에서 가장 강한 오행이 달라 강점 축도 다르게 잡혀 있어. 이 차이가 자동으로 보완된다고 단정하진 않아."} 실제 생활에서 각자 잘하는 영역을 확인해 나누는 게 핵심이야.`
-          : `${sameStrongElement ? "둘의 실제 세력에서 가장 강한 오행이 같아 공통된 강점 축은 있어. 그래도 서로 잘하는 역할까지 같다고 보진 않을게." : "둘의 실제 세력에서 가장 강한 오행이 달라 강점 축도 다르게 잡혀 있어. 그렇다고 저절로 서로를 보완한다고 말하진 않을게."} 실제로 같이 있을 때 각자 잘하는 영역을 확인해 나누는 게 더 정확해.`
+        body: `${me.strongest && you.strongest && me.strongest.el !== you.strongest.el ? `둘이 센 기운이 달라서, 역할을 나누면 같이 있을수록 편해져. 너는 ${me.strongest.name} 기운이, ${nameIs} ${you.strongest.name} 기운이 가장 세서 서로 다른 쪽을 맡을 수 있어.` : "둘이 잘하는 쪽이 비슷해서, 같은 목표를 잡으면 호흡이 잘 맞아. 대신 같은 약점도 공유하니까 그 부분은 밖에서 채워."}`
       },
       {
         title: "15 · 이 관계에서 꼭 조심할 신호",
-        body: isT
-          ? `위험 신호는 세 가지다. <b>말 안 하고 시험하기</b>, <b>상대 방식만 문제라고 단정하기</b>, <b>작은 불편함을 쌓아 한 번에 정리하기</b>. 이 셋이 반복되면 궁합보다 운영 방식이 문제다.`
-          : `언니가 이 관계에서 제일 조심하라고 하고 싶은 건 세 가지야. 마음을 말하지 않고 상대가 알아채나 시험하는 것, 내 방식만 사랑의 정답이라고 생각하는 것, 괜찮은 척 쌓아두다가 한 번에 끝내버리는 것. 이게 반복되면 원래 잘 맞는 부분도 점점 안 보이게 돼.`
+        body: `언니가 이 관계에서 제일 조심하라고 하고 싶은 건 세 가지야. 마음을 말하지 않고 상대가 알아채나 시험하는 것, 내 방식만 사랑의 정답이라고 생각하는 것, 그리고 ${same ? `둘 다 가진 ‘<b>${FIGHT_HABIT[myG]}</b> 버릇’이 한꺼번에 나오는 것.` : `너의 ‘<b>${FIGHT_HABIT[myG]}</b> 버릇’과 ${esc(josa(pName, "의", "의"))} ‘<b>${FIGHT_HABIT[yourG]}</b> 버릇’이 한꺼번에 나오는 것.`} 이게 반복되면 원래 잘 맞는 부분도 점점 안 보이게 돼.`
       },
       {
         title: "16 · 둘이 실제로 지키면 좋은 약속",
         body: isT
-          ? `<b>1.</b> 서운함은 너무 오래 묵히지 말고 말하기.<br><b>2.</b> 싸울 때 관계 전체를 평가하지 않기.<br><b>3.</b> 연락·돈·개인시간 기준을 미리 합의하기.<br><b>4.</b> 너는 ${myNeed}, ${safeName}은 ${partnerNeed}을 존중하기.<br><b>5.</b> 같은 싸움이 반복되면 감정보다 둘의 규칙을 먼저 바꾸기.`
-          : `언니가 마지막으로 둘한테 약속 다섯 개만 남겨줄게.<br><br><b>1.</b> 서운한 건 너무 오래 묵히지 않기.<br><b>2.</b> 싸운 날 “우리 원래 안 맞아”까지 가지 않기.<br><b>3.</b> 연락·돈·혼자 있는 시간은 미리 기준 맞추기.<br><b>4.</b> 너한테 필요한 <b>${myNeed}</b>과 ${safeName}에게 필요한 <b>${partnerNeed}</b>을 서로 존중하기.<br><b>5.</b> 같은 싸움이 반복되면 사랑을 의심하기 전에 둘의 방식부터 바꿔보기.<br><br>궁합은 둘 사이를 결정하는 판정표라기보다, 잘 맞는 부분은 더 잘 쓰고 부딪히는 부분은 덜 다치게 만드는 지도처럼 봐주면 돼.`
+          ? `<b>1.</b> 서운함은 너무 오래 묵히지 말고 말하기.<br><b>2.</b> 싸울 때 관계 전체를 평가하지 않기.<br><b>3.</b> 연락·돈·개인시간 기준을 미리 합의하기.<br><b>4.</b> ${same ? `둘 다 ${TALK_NEED[myG]}을 존중받기.` : `너는 ${TALK_NEED[myG]}, ${nameIs} ${TALK_NEED[yourG]}을 존중받기.`}<br><b>5.</b> 같은 싸움이 반복되면 감정보다 둘의 규칙을 먼저 바꾸기.`
+          : `언니가 마지막으로 둘한테 약속 다섯 개만 남겨줄게.<br><br><b>1.</b> 서운한 건 너무 오래 묵히지 않기.<br><b>2.</b> 싸운 날 “우리 원래 안 맞아”까지 가지 않기.<br><b>3.</b> 연락·돈·혼자 있는 시간은 미리 기준 맞추기.<br><b>4.</b> ${same ? `둘 다 필요한 <b>${TALK_NEED[myG]}</b>을 서로 챙겨주기.` : `너한테 필요한 <b>${TALK_NEED[myG]}</b>과 ${esc(josa(pName, "에게", "에게"))} 필요한 <b>${TALK_NEED[yourG]}</b>을 서로 존중하기.`}<br><b>5.</b> 같은 싸움이 반복되면 사랑을 의심하기 전에 둘의 방식부터 바꿔보기.<br><br>궁합은 둘 사이를 결정하는 판정표라기보다, 잘 맞는 부분은 더 잘 쓰고 부딪히는 부분은 덜 다치게 만드는 지도처럼 봐주면 돼.`
       },
     ];
 
@@ -870,22 +858,22 @@
     const interestingMonths = (pairTimeline.nearMonths || []).filter(x=>x.pairClass!=="neutral").slice(0,3);
     const interestingYears = (pairTimeline.years || []).filter(x=>x.pairClass!=="neutral").slice(0,5);
     const pairClassCopy = (row) => {
-      if (row.pairClass === "aligned-support") return "둘 다 움직일 여유가 같이 생기는 구간";
-      if (row.pairClass === "shared-caution") return "둘 다 여유가 줄어 갈등 관리가 먼저인 구간";
-      if (row.pairClass === "asymmetric") return "한쪽은 앞으로 가고 한쪽은 버거울 수 있어 속도차 조정이 필요한 구간";
-      if (row.pairClass === "one-side-support") return "한쪽의 여유가 관계를 받쳐줄 수 있는 구간";
-      if (row.pairClass === "one-side-caution") return "한쪽의 부담을 다른 쪽이 오해하지 않게 확인할 구간";
-      return "도움과 부담이 섞여 한쪽 결론으로 밀지 않는 구간";
+      if (row.pairClass === "aligned-support") return "둘 다 여유가 생겨서 같이 뭔가 시작하기 좋은 때";
+      if (row.pairClass === "shared-caution") return "둘 다 여유가 줄어서 싸움 관리가 먼저인 때";
+      if (row.pairClass === "asymmetric") return "한 사람은 잘 풀리고 한 사람은 버거워서 속도를 맞춰야 하는 때";
+      if (row.pairClass === "one-side-support") return "한 사람의 여유가 관계를 받쳐줄 수 있는 때";
+      if (row.pairClass === "one-side-caution") return "한 사람이 힘든 걸 다른 사람이 오해하지 않게 확인할 때";
+      return "좋은 것과 부담이 섞여 있어서 한쪽으로 결론 내지 않을 때";
     };
     const pairTimingBody = `
       <div data-export-compat-timing="1" data-product-exclusive="compatibility" data-product-contract="compatibility" data-overlay-fingerprint="${esc(overlay.fingerprint)}" style="padding:14px 15px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0;margin:14px 0 6px;font-size:12.5px;line-height:1.8;color:#475569">
         <b>둘이 같이 있을 때의 시기 흐름</b><br>
-        ${interestingMonths.length ? interestingMonths.map(x=>`<span><b>${esc(x.startYmd)}</b> · ${esc(pairClassCopy(x))}</span>`).join("<br>") : "가까운 18개월에는 둘 사이에서 한쪽으로 강하게 기운 달을 억지로 만들지 않았어."}
+        ${interestingMonths.length ? interestingMonths.map(x=>`<span><b>${esc(me.formatMonth(x))}</b> · ${esc(pairClassCopy(x))}</span>`).join("<br>") : "가까운 18개월에는 둘 사이에서 한쪽으로 강하게 기운 달을 억지로 만들지 않았어."}
         <br><br><b>연도 단위 관계 흐름</b><br>
         ${interestingYears.length ? interestingYears.map(x=>`<span><b>${x.year}년</b> · ${esc(pairClassCopy(x))}</span>`).join("<br>") : "5년 안에서 둘의 흐름이 동시에 크게 꺾이는 해는 따로 잡지 않았어."}
       </div>`;
     const summary = `<div data-export-intro="compat" data-product-contract="compatibility" data-person-a-fingerprint="${esc(overlay.personAFingerprint)}" data-person-b-fingerprint="${esc(overlay.personBFingerprint)}" style="padding:15px;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;margin-bottom:10px"><div style="font-size:11px;font-weight:900;color:#c2410c;margin-bottom:6px">우리 둘 관계를 깊게 보는 궁합</div><div style="font-size:13px;line-height:1.85;color:#7c2d12">${intro}</div></div>`;
-    const pairCard = `<div data-export-pair="compat" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 6px"><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">나</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(myDom)}</div></div><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">${safeName}</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(partnerDom)}</div></div></div>`;
+    const pairCard = `<div data-export-pair="compat" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 6px"><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">나 · ${esc(myWho)}</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(myType)}</div></div><div style="padding:12px;border-radius:14px;background:#fff;border:1px solid #e2e8f0"><div style="font-size:10px;font-weight:900;color:#94a3b8">${safeName} · ${esc(yourWho)}</div><div style="font-size:12px;font-weight:900;color:#0f172a;margin-top:4px">${esc(yourType)}</div></div></div>`;
     return summary + pairCard + pairTimingBody + cards.map((row, index) => `<section data-export-kind="compat" data-export-index="${index}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:950;margin:0 0 8px;color:#0f172a">${row.title}</h4><div style="font-size:13px;line-height:1.9;color:#475569">${row.body}</div></section>`).join("");
   }
 
@@ -2245,7 +2233,7 @@
   global.openUnniProduct = openProduct;
   global.renderUnniProductCatalog = renderCatalog;
   global.__UNNI_PRODUCTS_V1__ = {
-    version:"2.2.0",
+    version:"2.3.0",
     products:PRODUCTS,
     contracts:global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.contracts || {},
     buildProductBody:productBody,

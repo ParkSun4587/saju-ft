@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "5.2.0";
+  const VERSION = "5.3.0";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   function hasBatchim(value) {
@@ -1208,6 +1208,76 @@
     };
   }
 
+  // 유료 상품(전체판·궁합 등)이 NOTE와 같은 사주 사실·장면 문장을 쓰도록 한 사람 분의 사실 묶음을 만든다.
+  function chartFactsForData(data){
+    let reasoning=data?.noteDiagnosisV2?.reasoning||null;
+    if(!reasoning&&typeof global.buildClassicalReasoningV1==="function"){
+      try{ reasoning=global.buildClassicalReasoningV1(data||{}); }catch(_){ reasoning=null; }
+    }
+    if(!reasoning) return null;
+    const top=godRows(reasoning)[0]||null;
+    const verdict=verdictOf(reasoning);
+    const dayEl=dayElementOf(reasoning);
+    const ranking=reasoning.context?.elementRanking||[];
+    const elementFact=(row)=>{
+      if(!row?.element||!EL_KR[row.element]) return null;
+      const group=groupOfElement(dayEl,row.element);
+      return {el:row.element,kr:EL_KR[row.element],name:elementName(row.element),share:Math.round(Number(row.share||0)*100),group,groupLabel:groupLabel(group),groupMeaning:GROUP_MEANING[group]||""};
+    };
+    const weakest=elementFact(ranking[ranking.length-1]);
+    const strongest=elementFact(ranking[0]);
+    const st=synthesisFor(reasoning).mechanisms?.structure||{};
+    const pressure=synthesisFor(reasoning).mechanisms?.drive?.pressureGroup||reasoning.integrated?.pressureGroup||"unknown";
+    const sp=Number(reasoning.profile?.strength?.supportRatio);
+    const bal=reasoning.profile?.balance||{};
+    const shares={};
+    for(const k of ["self","print","output","wealth","officer"]) shares[k]=groupShare(reasoning,k);
+    const present=new Set(godRows(reasoning).map(r=>r.god));
+    return {
+      dm:dayMasterName(reasoning),
+      dayPillar:pillarName(reasoning,"day"),
+      dayElement:dayEl,
+      dayElementPlain:EL_PLAIN[dayEl]||"",
+      verdict,
+      strengthPlain:strengthPlain(reasoning),
+      supportPercent:Number.isFinite(sp)?Math.round(sp*100):null,
+      top:top?{god:top.god,label:godLabel(top.god),meaning:GOD_MEANING[top.god]||"",group:top.group,share:godShare(reasoning,top.god),places:godPlaces(reasoning,top.god,2)}:null,
+      headline:headlineOf(reasoning),
+      coreScene:top?(CORE_SCENE[top.god]||""):"",
+      strengthScene:STRENGTH_SCENE[verdict]||STRENGTH_SCENE.중화,
+      shares,
+      strongest,
+      weakest,
+      weakScene:weakest?(WEAK_SCENE[weakest.group]||""):"",
+      pressureGroup:pressure,
+      pressureLabel:GROUP_NAME[pressure]?groupLabel(pressure):"",
+      pressureScene:HARM_SCENE[pressure]||"",
+      center:centerSentence(reasoning),
+      centerGod:centerGodOf(reasoning),
+      season:seasonSentence(reasoning),
+      root:rootSentence(reasoning),
+      balance:EL_KR[bal.primary]?{el:bal.primary,name:elementName(bal.primary),group:groupOfElement(dayEl,bal.primary),groupLabel:groupLabel(groupOfElement(dayEl,bal.primary)),raw:Number(reasoning.profile?.elements?.raw?.[bal.primary]||0)}:null,
+      bond:bondSentence(reasoning),
+      relationRisk:relationRiskSentence(reasoning),
+      hasClash:(reasoning.context?.clashes||[]).length>0,
+      resolution:patternResolutionSentence(reasoning),
+      supportGods:[...new Set([...(st.rescueGods||[]),...(st.helpfulGods||[]),...(st.structuralRescueGods||[]),...(st.structuralSupportGods||[])])],
+      harmGods:[...new Set([...(st.harmfulGods||[]),...(st.structuralHarmGods||[])])],
+      presentGods:[...present],
+      concernLine:(concern,group)=>plainSentence(CONCERN_GROUP_LINES[concern]?.[group||pressure]||CONCERN_GROUP_LINES[concern]?.unknown||""),
+      fitScene:(god)=>FIT_SCENE[god]||"",
+      godLabel:(god)=>godLabel(god),
+      godPlaces:(god)=>godPlaces(reasoning,god,1),
+      godShare:(god)=>godShare(reasoning,god),
+      groupName:(group)=>GROUP_NAME[group]||"",
+      groupLabel:(group)=>groupLabel(group),
+      groupMeaning:(group)=>GROUP_MEANING[group]||"",
+      formatMonth:(row)=>formatMonth(row,reasoning.timing?.today||""),
+      monthReason:(row,positive)=>monthReason(reasoning,row,positive),
+      today:reasoning.timing?.today||"",
+    };
+  }
+
   // 사용자가 NOTE의 십신 용어를 눌렀을 때 "내 사주에서는" 설명을 채운다.
   function describeTermForData(data,term){
     const reasoning=data?.noteDiagnosisV2?.reasoning;
@@ -1398,7 +1468,7 @@
 
   global.buildConcernDiagnosisV2=buildConcernDiagnosisV2;
   global.renderConcernNotesV2=renderConcernNotesV2;
-  global.__CONCERN_NOTE_ENGINE_V2__={version:VERSION,situations:SITUATIONS,describeTerm:describeTermForData};
+  global.__CONCERN_NOTE_ENGINE_V2__={version:VERSION,situations:SITUATIONS,describeTerm:describeTermForData,facts:chartFactsForData};
 
   const legacy=global.generateConcernNotes;
   const wrapped=function(data,mode){
