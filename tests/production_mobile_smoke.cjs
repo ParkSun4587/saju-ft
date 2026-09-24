@@ -94,17 +94,15 @@ async function enter(page, mode, concern, situation) {
   const firstState = await page.evaluate(() => ({
     concern:document.getElementById('selectedConcernKey')?.value || '',
     timeInput:(()=>{
-      const el=document.getElementById('birthTimeInput');
-      const hidden=document.getElementById('birthTimeBranch');
-      const unknown=document.getElementById('birthTimeUnknownButton');
-      return el?{
-        value:el.value,
-        placeholder:el.getAttribute('placeholder')||'',
-        hiddenValue:hidden?.value||'',
-        hiddenType:hidden?.type||'',
-        unknownChecked:!!unknown?.checked,
-        unknownType:unknown?.type||'',
-        unknownLabel:document.querySelector('label[for="birthTimeUnknownButton"]')?.innerText||'',
+      const input=document.getElementById('birthTimeInput');
+      const select=document.getElementById('birthTimeBranch');
+      return input&&select?{
+        value:input.value,
+        placeholder:input.getAttribute('placeholder')||'',
+        branchValue:select.value||'',
+        branchText:select.options[select.selectedIndex]?.text||'',
+        optionCount:select.options.length,
+        unknownCheckbox:!!document.getElementById('birthTimeUnknownButton'),
       }:null;
     })(),
     selected:document.querySelectorAll('#concernGrid .concern-chip.selected').length,
@@ -122,11 +120,10 @@ async function enter(page, mode, concern, situation) {
     'fresh input must require an explicit concern '+JSON.stringify(firstState));
   assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
-  assert(firstState.timeInput && firstState.timeInput.value==='' && firstState.timeInput.placeholder==='예: 09:42' &&
-         firstState.timeInput.hiddenValue==='unknown' && firstState.timeInput.hiddenType==='hidden' &&
-         firstState.timeInput.unknownChecked && firstState.timeInput.unknownType==='checkbox' &&
-         firstState.timeInput.unknownLabel.includes('시간 모름'),
-    'exact birth-time input should be primary with explicit unknown checkbox '+JSON.stringify(firstState.timeInput));
+  assert(firstState.timeInput && firstState.timeInput.value==='' && firstState.timeInput.placeholder==='정확한 시간' &&
+         firstState.timeInput.branchValue==='unknown' && firstState.timeInput.branchText==='(모름)' &&
+         firstState.timeInput.optionCount===13 && !firstState.timeInput.unknownCheckbox,
+    'branch selector should be primary with exact-time input beside it '+JSON.stringify(firstState.timeInput));
   assert(firstState.submitOpacity<=0.4,'disabled consultation CTA is still too visually active '+JSON.stringify(firstState));
   if (mode==='F') assert(
     firstState.sisterText==='응, 편하게 적어줘.' &&
@@ -159,14 +156,30 @@ async function enter(page, mode, concern, situation) {
   await page.waitForSelector('#concernSituationBox',{state:'visible'});
   await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
   await page.fill('#birthDateInput','19980221');
+  assert(await page.locator('#birthTimeBranch option').count()===13,'birth-time selector should include unknown and 12 branches');
+  assert((await page.locator('#birthTimeBranch option').first().innerText())==='(모름)','birth-time unknown default missing');
+  assert((await page.locator('#birthTimeBranch option[value="子"]').innerText()).includes('23:30~01:29'),'manse-corrected 子 range missing');
   assert(await page.locator('#birthTimeInput').count()===1,'exact birth-time input missing');
-  assert(await page.locator('#birthTimeUnknownButton').count()===1,'unknown-time fallback missing');
-  assert(await page.locator('#birthTimeBranch').getAttribute('type')==='hidden','legacy branch state should stay hidden');
-  await page.fill('#birthTimeInput','0942');
-  assert((await page.locator('#birthTimeInput').inputValue())==='09:42','exact HH:MM auto-format failed');
-  assert((await page.locator('#birthTimeBranch').inputValue())==='09:42','exact HH:MM did not reach hidden runtime state');
+  assert(await page.locator('#birthTimeUnknownButton').count()===0,'separate unknown-time checkbox should stay removed');
+  if(mode==='F') {
+    await page.selectOption('#birthTimeBranch','寅');
+    assert((await page.locator('#birthTimeInput').inputValue())==='','branch choice should clear exact-time override');
+  } else {
+    await page.fill('#birthTimeInput','0942');
+    assert((await page.locator('#birthTimeInput').inputValue())==='09:42','exact HH:MM auto-format failed');
+    assert((await page.locator('#birthTimeBranch').inputValue())==='巳','exact HH:MM should sync its 12-branch display');
+  }
   await page.locator('#splitNextButton button').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
+  const appliedTime=await page.evaluate(()=>({
+    key:currentResultData?.userTimeKey||'',
+    hourKnown:currentResultData?.calendarMeta?.hourKnown,
+    hourZhi:currentResultData?.pillars?.hour?.zhi||'',
+  }));
+  if(mode==='F') assert(appliedTime.key==='寅' && appliedTime.hourKnown===true && appliedTime.hourZhi,
+    'branch birth time did not propagate through full saju result '+JSON.stringify(appliedTime));
+  else assert(appliedTime.key==='09:42' && appliedTime.hourKnown===true && appliedTime.hourZhi,
+    'exact birth time did not propagate through full saju result '+JSON.stringify(appliedTime));
   const sourceFreeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
   if(sourceFreeLaunch){
     await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
