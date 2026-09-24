@@ -19,6 +19,7 @@ function isExpectedBoundaryDiagnostic(text) {
 
 const CASES = [
   { id:'user-branch-love-F', birth:'19980221', time:'丑', gender:'male', calendar:'solar', leap:false, concern:'love', mode:'F', viewport:{width:390,height:844} },
+  { id:'user-exact-love-T', birth:'19980221', time:'09:42', gender:'male', calendar:'solar', leap:false, concern:'love', mode:'T', viewport:{width:390,height:844} },
   { id:'user-unknown-love-T', birth:'19980221', time:'unknown', gender:'male', calendar:'solar', leap:false, concern:'love', mode:'T', viewport:{width:390,height:844} },
   { id:'money-female-F', birth:'19991231', time:'子', gender:'female', calendar:'solar', leap:false, concern:'money', mode:'F', viewport:{width:390,height:844} },
   { id:'career-female-T', birth:'20010506', time:'未', gender:'female', calendar:'solar', leap:false, concern:'career', mode:'T', viewport:{width:1280,height:900} },
@@ -368,7 +369,14 @@ async function load(page) {
       document.getElementById('calendarSelect').value = c.calendar;
       document.getElementById('genderValue').value = c.gender;
       const branch = document.getElementById('birthTimeBranch');
-      branch.value = c.time;
+      const exactInput = document.getElementById('birthTimeInput');
+      if (/^([01]\d|2[0-3]):[0-5]\d$/.test(c.time)) {
+        exactInput.value = c.time;
+        formatBirthTime(exactInput);
+      } else {
+        exactInput.value = '';
+        branch.value = c.time;
+      }
       const leap = document.getElementById('leapMonthCheck');
       if (leap) leap.checked = !!c.leap;
 
@@ -386,7 +394,9 @@ async function load(page) {
         mode:data.currentMode,
         calendar:data.userCalendar,
         leap:data.isLeapMonth,
+        timeKey:data.userTimeKey,
         hourKnown:data.calendarMeta?.hourKnown,
+        hourZhi:data.pillars?.hour?.zhi || '',
         tz:data.calendarMeta?.timeZone,
         strength:data.analysisProfile?.dayMaster?.strength,
         ratio:data.analysisProfile?.dayMaster?.supportRatio,
@@ -442,6 +452,11 @@ async function load(page) {
     assert(report.mode === c.mode, `${c.id}: mode drift ${report.mode}`);
     assert(report.calendar === c.calendar, `${c.id}: calendar drift ${report.calendar}`);
     assert(report.tz === 'Asia/Seoul', `${c.id}: timezone missing`);
+    if (c.time === 'unknown') {
+      assert(report.timeKey === 'unknown' && report.hourKnown === false, `${c.id}: unknown time leaked into saju ${JSON.stringify(report)}`);
+    } else {
+      assert(report.timeKey === c.time && report.hourKnown === true && report.hourZhi, `${c.id}: selected birth time did not propagate through saju ${JSON.stringify(report)}`);
+    }
     assert(['신강','중화','신약'].includes(report.strength), `${c.id}: bad strength ${report.strength}`);
     assert(Number.isFinite(report.ratio), `${c.id}: bad support ratio ${report.ratio}`);
     assert(!!report.gyeok, `${c.id}: gyeok missing`);
