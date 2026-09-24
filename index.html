@@ -643,6 +643,11 @@
   }
   body{background:var(--unni-bg)!important;color:var(--unni-ink);font-family:Inter,Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
   button,input,select,textarea{font:inherit}
+  #birthTimeBranch:has(option[value="unknown"]:checked){
+    text-align:center!important;
+    text-align-last:center!important;
+  }
+  #birthTimeBranch option[value="unknown"]{text-align:center}
   button{touch-action:manipulation}
 
   /* first choice */
