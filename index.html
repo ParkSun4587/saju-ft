@@ -2391,7 +2391,7 @@
                   <select
                     id="birthTimeBranch"
                     onchange="selectBirthTimeBranch(this)"
-                    class="flex-[1.6] min-w-0 h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[10.5px] text-slate-700 focus:bg-white focus:outline-none"
+                    class="flex-1 min-w-0 h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[10.5px] text-slate-700 focus:bg-white focus:outline-none"
                   >
                     <option value="unknown" selected>(모름)</option>
                     <option value="子">자시 · 23:30~01:29</option>
@@ -2407,15 +2407,29 @@
                     <option value="戌">술시 · 19:30~21:29</option>
                     <option value="亥">해시 · 21:30~23:29</option>
                   </select>
+                  <label
+                    for="birthTimeExactToggle"
+                    class="inline-flex items-center gap-1.5 h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer select-none whitespace-nowrap"
+                  >
+                    <input
+                      id="birthTimeExactToggle"
+                      type="checkbox"
+                      onchange="toggleExactBirthTime()"
+                      class="w-4 h-4 rounded border-slate-300 accent-slate-600"
+                    />
+                    <span class="text-[10.5px] font-bold text-slate-600">정확한 시간 입력</span>
+                  </label>
+                </div>
+                <div id="birthTimeExactWrap" class="hidden mt-2">
                   <input
                     id="birthTimeInput"
                     type="text"
                     inputmode="numeric"
                     maxlength="5"
-                    placeholder="정확한 시간"
+                    placeholder="예: 09:42"
                     aria-label="정확한 출생 시간"
                     oninput="formatBirthTime(this)"
-                    class="flex-1 min-w-0 h-[35px] px-2 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[10.5px] text-slate-700 placeholder-slate-400 text-center font-mono focus:bg-white focus:outline-none"
+                    class="w-full h-[35px] px-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[10.5px] text-slate-700 placeholder-slate-400 text-center font-mono focus:bg-white focus:outline-none"
                   />
                 </div>
               </div>
@@ -4096,7 +4110,10 @@
             .getElementById("birthDateInput")
             .value.replace(/\D/g, ""),
           userTimeKey: (() => {
-            const exact=normalizeExactBirthTime(document.getElementById("birthTimeInput")?.value || "");
+            const exactEnabled=!!document.getElementById("birthTimeExactToggle")?.checked;
+            const exact=exactEnabled
+              ? normalizeExactBirthTime(document.getElementById("birthTimeInput")?.value || "")
+              : "";
             if(exact) return exact;
             const branch=document.getElementById("birthTimeBranch")?.value || "unknown";
             return BIRTH_TIME_BRANCHES.has(branch) ? branch : "unknown";
@@ -6115,8 +6132,26 @@ function generateConcernNotes(data, mode) {
       };
 
       function selectBirthTimeBranch() {
+        const toggle=document.getElementById("birthTimeExactToggle");
+        const wrap=document.getElementById("birthTimeExactWrap");
         const input=document.getElementById("birthTimeInput");
+        if(toggle) toggle.checked=false;
+        if(wrap) wrap.classList.add("hidden");
         if(input) input.value="";
+        saveInputDraft();
+      }
+
+      function toggleExactBirthTime() {
+        const toggle=document.getElementById("birthTimeExactToggle");
+        const wrap=document.getElementById("birthTimeExactWrap");
+        const input=document.getElementById("birthTimeInput");
+        if(toggle?.checked) {
+          wrap?.classList.remove("hidden");
+          input?.focus();
+        } else {
+          wrap?.classList.add("hidden");
+          if(input) input.value="";
+        }
         saveInputDraft();
       }
 
@@ -6314,12 +6349,14 @@ function generateConcernNotes(data, mode) {
           let birthStr = rawBirth.replace(/[^0-9]/g, "");
 
           const birthTimeBranch = document.getElementById("birthTimeBranch");
+          const birthTimeExactToggle = document.getElementById("birthTimeExactToggle");
           const birthTimeInput = document.getElementById("birthTimeInput");
           const selectedBirthTimeBranch = birthTimeBranch?.value || "unknown";
-          const rawBirthTime = String(birthTimeInput?.value || "").trim();
-          const exactBirthTime = normalizeExactBirthTime(rawBirthTime);
+          const exactEnabled = !!birthTimeExactToggle?.checked;
+          const rawBirthTime = exactEnabled ? String(birthTimeInput?.value || "").trim() : "";
+          const exactBirthTime = exactEnabled ? normalizeExactBirthTime(rawBirthTime) : "";
 
-          if (rawBirthTime && !exactBirthTime) {
+          if (exactEnabled && !exactBirthTime) {
             showVoiceToast({
               F: "정확한 시간만 한 번 봐줄래? 예: 09:42처럼 적으면 돼.",
               T: "정확한 시간을 확인해줘. 예: 09:42",
@@ -9619,6 +9656,8 @@ currentResultData = {
         const birthDateInput = document.getElementById("birthDateInput");
 
         const birthTimeBranch = document.getElementById("birthTimeBranch");
+        const birthTimeExactToggle = document.getElementById("birthTimeExactToggle");
+        const birthTimeExactWrap = document.getElementById("birthTimeExactWrap");
         const birthTimeInput = document.getElementById("birthTimeInput");
 
         const leapMonthCheck = document.getElementById("leapMonthCheck");
@@ -9650,6 +9689,8 @@ currentResultData = {
         const savedTimeKey = String(savedData.userTimeKey || "unknown");
         const savedExactTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(savedTimeKey) ? savedTimeKey : "";
         if (birthTimeInput) birthTimeInput.value = savedExactTime;
+        if (birthTimeExactToggle) birthTimeExactToggle.checked = !!savedExactTime;
+        if (birthTimeExactWrap) birthTimeExactWrap.classList.toggle("hidden", !savedExactTime);
         if (birthTimeBranch) {
           birthTimeBranch.value = savedExactTime
             ? birthTimeKeyToBranch(savedExactTime)
