@@ -151,14 +151,17 @@ async function load(page) {
             key,
             mode,
             notes: notes.map((n) => ({badge:n.badge,title:n.title,desc:n.desc,checklist:n.checklist})),
+            evidenceCoverage:data.noteV3Audit?.evidenceCoverage||null,
           });
         }
       }
-      const a = buildNoteOneInsight({ ...base, concernKey:'career' }, 'career', labels.career, false);
-      const b = buildNoteOneInsight({ ...other, concernKey:'career' }, 'career', labels.career, false);
+      const aData={...base,concernKey:'career',concernSituation:'current',userGender:'male',userBirthStr:'19980221'};
+      const bData={...other,concernKey:'career',concernSituation:'current',userGender:'male',userBirthStr:'19900102'};
+      const a=generateConcernNotes(aData,'F');
+      const b=generateConcernNotes(bData,'F');
       return {
         out,
-        personalized: a.desc !== b.desc,
+        personalized:a.filter((n,i)=>String(n.desc)!==String(b[i]?.desc)).length>=3,
         pageText: document.body.innerText,
       };
     });
@@ -209,9 +212,13 @@ async function load(page) {
       for (const phrase of jargon) assert(!full.includes(phrase), `hard jargon ${phrase} in ${set.key}/${set.mode}`);
       for (const n of set.notes) {
         assert(n.badge && n.title && n.desc, `empty answer field ${set.key}/${set.mode}`);
-        const len=String(n.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().length;
-        assert(len>=55 && len<=420, `answer length drift ${set.key}/${set.mode}: ${len}`);
+        const body=String(n.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+        const len=body.length;
+        assert(len>=110 && len<=950, `answer length drift ${set.key}/${set.mode}: ${len}`);
+        assert(body.includes('결론'), `answer does not lead with conclusion ${set.key}/${set.mode}: ${body}`);
       }
+      assert(set.evidenceCoverage?.coverageRate===1 && set.evidenceCoverage?.missingRuleIds?.length===0,
+        `supported evidence dropped ${set.key}/${set.mode}: ${JSON.stringify(set.evidenceCoverage)}`);
       assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(full), `old/abstract answer wording ${set.key}/${set.mode}`);
       if (set.mode === 'F') fText += ' ' + full; else tText += ' ' + full;
       summary.push({key:set.key, mode:set.mode, titles:set.notes.map(n=>n.title)});
