@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "2.0.0";
+  const VERSION = "2.1.0";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -244,6 +244,34 @@
   }
 
   const productionInflight = new Map();
+  const productionAttemptState = new WeakMap();
+
+  function productionState(data) {
+    if (!data || typeof data !== "object") return null;
+    let state = productionAttemptState.get(data);
+    if (!state) {
+      state = { attempts: 0, lastAttemptAt: 0, lastError: "", success: false };
+      productionAttemptState.set(data, state);
+    }
+    return state;
+  }
+
+  function canAttemptProductionNotes(data) {
+    if (getProductionNotes(data, data?.currentMode || "F")?.length) return false;
+    const state = productionState(data);
+    if (!state) return false;
+    if (state.success) return false;
+    if (state.attempts === 0) return true;
+    if (state.attempts >= 2) return false;
+    return Date.now() - state.lastAttemptAt >= 4000;
+  }
+
+  function productionNoteStatus(data) {
+    const state = productionState(data);
+    return state
+      ? { ...state, hasNotes: !!getProductionNotes(data, data?.currentMode || "F")?.length }
+      : { attempts: 0, lastAttemptAt: 0, lastError: "", success: false, hasNotes: false };
+  }
 
   function timingSignalSummary(signal) {
     if (!signal || typeof signal !== "object") return null;
@@ -852,6 +880,13 @@
     const existing = getProductionNotes(data, normalizedMode);
     if (existing?.length) return existing;
 
+    const state = productionState(data);
+    if (state && !canAttemptProductionNotes(data)) {
+      const error = new Error(state.lastError || "AI_NOTE_RETRY_LIMIT");
+      error.code = state.lastError || "AI_NOTE_RETRY_LIMIT";
+      throw error;
+    }
+
     const packet = buildEvidencePacket(data, normalizedMode);
     const key = [
       VERSION,
@@ -864,6 +899,12 @@
 
     if (productionInflight.has(key)) return productionInflight.get(key);
 
+    if (state) {
+      state.attempts += 1;
+      state.lastAttemptAt = Date.now();
+      state.lastError = "";
+    }
+
     const promise = generateAiNotes(data, normalizedMode)
       .then((result) => {
         const notes = mapAiNotesToProduction(result, data, normalizedMode);
@@ -874,10 +915,22 @@
           mode: normalizedMode,
           generatedAt: new Date().toISOString(),
           model: result?.model || "",
+          attempts: Number(result?.attempts || 1),
           notes,
           termContext: buildTermContext(result?.evidencePacket || packet),
         };
+        if (state) {
+          state.success = true;
+          state.lastError = "";
+        }
         return notes;
+      })
+      .catch((error) => {
+        if (state) {
+          state.success = false;
+          state.lastError = String(error?.code || error?.message || "AI_NOTE_FAILED");
+        }
+        throw error;
       })
       .finally(() => productionInflight.delete(key));
 
@@ -1001,6 +1054,8 @@
     mapAiNotesToProduction,
     getProductionNotes,
     ensureProductionNotes,
+    canAttemptProductionNotes,
+    productionNoteStatus,
     describeTerm,
     mountTestPanel,
   };

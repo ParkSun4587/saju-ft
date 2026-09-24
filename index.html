@@ -7950,24 +7950,45 @@ currentResultData = {
 
         const aiNoteRuntime = globalThis.__UNNI_AI_NOTE_V4__ || globalThis.__UNNI_AI_NOTE_TEST_V1__;
         const alreadyTranslated = aiNoteRuntime?.getProductionNotes?.(data, mode);
-        if (
+        const canAttemptAi =
+          aiNoteRuntime?.canAttemptProductionNotes?.(data) !== false;
+        let precisionStatus = document.getElementById("aiNotePrecisionStatus");
+        if (alreadyTranslated) {
+          precisionStatus?.remove();
+        } else if (
           aiNoteRuntime?.ensureProductionNotes &&
-          !alreadyTranslated &&
-          !data.__aiNoteV4Failed &&
+          canAttemptAi &&
           !data.__aiNoteV4Requested
         ) {
+          if (!precisionStatus) {
+            precisionStatus = document.createElement("div");
+            precisionStatus.id = "aiNotePrecisionStatus";
+            precisionStatus.style.cssText =
+              "margin:8px 2px 2px;font-size:10.5px;line-height:1.55;font-weight:700;color:#7b8492;word-break:keep-all;";
+            document.getElementById("consultationNotesHeader")?.insertAdjacentElement(
+              "afterend",
+              precisionStatus,
+            );
+          }
+          precisionStatus.textContent = isT
+            ? "사주 근거를 다시 대조해서 정리 중이야."
+            : "언니가 사주 근거를 하나씩 다시 대조해서 정리하고 있어.";
           data.__aiNoteV4Requested = true;
           aiNoteRuntime.ensureProductionNotes(data, mode)
             .then((translatedNotes) => {
               data.__aiNoteV4Requested = false;
               if (!Array.isArray(translatedNotes) || translatedNotes.length !== 5) return;
               if (currentResultData !== data || (data.currentMode || "F") !== mode) return;
+              document.getElementById("aiNotePrecisionStatus")?.remove();
               saveCurrentResult();
               updateResultContentByMode(mode);
             })
             .catch((error) => {
               data.__aiNoteV4Requested = false;
-              data.__aiNoteV4Failed = true;
+              const status = document.getElementById("aiNotePrecisionStatus");
+              if (status) status.textContent = isT
+                ? "정밀 해석 연결이 늦어져서 기본 해석을 먼저 보여주고 있어."
+                : "정밀 해석 연결이 조금 늦어져서 기본 해석을 먼저 보여주고 있어.";
               console.warn("AI_NOTE_V4_FALLBACK", error?.code || error?.message || error);
             });
         }
@@ -10052,7 +10073,7 @@ currentResultData = {
     <script src="./classical-reasoning-engine-v1.js?v=2.0.0"></script>
     <script src="./paid-value-layer-v1.js?v=1.5.1"></script>
     <script src="./concern-note-engine-v2.js?v=5.0.0"></script>
-    <script src="./ai-note-test-v1.js?v=2.0.0"></script>
+    <script src="./ai-note-test-v1.js?v=2.1.0"></script>
     <script src="./product-content-policy-v1.js?v=1.1.0"></script>
     <script src="./product-entitlements-v1.js?v=1.0.1"></script>
     <script src="./premium-products-v1.js?v=2.2.0"></script>

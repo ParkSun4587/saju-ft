@@ -12,6 +12,7 @@ async function deployed(page) {
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
         globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.0.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.2.0' &&
+        globalThis.__UNNI_AI_NOTE_V4__?.version === '2.1.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
@@ -568,6 +569,61 @@ async function inspect(page, mode) {
   });
   await deployed(page);
   await enter(page,'F','love','relationship');
+
+  const requiresLiveAi = /^https:\/\//i.test(BASE);
+  if (requiresLiveAi) {
+    const endpoint = new URL('/api/ai-notes', BASE).toString();
+    const endpointHealth = await page.request.get(endpoint, {
+      headers: { Accept: 'application/json' },
+      timeout: 30000,
+    });
+    const endpointPayload = await endpointHealth.json().catch(()=>null);
+    assert(
+      endpointHealth.ok() && endpointPayload?.ok && endpointPayload?.configured,
+      'live AI NOTE endpoint is not configured '+JSON.stringify({
+        status:endpointHealth.status(),
+        payload:endpointPayload,
+      })
+    );
+
+    await page.waitForFunction(
+      () =>
+        currentResultData?.__aiNoteV4?.version === '2.1.0' &&
+        Array.isArray(currentResultData?.__aiNoteV4?.notes) &&
+        currentResultData.__aiNoteV4.notes.length === 5 &&
+        currentResultData.__aiNoteV4.notes.every((n)=>n?.__aiTranslated === true),
+      null,
+      { timeout: 120000 }
+    );
+    await page.waitForFunction(
+      () => (document.getElementById('notesListContainer')?.innerText || '').includes('사주 근거'),
+      null,
+      { timeout: 10000 }
+    );
+    const liveAi = await page.evaluate(()=>({
+      version:currentResultData?.__aiNoteV4?.version||'',
+      attempts:currentResultData?.__aiNoteV4?.attempts||0,
+      model:currentResultData?.__aiNoteV4?.model||'',
+      count:currentResultData?.__aiNoteV4?.notes?.length||0,
+      translated:(currentResultData?.__aiNoteV4?.notes||[]).every((n)=>n?.__aiTranslated===true),
+      visibleText:document.getElementById('notesListContainer')?.innerText||'',
+      status:globalThis.__UNNI_AI_NOTE_V4__?.productionNoteStatus?.(currentResultData)||null,
+    }));
+    assert(
+      liveAi.version==='2.1.0' &&
+      liveAi.count===5 &&
+      liveAi.translated &&
+      liveAi.visibleText.includes('사주 근거'),
+      'live default URL did not replace fallback NOTE with AI NOTE '+JSON.stringify(liveAi)
+    );
+    console.log('PRODUCTION_AI_NOTE_V4_PASS', JSON.stringify({
+      version:liveAi.version,
+      attempts:liveAi.attempts,
+      model:liveAi.model,
+      count:liveAi.count,
+    }));
+  }
+
   const f=await inspect(page,'F');
 
   // 결과 화면에서 첫 뒤로가기는 입력 화면으로 튕기지 않고 결과를 유지해야 한다.
