@@ -10,13 +10,13 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
-        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '4.0.0' &&
+        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.0.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.2.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach five-answer NOTE 4.0.0 / paid 1.5.1 / products 2.2.0');
+  throw new Error('production did not reach five-answer NOTE 5.0.0 / paid 1.5.1 / products 2.2.0');
 }
 
 async function clickCatalogProduct(page, productId) {
@@ -395,7 +395,7 @@ async function inspect(page, mode) {
   },mode);
   r.resultLayout=await resultLayoutSnapshot(page);
   assertResultLayout(r.resultLayout,mode+' primary result');
-  assert(r.noteV2Audit?.version==='4.0.0'&&r.noteV2Audit?.structureFingerprint,mode+' five-answer audit missing');
+  assert(r.noteV2Audit?.version==='5.0.0'&&r.noteV2Audit?.structureFingerprint,mode+' five-answer audit missing');
   assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
   assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six internal causal claims missing');
   assert(Array.isArray(r.noteV2Audit?.outputClaimMap)&&r.noteV2Audit.outputClaimMap.length===5,mode+' five-answer provenance map missing');
