@@ -13,8 +13,8 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   page.on('console',m=>{ if(m.type()==='error') errors.push('[console] '+m.text()); });
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load',timeout:60000});
   await page.waitForFunction(()=>(
-    globalThis.__CLASSICAL_REASONING_V1__?.version==='1.2.0' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='4.0.0' &&
+    globalThis.__CLASSICAL_REASONING_V1__?.version==='2.0.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='5.0.0' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version==='2.2.0'
   ),null,{timeout:60000});
@@ -159,7 +159,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     };
   });
 
-  assert(r.versions.reasoning==='1.2.0'&&r.versions.note==='4.0.0'&&r.versions.products==='2.2.0'&&r.versions.policy==='1.1.0','runtime versions drift');
+  assert(r.versions.reasoning==='2.0.0'&&r.versions.note==='5.0.0'&&r.versions.products==='2.2.0'&&r.versions.policy==='1.1.0','runtime versions drift');
 
   const c=r.contracts;
   assert(c.basic_concern.longTermDetail==='teaser-only'&&c.basic_concern.concernCount===1&&!c.basic_concern.compatibilityAllowed,'basic contract invalid');
