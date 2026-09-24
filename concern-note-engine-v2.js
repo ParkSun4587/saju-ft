@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "5.1.0";
+  const VERSION = "5.2.0";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   function hasBatchim(value) {
@@ -682,39 +682,6 @@
     return head+" 네 사주에서 "+GROUP_NAME[group]+"은 "+withJosa(main.god,"이","가")+" 대표고, "+where+"에 있어."+compare;
   }
 
-  function noteOneDesc(reasoning,s,p,isT){
-    const top=godRows(reasoning)[0];
-    const dm=dayMasterName(reasoning);
-    const strength=strengthPlain(reasoning);
-    const topText=top?godLabel(top.god):"한쪽으로 몰리지 않은 고른 힘";
-    const conclusion=isT
-      ? "<b>결론</b> — 가장 큰 힘은 <b>"+topText+"</b>, 너 자신인 <b>"+dm+"</b>의 힘은 <b>"+strength+"</b>이야."
-      : "<b>결론</b> — 언니가 제일 먼저 본 건 이거야. 네 사주에서 가장 큰 힘은 <b>"+topText+"</b>이고, 너 자신인 <b>"+dm+"</b>의 힘은 <b>"+strength+"</b>이야.";
-    const me=(isT?"<b>나</b> — ":"<b>너 자신</b> — ")+pillarName(reasoning,"day")+"의 윗글자 <b>"+dm+"("+(EL_PLAIN[dayElementOf(reasoning)]||"")+")</b>"+
-      josaSuffix(dm,"이","가")+(isT?" 기준이야. 나머지 글자는 전부 이 글자와의 관계로 읽어.":" 너야. 사주는 이 글자를 기준으로 나머지 글자와의 관계를 읽어.");
-    let biggest="";
-    if(top){
-      const partner=godRows(reasoning).find(r=>r.group===top.group&&r.god!==top.god);
-      biggest="<b>가장 큰 힘</b> — "+withJosa(top.god,"이","가")+" "+godPlaces(reasoning,top.god,2)+"에 있어서, 일간을 뺀 나머지 힘의 "+godShare(reasoning,top.god)+"%를 차지해."+
-        (partner?" 같은 "+GROUP_NAME[top.group]+"("+GROUP_GODS[top.group]+")을 합치면 "+groupShare(reasoning,top.group)+"%야.":"");
-      const center=centerSentence(reasoning);
-      if(center) biggest+=" "+center;
-    }
-    const sp=Number(reasoning?.profile?.strength?.supportRatio);
-    const ratio=Number.isFinite(sp)?Math.round(sp*100):null;
-    const balanceWord=ratio===null?"":ratio<50?"나를 돕는 힘보다 빠져나가거나 누르는 힘이 더 커서("+ratio+" : "+(100-ratio)+") ":ratio>50?"빠져나가거나 누르는 힘보다 나를 돕는 힘이 더 커서("+ratio+" : "+(100-ratio)+") ":"나를 돕는 힘과 빠져나가거나 누르는 힘이 비슷해서(50 : 50) ";
-    const power="<b>내 힘의 크기</b> — "+balanceWord+dm+"의 힘은 "+strength+"이야. "+seasonSentence(reasoning)+" "+rootSentence(reasoning);
-    const lens=lensSentence(reasoning,s);
-    return [
-      conclusion,
-      me,
-      biggest,
-      power.trim(),
-      lens?(isT?"<b>이 고민과 연결</b> — ":"<b>지금 고민과 연결</b> — ")+lens:"",
-      guardSentence(reasoning,isT),
-    ].filter(Boolean).join("<br><br>");
-  }
-
   function bondSentence(reasoning){
     const ctx=reasoning?.context||{};
     const dm=dayMasterName(reasoning);
@@ -736,35 +703,6 @@
     if(!GROUP_WEAK_STEP[group]) return "";
     return "<b>약한 고리</b> — 가장 약한 기운은 "+elementName(el)+josaSuffix(EL_KR[el],"이야","야")+"(겉 글자 "+raw+"개, 실제 비중 "+share+"%). "+
       "너한텐 "+EL_KR[el]+josaSuffix(EL_KR[el],"이","가")+" "+groupLabelJ(group,"이라","라")+", "+withJosa(GROUP_WEAK_STEP[group],"이","가")+" 약해지기 쉬워.";
-  }
-
-  function noteTwoDesc(reasoning,s,p,isT){
-    const scene=concernMechanismScene(reasoning,s);
-    const d=synthesisFor(reasoning).mechanisms?.drive||{};
-    const group=d.pressureGroup||reasoning?.integrated?.pressureGroup||"unknown";
-    const conclusion=isT
-      ? "<b>결론</b> — 지금 고른 ‘"+s.label+"’에서 반복이 갈리는 첫 지점은 <b>"+scene+"</b>이야."
-      : "<b>결론</b> — 지금 고른 ‘"+s.label+"’에서 네 반복은 마지막 결과보다 <b>"+scene+"</b>에서 먼저 갈려.";
-    const reaction=plainSentence(patternPressureSentence(reasoning))+" "+plainSentence(patternCapacitySentence(reasoning));
-    let why=reaction;
-    if(GROUP_NAME[group]){
-      const outShare=groupShare(reasoning,group);
-      const supportShare=groupShare(reasoning,"self")+groupShare(reasoning,"print");
-      const compare=outShare>supportShare
-        ? groupLabelJ(group,"이","가")+" "+outShare+"%로, 너를 돕는 힘(비겁·인성) "+supportShare+"%보다 커. "
-        : outShare>=supportShare*0.8
-          ? groupLabelJ(group,"이","가")+" "+outShare+"%로, 너를 돕는 힘(비겁·인성) "+supportShare+"%와 비슷해. "
-          : "너를 돕는 힘(비겁·인성)이 "+supportShare+"%로 커서 버티는 힘은 충분해. 대신 바깥 힘 중에선 "+groupLabelJ(group,"이","가")+" "+outShare+"%로 가장 커서, 이 장면에서 반응이 갈려. ";
-      why="<b>왜 이 장면이냐면</b> — 일간을 빼고 보면 "+compare+reaction;
-    }
-    const concernLine=CONCERN_GROUP_LINES[s.concern]?.[group]||CONCERN_GROUP_LINES[s.concern]?.unknown||"";
-    return [
-      conclusion,
-      why,
-      [plainSentence(concernLine),bondSentence(reasoning)].filter(Boolean).join(" "),
-      weakLinkSentence(reasoning),
-      plainSentence(patternResolutionSentence(reasoning)),
-    ].filter(Boolean).join("<br><br>");
   }
 
   function patternPressureSentence(reasoning){
@@ -875,30 +813,6 @@
       (raw===0?"라 사람·환경·습관으로 밖에서 채워야 하는 쪽이야.":"라 이미 있는 걸 더 살리는 쪽이야.");
   }
 
-  function noteThreeDesc(reasoning,s,p,isT){
-    const rows=supportRows(reasoning,s);
-    const first=rows[0];
-    const rest=rows.slice(1);
-    const state=synthesisFor(reasoning).mechanisms?.structure?.state||"undetermined";
-    const closing=state==="rescued"
-      ?"이 사주는 한 번 꼬여도 다시 맞춰주는 글자가 있어서, 흔들렸을 때 실제로 다시 맞춰지는지를 보면 돼."
-      :state==="damaged"
-        ?"지금은 중심을 흔드는 글자도 같이 있어서, 버틸 수 있느냐보다 같은 조건에서 힘이 계속 남느냐가 더 중요해."
-        :state==="mixed"
-          ?"살리는 글자와 흔드는 글자가 같이 있어서, 어느 쪽이 먼저 들어오느냐에 따라 같은 상황도 체감이 크게 달라."
-          :"한 조건만으로 좋다·나쁘다를 정하기보다, 위 순서대로 하나씩 맞춰보는 게 정확해.";
-    const restText=rest.map(x=>"<b>"+x.text+"</b>"+(x.god?"("+x.god+")":"")).join(" / ");
-    return [
-      isT
-        ? "<b>결론</b> — 맞는 조건 1순위는 <b>"+first.text+"</b>."
-        : "<b>결론</b> — 너한테 제일 먼저 맞춰야 할 조건은 <b>"+first.text+"</b>이야.",
-      (isT?"<b>근거</b> — ":"<b>왜 이 조건이냐면</b> — ")+first.why,
-      balanceSentence(reasoning),
-      rest.length?(isT?"추가 조건 — "+restText:"그다음은 "+restText+" 순서로 보면 돼."):"",
-      closing,
-    ].filter(Boolean).join("<br><br>");
-  }
-
   function harmRows(reasoning,s){
     const domain=DOMAIN[s.concern]||DOMAIN.money;
     const syn=synthesisFor(reasoning);
@@ -954,27 +868,183 @@
     return "";
   }
 
+  // ===== 장면 먼저 보여주는 문장층 (v5.2) =====
+  // 각 NOTE는 "그 사람이 실제로 겪었을 법한 장면" → "왜 그러냐면" 한 줄 → 접힌 사주 근거 순서로 쓴다.
+  // 장면 문장은 모두 계산된 사주 사실(가장 큰 십신, 강약, 가장 약한 기운, 도움·방해 십신)로 고른다.
+  const HEADLINE={
+    정관:"책임감이 먼저 움직이는 사주",편관:"몰아붙일수록 버티는 사주",
+    정재:"계산이 서야 움직이는 사주",편재:"기회가 보이면 먼저 손이 가는 사주",
+    식신:"좋아하는 걸 꾸준히 만들어내는 사주",상관:"불합리한 걸 못 참는 사주",
+    비견:"내 방식대로 해야 풀리는 사주",겁재:"지는 건 싫은 사주",
+    정인:"충분히 알아야 움직이는 사주",편인:"생각이 한번 시작되면 깊게 파고드는 사주",
+  };
+  const CORE_SCENE={
+    정관:"너 부탁받으면 거절 잘 못 하지? “이거 네가 좀 해줘”가 오면 일단 맡고, 네 몫 얘기는 뒤로 미뤄. 약속이나 규칙을 어기는 사람을 보면 속으로 꽤 오래 신경 쓰이고.",
+    편관:"마감 직전이나 누가 몰아붙일 때 오히려 집중이 확 되지? 대신 평소에도 ‘뭔가 해야 한다’는 긴장이 깔려 있어서, 쉬는 날에도 완전히 쉬는 느낌이 잘 안 들어.",
+    정재:"돈이든 시간이든 ‘이게 남는 건가’부터 계산하지? 큰 모험보다는 확실한 쪽을 고르고, 한번 자리 잡은 루틴은 잘 안 바꾸는 편이야.",
+    편재:"새로운 기회나 사람 얘기를 들으면 일단 궁금해서 발을 들이지? 벌이는 건 빠른데, 벌여놓은 걸 끝까지 챙겨서 거둬들이는 건 상대적으로 약해.",
+    식신:"뭔가에 꽂히면 묵묵히 오래 붙잡고 만들어내지? 대신 그걸 ‘돈 받고 팔자’는 말은 이상하게 쑥스러워서 잘 못 꺼내.",
+    상관:"이상한 규칙이나 말 안 되는 지시를 보면 속에서 반박부터 올라오지? 참으면 스트레스가 쌓이고, 말하면 ‘너무 세다’는 소리를 듣는 쪽이야.",
+    비견:"남이 정해준 방식보다 내가 납득한 방식으로 해야 속이 편하지? 도움받는 것보다 혼자 해결하는 게 편해서, 힘들어도 먼저 말을 잘 안 해.",
+    겁재:"겉으론 괜찮은 척해도 비교당하면 속으로 확 불붙지? 같이 하는 일에서도 내 몫이 얼마인지 은근히 신경 쓰이는 편이야.",
+    정인:"뭘 시작하기 전에 알아보고 준비하는 시간이 길지? 확신이 없으면 잘 안 움직이고, 믿을 만한 사람이 ‘괜찮아’ 해줘야 마음이 놓여.",
+    편인:"남들이 그냥 넘기는 말 한마디도 혼자 여러 번 곱씹지? 관심 가는 건 끝까지 파고드는데, 관심 없는 건 아예 손이 안 가.",
+  };
+  const STRENGTH_SCENE={
+    신약:"그리고 겉으론 잘 해내는데, 혼자 있을 때 한꺼번에 확 지치는 날이 있어.",
+    신강:"그리고 한번 정하면 웬만해선 안 꺾여서, ‘고집 있다’는 말도 꽤 들어봤을 거야.",
+    중화:"컨디션 좋은 날엔 다 해낼 것 같다가도, 일이 겹치면 갑자기 버거워지는 날이 있어.",
+  };
+  const WEAK_SCENE={
+    output:"생각은 많은데, 그걸 말로 꺼내거나 결과물로 내놓는 건 자꾸 미뤄지지?",
+    wealth:"열심히 한 것에 비해, 돈이나 보상으로 챙기는 건 늘 뒤로 밀리지?",
+    officer:"하고 싶은 건 많은데, 마감이나 정해진 틀이 없으면 끝까지 가기가 어렵지?",
+    print:"쉬어야 할 때 제대로 못 쉬고, 배우거나 충전하는 시간을 사치처럼 느끼지?",
+    self:"남 맞춰주다 보면, 정작 내 기준이 뭐였는지 흐려질 때가 있지?",
+  };
+  const FIT_SCENE={
+    정재:"월급날·마감일처럼 날짜가 정해져 있고, 한 만큼 숫자로 돌아오는 곳에서 네 실력이 훨씬 잘 나와.",
+    편재:"여러 사람·기회를 만나되 어디까지 거둬들일지 선이 분명한 판에서, 네 감이 제일 잘 맞아.",
+    정관:"역할과 평가 기준이 처음부터 딱 정해진 곳에서는, 시키지 않아도 제일 믿음직한 사람이 돼.",
+    편관:"어렵고 부담 큰 일이어도 권한을 같이 받으면, 오히려 제일 크게 해내는 쪽이야.",
+    식신:"꾸준히 만든 게 쌓여서 눈에 보이는 곳에 있으면, 지치지 않고 오래 가.",
+    상관:"불편한 점을 말해도 불이익이 없는 곳에선, 아이디어가 제일 많이 나오는 사람이 돼.",
+    정인:"배울 시간과 믿을 만한 사람의 피드백이 있는 곳에서, 네 실력이 안정적으로 올라가.",
+    편인:"네 방식대로 깊게 파볼 재량이 있는 곳에서는, 남들이 못 찾는 답을 찾아내.",
+    비견:"내가 결정할 범위가 분명한 곳에서는, 누가 안 봐도 알아서 끝까지 해.",
+    겁재:"같이 하되 각자 몫이 분명한 판에서는, 경쟁심이 오히려 성과로 바뀌어.",
+  };
+  const HARM_SCENE={
+    officer:"처음엔 ‘내가 하면 되지’ 하고 맡다가, 어느새 일은 다 네 몫인데 결정권은 없는 상태가 돼.",
+    wealth:"기회라고 하나둘 벌이다 보면, 어디서 돈과 시간이 새는지 모르게 돼.",
+    output:"말하고 만들어내느라 에너지는 다 쓰는데, 정작 돌아오는 건 없는 상태가 돼.",
+    self:"비교나 고집 싸움이 붙으면, 이기는 데 에너지를 다 써버려.",
+    print:"준비만 계속하다가, 정작 해볼 타이밍을 놓쳐.",
+  };
+
+  function detailsBlock(lines){
+    const rows=(lines||[]).map(x=>String(x||"").replace(/<br\s*\/?>/gi," ").trim()).filter(Boolean);
+    if(!rows.length) return "";
+    return '<details class="note-detail"><summary>사주 근거 자세히 보기</summary><div class="note-detail-body">'+rows.join("<br>")+"</div></details>";
+  }
+  function headlineOf(reasoning){
+    const top=godRows(reasoning)[0];
+    return top&&HEADLINE[top.god]?HEADLINE[top.god]:"";
+  }
+  function lensScene(reasoning,s){
+    const group=lensGroupOf(s);
+    if(!GROUP_NAME[group]) return "";
+    const share=groupShare(reasoning,group);
+    const head=quoted(s.label)+" "+groupLabel(group)+"으로 보는데, 네 사주에선 "+share+"%";
+    if(share>=30) return head+"로 커. 그래서 없어서 문제라기보다, 너무 신경 쓰다가 지치는 쪽이야.";
+    if(share>=10) return head+"로 적당히 있어. 그래서 있냐 없냐보다 어떻게 쓰느냐에서 결과 차이가 크게 나.";
+    return head+"로 적은 편이야. 그래서 저절로 풀리길 기다리기보다, 기준을 직접 정해야 움직여.";
+  }
+
+  function noteOneDesc(reasoning,s,p,isT){
+    const top=godRows(reasoning)[0];
+    const dm=dayMasterName(reasoning);
+    const verdict=verdictOf(reasoning);
+    const strength=strengthPlain(reasoning);
+    const scene=[top?CORE_SCENE[top.god]:"",STRENGTH_SCENE[verdict]||STRENGTH_SCENE.중화].filter(Boolean).join(" ");
+    const conclusion=(isT?"<b>결론</b> — ":"<b>결론</b> — 언니가 딱 보니까 이거야. ")+scene;
+    const why=top
+      ? (isT?"<b>근거</b> — ":"<b>왜 그러냐면</b> — ")+"네 사주에서 <b>"+godLabel(top.god)+"</b>"+josaSuffix(top.god,"이","가")+" 힘의 "+godShare(reasoning,top.god)+"%로 가장 크고, 너 자신("+pillarName(reasoning,"day")+"의 "+dm+")은 "+strength+"이라서 그래."
+      : "";
+    const sp=Number(reasoning?.profile?.strength?.supportRatio);
+    const ratio=Number.isFinite(sp)?Math.round(sp*100):null;
+    const partner=top?godRows(reasoning).find(r=>r.group===top.group&&r.god!==top.god):null;
+    const details=detailsBlock([
+      "나: "+pillarName(reasoning,"day")+"의 윗글자 "+dm+"("+(EL_PLAIN[dayElementOf(reasoning)]||"")+"). 사주는 이 글자를 기준으로 나머지를 읽어.",
+      top?"가장 큰 힘: "+top.god+" — "+godPlaces(reasoning,top.god,2)+"에 있고 "+godShare(reasoning,top.god)+"%"+(partner?", "+GROUP_NAME[top.group]+"("+GROUP_GODS[top.group]+") 합계 "+groupShare(reasoning,top.group)+"%":"")+".":"",
+      centerSentence(reasoning),
+      ratio!==null?"힘의 크기: 나를 돕는 힘 "+ratio+" : 빠져나가거나 누르는 힘 "+(100-ratio)+".":"",
+      seasonSentence(reasoning),
+      rootSentence(reasoning),
+    ]);
+    return [
+      conclusion,
+      why,
+      lensScene(reasoning,s),
+      guardSentence(reasoning,isT),
+      details,
+    ].filter(Boolean).join("<br><br>");
+  }
+
+  function noteTwoDesc(reasoning,s,p,isT){
+    const scene=concernMechanismScene(reasoning,s);
+    const d=synthesisFor(reasoning).mechanisms?.drive||{};
+    const group=d.pressureGroup||reasoning?.integrated?.pressureGroup||"unknown";
+    const concernLine=plainSentence(CONCERN_GROUP_LINES[s.concern]?.[group]||CONCERN_GROUP_LINES[s.concern]?.unknown||"");
+    const conclusion=isT
+      ? "<b>결론</b> — "+concernLine+" ‘"+s.label+"’에서 반복이 갈리는 첫 지점은 <b>"+scene+"</b>이야."
+      : "<b>결론</b> — "+concernLine+" ‘"+s.label+"’에서도 네 반복은 마지막 결과보다 <b>"+scene+"</b>에서 먼저 갈려.";
+    const ranking=reasoning?.context?.elementRanking||[];
+    const weakest=ranking[ranking.length-1];
+    const weakGroup=weakest?.element?groupOfElement(dayElementOf(reasoning),weakest.element):"unknown";
+    const weakScene=WEAK_SCENE[weakGroup]||"";
+    let why="";
+    if(GROUP_NAME[group]){
+      const outShare=groupShare(reasoning,group);
+      const supportShare=groupShare(reasoning,"self")+groupShare(reasoning,"print");
+      const weakText=weakest?.element&&GROUP_NAME[weakGroup]
+        ? " 그리고 가장 약한 기운인 "+elementName(weakest.element)+josaSuffix(EL_KR[weakest.element],"이","가")+" "+Math.round(Number(weakest.share||0)*100)+"%밖에 안 되는데, 너한텐 이게 "+GROUP_MEANING[weakGroup]+" 쪽이야."
+        : "";
+      why=(isT?"<b>근거</b> — ":"<b>왜 그러냐면</b> — ")+
+        (outShare>supportShare
+          ? GROUP_NAME[group]+"("+GROUP_MEANING[group]+")이 "+outShare+"%로, 너를 돕는 힘 "+supportShare+"%보다 커."
+          : "너를 돕는 힘이 "+supportShare+"%로 충분하지만, 바깥 힘 중에선 "+GROUP_NAME[group]+"("+GROUP_MEANING[group]+")이 "+outShare+"%로 가장 커.")+weakText;
+    }
+    const details=detailsBlock([
+      plainSentence(patternPressureSentence(reasoning))+" "+plainSentence(patternCapacitySentence(reasoning)),
+      bondSentence(reasoning),
+      weakLinkSentence(reasoning).replace(/<[^>]+>/g,""),
+    ]);
+    return [
+      conclusion,
+      weakScene,
+      why,
+      (isT?"<b>바꿀 것</b> — ":"<b>그래서</b> — ")+plainSentence(patternResolutionSentence(reasoning).replace(/^그래서\s*/,"")),
+      details,
+    ].filter(Boolean).join("<br><br>");
+  }
+
+  function noteThreeDesc(reasoning,s,p,isT){
+    const rows=supportRows(reasoning,s);
+    const first=rows[0];
+    const rest=rows.slice(1);
+    const restText=rest.map(x=>"<b>"+x.text+"</b>"+(x.god?"("+x.god+")":"")).join(" / ");
+    const scene=first.god&&FIT_SCENE[first.god]?FIT_SCENE[first.god]:"";
+    return [
+      (isT?"<b>결론</b> — 맞는 조건 1순위는 <b>"+first.text+"</b>. ":"<b>결론</b> — 너한테 맞는 조건은 <b>"+first.text+"</b>이야. ")+scene,
+      (isT?"<b>근거</b> — ":"<b>왜 그러냐면</b> — ")+first.why,
+      rest.length?(isT?"추가 조건 — "+restText:"그다음은 "+restText+" 순서로 보면 돼."):"",
+      detailsBlock([balanceSentence(reasoning).replace(/<[^>]+>/g,"")]),
+    ].filter(Boolean).join("<br><br>");
+  }
+
   function noteFourDesc(reasoning,s,p,isT){
     const rows=harmRows(reasoning,s);
     const first=rows[0];
     const rest=rows.slice(1);
+    const drive=synthesisFor(reasoning).mechanisms?.drive||{};
+    const sceneGroup=first.god?godGroup(first.god):(drive.pressureGroup||"unknown");
+    const scene=HARM_SCENE[sceneGroup]||"";
     const conflict=(synthesisFor(reasoning).mechanisms?.adjustment?.conflicts||[])[0];
     const conflictLine=conflict?.god
-      ? "그리고 사주 중심을 살리는 쪽("+conflict.god+")과 일간 "+withJosa(dayMasterName(reasoning),"이","가")+" 편한 쪽이 완전히 같지 않아서, 결과가 난다고 같은 방식을 계속 밀면 지치기 쉬워."
+      ? "사주 중심을 살리는 쪽("+conflict.god+")과 일간 "+withJosa(dayMasterName(reasoning),"이","가")+" 편한 쪽이 완전히 같지 않아서, 결과가 난다고 같은 방식을 계속 밀면 지치기 쉬워."
       : "";
     const criterion=cautionCriterionSentence(reasoning,s);
     return [
-      isT
-        ? "<b>결론</b> — 우선 경계할 조건은 <b>"+first.text+"</b>."
-        : "<b>결론</b> — 네 사주에서 먼저 경계할 건 <b>"+first.text+"</b>이야.",
-      (isT?"<b>근거</b> — ":"<b>왜 이게 신호냐면</b> — ")+first.evidence,
+      (isT?"<b>결론</b> — 우선 경계할 조건은 <b>"+first.text+"</b>. ":"<b>결론</b> — <b>"+first.text+"</b>에 오래 있으면 넌 티 안 나게 지쳐. ")+scene,
+      (isT?"<b>근거</b> — ":"<b>왜 그러냐면</b> — ")+first.evidence,
       rest.length
         ? (isT
           ?"추가 주의 — "+rest.map(x=>"<b>"+x.text+"</b>("+x.god+")").join(" / ")
           :"그리고 "+rest.map(x=>"<b>"+x.text+"</b>("+x.god+")").join(" / ")+"도 같이 봐.")
         :"",
-      [conflictLine,relationRiskSentence(reasoning)].filter(Boolean).join(" "),
-      isT ? "<b>판단 기준</b> — "+criterion+"." : "<b>마지막으로 이것만 확인해</b> — "+criterion+".",
+      isT ? "<b>판단 기준</b> — "+criterion+"." : "<b>이것만 체크해</b> — "+criterion+".",
+      detailsBlock([conflictLine,relationRiskSentence(reasoning)]),
     ].filter(Boolean).join("<br><br>");
   }
 
@@ -1002,7 +1072,7 @@
     if(gz.length<2||!GAN_KR[gz[0]]) return "";
     const god=row?.sipsin||row?.layers?.wolun?.god||"";
     const name=GAN_KR[gz[0]]+(ZHI_KR[gz[1]]||"");
-    return "이 달의 기운은 "+name+(GOD_MEANING[god]?"("+god+": "+GOD_MEANING[god]+")":"")+josaSuffix(name,"이야","야");
+    return "(이 달 글자: "+name+(GOD_MEANING[god]?", "+god:"")+")";
   }
 
   function monthReason(reasoning,row,positive){
@@ -1077,10 +1147,11 @@
       const positive=["supportive","mild-support"].includes(row.class);
       const caution=["caution","mild-caution"].includes(row.class);
       const godText=monthGodText(row);
-      const lead="<b>"+when+"</b> — "+(godText?godText+". ":"");
-      if(positive) return lead+monthReason(reasoning,row,true)+". "+timingRealityCheck(reasoning,s,row,true)+".";
-      if(caution) return lead+monthReason(reasoning,row,false)+". "+timingRealityCheck(reasoning,s,row,false)+".";
-      return lead+"도움과 주의가 같이 잡혀서 한쪽으로 강하게 단정하기 어려운 달이야.";
+      const lead="<b>"+when+"</b> — ";
+      const tail=godText?" "+godText:"";
+      if(positive) return lead+monthReason(reasoning,row,true)+". "+timingRealityCheck(reasoning,s,row,true)+"."+tail;
+      if(caution) return lead+monthReason(reasoning,row,false)+". "+timingRealityCheck(reasoning,s,row,false)+"."+tail;
+      return lead+"도움과 주의가 같이 잡혀서 한쪽으로 강하게 단정하기 어려운 달이야."+tail;
     });
 
     if(pivot?.year){
@@ -1157,7 +1228,7 @@
     function titleFor(s,idx,isT,profile){
     if(idx===0){
       const top=profile?.topGod;
-      if(top) return (profile?.label||s.label)+" — "+withJosa(top,"이","가")+" 가장 큰 사주";
+      if(top) return (profile?.label||s.label)+" — "+(profile?.headline||withJosa(top,"이","가")+" 가장 큰 사주");
       return (profile?.label||s.label)+" — 네 사주에서 제일 먼저 보이는 답";
     }
     if(idx===1) return SCENE_TITLES[s.concern]?.[s.key]||"실제로 갈리는 장면";
@@ -1197,7 +1268,7 @@
     const s=d.situation;
     // NOTE 본문은 고민별 미리 작성된 trigger/reaction/cost/keep/cut/place를 읽지 않는다.
     // 고민 선택값은 같은 명리 사실을 어느 현실 영역으로 번역할지만 정한다.
-    const p={label:s.label,topGod:(r.synthesis?.tenGodEvidence||[])[0]?.god||""};
+    const p={label:s.label,topGod:(r.synthesis?.tenGodEvidence||[])[0]?.god||"",headline:headlineOf(r)};
     const timing=compactTimingNote(r,s,p,isT);
     const notes=[
       {
