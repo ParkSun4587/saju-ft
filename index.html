@@ -647,7 +647,19 @@
     text-align:center!important;
     text-align-last:center!important;
   }
-  #birthTimeBranch option[value="unknown"]{text-align:center}
+  /* 기본 '(모름)'은 생년월일 placeholder와 정확히 같은 톤으로 보이게 고정 */
+  #birthTimeBranch.birth-time-unknown{
+    color:#94a3b8!important;
+    -webkit-text-fill-color:#94a3b8!important;
+  }
+  #birthTimeBranch:not(.birth-time-unknown){
+    color:#334155!important;
+    -webkit-text-fill-color:#334155!important;
+  }
+  #birthTimeBranch option[value="unknown"]{
+    text-align:center;
+    color:#94a3b8!important;
+  }
   button{touch-action:manipulation}
 
   /* first choice */
@@ -2396,7 +2408,7 @@
                   <select
                     id="birthTimeBranch"
                     onchange="selectBirthTimeBranch(this)"
-                    class="flex-1 min-w-0 h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[10.5px] text-slate-400 focus:bg-white focus:outline-none"
+                    class="birth-time-unknown flex-1 min-w-0 h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[10.5px] focus:bg-white focus:outline-none"
                   >
                     <option value="unknown" selected>(모름)</option>
                     <option value="子">자시 · 23:30~01:29</option>
@@ -6135,9 +6147,7 @@ function generateConcernNotes(data, mode) {
 
       function syncBirthTimeBranchTone(select=document.getElementById("birthTimeBranch")) {
         if(!select) return;
-        const isUnknown=select.value==="unknown";
-        select.classList.toggle("text-slate-400", isUnknown);
-        select.classList.toggle("text-slate-700", !isUnknown);
+        select.classList.toggle("birth-time-unknown", select.value==="unknown");
       }
 
       function selectBirthTimeBranch(select) {
