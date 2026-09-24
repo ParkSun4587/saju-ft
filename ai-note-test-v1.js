@@ -85,7 +85,7 @@
       },
       fiveElements: {
         rawCount: chart.fiveElements?.rawCount || {},
-        weightedRank: (chart.fiveElements?.weightedRank || []).slice(0, 5),
+        weightedRank: asArray(chart.fiveElements?.weightedRank).slice(0, 5),
         rawVsWeightedMismatch: chart.fiveElements?.rawVsWeightedMismatch === true,
       },
       dominantTenGod: topGod
@@ -297,13 +297,13 @@
       ganZhi: layer.ganZhi || "",
       god: layer.god || "",
       group: layer.group || "",
-      supportSignals: (layer.supportSignals || [])
+      supportSignals: asArray(layer.supportSignals)
         .map(timingSignalSummary)
         .filter(Boolean),
-      cautionSignals: (layer.cautionSignals || [])
+      cautionSignals: asArray(layer.cautionSignals)
         .map(timingSignalSummary)
         .filter(Boolean),
-      neutralSignals: (layer.neutralSignals || [])
+      neutralSignals: asArray(layer.neutralSignals)
         .map(timingSignalSummary)
         .filter(Boolean)
         .slice(0, 4),
@@ -336,16 +336,16 @@
 
   function collectTimingEvidenceIds(rows) {
     const out = [];
-    for (const row of rows || []) {
-      out.push(...(row?.sourceRuleIds || []));
+    for (const row of asArray(rows)) {
+      out.push(...asArray(row?.sourceRuleIds));
       for (const layerName of ["daeun", "seyun", "wolun"]) {
         const layer = row?.layers?.[layerName];
         for (const signal of [
-          ...(layer?.supportSignals || []),
-          ...(layer?.cautionSignals || []),
-          ...(layer?.neutralSignals || []),
+          ...asArray(layer?.supportSignals),
+          ...asArray(layer?.cautionSignals),
+          ...asArray(layer?.neutralSignals),
         ]) {
-          out.push(...(signal?.sourceRuleIds || []));
+          out.push(...asArray(signal?.sourceRuleIds));
         }
       }
     }
@@ -395,8 +395,8 @@
       fiveElements: {
         rawCount: cloneJson(elements?.raw || {}, {}),
         weightedInfluence: cloneJson(elements?.influence || {}, {}),
-        rawRank: cloneJson(elements?.rawRank || {}, {}),
-        weightedRank: cloneJson(elements?.influenceRank || {}, {}),
+        rawRank: cloneJson(asArray(elements?.rawRank), []),
+        weightedRank: cloneJson(asArray(elements?.influenceRank), []),
         rawVsWeightedMismatch: elements?.rawVsInfluenceMismatch === true,
         note:
           "rawCount는 겉으로 보이는 천간·지지 개수이고 weightedInfluence는 월령·지장간·자리 가중치를 반영한 해석값이다. 0개/1개만 보고 결론내리지 않는다.",
@@ -405,8 +405,8 @@
         dominant: sipsin?.dominant || "",
         secondary: sipsin?.secondary || "",
         counts: cloneJson(sipsin?.counts || {}, {}),
-        placements: cloneJson(sipsin?.all || [], []),
-        occurrences: cloneJson(context?.godOccurrences || [], []),
+        placements: cloneJson(asArray(sipsin?.all), []),
+        occurrences: cloneJson(asArray(context?.godOccurrences), []),
       },
       structure: {
         gyeokName: structure?.gyeokName || "",
@@ -420,9 +420,9 @@
         touchul: structure?.touchul === true,
         branchType: structure?.branchType || "",
         saryeongGan: structure?.saryeongGan || "",
-        hiddenGans: cloneJson(structure?.hiddenGans || [], []),
-        visibleHidden: cloneJson(structure?.visibleHidden || [], []),
-        candidates: cloneJson(structure?.candidates || [], []),
+        hiddenGans: cloneJson(asArray(structure?.hiddenGans), []),
+        visibleHidden: cloneJson(asArray(structure?.visibleHidden), []),
+        candidates: cloneJson(asArray(structure?.candidates), []),
       },
       balance: {
         primaryYongshin: balance?.primary || "",
