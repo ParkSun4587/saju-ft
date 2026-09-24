@@ -5356,15 +5356,9 @@ function decorateSajuTerms(html) {
     if(!part || part.startsWith("<")) return part;
     let out=part;
     for(const term of terms){
-      const safe=term.replace(/[.*+?^${}()|[\]\\]/g,"\\function generateConcernNotes(data, mode) {
-  if (typeof globalThis.renderConcernNotesV2 !== "function") {
-    throw new Error("최신 고민 NOTE 엔진을 아직 불러오지 못했어.");
-  }
-  return globalThis.renderConcernNotesV2(data || {}, mode || "F");
-}
-");
+      const safe=term.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
       const re=new RegExp(safe+"(?=(?:이|가|은|는|을|를|과|와|도|의|에|에서|으로|이며|이고|이라|격|·|,|\\.|\\s|$))","g");
-      out=out.replace(re,'<button type="button" class="saju-term-help" onclick="event.stopPropagation();showSajuTermHelp(\''+term+'\')">'+term+'</button>');
+      out=out.replace(re,()=>'<button type="button" class="saju-term-help" onclick="event.stopPropagation();showSajuTermHelp(\''+term+'\')">'+term+'</button>');
     }
     return out;
   }).join("");
@@ -5396,7 +5390,6 @@ function generateConcernNotes(data, mode) {
 }
 
 
-      
       // 개별 아코디언 열기/닫기 이벤트 핸들러
       window.toggleAccordion = function (btn) {
         if (!btn) return;
