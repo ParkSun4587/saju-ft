@@ -76,8 +76,8 @@
     print:{noun:"받쳐주고 회복시키는 힘",pressure:"더 이해하고 준비해서 안전해지려는 힘",action:"정보·준비·회복 시간을 먼저 확보하는 것"},
     output:{noun:"표현하고 결과물로 빼는 힘",pressure:"생각과 에너지를 밖으로 꺼내야 하는 힘",action:"말·결과물·작은 실행으로 밖에 내보내는 것"},
     wealth:{noun:"현실 결과와 자원을 다루는 힘",pressure:"돈·성과·기회처럼 실제 결과를 챙겨야 하는 힘",action:"조건·금액·시간을 숫자로 확인하는 것"},
-    officer:{noun:"기준·책임·평가의 힘",pressure:"책임·평가·규칙처럼 밖에서 들어오는 압박",action:"역할과 책임의 범위를 분명하게 정하는 것"},
-    unknown:{noun:"한쪽으로 단정하기 어려운 힘",pressure:"여러 조건이 한꺼번에 작동하는 압박",action:"변수를 하나씩 분리해서 확인하는 것"},
+    officer:{noun:"기준·책임·평가의 힘",pressure:"책임·평가·규칙처럼 밖에서 들어오는 부담",action:"역할과 책임의 범위를 분명하게 정하는 것"},
+    unknown:{noun:"한쪽으로 단정하기 어려운 힘",pressure:"여러 조건이 한꺼번에 작동하는 부담",action:"변수를 하나씩 분리해서 확인하는 것"},
   };
 
   const ELEMENT_ACTION = {
@@ -249,9 +249,9 @@
 
   function rootUser(root) {
     const quality = root?.facts?.quality;
-    if (quality === "month-rooted") return "그래도 가장 힘이 센 자리에서 네 힘을 받쳐주는 뿌리가 있어서, 압박을 전혀 못 버티는 구조는 아니야";
-    if (quality === "day-rooted") return "그래도 네 가까운 자리에서 받쳐주는 뿌리가 있어서, 완전히 힘이 빠져 있는 구조는 아니야";
-    if (quality === "other-rooted") return "강한 뿌리는 아니어도 다른 자리에서 받쳐주는 축이 있어서 완전히 떠 있는 구조는 아니야";
+    if (quality === "month-rooted") return "그래도 가장 힘이 센 자리에서 네 힘을 받쳐주는 뿌리가 있어서, 압박을 전혀 못 버티는 작동 방식은 아니야";
+    if (quality === "day-rooted") return "그래도 네 가까운 자리에서 받쳐주는 뿌리가 있어서, 완전히 힘이 빠져 있는 작동 방식은 아니야";
+    if (quality === "other-rooted") return "강한 뿌리는 아니어도 다른 자리에서 받쳐주는 축이 있어서 완전히 떠 있는 작동 방식은 아니야";
     if (quality === "rootless") return "반대로 스스로 버티게 해주는 뿌리가 뚜렷하지 않아서, 압박을 오래 들고 가는 방식은 손실이 커지기 쉬워";
     return "받치는 힘의 위치는 한쪽으로 단정하기 어려워";
   }
@@ -327,22 +327,22 @@
     if (path === "wealth-release") return "그래서 강한 표현과 산출을 현실 결과로 연결해야 힘이 막히지 않아";
     if (path === "print-control") return "그래서 바로 터뜨리기보다 한 번 정리하고 이해한 뒤 표현하는 순서가 힘을 살려";
     if (path === "officer-control") return "그래서 강한 자기 힘을 역할·책임·기준에 묶어 쓸 때 결과가 남기 쉬워";
-    if (path === "output-to-wealth") return "그래서 내 힘을 결과물로 빼고 그걸 실제 보상과 연결할 때 구조가 살아";
+    if (path === "output-to-wealth") return "그래서 내 힘을 결과물로 빼고 그걸 실제 보상과 연결할 때 작동 방식이 살아";
     const state = reasoning?.integrated?.zipingState;
-    if (state === "supported") return "중심 구조를 살려주는 연결이 실제 사주 안에 있어서, 조건만 맞으면 힘이 한 방향으로 모일 수 있어";
+    if (state === "supported") return "중심 작동 방식을 살려주는 연결이 실제 사주 안에 있어서, 조건만 맞으면 힘이 한 방향으로 모일 수 있어";
     if (state === "rescued") return "흐름을 깨는 힘이 있어도 다시 살려주는 연결이 함께 있어서, 무엇을 먼저 쓰느냐가 중요해";
-    if (state === "damaged") return "중심 구조를 흔드는 힘이 같이 있어서, 익숙한 방식만 계속 밀면 소모가 커질 수 있어";
+    if (state === "damaged") return "중심 작동 방식을 흔드는 힘이 같이 있어서, 익숙한 방식만 계속 밀면 소모가 커질 수 있어";
     if (state === "mixed") return "살리는 힘과 흔드는 힘이 같이 있어서, 같은 선택도 순서와 조건에 따라 결과 차이가 커질 수 있어";
-    return "중심 구조는 보이지만 무엇이 살리고 무엇이 깨는지는 한쪽으로 과장하지 않는 게 맞아";
+    return "중심 작동 방식은 보이지만 무엇이 살리고 무엇이 깨는지는 한쪽으로 과장하지 않는 게 맞아";
   }
 
   function zipingCauseSummary(reasoning) {
     const state = reasoning?.integrated?.zipingState;
-    if (state === "supported") return "살리는 조건이 들어오면 중심이 흩어지기보다 한 방향으로 모이는 구조야";
-    if (state === "rescued") return "한 번 흐트러져도 다시 받치는 힘이 이어질 때 회복되는 구조야";
-    if (state === "damaged") return "방해 조건을 그대로 두면 중심 흐름이 반복해서 깎이는 구조야";
-    if (state === "mixed") return "살리는 힘과 흔드는 힘이 같이 있어서 무엇을 먼저 쓰느냐가 결과를 가르는 구조야";
-    return "한 가지 힘만 보고 결론내리기보다 살리는 조건과 흔드는 조건을 함께 봐야 하는 구조야";
+    if (state === "supported") return "살리는 조건이 들어오면 중심이 흩어지기보다 한 방향으로 모이는 작동 방식이야";
+    if (state === "rescued") return "한 번 흐트러져도 다시 받치는 힘이 이어질 때 회복되는 작동 방식이야";
+    if (state === "damaged") return "방해 조건을 그대로 두면 중심 흐름이 반복해서 깎이는 작동 방식이야";
+    if (state === "mixed") return "살리는 힘과 흔드는 힘이 같이 있어서 무엇을 먼저 쓰느냐가 결과를 가르는 작동 방식이야";
+    return "한 가지 힘만 보고 결론내리기보다 살리는 조건과 흔드는 조건을 함께 봐야 하는 작동 방식이야";
   }
 
   function pressureChain(reasoning, situation, isT) {
@@ -397,8 +397,8 @@
     const monthLine = s.touchul
       ? "태어난 계절에서 잡힌 중심 힘이 겉의 선택과 행동까지 바로 이어지는 편"
       : "태어난 계절에서 잡힌 중심 힘이 바로 겉으로 튀어나오기보다 안에서 한 번 걸러지는 편";
-    const supportLine = helpful.length ? `이 구조를 살리는 쪽은 <b>${helpful.join("·")}</b>` : "이 구조를 살리는 힘은 한 가지로만 고정되지 않아";
-    const harmLine = harmful.length ? `반대로 <b>${harmful.join("·")}</b>이 앞에 서면 원래 흐름을 흔들 수 있어` : "지금 확인된 구조에서는 한 가지 방해 힘이 압도적으로 고정되진 않아";
+    const supportLine = helpful.length ? `이 작동 방식을 살리는 쪽은 <b>${helpful.join("·")}</b>` : "이 작동 방식을 살리는 힘은 한 가지로만 고정되지 않아";
+    const harmLine = harmful.length ? `반대로 <b>${harmful.join("·")}</b>이 앞에 서면 원래 흐름을 흔들 수 있어` : "지금 확인된 작동 방식에서는 한 가지 방해 힘이 압도적으로 고정되진 않아";
     const rescueLine = harmful.length && rescue.length
       ? `그래도 흐트러졌을 때 <b>${rescue.join("·")}</b>이 다시 받아주는 길이 있어`
       : "";
@@ -407,7 +407,7 @@
       : "";
     const relationLine = relationUser(reasoning);
     const conflictLine = conflict
-      ? "다만 몸이 감당하는 방향과 중심 구조가 요구하는 방향이 완전히 같진 않아서, 먼저 버틸 조건을 만든 다음 결과 쪽 힘을 써야 해."
+      ? "다만 몸이 감당하는 방향과 중심 작동 방식이 요구하는 방향이 완전히 같진 않아서, 먼저 버틸 조건을 만든 다음 결과 쪽 힘을 써야 해."
       : "";
     const resolution = String(conflictLine || zipingCauseSummary(reasoning)).replace(/[.!?]+$/,"");
     if (isT) {
@@ -440,7 +440,7 @@
     if (isT) {
       return `<b>첫 순서</b> — ${firstAction}.<br><br><b>그다음</b> — ${secondAction}.<br><br><b>지금 고민에 적용</b> — ${situation.move}.<br><br><b>7일 검증 기준</b> — ${situation.metric}.<br><br>${harmful.length ? `특히 ${harmful.join("·")}이 과해지는 선택은 줄여.` : "한 번에 변수 여러 개를 바꾸지 마."} ${conflictLine} ${caution}`;
     }
-    return `한꺼번에 바꾸기보다 순서가 중요해. <b>먼저 ${firstAction}</b>. 그다음 <b>${secondAction}</b>을 붙여봐.<br><br>지금 고민에서는 ${situation.move}. <b>이번 7일의 확인 기준은 ‘${situation.metric}’</b>이야.<br><br>${harmful.length ? `${harmful.join("·")}이 너무 커지는 방식은 오히려 원래 구조를 더 힘들게 만들 수 있어.` : "변수를 여러 개 한꺼번에 바꾸면 뭐가 효과 있었는지 놓치기 쉬워."} ${conflictLine} ${caution}`;
+    return `한꺼번에 바꾸기보다 순서가 중요해. <b>먼저 ${firstAction}</b>. 그다음 <b>${secondAction}</b>을 붙여봐.<br><br>지금 고민에서는 ${situation.move}. <b>이번 7일의 확인 기준은 ‘${situation.metric}’</b>이야.<br><br>${harmful.length ? `${harmful.join("·")}이 너무 커지는 방식은 오히려 원래 작동 방식을 더 힘들게 만들 수 있어.` : "변수를 여러 개 한꺼번에 바꾸면 뭐가 효과 있었는지 놓치기 쉬워."} ${conflictLine} ${caution}`;
   }
 
   function godSpecificCondition(god, domain, kind) {
@@ -584,7 +584,7 @@
       else if (/bridge|flow-unblock/.test(code)) effect = "막힌 연결을 이어주는 힘이";
       else if (/discharge/.test(code)) effect = "쌓인 힘을 밖으로 빼는 흐름이";
       else if (/control/.test(code)) effect = "힘을 역할과 기준으로 정리하는 흐름이";
-      else if (/ziping-support/.test(code)) effect = "중심 구조를 살리는 힘이";
+      else if (/ziping-support/.test(code)) effect = "중심 작동 방식을 살리는 힘이";
       else if (/root-clash/.test(code)) effect = "버티는 기반을 흔드는 신호가";
       else if (/body-cost/.test(code)) effect = "감당해야 할 부담을 키우는 신호가";
       else if (/ziping-harm/.test(code)) effect = "중심 흐름을 흔드는 신호가";
@@ -834,7 +834,208 @@
     return [...new Set(synthesisFor(reasoning)?.evidencePlan?.roles?.[role]||[])];
   }
 
-  function capacitySentence(reasoning){
+  function evidenceLocationText(row) {
+    if (!row) return "";
+    const visible = Number(row.visibleWeight || 0);
+    const hidden = Number(row.hiddenWeight || 0);
+    if (visible > hidden * 1.15) return "겉으로 드러난 선택과 행동에서 더 빨리 보이는 힘";
+    if (hidden > visible * 1.15) return "처음부터 겉으로 드러나기보다 익숙한 상황과 안쪽 판단에서 더 강해지는 힘";
+    return "겉으로 보이는 선택과 안쪽 판단에 둘 다 비슷하게 걸리는 힘";
+  }
+
+  function topGodEvidence(reasoning) {
+    return (synthesisFor(reasoning).tenGodEvidence || [])[0] || null;
+  }
+
+  const SITUATION_GROUP_LENS = {
+    money:{
+      saving:["wealth","self","officer"], income:["wealth","output","officer"],
+      side:["output","wealth","self"], flow:["wealth","officer","output"],
+    },
+    career:{
+      exam:["print","officer","output"], jobsearch:["output","officer","print"],
+      move:["officer","self","wealth"], current:["officer","wealth","output"],
+    },
+    love:{
+      crush:["output","wealth","print"], relationship:["self","officer","output"],
+      breakup:["print","self","officer"], new:["output","wealth","self"],
+    },
+    path:{
+      lost:["print","output","self"], current:["officer","wealth","self"],
+      switch:["output","wealth","print"], strength:["self","output","print","wealth","officer"],
+    },
+    people:{
+      friend:["self","output","officer"], work:["officer","self","output"],
+      family:["self","officer","print"], distance:["self","wealth","officer"],
+    },
+    mental:{
+      burnout:["officer","print","self"], overthink:["print","output","self"],
+      low:["output","print","self"], recover:["print","self","output"],
+    },
+  };
+
+  function situationGodEvidence(reasoning,s) {
+    const rows=synthesisFor(reasoning).tenGodEvidence||[];
+    if(!rows.length) return null;
+    const prefs=SITUATION_GROUP_LENS[s?.concern]?.[s?.key]||[];
+    for(const group of prefs){
+      const row=rows.find(x=>x?.group===group);
+      if(row) return row;
+    }
+    return rows[0]||null;
+  }
+
+  function situationLensSentence(reasoning,s) {
+    const row=situationGodEvidence(reasoning,s);
+    if(!row?.god) return "";
+    const roles=row.roles||[];
+    const role=roles.includes("rescue")
+      ?"흔들린 작동 방식을 다시 살리는 역할"
+      :roles.includes("support")
+        ?"전체 작동 방식을 받치는 역할"
+        :roles.includes("harm")
+          ?"과해질 때 작동 방식을 흔드는 역할"
+          :"실제 세력에서 우선순위가 높은 역할";
+    return "지금 고른 ‘"+s.label+"’에서는 사주 안의 "+(GOD_USER[row.god]||row.god)+" 신호를 우선 연결해서 봐야 해. "+evidenceLocationText(row)+"이고, "+role+"로 잡혀 있어";
+  }
+
+  function concernMechanismScene(reasoning, s) {
+    const group = synthesisFor(reasoning).mechanisms?.drive?.pressureGroup || reasoning?.integrated?.pressureGroup || "unknown";
+    const name = (DOMAIN[s.concern] || DOMAIN.money).name || "이 고민";
+    const map = {
+      self: name + "에서 내 몫·경계·결정권을 스스로 정해야 하는 장면",
+      print: name + "에서 정보·준비·안전성을 확인해야 하는 장면",
+      output: name + "에서 생각이나 의도를 말·행동·결과로 밖에 내야 하는 장면",
+      wealth: name + "에서 시간·돈·보상·주고받음처럼 실제 자원을 계산해야 하는 장면",
+      officer: name + "에서 책임·약속·평가·규칙이 걸리는 장면",
+      unknown: name + "에서 여러 조건 가운데 무엇이 실제 결과를 바꾸는지 가려야 하는 장면",
+    };
+    return map[group] || map.unknown;
+  }
+
+  function distinctiveCoreSentence(reasoning) {
+    const syn = synthesisFor(reasoning);
+    const c = syn.mechanisms?.capacity || {};
+    const d = syn.mechanisms?.drive || {};
+    const a = syn.mechanisms?.adjustment || {};
+    const f = syn.mechanisms?.friction || {};
+    const flags = new Set(syn.contradictionFlags || []);
+    const top = topGodEvidence(reasoning);
+
+    if (d.rawInfluenceMismatch && d.rawStrongest && d.strongestElement && d.rawStrongest !== d.strongestElement) {
+      return "겉으로 보이는 오행 개수에서는 " + (FLOW_SHORT[d.rawStrongest] || d.rawStrongest) +
+        " 쪽이 먼저 보여도, 계절과 안쪽에 숨어 있는 힘, 자리별 비중까지 반영하면 실제 중심은 " +
+        (FLOW_SHORT[d.strongestElement] || d.strongestElement) + " 쪽으로 바뀌는 사주야. 겉모습과 실제 작동 방식이 같은 사람이 아니야";
+    }
+    if (flags.has("body-vs-structure") && (a.conflicts || []).length) {
+      return "결과를 만들어주는 방식과 네가 오래 감당할 수 있는 방식이 완전히 같지 않은 사주야. 잘 풀리는 방법을 그대로 오래 밀면 오히려 네 쪽 부담이 먼저 커질 수 있어서 순서가 특히 중요해";
+    }
+    if (flags.has("weak-but-rooted")) {
+      return "전체 세력은 약한 쪽인데 실제 뿌리는 남아 있어. 그래서 처음부터 약하게 보이는 사람이 아니라, 평소엔 버티다가 그 뿌리가 흔들리는 조건에서 체감이 갑자기 달라지기 쉬운 작동 방식이야";
+    }
+    if (flags.has("strong-without-season-support")) {
+      return "계절의 도움만으로 강해진 사주가 아닌데도 다른 자리의 뿌리와 생조가 힘을 끌어올리고 있어. 그래서 겉으로는 단단해 보여도 어떤 환경에서 그 힘을 받는지에 따라 차이가 크게 나는 작동 방식이야";
+    }
+    if (Number(c.rootClashCount || 0) > 0) {
+      return "버티는 뿌리 자체는 있는데 그 뿌리를 직접 흔드는 부딪힘도 같이 있어. 평소에 버티는 모습만 보고 계속 같은 강도로 밀어도 된다고 보면 오히려 핵심을 놓치는 사주야";
+    }
+    if (d.blockedAt?.from && d.blockedAt?.to) {
+      return flowGapSentence(reasoning).replace(/[.!?]+$/,"") + ". 힘이 아예 없는 게 아니라 특정 단계에서 다음 단계로 넘기는 연결이 약한 게 핵심이야";
+    }
+    if (a.bridgeElement && a.bridgeStatus === "missing") {
+      return "서로 강하게 맞서는 힘은 분명한데 그 사이를 이어줄 " + (FLOW_SHORT[a.bridgeElement] || "중간") +
+        " 역할이 원래 약하게 잡혀 있어. 한쪽 힘이 부족한 것보다 두 힘 사이의 연결이 비어 있는 게 더 중요한 사주야";
+    }
+    if (d.pressureOverload) {
+      return groupText(d.pressureGroup || "unknown").pressure + "이 단순한 배경이 아니라 실제로 과해질 수 있는 축이야. 네 사주는 무엇을 더 키울지보다 이 압력이 어느 순간부터 과부하로 바뀌는지를 보는 게 더 중요해";
+    }
+    if (top?.god) {
+      const role = (top.roles || []).includes("rescue") ? "작동 방식이 흔들릴 때 다시 살려주는 역할까지 맡고"
+        : (top.roles || []).includes("support") ? "사주의 중심 작동 방식을 받치는 역할까지 맡고"
+        : (top.roles || []).includes("harm") ? "잘못 쓰이면 작동 방식을 흔드는 역할까지 맡고"
+        : "실제 세력에서도 우선순위가 높고";
+      return (GOD_USER[top.god] || top.god) + "이 " + role + " 있어. " + evidenceLocationText(top) + "이라는 점까지 같이 봐야 네 사주의 중심이 보여";
+    }
+    return structureSentence(reasoning).replace(/[.!?]+$/,"");
+  }
+
+  function cautionCriterionSentence(reasoning, s) {
+    const syn = synthesisFor(reasoning);
+    const c = syn.mechanisms?.capacity || {};
+    const d = syn.mechanisms?.drive || {};
+    const a = syn.mechanisms?.adjustment || {};
+    const f = syn.mechanisms?.friction || {};
+    const name = (DOMAIN[s.concern] || DOMAIN.money).name || "이 고민";
+    if (Number(c.rootClashCount || 0) > 0) return name + "에서 평소엔 되던 방식이 특정 조건에서 유독 버티지 못하고 흔들리는지 봐";
+    if ((a.conflicts || []).length) return name + "에서 결과는 나는데 같은 방식을 반복할수록 네 여유와 감당력이 더 빨리 줄어드는지 봐";
+    if (d.blockedAt?.from && d.blockedAt?.to) return name + "에서 시작부터 끝까지가 아니라 항상 같은 중간 단계에서 반복해서 끊기는지 봐";
+    if (d.pressureOverload) return name + "에서 " + groupText(d.pressureGroup || "unknown").pressure + "이 늘어날 때 체감이 유독 급격히 나빠지는지 봐";
+    if (Number(f.monthClashCount || 0) > 0) return name + "의 한 조건은 좋아져도 생활의 중심이 계속 같이 흔들리는 선택인지 봐";
+    if (Number(f.clashCount || 0) > 0) return name + "의 한쪽을 맞출수록 다른 중요한 조건이 반복해서 깨지는지 봐";
+    return name + "에서 같은 조건을 몇 번 반복했을 때도 처음과 비슷하게 힘이 남는지 봐";
+  }
+
+  function timingRealityCheck(reasoning, s, row, positive) {
+    const name = (DOMAIN[s.concern] || DOMAIN.money).name || "이 고민";
+    const rows = positive ? (row?.layers?.wolun?.supportSignals || []) : (row?.layers?.wolun?.cautionSignals || []);
+    const signal = rows.find(x => x.severity === "major") || rows.find(x => x.severity === "support") || rows[0] || null;
+    const code = String(signal?.code || "");
+    if (positive) {
+      if (/generate|rescue|root-add|assist/.test(code)) return name + "에서 평소 버겁던 조건을 비슷한 강도로 다뤄도 체감이 덜 무거워지는지가 확인 포인트야";
+      if (/bridge|flow-unblock/.test(code)) return name + "에서 평소 끊기던 단계가 실제로 다음 단계까지 이어지는지가 확인 포인트야";
+      if (/discharge/.test(code)) return name + "에서 생각·준비가 실제 표현이나 결과까지 넘어가는지가 확인 포인트야";
+      if (/control/.test(code)) return name + "에서 기준과 우선순위가 평소보다 선명하게 잡히는지가 확인 포인트야";
+      if (/ziping-support/.test(code)) return name + "에서 원래 사주의 장점이 실제 결과까지 이어지는지가 확인 포인트야";
+      return name + "에서 평소와 같은 선택을 했을 때 실제 반응이 더 가볍게 이어지는지가 확인 포인트야";
+    }
+    if (/root-clash/.test(code)) return name + "에서 평소 버티던 축이 같은 강도로 유지되는지부터 확인해야 하는 달이야";
+    if (/body-cost/.test(code)) return name + "에서 해야 할 일이나 책임이 늘 때 네 감당력이 먼저 떨어지는지 확인해야 하는 달이야";
+    if (/ziping-harm/.test(code)) return name + "에서 원래 잘되던 방식이 같은 조건에서도 꼬이는지 확인해야 하는 달이야";
+    if (/over-support/.test(code)) return name + "에서 이미 강한 방식이 더 세져 선택 폭을 오히려 좁히는지 확인해야 하는 달이야";
+    return name + "에서 평소 약한 지점이 다른 달보다 더 쉽게 드러나는지 확인해야 하는 달이야";
+  }
+
+    function personalizationFactsForRole(reasoning, role, situation) {
+    const syn = synthesisFor(reasoning);
+    const c = syn.mechanisms?.capacity || {};
+    const d = syn.mechanisms?.drive || {};
+    const st = syn.mechanisms?.structure || {};
+    const a = syn.mechanisms?.adjustment || {};
+    const f = syn.mechanisms?.friction || {};
+    const top = topGodEvidence(reasoning);
+    const lens = situation ? situationGodEvidence(reasoning,situation) : null;
+    if (role === "core") return {
+      priorityRuleIds:(syn.priorityMechanisms || []).slice(0,3).map(x=>x.ruleId),
+      contradictionFlags:syn.contradictionFlags || [],
+      strength:c.verdict || null, rootQuality:c.rootQuality || null, rootClashCount:Number(c.rootClashCount || 0),
+      rawStrongest:d.rawStrongest || null, strongestElement:d.strongestElement || null,
+      topGod:top?.god || null, topGodRoles:top?.roles || [],
+      situationGod:lens?.god||null, situationGodGroup:lens?.group||null,
+    };
+    if (role === "pattern") return {
+      pressureGroup:d.pressureGroup || null, pressureOverload:!!d.pressureOverload,
+      blockedAt:d.blockedAt || null, rootQuality:c.rootQuality || null,
+      structureState:st.state || null, structurePath:st.path || null,
+      clashCount:Number(f.clashCount || 0), relationCount:Number(f.relationCount || 0),
+      situationGod:lens?.god||null, situationGodGroup:lens?.group||null,
+    };
+    if (role === "fit") return {
+      helpfulGods:st.helpfulGods || [], rescueGods:st.rescueGods || [],
+      prescriptionSequence:(a.prescription?.sequence || []).map(x=>x.element).filter(Boolean),
+      bridgeElement:a.bridgeElement || null, bridgeStatus:a.bridgeStatus || null,
+      situationGod:lens?.god||null,
+    };
+    if (role === "caution") return {
+      harmfulGods:st.harmfulGods || [], pressureGroup:d.pressureGroup || null,
+      pressureOverload:!!d.pressureOverload, conflictCount:(a.conflicts || []).length,
+      rootClashCount:Number(c.rootClashCount || 0), clashCount:Number(f.clashCount || 0),
+      monthClashCount:Number(f.monthClashCount || 0), situationGod:lens?.god||null,
+    };
+    return {};
+  }
+
+
+      function capacitySentence(reasoning){
     const m=synthesisFor(reasoning).mechanisms?.capacity||{};
     const verdict=m.verdict||"중화";
     const root=m.rootQuality||"unknown";
@@ -842,45 +1043,45 @@
     const party=!!m.partySupported;
     const clash=Number(m.rootClashCount||0)>0;
     let first;
-    if(verdict==="신약"&&root==="rootless") first="너는 못 버티는 사람이 아니라, 바깥 요구를 오래 들고 있을수록 회복보다 소모가 먼저 쌓이는 쪽이야";
-    else if(verdict==="신약") first="처음엔 꽤 버티는 편이지만, 오래 끌면 받쳐주는 힘보다 소모가 먼저 커지는 쪽이야";
-    else if(verdict==="신강"&&["month-rooted","day-rooted"].includes(root)) first="쉽게 무너지지 않고 스스로 밀어붙이는 힘이 강한 편이라, 오히려 문제를 혼자 더 오래 들고 갈 수 있어";
-    else if(verdict==="신강") first="기본적으로 밀어붙이는 힘은 충분한데, 힘이 센 만큼 멈출 시점을 늦게 잡을 수 있어";
-    else first="한쪽으로 무조건 강하거나 약하다기보다, 상황에 따라 버티는 힘과 소모가 꽤 다르게 나타나는 편이야";
+    if(verdict==="신약"&&root==="rootless") first="받쳐주는 힘보다 밖으로 빠지는 힘이 더 큰데, 확인되는 뿌리도 약해. 그래서 처음부터 못 버틴다기보다 오래 들고 갈수록 소모가 먼저 커지는 작동 방식이야";
+    else if(verdict==="신약") first="전체 세력은 약한 쪽이지만 실제 뿌리는 남아 있어. 그래서 초반엔 꽤 버티는데 같은 부담이 길어질수록 뒤에서 피로가 더 빨리 쌓이는 작동 방식이야";
+    else if(verdict==="신강"&&["month-rooted","day-rooted"].includes(root)) first="받쳐주는 세력이 강한 데다 사주의 중심 자리에도 실제 뿌리가 있어. 쉽게 무너지기보다 스스로 더 오래 들고 가는 쪽으로 기울기 쉬운 작동 방식이야";
+    else if(verdict==="신강") first="전체 세력은 강한 쪽이지만 중심 뿌리 하나만으로 버티는 작동 방식은 아니야. 여러 자리의 생조가 붙을 때 힘이 커지는 편이라 환경에 따라 강점의 체감 차이가 날 수 있어";
+    else first="받쳐주는 힘과 밖으로 빠지는 힘이 한쪽으로 크게 치우치지 않아. 그래서 무조건 강하다·약하다보다 어떤 조건에서 힘이 붙고 빠지는지를 같이 봐야 하는 작동 방식이야";
 
     let second;
-    if(season&&party) second="기본적으로 받쳐주는 힘도 여러 군데에서 같이 붙는 편이야.";
-    else if(season&&!party) second="중심을 받쳐주는 힘은 있지만, 모든 상황에서 자동으로 여유가 생기는 건 아니야.";
-    else if(!season&&party) second="처음부터 편하게 받쳐지는 편은 아니지만, 다른 자리에서 보완해주는 힘은 분명히 있어.";
-    else second="처음부터 넉넉하게 받쳐지는 편은 아니라서, 무리한 환경에서는 같은 일도 더 크게 소모될 수 있어.";
-    if(clash) second+=" 게다가 버티는 축이 흔들릴 수 있는 신호가 있어서, '평소엔 되니까 계속 되겠지'라고 밀어붙이는 건 조심해야 해.";
-    return first+". "+second;
+    if(season&&party) second="계절의 도움과 다른 자리의 생조가 같이 붙어서 받침이 한 군데에만 의존하지 않아.";
+    else if(season&&!party) second="계절의 중심 도움은 있지만 다른 자리까지 항상 같은 방향으로 받쳐주는 건 아니야.";
+    else if(!season&&party) second="계절이 바로 받쳐주진 않지만 다른 자리에서 보완하는 힘이 실제로 붙어 있어.";
+    else second="계절과 다른 자리의 생조가 동시에 강하게 붙는 작동 방식은 아니라서, 무리한 조건에서는 같은 일도 체감 차이가 커질 수 있어.";
+    if(clash) second+=" 여기에 실제 뿌리를 흔드는 부딪힘까지 있어서 평소의 버팀력만 보고 계속 밀면 오판하기 쉬워.";
+    return first.replace(/[.!?]+$/,"")+". "+second;
   }
 
-  function dominantFunctionSentence(reasoning){
-    const row=(synthesisFor(reasoning).tenGodEvidence||[])[0];
+        function dominantFunctionSentence(reasoning,s){
+    const row=s ? situationGodEvidence(reasoning,s) : topGodEvidence(reasoning);
     if(!row?.god) return "";
     const functionMap={
-      비견:"남이 정해준 답보다 내 기준으로 결정할 때 힘이 더 또렷해지는 편이야",
-      겁재:"경쟁하거나 함께 움직이는 상황에서 내 역할과 내 몫이 분명할수록 힘을 제대로 쓰는 편이야",
-      식신:"한 번에 크게 터뜨리기보다 꾸준히 만들고 쌓아갈 때 장점이 안정적으로 드러나는 편이야",
-      상관:"답답한 걸 그냥 참고 두기보다 말하거나 바꾸고 개선할 때 힘이 살아나는 편이야",
-      정재:"변수가 계속 바뀌는 환경보다 약속·시간·보상처럼 예측 가능한 기준이 있을 때 힘을 안정적으로 쓰는 편이야",
-      편재:"한 가지 가능성에만 갇히기보다 기회·사람·자원을 넓게 보고 움직일 때 힘을 쓰는 편이야",
-      정관:"역할과 기준이 분명할수록 책임감을 실제 결과로 바꾸기 쉬운 편이야",
-      편관:"난도가 있어도 내가 움직일 권한과 보호장치가 같이 있을 때 돌파력이 살아나는 편이야",
-      정인:"충분히 이해하고 준비할 시간이나 믿을 만한 지원이 있을 때 훨씬 안정적으로 움직이는 편이야",
-      편인:"남들이 그냥 넘기는 지점을 깊게 파고 다른 방법을 찾아볼 때 강점이 드러나는 편이야",
+      비견:"남이 정한 답보다 내 기준으로 결정할 때 힘이 또렷해지는 쪽",
+      겁재:"경쟁·협업 속에서 내 역할과 내 몫이 분명할수록 힘을 제대로 쓰는 쪽",
+      식신:"한 번에 크게 터뜨리기보다 꾸준히 만들고 쌓을수록 장점이 안정되는 쪽",
+      상관:"막힌 점을 참고 두기보다 말하거나 바꾸고 개선할 때 힘이 살아나는 쪽",
+      정재:"변수가 계속 바뀌는 것보다 약속·시간·보상처럼 예측 가능한 기준에서 힘이 안정되는 쪽",
+      편재:"한 가지 가능성에 갇히기보다 기회·사람·자원을 넓게 볼 때 힘을 쓰는 쪽",
+      정관:"역할과 기준이 분명할수록 책임감을 실제 결과로 바꾸기 쉬운 쪽",
+      편관:"난도가 있어도 움직일 권한과 보호장치가 같이 있을 때 돌파력이 살아나는 쪽",
+      정인:"충분히 이해하고 준비할 시간이나 믿을 만한 지원이 있을 때 안정되는 쪽",
+      편인:"남들이 그냥 넘기는 지점을 깊게 파고 다른 방법을 찾을 때 강점이 드러나는 쪽",
     };
-    const core=functionMap[row.god]||"한 가지 방식만 밀기보다 실제 반응에 맞춰 조정할 때 힘이 살아나는 편이야";
-    const visible=Number(row.visibleWeight||0);
-    const hidden=Number(row.hiddenWeight||0);
-    const surface=visible>hidden*1.15
-      ? "이 방식은 생각 속에만 머무르기보다 실제 선택이나 행동으로 비교적 빨리 드러나는 쪽이야."
-      : hidden>visible*1.15
-        ? "다만 이 방식은 처음부터 겉으로 확 보이기보다, 익숙해진 상황이나 안쪽 판단에서 더 강하게 작동하는 쪽이야."
-        : "겉으로 보이는 선택과 안쪽 판단에서 이 방식이 둘 다 비슷하게 작동하는 편이야.";
-    return core+". "+surface;
+    const role=(row.roles||[]).includes("rescue")
+      ?" 이 힘은 사주가 흔들렸을 때 다시 살려주는 역할까지 잡혀 있어."
+      :(row.roles||[]).includes("support")
+        ?" 이 힘은 사주의 중심 작동 방식을 받치는 역할까지 잡혀 있어."
+        :(row.roles||[]).includes("harm")
+          ?" 다만 이 힘은 지금 사주에서는 과해질 때 장점을 흔드는 역할도 같이 잡혀 있어."
+          :"";
+    const lead=s?.label ? "지금 고른 ‘"+s.label+"’에서는 " : "";
+    return lead+(GOD_USER[row.god]||row.god)+"이 실제 세력에서 우선순위가 높아. "+(functionMap[row.god]||"조건에 따라 방식 조절이 중요한 쪽")+"이고, "+evidenceLocationText(row)+"이야."+role;
   }
 
   function patternPressureSentence(reasoning){
@@ -981,7 +1182,7 @@
       : "다만 힘이 한쪽으로 아주 크게 몰린 후보라서, 언니도 보통 사주처럼 한 가지 공식으로 단정하진 않았어.";
   }
 
-  function supportRows(reasoning,s){
+    function supportRows(reasoning,s){
     const domain=DOMAIN[s.concern]||DOMAIN.money;
     const syn=synthesisFor(reasoning);
     const st=syn.mechanisms?.structure||{};
@@ -998,23 +1199,30 @@
       return {god:g,ev,isActual,isPresent,visibility,tier};
     }).sort((a,b)=>
       a.tier-b.tier ||
-      Number(b.ev?.visibleWeight||0)-Number(a.ev?.visibleWeight||0) ||
       Number(b.ev?.priorityScore||0)-Number(a.ev?.priorityScore||0) ||
+      Number(b.ev?.visibleWeight||0)-Number(a.ev?.visibleWeight||0) ||
       String(a.god).localeCompare(String(b.god),"ko")
     );
 
     const rows=candidates.slice(0,3).map(row=>{
       const base=godSpecificCondition(row.god,domain,"help")||domain.help[godGroup(row.god)]||domain.help.unknown;
       let availability="";
-      if(row.isActual&&row.visibility==="visible") availability="이 힘은 평소 선택이나 행동으로 비교적 바로 꺼내 쓰기 쉬운 편이야";
-      else if(row.isActual&&row.visibility==="hidden") availability="이 힘은 분명히 있지만 처음부터 겉으로 나오기보다 익숙한 상황에서 더 잘 살아나는 편이야";
-      else if(row.isPresent) availability="이 힘은 사주 안에 있긴 하지만 중심 역할로 바로 쓰이기보다 조건이 맞을 때 보조로 살아나는 편이야";
-      else availability="이 힘은 저절로 강하게 나오기보다 사람·환경·규칙 쪽에서 확보해줄수록 좋아";
+      if(row.isActual&&row.visibility==="visible") availability="이 힘은 원래 사주에도 있고 겉으로 드러난 자리에서 비교적 바로 쓰이는 편이야";
+      else if(row.isActual&&row.visibility==="hidden") availability="이 힘은 원래 사주에 있지만 처음부터 겉으로 튀기보다 익숙한 상황에서 더 강하게 살아나는 편이야";
+      else if(row.isPresent) availability="이 힘은 사주 안에 실제로 있으나 중심 역할보다는 조건이 맞을 때 보조로 살아나는 편이야";
+      else availability="이 힘은 사주에서 강하게 확보된 힘이 아니라 사람·환경·운에서 들어올 때 효과가 더 분명해질 수 있어";
+      const roles=row.ev?.roles||[];
+      const why=roles.includes("rescue") || (st.rescueGods||[]).includes(row.god)
+        ?"사주 작동 방식이 흔들릴 때 다시 이어주는 역할로 잡힌 힘이야"
+        :roles.includes("support") || (st.helpfulGods||[]).includes(row.god)
+          ?"사주의 중심 작동 방식을 살리는 쪽으로 잡힌 힘이야"
+          :"전체 작동 방식을 보조하는 후보로 남는 힘이야";
       return {
         god:row.god,
         label:GOD_USER[row.god]||row.god,
         text:base,
         availability,
+        why,
         evidenceStatus:row.isActual?"actual":row.isPresent?"present-secondary":"needed-external",
       };
     });
@@ -1023,180 +1231,176 @@
       const groups=[...new Set(reasoning?.integrated?.neededGroups||[])];
       groups.slice(0,2).forEach(g=>rows.push({
         god:null,label:groupText(g).noun,text:domain.help[g]||domain.help.unknown,
-        availability:"이 조건은 네가 힘을 덜 잃고 움직이게 해주는 기본 받침대에 가까워",
+        availability:"이 조건은 지금 강약 작동 방식에서 감당력을 보완하는 기본 축으로 잡혀",
+        why:"전체 강약 판단에서 먼저 보완할 그룹으로 나온 조건이야",
         evidenceStatus:"needed-group",
       }));
     }
     if(!rows.length) rows.push({
       god:null,label:"확인 가능한 조건",text:domain.help.unknown,
-      availability:"한 번의 느낌보다 반복했을 때 실제로 편해지는지를 확인하는 게 중요해",
+      availability:"한 가지 도움 힘이 압도적으로 고정되지는 않은 작동 방식이야",
+      why:"여러 근거가 갈려 한 조건을 핵심으로 과장하지 않았어",
       evidenceStatus:"fallback",
     });
     return rows;
   }
 
-  function harmRows(reasoning,s){
+    function harmRows(reasoning,s){
     const domain=DOMAIN[s.concern]||DOMAIN.money;
     const syn=synthesisFor(reasoning);
     const st=syn.mechanisms?.structure||{};
-    const godRank=Object.fromEntries((syn.tenGodEvidence||[]).map((row,i)=>[row.god,{score:Number(row.priorityScore||0),index:i}]));
-    const gods=[...new Set(st.harmfulGods||[])].sort((a,b)=>(godRank[b]?.score||0)-(godRank[a]?.score||0)||(godRank[a]?.index??999)-(godRank[b]?.index??999));
-    const rows=gods.slice(0,3).map(g=>({
-      god:g,
-      label:GOD_USER[g]||g,
-      text:godSpecificCondition(g,domain,"harm")||domain.harm[godGroup(g)]||domain.harm.unknown,
-    }));
+    const evidence=Object.fromEntries((syn.tenGodEvidence||[]).map((row,i)=>[row.god,{...row,index:i}]));
+    const gods=[...new Set(st.harmfulGods||[])].sort((a,b)=>
+      Number(evidence[b]?.priorityScore||0)-Number(evidence[a]?.priorityScore||0) ||
+      (evidence[a]?.index??999)-(evidence[b]?.index??999)
+    );
+    const rows=gods.slice(0,3).map(g=>{
+      const ev=evidence[g]||null;
+      const visibility=!ev
+        ?"이 힘은 사주에서 강하게 드러난 힘은 아니지만 들어올 때 작동 방식을 흔드는 조건으로 잡혀"
+        :evidenceLocationText(ev)+"이고, 현재 작동 방식에서는 과해질 때 방해 쪽으로 작동해";
+      return {
+        god:g,
+        label:GOD_USER[g]||g,
+        text:godSpecificCondition(g,domain,"harm")||domain.harm[godGroup(g)]||domain.harm.unknown,
+        evidence:visibility,
+      };
+    });
     if(!rows.length){
       const group=syn.mechanisms?.drive?.pressureGroup||"unknown";
-      rows.push({god:null,label:groupText(group).pressure,text:domain.harm[group]||domain.harm.unknown});
+      rows.push({
+        god:null,
+        label:groupText(group).pressure,
+        text:domain.harm[group]||domain.harm.unknown,
+        evidence:syn.mechanisms?.drive?.pressureOverload
+          ?"이 압력군은 실제 세력 비교에서 과부하 후보로 잡혀"
+          :"작동 방식을 직접 흔드는 힘이 하나로 고정되지 않아, 실제 세력이 가장 크게 부담을 주는 쪽을 대신 경계 기준으로 잡았어",
+      });
     }
     return rows;
   }
 
-  function adjustmentSentence(reasoning){
+    function adjustmentSentence(reasoning){
     const a=synthesisFor(reasoning).mechanisms?.adjustment||{};
     const seq=a.prescription?.sequence||[];
-    const actions=[...new Set(seq.map(x=>ELEMENT_ACTION[x?.element]).filter(Boolean))];
-    const bridge=a.bridgeElement;
+    const names=[...new Set(seq.map(x=>FLOW_SHORT[x?.element]).filter(Boolean))];
     const parts=[];
-    if(actions[0]) parts.push("먼저 "+actions[0]);
-    if(actions[1]) parts.push("그다음 "+actions[1]);
-    if(bridge&&a.bridgeStatus==="missing") parts.push("서로 맞서는 힘 사이를 이어줄 중간 단계가 원래 약해서, 한 번에 점프하기보다 연결 단계를 따로 만드는 게 중요해");
-    else if(bridge) parts.push("서로 맞서는 힘 사이를 이어주는 연결은 이미 있어서, 그 통로를 실제 생활에서 쓰는 게 중요해");
-    if((a.conflicts||[]).length) parts.push("잘되는 방식과 네가 감당할 수 있는 방식이 완전히 같지는 않아서, 먼저 버틸 여지를 만든 뒤 결과를 키워야 해");
+    if(names.length) parts.push("사주 안에서 힘이 이어지는 순서는 "+names.join(" → ")+" 쪽으로 잡혀 있어");
+    if(a.bridgeElement&&a.bridgeStatus==="missing") parts.push("서로 맞서는 힘 사이를 이어줄 "+(FLOW_SHORT[a.bridgeElement]||"중간")+" 역할은 사주에서 비어 있어");
+    else if(a.bridgeElement) parts.push("서로 맞서는 힘 사이를 이어주는 "+(FLOW_SHORT[a.bridgeElement]||"중간")+" 역할은 사주 안에 후보가 있어");
+    if((a.conflicts||[]).length) parts.push("작동 방식을 살리는 힘과 네가 오래 감당하기 편한 힘이 완전히 같지는 않아");
     return parts.join(". ");
   }
 
-  function noteOneDesc(reasoning,s,p,isT){
-    const core=plainSentence(pressureGroupLine(reasoning,s));
+        function noteOneDesc(reasoning,s,p,isT){
+    const core=plainSentence(distinctiveCoreSentence(reasoning));
     const capacity=capacitySentence(reasoning);
-    const working=structureSentence(reasoning);
-    const focus=stripHtml(p?.focus||"");
-    const actual=stripHtml(p?.actual||"");
-    const mismatch=synthesisFor(reasoning).mechanisms?.drive?.rawInfluenceMismatch
-      ? "겉으로 보이는 오행 개수와 실제로 힘을 쓰는 순서도 같지 않아서, 단순히 많은 글자만 보고 해석하면 이 사람의 핵심을 놓치게 돼."
-      : "";
+    const top=dominantFunctionSentence(reasoning,s);
     const guard=guardSentence(reasoning,isT);
-    const lead=isT?"<b>결론</b> — ":"<b>결론</b> — 언니가 보기엔 ";
-    const capacityLine=isT ? capacity : "쉽게 말하면 "+capacity;
-    const workingLine=isT ? working : "그래서 네 힘을 제대로 쓰려면 "+working.charAt(0).toLowerCase()+working.slice(1);
     return [
-      lead+core,
-      capacityLine,
-      dominantFunctionSentence(reasoning),
-      workingLine,
-      mismatch,
-      focus ? (isT ? `<b>지금 상황</b> — ${focus}` : `<b>지금 상황에서 먼저 볼 것</b> — ${focus}`) : "",
-      actual ? (isT ? `<b>그래서 볼 기준</b> — ${actual}` : `그래서 언니는 <b>${actual}</b> 쪽을 먼저 볼게.`) : "",
+      isT ? "<b>결론</b> — "+core : "<b>결론</b> — 언니가 제일 먼저 본 건 이거야. "+core,
+      capacity,
+      top,
       guard,
     ].filter(Boolean).join("<br><br>");
   }
 
-  function noteTwoDesc(reasoning,s,p,isT){
-    const trigger=stripHtml(p?.trigger||s.cue);
-    const reaction=stripHtml(p?.reaction||"");
-    const cost=stripHtml(p?.cost||"");
+    function noteTwoDesc(reasoning,s,p,isT){
+    const scene=concernMechanismScene(reasoning,s);
     const pressure=plainSentence(patternPressureSentence(reasoning));
     const capacity=patternCapacitySentence(reasoning);
     const flow=flowGapSentence(reasoning);
     const relation=relationSentence(reasoning);
+    const resolution=patternResolutionSentence(reasoning);
     const conclusion=isT
-      ? `<b>결론</b> — 이 고민은 결과가 나빠지는 마지막 순간보다, <b>${trigger}</b> 같은 초반 장면에서 먼저 갈려.`
-      : `<b>결론</b> — 네 경우엔 마지막 결과보다 <b>${trigger}</b> 같은 순간부터 이미 방향이 갈리기 쉬워.`;
-    const scene=reaction&&cost
-      ? `예를 들면 이런 상황에서는 <b>${reaction}</b> 같은 반응으로 이어질 수 있고, 그게 계속되면 ${cost} 같은 체감이 남기 쉬워. 이건 과거에 꼭 그랬다는 뜻이 아니라, 지금 사주에서 가장 먼저 경계할 반복 방식이야.`
-      : "";
+      ? "<b>결론</b> — 지금 고른 ‘"+s.label+"’에서 반복이 갈리는 첫 지점은 <b>"+scene+"</b>이야."
+      : "<b>결론</b> — 지금 고른 ‘"+s.label+"’에서 네 반복은 마지막 결과보다 <b>"+scene+"</b>에서 먼저 갈려.";
     return [
       conclusion,
       pressure+" "+capacity,
       flow+".",
-      scene,
       relation,
-      patternResolutionSentence(reasoning)+".",
+      resolution+".",
     ].filter(Boolean).join("<br><br>");
   }
 
-  function noteThreeDesc(reasoning,s,p,isT){
+    function noteThreeDesc(reasoning,s,p,isT){
     const rows=supportRows(reasoning,s);
     const first=rows[0];
     const rest=rows.slice(1);
-    const keep=stripHtml(p?.keep||"");
-    const place=stripHtml(p?.place||"");
     const adjust=adjustmentSentence(reasoning);
     const state=synthesisFor(reasoning).mechanisms?.structure?.state||"undetermined";
     const closing=state==="rescued"
-      ? "특히 처음부터 완벽한 사람·환경보다, 한번 꼬였을 때 대화나 조건을 다시 맞출 통로가 실제로 있는지가 중요해."
-      : state==="damaged"
-        ? "겉으로 괜찮아 보여도 같은 조건이 반복될수록 네 힘이 계속 줄어들면 오래 두는 쪽이 아니야."
-        : "처음 느낌보다 같은 조건이 반복됐을 때도 네 힘이 남는지를 보는 게 정확해.";
+      ?"이 사주는 한 번 꼬여도 다시 살리는 통로가 확인돼. 처음부터 완벽한 조건보다 흔들렸을 때 실제로 다시 맞춰지는지가 더 중요해."
+      :state==="damaged"
+        ?"지금 작동 방식은 방해 조건이 반복되면 원래 장점까지 같이 깎이기 쉬워. 버틸 수 있느냐보다 같은 조건에서 힘이 계속 남느냐가 더 중요해."
+        :state==="mixed"
+          ?"살리는 힘과 흔드는 힘이 같이 있어서 어떤 힘이 먼저 작동하느냐에 따라 같은 상황도 체감 차이가 크게 날 수 있어."
+          :"한 조건만으로 좋다·나쁘다를 고정하기보다 실제 도움 힘이 살아나는 순서를 보는 게 정확해.";
     return [
       isT
-        ? `<b>결론</b> — 맞는 조건 1순위는 <b>${first.text}</b>. ${first.availability}`
-        : `<b>결론</b> — 너한테 제일 편하게 맞는 건 <b>${first.text}</b>. ${first.availability}`,
+        ? "<b>결론</b> — 맞는 조건 1순위는 <b>"+first.text+"</b>."
+        : "<b>결론</b> — 너한테 제일 먼저 맞춰야 할 조건은 <b>"+first.text+"</b>이야.",
+      first.why+". "+first.availability+".",
       rest.length
-        ? (isT ? `추가 조건 — ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}` : `그리고 ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}까지 같이 있으면 훨씬 덜 지쳐.`)
-        : "",
-      keep
-        ? (isT ? `<b>현실에서 볼 것</b> — ${keep}` : `사람이나 상황을 볼 땐 <b>${keep}</b> 쪽을 먼저 봐.`)
-        : "",
-      place
-        ? (isT ? `<b>환경</b> — ${place}` : `환경까지 보면 <b>${place}</b>일수록 네 장점이 덜 깎여.`)
-        : "",
+        ? (isT
+          ?"추가 조건 — "+rest.map(x=>"<b>"+x.text+"</b> ("+x.why+")").join(" / ")
+          :"그다음은 "+rest.map(x=>"<b>"+x.text+"</b>").join(" / ")+" 순서로 보면 돼. 이것들도 실제 작동 방식의 도움·회복 후보에서 고른 조건이야.")
+        :"",
       adjust ? adjust+"." : "",
-      isT ? closing.replace("특히 ","").replace("처음 느낌보다 ","판단은 ") : closing,
+      closing,
     ].filter(Boolean).join("<br><br>");
   }
 
-  function noteFourDesc(reasoning,s,p,isT){
+    function noteFourDesc(reasoning,s,p,isT){
     const rows=harmRows(reasoning,s);
     const first=rows[0];
     const rest=rows.slice(1);
-    const cut=stripHtml(p?.cut||"");
-    const criterion=stripHtml(DECISION_CRITERIA[s.concern]?.[s.key]||"말보다 실제 반응이 달라지는지 봐");
     const drive=synthesisFor(reasoning).mechanisms?.drive||{};
     const overload=drive.pressureOverload
-      ? "이 힘은 지금 사주에서 단순한 배경이 아니라 실제 부담으로 커질 수 있는 쪽이라, 반복되면 무시하지 않는 게 좋아."
-      : "한 번 나타났다고 바로 나쁜 건 아니지만, 같은 조건이 계속 반복되면 소모 쪽으로 기울 수 있어.";
+      ?"이 힘은 단순한 배경이 아니라 실제 세력 비교에서 과부하 후보로 잡혀 있어."
+      :"이 힘 하나만으로 나쁘다고 단정하지는 않지만, 현재 작동 방식에서는 반복될 때 방해 쪽으로 기울 수 있는 조건이야.";
     const conflict=(synthesisFor(reasoning).mechanisms?.adjustment?.conflicts||[]).length
-      ? "특히 결과를 내는 방식과 네가 감당할 수 있는 방식이 어긋나는 부분이 있어서, '할 수 있냐'보다 '이걸 계속 해도 내 힘이 남느냐'를 봐야 해."
-      : "";
+      ?"게다가 작동 방식을 살리는 방식과 네가 오래 감당하기 편한 방식이 완전히 같지 않아서, 결과가 난다는 이유만으로 계속 밀면 오판하기 쉬워."
+      :"";
+    const criterion=cautionCriterionSentence(reasoning,s);
     return [
       isT
-        ? `<b>결론</b> — 우선 제외할 조건은 <b>${first.text}</b>`
-        : `<b>결론</b> — 네가 제일 먼저 거리를 둬야 할 건 <b>${first.text}</b>`,
+        ? "<b>결론</b> — 우선 경계할 조건은 <b>"+first.text+"</b>."
+        : "<b>결론</b> — 네 사주에서 먼저 경계할 건 <b>"+first.text+"</b>이야.",
+      first.evidence ? first.evidence+"." : "",
       rest.length
-        ? (isT ? `추가 주의 — ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}` : `그리고 ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}도 같이 반복되면 오래 두지 않는 게 좋아.`)
-        : "",
-      cut
-        ? (isT ? `<b>현실 신호</b> — ${cut}` : `현실에서는 <b>${cut}</b> 같은 반응이 반복되는지 먼저 봐.`)
-        : "",
+        ? (isT
+          ?"추가 주의 — "+rest.map(x=>"<b>"+x.text+"</b>").join(" / ")
+          :"그리고 "+rest.map(x=>"<b>"+x.text+"</b>").join(" / ")+"도 방해 신호가 실제로 잡힌 경우에만 같이 봐.")
+        :"",
       overload,
       conflict,
       relationFilterSentence(reasoning),
-      isT ? `<b>판단 기준</b> — ${criterion}.` : `<b>마지막으로 이것만 봐</b> — ${criterion}.`,
+      isT ? "<b>판단 기준</b> — "+criterion+"." : "<b>마지막으로 이것만 확인해</b> — "+criterion+".",
     ].filter(Boolean).join("<br><br>");
   }
 
-  function compactTimingReason(row,positive){
+    function compactTimingReason(row,positive){
     const rows=positive ? (row?.layers?.wolun?.supportSignals||[]) : (row?.layers?.wolun?.cautionSignals||[]);
     const signal=rows.find(x=>x.severity==="major")||rows.find(x=>x.severity==="support")||rows[0]||null;
     const code=signal?.code||"";
     if(positive){
-      if(/generate|rescue|root-add|assist/.test(code)) return "평소 부족하던 버팀목이 보태져서, 같은 일을 해도 덜 버겁게 움직일 수 있어";
-      if(/bridge|flow-unblock/.test(code)) return "평소 중간에서 끊기던 연결이 이어지기 쉬워";
-      if(/discharge/.test(code)) return "생각이나 에너지를 말·결과물·행동으로 빼내기가 평소보다 쉬워";
-      if(/control/.test(code)) return "기준을 세우고 우선순위를 정리하기가 평소보다 쉬워";
-      if(/ziping-support/.test(code)) return "원래 잘되는 방식이 실제 결과로 이어지기 쉬워";
-      return "작게 움직여 실제 반응을 확인해보기 좋은 쪽이야";
+      if(/generate|rescue|root-add|assist/.test(code)) return "평소 부족하던 받침을 보태는 신호가 들어와 같은 부담도 덜 무겁게 작동할 수 있어";
+      if(/bridge|flow-unblock/.test(code)) return "평소 중간에서 끊기던 연결을 이어주는 신호가 들어와";
+      if(/discharge/.test(code)) return "생각이나 준비를 표현·결과로 밖에 빼는 힘이 평소보다 잘 붙어";
+      if(/control/.test(code)) return "흩어진 힘을 기준과 우선순위로 묶는 작용이 평소보다 잘 붙어";
+      if(/ziping-support/.test(code)) return "원래 사주 작동 방식을 살리는 힘이 운에서도 같은 방향으로 겹쳐";
+      return "원래 작동 방식을 돕는 신호가 다른 달보다 분명하게 겹쳐";
     }
-    if(/root-clash/.test(code)) return "평소 버티던 축이 흔들리기 쉬워서 큰 결정을 한꺼번에 밀기엔 불리해";
-    if(/body-cost/.test(code)) return "감당할 일이 늘기 쉬워서 범위를 먼저 줄이는 게 좋아";
-    if(/ziping-harm/.test(code)) return "평소 잘되던 방식이 꼬이기 쉬워서 조건을 한 번 더 확인하는 게 좋아";
-    if(/over-support/.test(code)) return "이미 강한 힘이 더 세져 고집이나 과부하로 번지기 쉬워";
-    return "한 번에 크게 결정하기보다 부담을 줄이고 확인하는 쪽이 좋아";
+    if(/root-clash/.test(code)) return "평소 버티게 해주던 뿌리를 직접 흔드는 신호가 겹쳐";
+    if(/body-cost/.test(code)) return "원래 감당력이 약해지는 쪽으로 부담 신호가 더 붙어";
+    if(/ziping-harm/.test(code)) return "원래 작동 방식을 흔드는 힘이 운에서도 같은 방향으로 겹쳐";
+    if(/over-support/.test(code)) return "이미 강한 힘을 더 세게 만드는 신호가 붙어 과부하 가능성이 커져";
+    return "원래 사주의 약한 지점을 건드리는 신호가 다른 달보다 더 분명하게 겹쳐";
   }
 
-  function compactTimingNote(reasoning,s,p,isT){
+    function compactTimingNote(reasoning,s,p,isT){
     const timing=reasoning?.timing||{};
     const policy=global.__UNNI_PRODUCT_CONTENT_POLICY_V1__;
     const disclosed=policy?.filterTimingForProduct
@@ -1232,11 +1436,11 @@
     const summary=first
       ? (["supportive","mild-support"].includes(first.class)
           ? (isT
-              ? `<b>결론</b> — 가까운 흐름에서 움직여볼 근거가 있는 달이 잡혀. 자동으로 잘된다는 뜻은 아니고, 실제 반응을 시험하기 좋은 구간이야.`
-              : `<b>결론</b> — 언니가 시기까지 보면, 가까운 흐름에 실제로 움직여볼 만한 달이 잡혀. 운이 알아서 해결해주는 때라기보다, 평소 막히던 걸 직접 시험해보기 좋은 구간이야.`)
+              ? "<b>결론</b> — 가까운 흐름에서 원래 작동 방식을 도와주는 월 신호가 실제로 잡혀."
+              : "<b>결론</b> — 가까운 흐름을 보면, 네 원래 사주 작동 방식을 실제로 도와주는 달이 잡혀.")
           : (isT
-              ? `<b>결론</b> — 가까운 흐름에서 속도를 줄여야 할 달이 잡혀. 나쁜 일이 정해진 게 아니라, 평소 약한 부분에 부담이 더 붙기 쉬운 구간이야.`
-              : `<b>결론</b> — 가까운 흐름에선 잠깐 속도를 줄이는 게 나은 달도 보여. 나쁜 일이 생긴다고 정해진 게 아니라, 평소 약한 부분이 더 버겁게 느껴질 수 있는 구간이야.`))
+              ? "<b>결론</b> — 가까운 흐름에서 원래 약한 지점을 더 건드리는 월 신호가 실제로 잡혀."
+              : "<b>결론</b> — 가까운 흐름에는 네 원래 사주의 약한 지점을 더 건드리는 달도 보여."))
       : (isT
           ? "<b>결론</b> — 가까운 18개월은 계산되지만 다른 달과 분명히 갈리는 월 신호가 약해. 특정 달은 억지로 찍지 않을게."
           : "<b>결론</b> — 가까운 18개월 흐름은 다 봤는데, 다른 달과 확실히 갈리는 신호가 약해. 그래서 언니도 그럴듯하게 날짜를 만들어 찍진 않을게.");
@@ -1245,32 +1449,39 @@
       const when=formatMonth(row);
       const positive=["supportive","mild-support"].includes(row.class);
       const caution=["caution","mild-caution"].includes(row.class);
-      if(positive) return `<b>${when}</b> — ${compactTimingReason(row,true)}. 이때는 ${stripHtml(p?.first||s.move)}처럼 실제 반응을 확인하는 행동을 붙여봐.`;
-      if(caution) return `<b>${when}</b> — ${compactTimingReason(row,false)}. 이때는 결론을 서두르기보다 부담·범위·속도를 먼저 조정하는 쪽이 좋아.`;
-      return `<b>${when}</b> — 도움과 주의가 같이 보여서 한 번에 크게 움직이기보다 작은 확인부터 하는 게 좋아.`;
+      if(positive) return "<b>"+when+"</b> — "+compactTimingReason(row,true)+". "+timingRealityCheck(reasoning,s,row,true)+".";
+      if(caution) return "<b>"+when+"</b> — "+compactTimingReason(row,false)+". "+timingRealityCheck(reasoning,s,row,false)+".";
+      return "<b>"+when+"</b> — 도움과 주의가 같이 잡혀서 한쪽으로 강하게 단정하기 어려운 달이야.";
     });
 
     if(pivot?.year){
       const reasons=pivot.pivotReasons||[];
       const why=reasons.includes("major-flow-change")&&reasons.includes("direction-change")
         ?"큰 흐름의 바탕이 바뀌면서 도움·주의 방향도 같이 돌아서는 구간"
-        : reasons.includes("major-flow-change")
+        :reasons.includes("major-flow-change")
           ?"몇 년 단위의 큰 흐름 바탕이 교체되는 구간"
           :"앞선 해와 비교해 도움·주의 방향이 실제로 바뀌는 구간";
-      lines.push(`<b>${pivot.year}년 전후</b> — ${why}이라 장기적으로는 같은 방식만 반복하지 않는 게 중요해. 여기서는 시점만 먼저 짚을게.`);
+      lines.push("<b>"+pivot.year+"년 전후</b> — "+why+"이라 장기적으로는 같은 사주도 작동 방식이 달라질 수 있어. 여기서는 실제 변곡점만 먼저 짚을게.");
     }
 
-    const action=plainSentence(p?.first||s.move);
-    lines.push(`<b>지금 할 것</b> — ${action}`);
+    lines.push("<b>지금 비교 기준</b> — "+cautionCriterionSentence(reasoning,s)+".");
     const label=row=>row?formatMonth(row):null;
     return {
       desc:[summary,...lines].join("<br><br>"),
       evidenceRuleIds,
+      personalizationFacts:{
+        firstDate:label(uniqueHighlights[0]||null),
+        secondDate:label(uniqueHighlights[1]||null),
+        firstClass:uniqueHighlights[0]?.class||null,
+        secondClass:uniqueHighlights[1]?.class||null,
+        pivotYear:pivot?.year||null,
+        timingFingerprint:reasoning?.timingFingerprint||"",
+      },
       meta:{
         firstDate:label(uniqueHighlights[0]||null),
         secondDate:label(uniqueHighlights[1]||null),
-        firstBody:uniqueHighlights[0]?`${label(uniqueHighlights[0])} ${uniqueHighlights[0].class||""}`:"",
-        secondBody:uniqueHighlights[1]?`${label(uniqueHighlights[1])} ${uniqueHighlights[1].class||""}`:"",
+        firstBody:uniqueHighlights[0]?label(uniqueHighlights[0])+" "+(uniqueHighlights[0].class||""):"",
+        secondBody:uniqueHighlights[1]?label(uniqueHighlights[1])+" "+(uniqueHighlights[1].class||""):"",
         concernSituation:s.key,
         structureFingerprint:reasoning?.structureFingerprint||"",
         timingFingerprint:reasoning?.timingFingerprint||"",
@@ -1290,8 +1501,8 @@
     return ["핵심","실제 장면","잘 맞는 조건","거를 신호","가까운 흐름"][idx]||"핵심";
   }
 
-  function titleFor(s,idx,isT,profile){
-    if(idx===0) return `${profile?.label||s.label} — 네 사주에서 제일 먼저 보이는 답`;
+    function titleFor(s,idx,isT,profile){
+    if(idx===0) return (profile?.label||s.label)+" — 네 사주에서 제일 먼저 보이는 답";
     if(idx===1) return SCENE_TITLES[s.concern]?.[s.key]||"실제로 갈리는 장면";
     if(idx===2){
       const rows={money:"돈이 남는 조건",career:"잘 풀리는 일·공부 조건",love:"너랑 오래 맞는 사람·관계",path:"너한테 맞는 진로 조건",people:"남겨도 되는 사람·관계",mental:"회복이 붙는 조건"};
@@ -1301,8 +1512,8 @@
       const rows={money:"돈에서 빨리 끊어야 할 신호",career:"일·공부에서 빨리 거를 신호",love:"연애에서 빨리 거를 신호",path:"진로에서 피해야 할 신호",people:"거리를 둬야 할 관계 신호",mental:"지금 더 지치게 하는 신호"};
       return rows[s.concern]||"빨리 거를 신호";
     }
-    const rows={money:"가까운 돈 흐름과 지금 할 것",career:"가까운 일·시험 흐름과 지금 할 것",love:"가까운 연애 흐름과 지금 할 것",path:"가까운 진로 흐름과 지금 할 것",people:"가까운 관계 흐름과 지금 할 것",mental:"가까운 회복 흐름과 지금 할 것"};
-    return rows[s.concern]||"가까운 흐름과 지금 할 것";
+    const rows={money:"가까운 돈 흐름에서 갈리는 때",career:"가까운 일·시험 흐름에서 갈리는 때",love:"가까운 연애 흐름에서 갈리는 때",path:"가까운 진로 흐름에서 갈리는 때",people:"가까운 관계 흐름에서 갈리는 때",mental:"가까운 회복 흐름에서 갈리는 때"};
+    return rows[s.concern]||"가까운 흐름에서 갈리는 때";
   }
 
   function buildConcernDiagnosisV2(data) {
@@ -1321,18 +1532,15 @@
     };
   }
 
-  function renderConcernNotesV2(data, mode) {
+    function renderConcernNotesV2(data, mode) {
     data=data||{};
     const isT=mode==="T";
     const d=buildConcernDiagnosisV2(data);
     const r=d.reasoning;
     const s=d.situation;
-    const p=situationProfile(s)||{
-      label:s.label,focus:s.cue,trigger:s.cue,reaction:"익숙한 방식으로 먼저 반응해",cost:"같은 고민이 다시 남을 수 있어",
-      assumed:"내가 더 잘하면 해결된다",actual:"실제 반응이 달라지는 조건을 확인하는 게 먼저야",
-      keep:"말과 행동이 일치하는 사람",cut:"말해도 같은 불편함을 반복하는 반응",place:"기준을 직접 확인할 수 있는 환경",
-      first:s.move,
-    };
+    // NOTE 본문은 고민별 미리 작성된 trigger/reaction/cost/keep/cut/place를 읽지 않는다.
+    // 고민 선택값은 같은 명리 사실을 어느 현실 영역으로 번역할지만 정한다.
+    const p={label:s.label};
     const timing=compactTimingNote(r,s,p,isT);
     const notes=[
       {
@@ -1341,6 +1549,7 @@
         desc:noteOneDesc(r,s,p,isT),
         checklist:"",
         __evidenceRuleIds:evidenceIdsForRole(r,"core"),
+        __personalizationFacts:personalizationFactsForRole(r,"core",s),
       },
       {
         badge:badgeFor(s.concern,1),
@@ -1348,6 +1557,7 @@
         desc:noteTwoDesc(r,s,p,isT),
         checklist:"",
         __evidenceRuleIds:evidenceIdsForRole(r,"pattern"),
+        __personalizationFacts:personalizationFactsForRole(r,"pattern",s),
       },
       {
         badge:badgeFor(s.concern,2),
@@ -1355,6 +1565,7 @@
         desc:noteThreeDesc(r,s,p,isT),
         checklist:"",
         __evidenceRuleIds:evidenceIdsForRole(r,"fit"),
+        __personalizationFacts:personalizationFactsForRole(r,"fit",s),
       },
       {
         badge:badgeFor(s.concern,3),
@@ -1362,6 +1573,7 @@
         desc:noteFourDesc(r,s,p,isT),
         checklist:"",
         __evidenceRuleIds:evidenceIdsForRole(r,"caution"),
+        __personalizationFacts:personalizationFactsForRole(r,"caution",s),
       },
       {
         badge:badgeFor(s.concern,4),
@@ -1370,6 +1582,7 @@
         checklist:"",
         __timingQA:timing.meta,
         __evidenceRuleIds:[...new Set([...evidenceIdsForRole(r,"timing"),...(timing.evidenceRuleIds||[])])],
+        __personalizationFacts:timing.personalizationFacts||{},
       },
     ];
 
@@ -1402,11 +1615,18 @@
     const implementedRuleIds=[...new Set(r.synthesis?.evidencePlan?.allImplementedRuleIds||[])];
     const renderedRuleIds=[...new Set(notes.flatMap(note=>note.__evidenceRuleIds||[]).filter(Boolean))];
     const missingRuleIds=implementedRuleIds.filter(id=>!renderedRuleIds.includes(id));
+    const semanticRows=notes.map((note,index)=>({noteNum:index+1,facts:note.__personalizationFacts||{}}));
+    const semanticCovered=semanticRows.filter(row=>Object.values(row.facts||{}).some(v=>
+      Array.isArray(v)?v.length>0:(v!==null&&v!==undefined&&v!==""&&v!==false&&v!==0)
+    )).length;
     const audit={
       version:VERSION,
       engine:"classical-causal-full-evidence",
       fingerprint:r.structureFingerprint+"|"+s.concern+"|"+s.key,
       genericClusterDependency:false,
+      genericSituationDependency:false,
+      behaviorTemplateDependency:false,
+      behaviorTemplateFieldsUsed:[],
       structureFingerprint:r.structureFingerprint,
       timingFingerprint:r.timingFingerprint,
       synthesisFingerprint:r.synthesis?.fingerprint||"",
@@ -1414,6 +1634,12 @@
       noteCount:notes.length,
       outputClaimMap:claimMap.map((claimIndex,noteIndex)=>({noteNum:noteIndex+1,claimNum:claimIndex+1})),
       noteEvidence:notes.map((note,index)=>({noteNum:index+1,ruleIds:note.__evidenceRuleIds||[]})),
+      semanticEvidence:semanticRows,
+      semanticCoverage:{
+        noteCountWithFacts:semanticCovered,
+        totalNotes:notes.length,
+        coverageRate:notes.length?Math.round((semanticCovered/notes.length)*1000)/1000:1,
+      },
       evidenceCoverage:{
         implementedRuleIds,
         renderedRuleIds,

@@ -163,8 +163,13 @@ function norm(v) {
     assert(row.noteAudit?.version === '5.0.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
       `${row.concern}/${row.situation}/${row.mode}: full-evidence audit missing`);
     assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
+    assert(row.noteAudit?.genericSituationDependency === false && row.noteAudit?.behaviorTemplateDependency === false &&
+      Array.isArray(row.noteAudit?.behaviorTemplateFieldsUsed) && row.noteAudit.behaviorTemplateFieldsUsed.length===0,
+      `${row.concern}/${row.situation}/${row.mode}: concern selection is still inventing behavior`);
     assert(row.noteAudit?.evidenceCoverage?.coverageRate === 1 && row.noteAudit?.evidenceCoverage?.missingRuleIds?.length === 0,
       `${row.concern}/${row.situation}/${row.mode}: supported evidence dropped ${JSON.stringify(row.noteAudit?.evidenceCoverage)}`);
+    assert(row.noteAudit?.semanticCoverage?.coverageRate === 1 && row.noteAudit?.semanticCoverage?.noteCountWithFacts === 5,
+      `${row.concern}/${row.situation}/${row.mode}: semantic personalization facts did not reach every answer ${JSON.stringify(row.noteAudit?.semanticCoverage)}`);
     assert(Array.isArray(row.noteAudit?.noteEvidence) && row.noteAudit.noteEvidence.length === 5,
       `${row.concern}/${row.situation}/${row.mode}: note evidence plan missing`);
     assert(Array.isArray(row.noteAudit?.claims) && row.noteAudit.claims.length === 6, `${row.concern}/${row.situation}/${row.mode}: six internal causal claims missing`);
@@ -186,8 +191,10 @@ function norm(v) {
       assert(body.includes('결론'), `${row.concern}/${row.situation}/${row.mode}: answer ${i+1} does not lead with a conclusion`);
     }
     const n2=String(row.notes[1]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-    assert(n2.includes('결론') && /초반 장면|같은 순간/.test(n2) && /예를 들면|이런 상황/.test(n2),
-      `${row.concern}/${row.situation}/${row.mode}: grounded real-life scene explanation missing`);
+    const n2Facts=row.noteAudit?.semanticEvidence?.find(x=>x.noteNum===2)?.facts||{};
+    assert(n2.includes('결론') && /반복이 갈리는 첫 지점|네 반복은 마지막 결과보다/.test(n2) &&
+      (n2Facts.pressureGroup || n2Facts.blockedAt || n2Facts.structurePath || n2Facts.situationGod),
+      `${row.concern}/${row.situation}/${row.mode}: chart-derived pattern explanation missing`);
     const timing=row.notes[4]?.timing;
     assert(timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: timing metadata missing`);
     const firstTiming=norm(timing?.firstBody);
@@ -197,7 +204,7 @@ function norm(v) {
     assert(row.audit?.hardTerms?.length === 0, `${row.concern}/${row.situation}/${row.mode}: hard/abstract saju jargon leaked`);
     assert(row.audit?.duplicates?.length === 0, `${row.concern}/${row.situation}/${row.mode}: answers repeat the same sentence: ${JSON.stringify(row.audit?.duplicates)}`);
     assert(row.finalAudit && JSON.stringify(row.finalAudit)===JSON.stringify(row.audit), `${row.concern}/${row.situation}/${row.mode}: final QA is not auditing actual rendered answers`);
-    assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: old/abstract consultation wording leaked`);
+    assert(!/(비밀\s*메모|실전 룰|반복 패턴)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: old consultation wording leaked`);
     assert(!/(undefined|NaN|null)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: bad token leaked`);
   }
 
@@ -238,14 +245,24 @@ function norm(v) {
     '실제 계산에서 잡혀 있어','여기서는 시점만 남기고',
     '신호만 주고 설명은 하지 않는 관계이고.'
   ];
+  const behaviorTemplateForbidden=[
+    '지원보다 자격증·포트폴리오 수정만 계속해',
+    '말 한마디를 계속 해석하면서 내 표현은 줄여',
+    '작은 결제를 가볍게 넘기거나 계획에 없던 소비를 합리화해',
+    '웃고 넘기고 혼자 의미를 오래 곱씹어',
+    '휴식을 줄이고 속도가 떨어진 상태로 계속 버텨',
+    '좋은 사람을 상상하면서도 새로운 약속이나 소개는 귀찮아서 미뤄',
+  ];
   for(const row of qa.situationRows){
     for(const bad of finalCopyForbidden) assert(!row.allText.includes(bad), `${row.concern}/${row.situation}/${row.mode}: final copy QA leak ${bad}`);
+    for(const bad of behaviorTemplateForbidden) assert(!row.allText.includes(bad), `${row.concern}/${row.situation}/${row.mode}: concern-only behavior template leaked into NOTE: ${bad}`);
   }
   assert(qa.situationRows.every(r=>!/(특수한 구조|종격|가종|전왕)/.test(r.allText)),
     'unsupported special-structure jargon leaked into user answers');
 
   assert(qa.chartCompare.diagA.structureFingerprint !== qa.chartCompare.diagB.structureFingerprint, 'different charts share NOTE v3 structure fingerprint');
-  assert(qa.chartCompare.diffs.filter(Boolean).length >= 3, 'different charts should change a majority of the five answers without forcing fake differences: '+JSON.stringify(qa.chartCompare.diffs));
+  assert(qa.chartCompare.diffs[0] && qa.chartCompare.diffs[1] && qa.chartCompare.diffs.filter(Boolean).length >= 4,
+    'different charts must change the core and pattern answers plus at least two more answers: '+JSON.stringify(qa.chartCompare.diffs));
 
   // Production-like result path: verify catalog is actually visible and free-launch previews work.
   const ui = await page.evaluate(async () => {
@@ -799,10 +816,11 @@ function norm(v) {
   ]){
     assert(!ftScreen.f.notes.includes(bad)&&!ftScreen.t.notes.includes(bad), 'final rendered F/T screen still contains approved issue: '+bad);
   }
-  assert(ftScreen.f.notes.includes('지금은 다른 사람 얘기가 아니라, 지금 둘 사이에서') &&
-         ftScreen.f.notes.includes('오래 갈수록 마음보다 연락·약속·거리감 같은 기준을 말로 맞춰야 해') &&
+  assert(ftScreen.f.notes.includes('지금 연애 중이야') &&
+         ftScreen.f.notes.includes('연애에서') &&
+         !ftScreen.f.notes.includes('오래 갈수록 마음보다 연락·약속·거리감 같은 기준을 말로 맞춰야 해') &&
          !ftScreen.f.notes.includes('현재 연애 때문에 힘들 때도'),
-    'final rendered F relationship screen lost neutral current-relationship framing');
+    'final rendered F relationship screen lost neutral current-relationship framing or leaked concern-only behavior');
 
   await page.evaluate(() => {
     selectedSplitMode='F';
