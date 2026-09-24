@@ -8,7 +8,10 @@
 
   function testEnabled() {
     try {
-      return new URLSearchParams(global.location.search).get(TEST_PARAM) === "1";
+      const live = new URLSearchParams(global.location.search || "");
+      if (live.get(TEST_PARAM) === "1") return true;
+      const preserved = new URLSearchParams(global.unniReturnParams || "");
+      return preserved.get(TEST_PARAM) === "1";
     } catch {
       return false;
     }
