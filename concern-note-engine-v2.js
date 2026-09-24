@@ -1313,8 +1313,8 @@
     const relation=relationSentence(reasoning);
     const resolution=patternResolutionSentence(reasoning);
     const conclusion=isT
-      ? "<b>결론</b> — 반복이 갈리는 첫 지점은 <b>"+scene+"</b>이야."
-      : "<b>결론</b> — 네 반복은 마지막 결과보다 <b>"+scene+"</b>에서 먼저 갈려.";
+      ? "<b>결론</b> — 지금 고른 ‘"+s.label+"’에서 반복이 갈리는 첫 지점은 <b>"+scene+"</b>이야."
+      : "<b>결론</b> — 지금 고른 ‘"+s.label+"’에서 네 반복은 마지막 결과보다 <b>"+scene+"</b>에서 먼저 갈려.";
     return [
       conclusion,
       pressure+" "+capacity,
