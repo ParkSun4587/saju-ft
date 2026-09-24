@@ -224,6 +224,7 @@ const SYSTEM_PROMPT = [
   "",
   "[문장 형식]",
   "- title: 사용자가 3초 안에 이해할 수 있는 결론 한 줄. 시적인 문구 금지.",
+  "- focus: 이 NOTE가 다루는 발견을 8~24자 정도의 짧은 명사형으로 적는다. 다른 NOTE와 겹치지 않게 한다.",
   "- basis: 반드시 '네 사주에서는'으로 시작한다. 실제 명리 사실 2개 이상을 이름 그대로 적고, 수치가 의미 있을 때만 수치를 쓴다.",
   "- body: basis의 사실들이 왜 같은 결론으로 이어지는지 2~4문장으로 설명하고 마지막 1문장에서 현재 고민에 연결한다.",
   "- 한 NOTE 전체를 길게 늘이지 않는다. 반복되는 설명은 삭제한다.",
@@ -627,7 +628,7 @@ function buildTranslationInstruction(packet) {
 export async function onRequestGet(context) {
   return reply(200, {
     ok: true,
-    service: "unni-ai-notes-test",
+    service: "unni-ai-notes-v4",
     configured: Boolean(context.env.OPENAI_API_KEY),
     model: context.env.OPENAI_MODEL || "gpt-6-sol",
   });
@@ -638,7 +639,7 @@ async function handlePost(context) {
     return reply(403, {
       ok: false,
       code: "SAME_ORIGIN_REQUIRED",
-      message: "같은 사이트에서 시작한 테스트 요청만 허용됩니다.",
+      message: "같은 사이트에서 시작한 NOTE 요청만 허용됩니다.",
     });
   }
 
