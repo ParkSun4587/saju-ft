@@ -1219,15 +1219,19 @@ function norm(v) {
     html.includes('<option value="unknown" selected>(모름)</option>') &&
     html.includes('<option value="子">자시 · 23:30~01:29</option>') &&
     html.includes('<option value="亥">해시 · 21:30~23:29</option>') &&
+    html.includes('id="birthTimeExactToggle"') &&
+    html.includes('>정확한 시간 입력</span>') &&
+    html.includes('id="birthTimeExactWrap"') &&
     html.includes('id="birthTimeInput"') &&
-    html.includes('placeholder="정확한 시간"') &&
+    html.includes('placeholder="예: 09:42"') &&
     html.includes('aria-label="정확한 출생 시간"') &&
     !html.includes('id="birthTimeUnknownButton"') &&
     !html.includes('id="birthTimeHelp"') &&
     html.includes('function selectBirthTimeBranch()') &&
+    html.includes('function toggleExactBirthTime()') &&
     html.includes('function normalizeExactBirthTime(value)') &&
     html.includes('function formatBirthTime(input)'),
-    '12-branch primary selector or exact-time input missing'
+    '12-branch primary selector or checkbox-gated exact-time input missing'
   );
   assert(html.includes('BIRTH_TIME_BRANCHES') && html.includes('BIRTH_TIME_BRANCH_LABELS'), 'branch-time parsing/restore support missing');
   assert(
