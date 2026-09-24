@@ -359,7 +359,7 @@ function isImperativeAdvice(text) {
 }
 
 function hasSajuAnchor(text) {
-  return /(네 사주에서는|이 사주에서는|사주에서 보면|사주를 보면)/.test(
+  return /((네|이)\s*사주(에서는|는|에서)|사주(를|에서)\s*보면)/.test(
     String(text || ""),
   );
 }
@@ -386,7 +386,6 @@ function validateGeneratedNotes(parsed, packet) {
   const notes = [];
   const usedFocus = new Set();
   const usedClaims = new Set();
-  const evidenceSignatures = new Set();
 
   for (const role of NOTE_ROLES) {
     const item = parsed[role];
@@ -437,8 +436,12 @@ function validateGeneratedNotes(parsed, packet) {
       if (requiredStructural > 0 && structuralIds.length < 1) {
         throw new Error("TIMING_NATAL_LINK_MISSING");
       }
-    } else if (requiredStructural > 0 && structuralIds.length < requiredStructural) {
-      throw new Error("INSUFFICIENT_STRUCTURAL_EVIDENCE");
+    } else {
+      const minimumStructural =
+        role === "decision" ? Math.min(1, structuralAllowed.size) : requiredStructural;
+      if (minimumStructural > 0 && structuralIds.length < minimumStructural) {
+        throw new Error("INSUFFICIENT_STRUCTURAL_EVIDENCE");
+      }
     }
 
     const focusKey = normalizeClaim(focus);
@@ -452,14 +455,6 @@ function validateGeneratedNotes(parsed, packet) {
       throw new Error("DUPLICATE_NOTE_CLAIM");
     }
     usedClaims.add(claimKey);
-
-    if (role !== "decision") {
-      const signature = [...evidenceIds].sort().join("|");
-      if (signature && evidenceSignatures.has(signature)) {
-        throw new Error("DUPLICATE_EVIDENCE_SET");
-      }
-      if (signature) evidenceSignatures.add(signature);
-    }
 
     notes.push({
       role,
@@ -818,8 +813,6 @@ export async function onRequestPost(context) {
         "6개 NOTE가 서로 다른 질문을 답하도록 focus를 완전히 분리해.",
       DUPLICATE_NOTE_CLAIM:
         "제목들이 같은 결론을 반복하지 않도록 각각 다른 발견을 뽑아.",
-      DUPLICATE_EVIDENCE_SET:
-        "같은 근거 묶음을 여러 NOTE에 재사용하지 말고 역할별로 다른 핵심 근거를 선택해.",
       WEAK_NOTE_OUTPUT:
         "사주 진단과 이유를 생략하지 말고 basis와 body를 충분히 구체적으로 써.",
     };
