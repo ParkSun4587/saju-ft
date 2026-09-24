@@ -847,6 +847,58 @@
     return (synthesisFor(reasoning).tenGodEvidence || [])[0] || null;
   }
 
+  const SITUATION_GROUP_LENS = {
+    money:{
+      saving:["wealth","self","officer"], income:["wealth","output","officer"],
+      side:["output","wealth","self"], flow:["wealth","officer","output"],
+    },
+    career:{
+      exam:["print","officer","output"], jobsearch:["output","officer","print"],
+      move:["officer","self","wealth"], current:["officer","wealth","output"],
+    },
+    love:{
+      crush:["output","wealth","print"], relationship:["self","officer","output"],
+      breakup:["print","self","officer"], new:["output","wealth","self"],
+    },
+    path:{
+      lost:["print","output","self"], current:["officer","wealth","self"],
+      switch:["output","wealth","print"], strength:["self","output","print","wealth","officer"],
+    },
+    people:{
+      friend:["self","output","officer"], work:["officer","self","output"],
+      family:["self","officer","print"], distance:["self","wealth","officer"],
+    },
+    mental:{
+      burnout:["officer","print","self"], overthink:["print","output","self"],
+      low:["output","print","self"], recover:["print","self","output"],
+    },
+  };
+
+  function situationGodEvidence(reasoning,s) {
+    const rows=synthesisFor(reasoning).tenGodEvidence||[];
+    if(!rows.length) return null;
+    const prefs=SITUATION_GROUP_LENS[s?.concern]?.[s?.key]||[];
+    for(const group of prefs){
+      const row=rows.find(x=>x?.group===group);
+      if(row) return row;
+    }
+    return rows[0]||null;
+  }
+
+  function situationLensSentence(reasoning,s) {
+    const row=situationGodEvidence(reasoning,s);
+    if(!row?.god) return "";
+    const roles=row.roles||[];
+    const role=roles.includes("rescue")
+      ?"흔들린 구조를 다시 살리는 역할"
+      :roles.includes("support")
+        ?"전체 구조를 받치는 역할"
+        :roles.includes("harm")
+          ?"과해질 때 구조를 흔드는 역할"
+          :"실제 세력에서 우선순위가 높은 역할";
+    return "지금 고른 ‘"+s.label+"’에서는 사주 안의 "+(GOD_USER[row.god]||row.god)+" 신호를 우선 연결해서 봐야 해. "+evidenceLocationText(row)+"이고, "+role+"로 잡혀 있어";
+  }
+
   function concernMechanismScene(reasoning, s) {
     const group = synthesisFor(reasoning).mechanisms?.drive?.pressureGroup || reasoning?.integrated?.pressureGroup || "unknown";
     const name = (DOMAIN[s.concern] || DOMAIN.money).name || "이 고민";
@@ -943,7 +995,7 @@
     return name + "에서 평소 약한 지점이 다른 달보다 더 쉽게 드러나는지 확인해야 하는 달이야";
   }
 
-  function personalizationFactsForRole(reasoning, role) {
+    function personalizationFactsForRole(reasoning, role, situation) {
     const syn = synthesisFor(reasoning);
     const c = syn.mechanisms?.capacity || {};
     const d = syn.mechanisms?.drive || {};
@@ -951,29 +1003,33 @@
     const a = syn.mechanisms?.adjustment || {};
     const f = syn.mechanisms?.friction || {};
     const top = topGodEvidence(reasoning);
+    const lens = situation ? situationGodEvidence(reasoning,situation) : null;
     if (role === "core") return {
       priorityRuleIds:(syn.priorityMechanisms || []).slice(0,3).map(x=>x.ruleId),
       contradictionFlags:syn.contradictionFlags || [],
       strength:c.verdict || null, rootQuality:c.rootQuality || null, rootClashCount:Number(c.rootClashCount || 0),
       rawStrongest:d.rawStrongest || null, strongestElement:d.strongestElement || null,
       topGod:top?.god || null, topGodRoles:top?.roles || [],
+      situationGod:lens?.god||null, situationGodGroup:lens?.group||null,
     };
     if (role === "pattern") return {
       pressureGroup:d.pressureGroup || null, pressureOverload:!!d.pressureOverload,
       blockedAt:d.blockedAt || null, rootQuality:c.rootQuality || null,
       structureState:st.state || null, structurePath:st.path || null,
       clashCount:Number(f.clashCount || 0), relationCount:Number(f.relationCount || 0),
+      situationGod:lens?.god||null, situationGodGroup:lens?.group||null,
     };
     if (role === "fit") return {
       helpfulGods:st.helpfulGods || [], rescueGods:st.rescueGods || [],
       prescriptionSequence:(a.prescription?.sequence || []).map(x=>x.element).filter(Boolean),
       bridgeElement:a.bridgeElement || null, bridgeStatus:a.bridgeStatus || null,
+      situationGod:lens?.god||null,
     };
     if (role === "caution") return {
       harmfulGods:st.harmfulGods || [], pressureGroup:d.pressureGroup || null,
       pressureOverload:!!d.pressureOverload, conflictCount:(a.conflicts || []).length,
       rootClashCount:Number(c.rootClashCount || 0), clashCount:Number(f.clashCount || 0),
-      monthClashCount:Number(f.monthClashCount || 0),
+      monthClashCount:Number(f.monthClashCount || 0), situationGod:lens?.god||null,
     };
     return {};
   }
@@ -1002,8 +1058,8 @@
     return first+" "+second;
   }
 
-    function dominantFunctionSentence(reasoning){
-    const row=topGodEvidence(reasoning);
+      function dominantFunctionSentence(reasoning,s){
+    const row=s ? situationGodEvidence(reasoning,s) : topGodEvidence(reasoning);
     if(!row?.god) return "";
     const functionMap={
       비견:"남이 정한 답보다 내 기준으로 결정할 때 힘이 또렷해지는 쪽",
@@ -1024,7 +1080,7 @@
         :(row.roles||[]).includes("harm")
           ?" 다만 이 힘은 지금 구조에서는 과해질 때 장점을 흔드는 역할도 같이 잡혀 있어."
           :"";
-    return (GOD_USER[row.god]||row.god)+"이 실제 세력에서 우선순위가 높아. "+(functionMap[row.god]||"조건에 따라 방식 조절이 중요한 쪽")+"이고, "+evidenceLocationText(row)+"이야."+role;
+    return (GOD_USER[row.god]||row.god)+"이 이 고민과 연결되는 실제 세력에서 우선순위가 높아. "+(functionMap[row.god]||"조건에 따라 방식 조절이 중요한 쪽")+"이고, "+evidenceLocationText(row)+"이야."+role;
   }
 
   function patternPressureSentence(reasoning){
@@ -1235,17 +1291,17 @@
     return parts.join(". ");
   }
 
-    function noteOneDesc(reasoning,s,p,isT){
+      function noteOneDesc(reasoning,s,p,isT){
     const core=plainSentence(distinctiveCoreSentence(reasoning));
     const capacity=capacitySentence(reasoning);
-    const top=dominantFunctionSentence(reasoning);
-    const scene=concernMechanismScene(reasoning,s);
+    const top=dominantFunctionSentence(reasoning,s);
+    const lens=situationLensSentence(reasoning,s);
     const guard=guardSentence(reasoning,isT);
     return [
       isT ? "<b>결론</b> — "+core : "<b>결론</b> — 언니가 제일 먼저 본 건 이거야. "+core,
       capacity,
+      lens,
       top,
-      isT ? "<b>이 고민에서 걸리는 자리</b> — "+scene+"." : "지금 고민에 대입하면 특히 <b>"+scene+"</b>에서 이 구조가 드러나기 쉬워.",
       guard,
     ].filter(Boolean).join("<br><br>");
   }
@@ -1494,7 +1550,7 @@
         desc:noteOneDesc(r,s,p,isT),
         checklist:"",
         __evidenceRuleIds:evidenceIdsForRole(r,"core"),
-        __personalizationFacts:personalizationFactsForRole(r,"core"),
+        __personalizationFacts:personalizationFactsForRole(r,"core",s),
       },
       {
         badge:badgeFor(s.concern,1),
@@ -1502,7 +1558,7 @@
         desc:noteTwoDesc(r,s,p,isT),
         checklist:"",
         __evidenceRuleIds:evidenceIdsForRole(r,"pattern"),
-        __personalizationFacts:personalizationFactsForRole(r,"pattern"),
+        __personalizationFacts:personalizationFactsForRole(r,"pattern",s),
       },
       {
         badge:badgeFor(s.concern,2),
@@ -1510,7 +1566,7 @@
         desc:noteThreeDesc(r,s,p,isT),
         checklist:"",
         __evidenceRuleIds:evidenceIdsForRole(r,"fit"),
-        __personalizationFacts:personalizationFactsForRole(r,"fit"),
+        __personalizationFacts:personalizationFactsForRole(r,"fit",s),
       },
       {
         badge:badgeFor(s.concern,3),
@@ -1518,7 +1574,7 @@
         desc:noteFourDesc(r,s,p,isT),
         checklist:"",
         __evidenceRuleIds:evidenceIdsForRole(r,"caution"),
-        __personalizationFacts:personalizationFactsForRole(r,"caution"),
+        __personalizationFacts:personalizationFactsForRole(r,"caution",s),
       },
       {
         badge:badgeFor(s.concern,4),
