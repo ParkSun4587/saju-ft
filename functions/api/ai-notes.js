@@ -588,7 +588,7 @@ export async function onRequestGet(context) {
   });
 }
 
-export async function onRequestPost(context) {
+async function handlePost(context) {
   if (!sameOrigin(context.request)) {
     return reply(403, {
       ok: false,
@@ -791,4 +791,21 @@ export async function onRequestPost(context) {
     usageBreakdown: usageBreakdown(usage, model, context.env),
     notes: generated.notes,
   });
+}
+
+
+export async function onRequestPost(context) {
+  try {
+    return await handlePost(context);
+  } catch (error) {
+    return reply(500, {
+      ok: false,
+      code: "SERVER_RUNTIME_ERROR",
+      message: "AI NOTE 서버 처리 중 오류가 발생했습니다.",
+      detail:
+        error && typeof error.message === "string"
+          ? error.message.slice(0, 300)
+          : String(error || "unknown").slice(0, 300),
+    });
+  }
 }
