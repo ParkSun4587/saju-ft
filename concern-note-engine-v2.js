@@ -872,7 +872,7 @@
 
     if (d.rawInfluenceMismatch && d.rawStrongest && d.strongestElement && d.rawStrongest !== d.strongestElement) {
       return "겉으로 보이는 오행 개수에서는 " + (FLOW_SHORT[d.rawStrongest] || d.rawStrongest) +
-        " 쪽이 먼저 보여도, 월령·지장간과 자리 힘까지 반영하면 실제 중심은 " +
+        " 쪽이 먼저 보여도, 계절과 안쪽에 숨어 있는 힘, 자리별 비중까지 반영하면 실제 중심은 " +
         (FLOW_SHORT[d.strongestElement] || d.strongestElement) + " 쪽으로 바뀌는 사주야. 겉모습과 실제 작동 방식이 같은 사람이 아니야";
     }
     if (flags.has("body-vs-structure") && (a.conflicts || []).length) {
@@ -885,7 +885,7 @@
       return "계절의 도움만으로 강해진 사주가 아닌데도 다른 자리의 뿌리와 생조가 힘을 끌어올리고 있어. 그래서 겉으로는 단단해 보여도 어떤 환경에서 그 힘을 받는지에 따라 차이가 크게 나는 구조야";
     }
     if (Number(c.rootClashCount || 0) > 0) {
-      return "버티는 뿌리 자체는 있는데 그 뿌리를 직접 흔드는 충도 같이 있어. 평소에 버티는 모습만 보고 계속 같은 강도로 밀어도 된다고 보면 오히려 핵심을 놓치는 사주야";
+      return "버티는 뿌리 자체는 있는데 그 뿌리를 직접 흔드는 부딪힘도 같이 있어. 평소에 버티는 모습만 보고 계속 같은 강도로 밀어도 된다고 보면 오히려 핵심을 놓치는 사주야";
     }
     if (d.blockedAt?.from && d.blockedAt?.to) {
       return flowGapSentence(reasoning).replace(/[.!?]+$/,"") + ". 힘이 아예 없는 게 아니라 특정 단계에서 다음 단계로 넘기는 연결이 약한 게 핵심이야";
@@ -1153,13 +1153,13 @@
       if(row.isActual&&row.visibility==="visible") availability="이 힘은 원래 사주에도 있고 겉으로 드러난 자리에서 비교적 바로 쓰이는 편이야";
       else if(row.isActual&&row.visibility==="hidden") availability="이 힘은 원래 사주에 있지만 처음부터 겉으로 튀기보다 익숙한 상황에서 더 강하게 살아나는 편이야";
       else if(row.isPresent) availability="이 힘은 사주 안에 실제로 있으나 중심 역할보다는 조건이 맞을 때 보조로 살아나는 편이야";
-      else availability="이 힘은 원국에서 강하게 확보된 힘이 아니라 사람·환경·운에서 들어올 때 효과가 더 분명해질 수 있어";
+      else availability="이 힘은 사주에서 강하게 확보된 힘이 아니라 사람·환경·운에서 들어올 때 효과가 더 분명해질 수 있어";
       const roles=row.ev?.roles||[];
       const why=roles.includes("rescue") || (st.rescueGods||[]).includes(row.god)
         ?"사주 구조가 흔들릴 때 다시 이어주는 역할로 잡힌 힘이야"
         :roles.includes("support") || (st.helpfulGods||[]).includes(row.god)
           ?"사주의 중심 구조를 살리는 쪽으로 잡힌 힘이야"
-          :"격의 작동을 보조하는 후보로 남는 힘이야";
+          :"전체 구조를 보조하는 후보로 남는 힘이야";
       return {
         god:row.god,
         label:GOD_USER[row.god]||row.god,
@@ -1175,7 +1175,7 @@
       groups.slice(0,2).forEach(g=>rows.push({
         god:null,label:groupText(g).noun,text:domain.help[g]||domain.help.unknown,
         availability:"이 조건은 지금 강약 구조에서 감당력을 보완하는 기본 축으로 잡혀",
-        why:"적천수 쪽 강약 판단에서 먼저 보완할 그룹으로 나온 조건이야",
+        why:"전체 강약 판단에서 먼저 보완할 그룹으로 나온 조건이야",
         evidenceStatus:"needed-group",
       }));
     }
@@ -1200,7 +1200,7 @@
     const rows=gods.slice(0,3).map(g=>{
       const ev=evidence[g]||null;
       const visibility=!ev
-        ?"이 힘은 원국에서 강하게 드러난 힘은 아니지만 들어올 때 구조를 흔드는 조건으로 잡혀"
+        ?"이 힘은 사주에서 강하게 드러난 힘은 아니지만 들어올 때 구조를 흔드는 조건으로 잡혀"
         :evidenceLocationText(ev)+"이고, 현재 구조에서는 과해질 때 방해 쪽으로 작동해";
       return {
         god:g,
@@ -1217,7 +1217,7 @@
         text:domain.harm[group]||domain.harm.unknown,
         evidence:syn.mechanisms?.drive?.pressureOverload
           ?"이 압력군은 실제 세력 비교에서 과부하 후보로 잡혀"
-          :"자평진전에서 뚜렷한 방해 십신이 고정되지 않아, 실제 세력이 가장 큰 압력군을 대신 경계 기준으로 잡았어",
+          :"구조를 직접 흔드는 힘이 하나로 고정되지 않아, 실제 세력이 가장 큰 압력군을 대신 경계 기준으로 잡았어",
       });
     }
     return rows;
@@ -1228,10 +1228,10 @@
     const seq=a.prescription?.sequence||[];
     const names=[...new Set(seq.map(x=>FLOW_SHORT[x?.element]).filter(Boolean))];
     const parts=[];
-    if(names.length) parts.push("내부 처방 순서는 "+names.join(" → ")+" 쪽으로 잡혀 있어");
-    if(a.bridgeElement&&a.bridgeStatus==="missing") parts.push("서로 맞서는 힘 사이를 이어줄 "+(FLOW_SHORT[a.bridgeElement]||"중간")+" 역할은 원국에서 비어 있어");
-    else if(a.bridgeElement) parts.push("서로 맞서는 힘 사이를 이어주는 "+(FLOW_SHORT[a.bridgeElement]||"중간")+" 역할은 원국 안에 후보가 있어");
-    if((a.conflicts||[]).length) parts.push("격을 살리는 힘과 일간이 감당하기 편한 힘이 완전히 같지는 않아");
+    if(names.length) parts.push("사주 안에서 힘이 이어지는 순서는 "+names.join(" → ")+" 쪽으로 잡혀 있어");
+    if(a.bridgeElement&&a.bridgeStatus==="missing") parts.push("서로 맞서는 힘 사이를 이어줄 "+(FLOW_SHORT[a.bridgeElement]||"중간")+" 역할은 사주에서 비어 있어");
+    else if(a.bridgeElement) parts.push("서로 맞서는 힘 사이를 이어주는 "+(FLOW_SHORT[a.bridgeElement]||"중간")+" 역할은 사주 안에 후보가 있어");
+    if((a.conflicts||[]).length) parts.push("구조를 살리는 힘과 네가 오래 감당하기 편한 힘이 완전히 같지는 않아");
     return parts.join(". ");
   }
 
@@ -1290,7 +1290,7 @@
       rest.length
         ? (isT
           ?"추가 조건 — "+rest.map(x=>"<b>"+x.text+"</b> ("+x.why+")").join(" / ")
-          :"그다음은 "+rest.map(x=>"<b>"+x.text+"</b>").join(" / ")+" 순서로 보면 돼. 이것들도 실제 격의 도움·구응 후보에서 고른 조건이야.")
+          :"그다음은 "+rest.map(x=>"<b>"+x.text+"</b>").join(" / ")+" 순서로 보면 돼. 이것들도 실제 구조의 도움·회복 후보에서 고른 조건이야.")
         :"",
       adjust ? adjust+"." : "",
       closing,
@@ -1306,7 +1306,7 @@
       ?"이 힘은 단순한 배경이 아니라 실제 세력 비교에서 과부하 후보로 잡혀 있어."
       :"이 힘 하나만으로 나쁘다고 단정하지는 않지만, 현재 구조에서는 반복될 때 방해 쪽으로 기울 수 있는 조건이야.";
     const conflict=(synthesisFor(reasoning).mechanisms?.adjustment?.conflicts||[]).length
-      ?"게다가 격을 살리는 방식과 네가 오래 감당하기 편한 방식이 완전히 같지 않아서, 결과가 난다는 이유만으로 계속 밀면 오판하기 쉬워."
+      ?"게다가 구조를 살리는 방식과 네가 오래 감당하기 편한 방식이 완전히 같지 않아서, 결과가 난다는 이유만으로 계속 밀면 오판하기 쉬워."
       :"";
     const criterion=cautionCriterionSentence(reasoning,s);
     return [
@@ -1326,23 +1326,23 @@
     ].filter(Boolean).join("<br><br>");
   }
 
-  function compactTimingReason(row,positive){
+    function compactTimingReason(row,positive){
     const rows=positive ? (row?.layers?.wolun?.supportSignals||[]) : (row?.layers?.wolun?.cautionSignals||[]);
     const signal=rows.find(x=>x.severity==="major")||rows.find(x=>x.severity==="support")||rows[0]||null;
     const code=signal?.code||"";
     if(positive){
-      if(/generate|rescue|root-add|assist/.test(code)) return "평소 부족하던 버팀목이 보태져서, 같은 일을 해도 덜 버겁게 움직일 수 있어";
-      if(/bridge|flow-unblock/.test(code)) return "평소 중간에서 끊기던 연결이 이어지기 쉬워";
-      if(/discharge/.test(code)) return "생각이나 에너지를 말·결과물·행동으로 빼내기가 평소보다 쉬워";
-      if(/control/.test(code)) return "기준을 세우고 우선순위를 정리하기가 평소보다 쉬워";
-      if(/ziping-support/.test(code)) return "원래 잘되는 방식이 실제 결과로 이어지기 쉬워";
-      return "작게 움직여 실제 반응을 확인해보기 좋은 쪽이야";
+      if(/generate|rescue|root-add|assist/.test(code)) return "평소 부족하던 받침을 보태는 신호가 들어와 같은 부담도 덜 무겁게 작동할 수 있어";
+      if(/bridge|flow-unblock/.test(code)) return "평소 중간에서 끊기던 연결을 이어주는 신호가 들어와";
+      if(/discharge/.test(code)) return "생각이나 준비를 표현·결과로 밖에 빼는 힘이 평소보다 잘 붙어";
+      if(/control/.test(code)) return "흩어진 힘을 기준과 우선순위로 묶는 작용이 평소보다 잘 붙어";
+      if(/ziping-support/.test(code)) return "원래 사주 구조를 살리는 힘이 운에서도 같은 방향으로 겹쳐";
+      return "원래 구조를 돕는 신호가 다른 달보다 분명하게 겹쳐";
     }
-    if(/root-clash/.test(code)) return "평소 버티던 축이 흔들리기 쉬워서 큰 결정을 한꺼번에 밀기엔 불리해";
-    if(/body-cost/.test(code)) return "감당할 일이 늘기 쉬워서 범위를 먼저 줄이는 게 좋아";
-    if(/ziping-harm/.test(code)) return "평소 잘되던 방식이 꼬이기 쉬워서 조건을 한 번 더 확인하는 게 좋아";
-    if(/over-support/.test(code)) return "이미 강한 힘이 더 세져 고집이나 과부하로 번지기 쉬워";
-    return "한 번에 크게 결정하기보다 부담을 줄이고 확인하는 쪽이 좋아";
+    if(/root-clash/.test(code)) return "평소 버티게 해주던 뿌리를 직접 흔드는 신호가 겹쳐";
+    if(/body-cost/.test(code)) return "원래 감당력이 약해지는 쪽으로 부담 신호가 더 붙어";
+    if(/ziping-harm/.test(code)) return "원래 구조를 흔드는 힘이 운에서도 같은 방향으로 겹쳐";
+    if(/over-support/.test(code)) return "이미 강한 힘을 더 세게 만드는 신호가 붙어 과부하 가능성이 커져";
+    return "원래 사주의 약한 지점을 건드리는 신호가 다른 달보다 더 분명하게 겹쳐";
   }
 
     function compactTimingNote(reasoning,s,p,isT){
@@ -1406,7 +1406,7 @@
         :reasons.includes("major-flow-change")
           ?"몇 년 단위의 큰 흐름 바탕이 교체되는 구간"
           :"앞선 해와 비교해 도움·주의 방향이 실제로 바뀌는 구간";
-      lines.push("<b>"+pivot.year+"년 전후</b> — "+why+"이라 장기적으로는 같은 원국도 작동 방식이 달라질 수 있어. 여기서는 실제 변곡점만 먼저 짚을게.");
+      lines.push("<b>"+pivot.year+"년 전후</b> — "+why+"이라 장기적으로는 같은 사주도 작동 방식이 달라질 수 있어. 여기서는 실제 변곡점만 먼저 짚을게.");
     }
 
     lines.push("<b>지금 비교 기준</b> — "+cautionCriterionSentence(reasoning,s)+".");
