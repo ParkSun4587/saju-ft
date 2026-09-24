@@ -12,7 +12,7 @@ async function deployed(page) {
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
         globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.0.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.2.0' &&
-        globalThis.__UNNI_AI_NOTE_V4__?.version === '2.1.1' &&
+        globalThis.__UNNI_AI_NOTE_V4__?.version === '2.1.3' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
@@ -570,6 +570,32 @@ async function inspect(page, mode) {
   await deployed(page);
   await enter(page,'F','love','relationship');
 
+  const packetBuild = await page.evaluate(() => {
+    try {
+      const packet = globalThis.__UNNI_AI_NOTE_V4__?.buildEvidencePacket?.(
+        currentResultData,
+        currentResultData?.currentMode || 'F'
+      );
+      return {
+        ok:!!packet,
+        schemaVersion:packet?.schemaVersion||'',
+        planRoles:Object.keys(packet?.notePlan||{}),
+        coverageCount:(packet?.requiredEvidenceCoverageIds||[]).length,
+        weightedRankIsArray:Array.isArray(packet?.chartFacts?.fiveElements?.weightedRank),
+      };
+    } catch (error) {
+      return {ok:false,error:String(error?.stack||error?.message||error)};
+    }
+  });
+  assert(
+    packetBuild.ok &&
+    packetBuild.schemaVersion==='2.1.3' &&
+    packetBuild.planRoles.join('|')==='foundation|mechanism|fit|caution|timing' &&
+    packetBuild.coverageCount>=2 &&
+    packetBuild.weightedRankIsArray,
+    'AI NOTE evidence packet must build before any network call '+JSON.stringify(packetBuild)
+  );
+
   const requiresLiveAi = /^https:\/\//i.test(BASE);
   if (requiresLiveAi) {
     const endpoint = new URL('/api/ai-notes', BASE).toString();
@@ -591,7 +617,7 @@ async function inspect(page, mode) {
       const handle = await page.waitForFunction(
         () => {
           const ready =
-            currentResultData?.__aiNoteV4?.version === '2.1.1' &&
+            currentResultData?.__aiNoteV4?.version === '2.1.3' &&
             Array.isArray(currentResultData?.__aiNoteV4?.notes) &&
             currentResultData.__aiNoteV4.notes.length === 5 &&
             currentResultData.__aiNoteV4.notes.every((n)=>n?.__aiTranslated === true);
@@ -642,7 +668,7 @@ async function inspect(page, mode) {
       status:globalThis.__UNNI_AI_NOTE_V4__?.productionNoteStatus?.(currentResultData)||null,
     }));
     assert(
-      liveAi.version==='2.1.1' &&
+      liveAi.version==='2.1.3' &&
       liveAi.count===5 &&
       liveAi.translated &&
       liveAi.visibleText.includes('사주 근거'),

@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "2.1.1";
+  const VERSION = "2.1.3";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -14,6 +14,15 @@
       return preserved.get(TEST_PARAM) === "1";
     } catch {
       return false;
+    }
+  }
+
+  function autoProductionEnabled() {
+    try {
+      const host = String(global.location?.hostname || "").toLowerCase();
+      return host !== "localhost" && host !== "127.0.0.1" && host !== "0.0.0.0";
+    } catch {
+      return true;
     }
   }
 
@@ -256,7 +265,18 @@
     return state;
   }
 
+  function productionAiEnabled() {
+    try {
+      const host = String(global.location?.hostname || "").toLowerCase();
+      if (testEnabled()) return true;
+      return host !== "localhost" && host !== "127.0.0.1" && host !== "::1";
+    } catch {
+      return true;
+    }
+  }
+
   function canAttemptProductionNotes(data) {
+    if (!productionAiEnabled()) return false;
     if (getProductionNotes(data, data?.currentMode || "F")?.length) return false;
     const state = productionState(data);
     if (!state) return false;
@@ -389,8 +409,15 @@
       fiveElements: {
         rawCount: cloneJson(elements?.raw || {}, {}),
         weightedInfluence: cloneJson(elements?.influence || {}, {}),
-        rawRank: cloneJson(elements?.rawRank || {}, {}),
-        weightedRank: cloneJson(elements?.influenceRank || {}, {}),
+        rawRank: cloneJson(Array.isArray(elements?.rawRank) ? elements.rawRank : [], []),
+        weightedRank: cloneJson(
+          Array.isArray(elements?.influenceRank)
+            ? elements.influenceRank
+            : Object.entries(elements?.influence || {})
+                .map(([element, value]) => ({ element, value: Number(value || 0) }))
+                .sort((a, b) => b.value - a.value),
+          [],
+        ),
         rawVsWeightedMismatch: elements?.rawVsInfluenceMismatch === true,
         note:
           "rawCount는 겉으로 보이는 천간·지지 개수이고 weightedInfluence는 월령·지장간·자리 가중치를 반영한 해석값이다. 0개/1개만 보고 결론내리지 않는다.",
@@ -887,7 +914,23 @@
       throw error;
     }
 
-    const packet = buildEvidencePacket(data, normalizedMode);
+    if (state) {
+      state.attempts += 1;
+      state.lastAttemptAt = Date.now();
+      state.lastError = "";
+    }
+
+    let packet;
+    try {
+      packet = buildEvidencePacket(data, normalizedMode);
+    } catch (error) {
+      if (state) {
+        state.success = false;
+        state.lastError = String(error?.code || error?.message || "EVIDENCE_PACKET_BUILD_FAILED");
+      }
+      throw error;
+    }
+
     const key = [
       VERSION,
       packet.structureFingerprint || "",
@@ -898,12 +941,6 @@
     ].join("|");
 
     if (productionInflight.has(key)) return productionInflight.get(key);
-
-    if (state) {
-      state.attempts += 1;
-      state.lastAttemptAt = Date.now();
-      state.lastError = "";
-    }
 
     const promise = generateAiNotes(data, normalizedMode)
       .then((result) => {
@@ -1049,11 +1086,13 @@
   const runtime = {
     version: VERSION,
     enabled: testEnabled,
+    autoProductionEnabled,
     buildEvidencePacket,
     generateAiNotes,
     mapAiNotesToProduction,
     getProductionNotes,
     ensureProductionNotes,
+    productionAiEnabled,
     canAttemptProductionNotes,
     productionNoteStatus,
     describeTerm,
