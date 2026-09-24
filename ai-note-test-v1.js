@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "2.1.2";
+  const VERSION = "2.1.3";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -265,7 +265,18 @@
     return state;
   }
 
+  function productionAiEnabled() {
+    try {
+      const host = String(global.location?.hostname || "").toLowerCase();
+      if (testEnabled()) return true;
+      return host !== "localhost" && host !== "127.0.0.1" && host !== "::1";
+    } catch {
+      return true;
+    }
+  }
+
   function canAttemptProductionNotes(data) {
+    if (!productionAiEnabled()) return false;
     if (getProductionNotes(data, data?.currentMode || "F")?.length) return false;
     const state = productionState(data);
     if (!state) return false;
@@ -1081,6 +1092,7 @@
     mapAiNotesToProduction,
     getProductionNotes,
     ensureProductionNotes,
+    productionAiEnabled,
     canAttemptProductionNotes,
     productionNoteStatus,
     describeTerm,
