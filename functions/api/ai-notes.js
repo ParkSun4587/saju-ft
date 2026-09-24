@@ -725,8 +725,14 @@ async function handlePost(context) {
     },
   };
 
-  async function callOpenAI() {
-    const requestPayload = baseRequestPayload;
+  async function callOpenAI(correction = "") {
+    const requestPayload = JSON.parse(JSON.stringify(baseRequestPayload));
+    if (correction) {
+      requestPayload.input[1].content[0].text +=
+        "\n\n[직전 출력 검증 실패]\n" +
+        correction +
+        "\n위 오류만 바로잡아 같은 evidencePacket으로 다시 작성해. 새로운 사실은 추가하지 마.";
+    }
 
     let openaiResponse;
     try {
@@ -812,27 +818,37 @@ async function handlePost(context) {
     }
   }
 
-  const generated = await callOpenAI();
+  const usages = [];
+  let attempts = 1;
+  let generated = await callOpenAI();
+  if (generated.payload?.usage) usages.push(generated.payload.usage);
+
+  if (!generated.ok && !generated.response && generated.validationError) {
+    attempts = 2;
+    generated = await callOpenAI(generated.validationError);
+    if (generated.payload?.usage) usages.push(generated.payload.usage);
+  }
 
   if (!generated.ok) {
     if (generated.response) return generated.response;
-    const failedUsage = generated.payload?.usage || null;
+    const failedUsage = mergeUsage(usages);
     return reply(502, {
       ok: false,
       code: generated.validationError || "AI_NOTE_VALIDATION_FAILED",
       message:
-        "AI NOTE가 사주 근거·고민 집중도·중복 검증을 통과하지 못했습니다. 자동 재호출은 하지 않았습니다.",
+        "AI NOTE가 두 번의 사주 근거 검증을 모두 통과하지 못했습니다.",
+      attempts,
       usage: failedUsage,
       usageBreakdown: usageBreakdown(failedUsage, model, context.env),
     });
   }
 
-  const usage = generated.payload?.usage || null;
+  const usage = mergeUsage(usages);
   return reply(200, {
     ok: true,
     model,
     responseId: generated.payload?.id || "",
-    attempts: 1,
+    attempts,
     usage,
     usageBreakdown: usageBreakdown(usage, model, context.env),
     notes: generated.notes,
