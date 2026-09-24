@@ -351,6 +351,15 @@ function norm(v) {
     const tGreeting = document.getElementById('resultSisterGreeting')?.innerText || '';
     updateResultContentByMode('F');
     const fGreeting = document.getElementById('resultSisterGreeting')?.innerText || '';
+    const josaMatrix = {
+      topic:["목","화","토","금","수"].map(x=>attachJosa(x,"은/는")),
+      subject:["목","화","토","금","수"].map(x=>attachJosa(x,"이/가")),
+      multi:[
+        attachJosa("목·화","은/는"),
+        attachJosa("화·금","은/는"),
+        attachJosa("토·수","은/는"),
+      ],
+    };
     const mbtiInfo = {
       gradeText:document.getElementById('gradeSection')?.textContent || '',
       fontSize:parseFloat(getComputedStyle(document.getElementById('resultBigMbti')).fontSize || '0'),
@@ -403,6 +412,7 @@ function norm(v) {
       tOheng,
       tGreeting,
       fGreeting,
+      josaMatrix,
       timingFirst:timingAnswer?.__timingQA?.firstBody || '',
       timingSecond:timingAnswer?.__timingQA?.secondBody || '',
       timingText:timingAnswer?.desc || '',
@@ -414,6 +424,12 @@ function norm(v) {
     };
   });
   assert(ui.result, 'production-like result missing');
+  assert(
+    ui.josaMatrix.topic.join('|')==='목은|화는|토는|금은|수는' &&
+    ui.josaMatrix.subject.join('|')==='목이|화가|토가|금이|수가' &&
+    ui.josaMatrix.multi.join('|')==='목·화는|화·금은|토·수는',
+    'five-element Korean particle handling drift '+JSON.stringify(ui.josaMatrix)
+  );
   assert(
     ui.paymentRetryRecovery.search==='' &&
     ui.paymentRetryRecovery.boxText.includes('새로고침을 한 번') &&
