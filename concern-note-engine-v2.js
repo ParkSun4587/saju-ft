@@ -1071,6 +1071,7 @@
     const core=plainSentence(pressureGroupLine(reasoning,s));
     const capacity=capacitySentence(reasoning);
     const working=structureSentence(reasoning);
+    const focus=stripHtml(p?.focus||"");
     const actual=stripHtml(p?.actual||"");
     const mismatch=synthesisFor(reasoning).mechanisms?.drive?.rawInfluenceMismatch
       ? "겉으로 보이는 오행 개수와 실제로 힘을 쓰는 순서도 같지 않아서, 단순히 많은 글자만 보고 해석하면 이 사람의 핵심을 놓치게 돼."
@@ -1085,7 +1086,8 @@
       dominantFunctionSentence(reasoning),
       workingLine,
       mismatch,
-      actual ? (isT ? `<b>지금 고민에 적용</b> — ${actual}` : `지금 네 고민에 놓고 보면 <b>${actual}</b>`) : "",
+      focus ? (isT ? `<b>지금 상황</b> — ${focus}` : `<b>지금 상황에서 먼저 볼 것</b> — ${focus}`) : "",
+      actual ? (isT ? `<b>그래서 볼 기준</b> — ${actual}` : `그래서 언니는 <b>${actual}</b> 쪽을 먼저 볼게.`) : "",
       guard,
     ].filter(Boolean).join("<br><br>");
   }
