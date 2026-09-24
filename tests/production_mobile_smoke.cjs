@@ -95,11 +95,15 @@ async function enter(page, mode, concern, situation) {
     concern:document.getElementById('selectedConcernKey')?.value || '',
     timeInput:(()=>{
       const select=document.getElementById('birthTimeBranch');
+      const toggle=document.getElementById('birthTimeExactToggle');
+      const wrap=document.getElementById('birthTimeExactWrap');
       const input=document.getElementById('birthTimeInput');
-      return select&&input?{
+      return select&&toggle&&wrap&&input?{
         branchValue:select.value||'',
         branchText:select.options[select.selectedIndex]?.text||'',
         optionCount:select.options.length,
+        exactChecked:!!toggle.checked,
+        exactWrapHidden:wrap.classList.contains('hidden'),
         exactValue:input.value||'',
         exactPlaceholder:input.getAttribute('placeholder')||'',
         unknownCheckbox:!!document.getElementById('birthTimeUnknownButton'),
@@ -122,9 +126,10 @@ async function enter(page, mode, concern, situation) {
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
   assert(firstState.timeInput && firstState.timeInput.branchValue==='unknown' &&
          firstState.timeInput.branchText==='(모름)' &&
-         firstState.timeInput.optionCount===13 && firstState.timeInput.exactValue==='' &&
-         firstState.timeInput.exactPlaceholder==='정확한 시간' && !firstState.timeInput.unknownCheckbox,
-    '12-branch selector should be primary with exact-time input beside it '+JSON.stringify(firstState.timeInput));
+         firstState.timeInput.optionCount===13 && !firstState.timeInput.exactChecked &&
+         firstState.timeInput.exactWrapHidden && firstState.timeInput.exactValue==='' &&
+         firstState.timeInput.exactPlaceholder==='예: 09:42' && !firstState.timeInput.unknownCheckbox,
+    '12-branch selector should be primary with checkbox-gated exact-time input '+JSON.stringify(firstState.timeInput));
   assert(firstState.submitOpacity<=0.4,'disabled consultation CTA is still too visually active '+JSON.stringify(firstState));
   if (mode==='F') assert(
     firstState.sisterText==='응, 편하게 적어줘.' &&
@@ -160,6 +165,9 @@ async function enter(page, mode, concern, situation) {
   assert(await page.locator('#birthTimeBranch option').count()===13,'birth-time selector should include unknown and 12 branches');
   assert((await page.locator('#birthTimeBranch option').first().innerText())==='(모름)','birth-time unknown default missing');
   assert((await page.locator('#birthTimeBranch option[value="子"]').innerText()).includes('23:30~01:29'),'manse-corrected 子 range missing');
+  assert(await page.locator('#birthTimeExactToggle').count()===1,'exact-time checkbox missing');
+  assert(!(await page.locator('#birthTimeExactToggle').isChecked()),'exact-time checkbox should default off');
+  assert(await page.locator('#birthTimeExactWrap').isHidden(),'exact-time field should stay hidden until checked');
   assert(await page.locator('#birthTimeInput').count()===1,'exact birth-time input missing');
   assert(await page.locator('#birthTimeUnknownButton').count()===0,'separate unknown-time checkbox should stay removed');
   const branchEngineCheck=await page.evaluate(()=>{
@@ -173,8 +181,11 @@ async function enter(page, mode, concern, situation) {
     'one or more 12-branch birth times failed to reach the full saju engine '+JSON.stringify(branchEngineCheck));
   if(mode==='F') {
     await page.selectOption('#birthTimeBranch','寅');
-    assert((await page.locator('#birthTimeInput').inputValue())==='','branch selection should clear exact-time override');
+    assert(!(await page.locator('#birthTimeExactToggle').isChecked()),'branch selection should keep exact-time mode off');
+    assert(await page.locator('#birthTimeExactWrap').isHidden(),'branch selection should keep exact-time field hidden');
   } else {
+    await page.check('#birthTimeExactToggle');
+    assert(await page.locator('#birthTimeExactWrap').isVisible(),'exact-time field should open after checking');
     await page.fill('#birthTimeInput','0942');
     assert((await page.locator('#birthTimeInput').inputValue())==='09:42','exact HH:MM auto-format failed');
     assert((await page.locator('#birthTimeBranch').inputValue())==='巳','exact time should sync the visible 12-branch selector');
