@@ -970,13 +970,15 @@
       ? "겉으로 보이는 오행 개수와 실제로 힘을 쓰는 순서도 같지 않아서, 단순히 많은 글자만 보고 해석하면 이 사람의 핵심을 놓치게 돼."
       : "";
     const guard=guardSentence(reasoning,isT);
-    const lead="<b>결론</b> — ";
+    const lead=isT?"<b>결론</b> — ":"<b>결론</b> — 언니가 보기엔 ";
+    const capacityLine=isT ? capacity : "쉽게 말하면 "+capacity;
+    const workingLine=isT ? working : "그래서 네 힘을 제대로 쓰려면 "+working.charAt(0).toLowerCase()+working.slice(1);
     return [
       lead+core,
-      capacity,
-      working,
+      capacityLine,
+      workingLine,
       mismatch,
-      actual ? `지금 고른 고민에 대입하면 <b>${actual}</b>` : "",
+      actual ? (isT ? `<b>지금 고민에 적용</b> — ${actual}` : `지금 네 고민에 놓고 보면 <b>${actual}</b>`) : "",
       guard,
     ].filter(Boolean).join("<br><br>");
   }
@@ -1019,12 +1021,20 @@
         ? "겉으로 괜찮아 보여도 같은 조건이 반복될수록 네 힘이 계속 줄어들면 오래 두는 쪽이 아니야."
         : "처음 느낌보다 같은 조건이 반복됐을 때도 네 힘이 남는지를 보는 게 정확해.";
     return [
-      `<b>결론</b> — 너한테 가장 잘 맞는 건 <b>${first.text}</b>`,
-      rest.length ? `그다음으로는 ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}도 같이 받쳐줄수록 좋아.` : "",
-      keep ? `지금 고민의 현실 장면으로 바꾸면, <b>${keep}</b> 쪽을 먼저 봐.` : "",
-      place ? `환경까지 보면 <b>${place}</b>일수록 네 장점이 덜 깎여.` : "",
+      isT
+        ? `<b>결론</b> — 맞는 조건 1순위는 <b>${first.text}</b>`
+        : `<b>결론</b> — 너한테 제일 편하게 맞는 건 <b>${first.text}</b>`,
+      rest.length
+        ? (isT ? `추가 조건 — ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}` : `그리고 ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}까지 같이 있으면 훨씬 덜 지쳐.`)
+        : "",
+      keep
+        ? (isT ? `<b>현실에서 볼 것</b> — ${keep}` : `사람이나 상황을 볼 땐 <b>${keep}</b> 쪽을 먼저 봐.`)
+        : "",
+      place
+        ? (isT ? `<b>환경</b> — ${place}` : `환경까지 보면 <b>${place}</b>일수록 네 장점이 덜 깎여.`)
+        : "",
       adjust ? adjust+"." : "",
-      closing,
+      isT ? closing.replace("특히 ","").replace("처음 느낌보다 ","판단은 ") : closing,
     ].filter(Boolean).join("<br><br>");
   }
 
@@ -1042,13 +1052,19 @@
       ? "특히 결과를 내는 방식과 네가 감당할 수 있는 방식이 어긋나는 부분이 있어서, '할 수 있냐'보다 '이걸 계속 해도 내 힘이 남느냐'를 봐야 해."
       : "";
     return [
-      `<b>결론</b> — 가장 빨리 경계할 건 <b>${first.text}</b>`,
-      rest.length ? `같이 조심할 건 ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}이야.` : "",
-      cut ? `현실에서는 <b>${cut}</b> 같은 반응이 반복되는지 먼저 확인해.` : "",
+      isT
+        ? `<b>결론</b> — 우선 제외할 조건은 <b>${first.text}</b>`
+        : `<b>결론</b> — 네가 제일 먼저 거리를 둬야 할 건 <b>${first.text}</b>`,
+      rest.length
+        ? (isT ? `추가 주의 — ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}` : `그리고 ${rest.map(x=>`<b>${x.text}</b>`).join(" / ")}도 같이 반복되면 오래 두지 않는 게 좋아.`)
+        : "",
+      cut
+        ? (isT ? `<b>현실 신호</b> — ${cut}` : `현실에서는 <b>${cut}</b> 같은 반응이 반복되는지 먼저 봐.`)
+        : "",
       overload,
       conflict,
       relationSentence(reasoning),
-      `<b>마지막 판단 기준</b> — ${criterion}.`,
+      isT ? `<b>판단 기준</b> — ${criterion}.` : `<b>마지막으로 이것만 봐</b> — ${criterion}.`,
     ].filter(Boolean).join("<br><br>");
   }
 
@@ -1106,9 +1122,15 @@
     const first=uniqueHighlights[0]||null;
     const summary=first
       ? (["supportive","mild-support"].includes(first.class)
-          ? `<b>결론</b> — 가까운 흐름에서 실제로 움직여볼 만한 달이 잡혀. 다만 '운이 알아서 해결해준다'는 뜻이 아니라, 평소 막히던 부분을 시험하기 좋은 때에 가까워.`
-          : `<b>결론</b> — 가까운 흐름에서 속도를 줄여야 할 달이 잡혀. 나쁜 일이 정해졌다는 뜻이 아니라, 평소 약한 부분에 부담이 더 붙기 쉬운 때라는 뜻이야.`)
-      : "<b>결론</b> — 가까운 18개월은 계산돼 있지만, 다른 달과 분명히 구분되는 월 신호가 약해서 특정 달을 억지로 찍지는 않을게.";
+          ? (isT
+              ? `<b>결론</b> — 가까운 흐름에서 움직여볼 근거가 있는 달이 잡혀. 자동으로 잘된다는 뜻은 아니고, 실제 반응을 시험하기 좋은 구간이야.`
+              : `<b>결론</b> — 언니가 시기까지 보면, 가까운 흐름에 실제로 움직여볼 만한 달이 잡혀. 운이 알아서 해결해주는 때라기보다, 평소 막히던 걸 직접 시험해보기 좋은 구간이야.`)
+          : (isT
+              ? `<b>결론</b> — 가까운 흐름에서 속도를 줄여야 할 달이 잡혀. 나쁜 일이 정해진 게 아니라, 평소 약한 부분에 부담이 더 붙기 쉬운 구간이야.`
+              : `<b>결론</b> — 가까운 흐름에선 잠깐 속도를 줄이는 게 나은 달도 보여. 나쁜 일이 생긴다고 정해진 게 아니라, 평소 약한 부분이 더 버겁게 느껴질 수 있는 구간이야.`))
+      : (isT
+          ? "<b>결론</b> — 가까운 18개월은 계산되지만 다른 달과 분명히 갈리는 월 신호가 약해. 특정 달은 억지로 찍지 않을게."
+          : "<b>결론</b> — 가까운 18개월 흐름은 다 봤는데, 다른 달과 확실히 갈리는 신호가 약해. 그래서 언니도 그럴듯하게 날짜를 만들어 찍진 않을게.");
 
     const lines=uniqueHighlights.map(row=>{
       const when=formatMonth(row);
