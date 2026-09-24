@@ -693,7 +693,7 @@ async function inspect(page, mode) {
     'five-answer presentation roles missing '+JSON.stringify(postUnlock.roles));
   assert(postUnlock.roles.find(x=>x.role==='03')?.text.includes('잘 맞는') &&
          postUnlock.roles.find(x=>x.role==='04')?.text.includes('거를') &&
-         postUnlock.roles.find(x=>x.role==='05')?.text.includes('지금 할 것'),
+         /(\d{1,2}월|\d{4}년|대운|세운|월운|가까운 흐름)/.test(postUnlock.roles.find(x=>x.role==='05')?.text||''),
     'fit/filter/timing answers are not concrete '+JSON.stringify(postUnlock.roles));
   assert(postUnlock.reasonCount===1&&postUnlock.reasonText.length>=10,'premium recommendation should keep one compact reason '+JSON.stringify(postUnlock));
   assert(!postUnlock.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아')&&!postUnlock.catalogText.includes('다음으로 볼 가치는 이게 제일 커')&&!postUnlock.catalogText.includes('방금 같이 본 얘기는 반복하지 않고')&&!postUnlock.catalogText.includes('방금 본 내용과 겹치는 건 빼고'),
