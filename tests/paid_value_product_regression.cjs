@@ -21,7 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.0.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.1.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '2.2.0' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.1.0' &&
     typeof generateConcernNotes === 'function' &&
@@ -138,7 +138,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.5.1', 'paid value layer missing');
-  assert(qa.noteVersion.version === '5.0.0', 'NOTE v3 engine missing');
+  assert(qa.noteVersion.version === '5.1.0', 'NOTE v3 engine missing');
   assert(qa.productVersion.version === '2.2.0' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
@@ -160,7 +160,7 @@ function norm(v) {
     assert(row.notes.length === 5, `${row.concern}/${row.situation}/${row.mode}: answer count ${row.notes.length}`);
     assert(row.notes.map(n=>n.badge).join('|') === '핵심|실제 장면|잘 맞는 조건|거를 신호|가까운 흐름',
       `${row.concern}/${row.situation}/${row.mode}: five-answer roles drift ${JSON.stringify(row.notes.map(n=>n.badge))}`);
-    assert(row.noteAudit?.version === '5.0.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
+    assert(row.noteAudit?.version === '5.1.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
       `${row.concern}/${row.situation}/${row.mode}: full-evidence audit missing`);
     assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
     assert(row.noteAudit?.genericSituationDependency === false && row.noteAudit?.behaviorTemplateDependency === false &&
@@ -206,6 +206,11 @@ function norm(v) {
     assert(row.finalAudit && JSON.stringify(row.finalAudit)===JSON.stringify(row.audit), `${row.concern}/${row.situation}/${row.mode}: final QA is not auditing actual rendered answers`);
     assert(!/(비밀\s*메모|실전 룰|반복 패턴)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: old consultation wording leaked`);
     assert(!/(undefined|NaN|null)/.test(row.allText), `${row.concern}/${row.situation}/${row.mode}: bad token leaked`);
+    assert(!/(작동 방식|압력군|과부하 후보|\b(mok|hwa|geum|officer|wealth|output)\b)/.test(row.allText),
+      `${row.concern}/${row.situation}/${row.mode}: engine-internal wording leaked into NOTE`);
+    const note1=String(row.notes[0]?.desc||'').replace(/<[^>]+>/g,' ');
+    assert(/일주 [가-힣]{2}의 윗글자/.test(note1) && /(비견|겁재|식신|상관|정재|편재|정관|편관|정인|편인)\(/.test(note1),
+      `${row.concern}/${row.situation}/${row.mode}: core answer must name the day pillar and a ten-god with its meaning`);
   }
 
   for (const concern of ['money','career','love','path','people','mental']) {
@@ -1077,8 +1082,8 @@ function norm(v) {
   const html = fs.readFileSync('index.html','utf8');
   const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.1'), 'paid value script include missing');
-  assert(html.includes('./concern-note-engine-v2.js?v=5.0.0'), 'five-answer NOTE script include missing');
-  assert(html.includes('./classical-reasoning-engine-v1.js?v=2.0.0'), 'full-evidence reasoning script include missing');
+  assert(html.includes('./concern-note-engine-v2.js?v=5.1.0'), 'five-answer NOTE script include missing');
+  assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.0'), 'full-evidence reasoning script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.2.0'), 'entitlement/product script include missing');
   assert(

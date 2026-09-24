@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "2.1.3";
+  const VERSION = "2.2.0";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -17,13 +17,10 @@
     }
   }
 
+  // 실시간 AI NOTE는 호출당 비용이 커서 결과 화면에서 자동으로 부르지 않는다.
+  // ?ai_notes_test=1 테스트 패널에서 버튼을 눌렀을 때만 호출한다.
   function autoProductionEnabled() {
-    try {
-      const host = String(global.location?.hostname || "").toLowerCase();
-      return host !== "localhost" && host !== "127.0.0.1" && host !== "0.0.0.0";
-    } catch {
-      return true;
-    }
+    return false;
   }
 
   function cloneJson(value, fallback) {
@@ -266,13 +263,7 @@
   }
 
   function productionAiEnabled() {
-    try {
-      const host = String(global.location?.hostname || "").toLowerCase();
-      if (testEnabled()) return true;
-      return host !== "localhost" && host !== "127.0.0.1" && host !== "::1";
-    } catch {
-      return true;
-    }
+    return testEnabled();
   }
 
   function canAttemptProductionNotes(data) {
@@ -1066,10 +1057,8 @@
   if (typeof originalGenerate === "function") {
     const wrappedGenerate = function (data, mode) {
       const normalizedMode = mode === "T" ? "T" : "F";
-      const translated = getProductionNotes(data || {}, normalizedMode);
-      const notes = Array.isArray(translated) && translated.length === 5
-        ? translated
-        : originalGenerate(data, normalizedMode);
+      // 결과 화면 NOTE는 항상 명리 엔진 문장이다. AI NOTE는 테스트 패널에서만 따로 비교한다.
+      const notes = originalGenerate(data, normalizedMode);
       if (testEnabled()) {
         setTimeout(() => mountTestPanel(data || {}, normalizedMode), 0);
       }

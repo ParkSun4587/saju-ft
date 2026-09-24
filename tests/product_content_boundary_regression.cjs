@@ -13,8 +13,8 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   page.on('console',m=>{ if(m.type()==='error') errors.push('[console] '+m.text()); });
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load',timeout:60000});
   await page.waitForFunction(()=>(
-    globalThis.__CLASSICAL_REASONING_V1__?.version==='2.0.0' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='5.0.0' &&
+    globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='5.1.0' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version==='2.2.0'
   ),null,{timeout:60000});
@@ -159,7 +159,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     };
   });
 
-  assert(r.versions.reasoning==='2.0.0'&&r.versions.note==='5.0.0'&&r.versions.products==='2.2.0'&&r.versions.policy==='1.1.0','runtime versions drift');
+  assert(r.versions.reasoning==='2.1.0'&&r.versions.note==='5.1.0'&&r.versions.products==='2.2.0'&&r.versions.policy==='1.1.0','runtime versions drift');
 
   const c=r.contracts;
   assert(c.basic_concern.longTermDetail==='teaser-only'&&c.basic_concern.concernCount===1&&!c.basic_concern.compatibilityAllowed,'basic contract invalid');
@@ -175,7 +175,10 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     assert(run.pivots.length<=2,'basic long-term teaser exceeds two real pivots: '+run.id);
     for(const pivot of run.pivots) assert(pivot.sourceRuleIds.length>0,'long-term pivot lacks classical rule provenance: '+run.id+' '+JSON.stringify(pivot));
     assert(!run.timingAnswer.includes('앞으로 5년 큰 흐름'),'basic timing answer leaked full_saju five-year heading: '+run.id);
-    const shownYears=[...new Set((run.timingAnswer.match(/20\d{2}년/g)||[]).map(x=>Number(x.slice(0,4))))];
+    // "2028년 전후"처럼 월이 없는 연도만 장기 연도다. "2027년 6월 6일"은 가까운 18개월 안의 달 표기라 따로 확인한다.
+    const shownYears=[...new Set((run.timingAnswer.match(/20\d{2}년(?!\s*\d{1,2}월)/g)||[]).map(x=>Number(x.slice(0,4))))];
+    const monthDates=[...run.timingAnswer.matchAll(/(20\d{2})년 (\d{1,2})월 (\d{1,2})일/g)].map(m=>`${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`);
+    assert(monthDates.every(d=>!run.detailEnd||d<=run.detailEnd),'basic timing month date is outside the near-term window: '+run.id+' '+JSON.stringify({monthDates,detailEnd:run.detailEnd}));
     const pivotYears=run.pivots.map(x=>x.year);
     assert(shownYears.every(y=>pivotYears.includes(y)),'basic timing answer invented/non-pivot long-term year: '+run.id+' '+JSON.stringify({shownYears,pivotYears}));
     if(!pivotYears.length) assert(!(run.timingMeta.longTermPivotYears||[]).length,'basic timing answer invented teaser without a real pivot: '+run.id);
