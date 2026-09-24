@@ -1195,7 +1195,9 @@ function norm(v) {
     html.includes('id="birthTimeInput"') &&
     html.includes('placeholder="예: 09:42"') &&
     html.includes('id="birthTimeUnknownButton"') &&
-    html.includes('>시간 모름</button>') &&
+    html.includes('type="checkbox"') &&
+    html.includes('>시간 모름</span>') &&
+    !html.includes('id="birthTimeHelp"') &&
     html.includes('type="hidden" id="birthTimeBranch"') &&
     html.includes('function normalizeExactBirthTime(value)') &&
     html.includes('function formatBirthTime(input)') &&
