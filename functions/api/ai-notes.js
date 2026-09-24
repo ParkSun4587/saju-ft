@@ -360,9 +360,6 @@ function validateGeneratedNotes(parsed, packet) {
     if (!hasConcreteSajuFact(title + " " + basis)) {
       throw new Error("DIRECT_SAJU_FACT_MISSING");
     }
-    if (chartAllowed.size > 0 && chartIds.length < 1) {
-      throw new Error("CHART_FACT_EVIDENCE_MISSING");
-    }
     if (isImperativeAdvice(title) || isImperativeAdvice(basis)) {
       throw new Error("ADVICE_REPLACED_DIAGNOSIS");
     }
