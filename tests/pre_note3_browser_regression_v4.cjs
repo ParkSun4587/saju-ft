@@ -344,6 +344,7 @@ async function load(page) {
   // C. Every birth-time choice must reach the calculated result and the visible hour pillar.
   {
     const states = ['unknown','子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+    const visibleZhi = {子:'자',丑:'축',寅:'인',卯:'묘',辰:'진',巳:'사',午:'오',未:'미',申:'신',酉:'유',戌:'술',亥:'해'};
     const mapped = [];
     for (const timeKey of states) {
       const page = await context.newPage();
@@ -401,7 +402,7 @@ async function load(page) {
           `${timeKey}: selected branch key did not reach final result ${JSON.stringify(row)}`);
         assert(row.hourKnown === true && row.hourZhi === timeKey && row.hourPillar.endsWith(timeKey),
           `${timeKey}: calculated hour pillar mismatch ${JSON.stringify(row)}`);
-        assert(row.visibleHour.includes(timeKey),
+        assert(row.visibleHour.endsWith(visibleZhi[timeKey]),
           `${timeKey}: visible final hour pillar mismatch ${JSON.stringify(row)}`);
       }
       assert(row.resultVisible && row.firstNoteRendered && row.analysisReady,
