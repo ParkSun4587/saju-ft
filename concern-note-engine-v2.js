@@ -874,7 +874,7 @@
     const s=synthesisFor(reasoning).mechanisms?.structure||{};
     const path=s.path;
     if(path==="print-transform") return "부담을 정면으로 맞받기보다, 먼저 이해하고 정리할 시간을 가진 뒤 움직일 때 훨씬 안정적으로 힘을 써.";
-    if(path==="food-control") return "압박을 머릿속에만 두기보다 작은 결과물이나 행동으로 빼낼 때 오히려 중심을 잡기 쉬워.";
+    if(path==="food-control") return "부담을 머릿속에만 두기보다 작은 결과물이나 행동으로 빼낼 때 오히려 중심을 잡기 쉬워.";
     if(path==="mixed-control-cost") return "행동으로 빼내는 게 도움이 되긴 하지만 너무 많이 해내려고 하면 네 힘까지 같이 빠져서, 양 조절이 중요해.";
     if(path==="wealth-release") return "아이디어나 표현을 실제 결과·보상으로 연결해야 힘이 헛돌지 않아.";
     if(path==="print-control") return "바로 반응하기보다 한 번 이해하고 정리한 뒤 말할 때 네 장점이 더 살아.";
