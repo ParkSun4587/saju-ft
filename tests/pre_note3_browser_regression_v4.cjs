@@ -341,7 +341,80 @@ async function load(page) {
     await page.close();
     console.log('PAYWALL_CONVERSION_COVERAGE_PASS');
   }
-  // C. Full production-like UI path across all six concerns, F/T, solar/lunar/leap/time variants.
+  // C. Every birth-time choice must reach the calculated result and the visible hour pillar.
+  {
+    const states = ['unknown','子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+    const mapped = [];
+    for (const timeKey of states) {
+      const page = await context.newPage();
+      await page.setViewportSize({width:390,height:844});
+      const errs = [];
+      page.on('pageerror', e => errs.push(`[pageerror] ${e.stack || e.message}`));
+      page.on('console', m => { if (m.type() === 'error') errs.push(`[console] ${m.text()}`); });
+      await load(page);
+
+      const row = await page.evaluate((timeKey) => {
+        window.gtag = () => {};
+        window.setTimeout = (fn) => { fn(); return 1; };
+        window.clearTimeout = () => {};
+
+        document.getElementById('nameInput').value = '시간검증';
+        document.getElementById('selectedConcernKey').value = 'money';
+        renderConcernSituationPicker('money');
+        selectConcernSituation('saving');
+        document.getElementById('birthDateInput').value = '19980221';
+        document.getElementById('calendarSelect').value = 'solar';
+        document.getElementById('genderValue').value = 'female';
+
+        const branch = document.getElementById('birthTimeBranch');
+        const toggle = document.getElementById('birthTimeExactToggle');
+        const wrap = document.getElementById('birthTimeExactWrap');
+        const exact = document.getElementById('birthTimeInput');
+        if (toggle) toggle.checked = false;
+        if (wrap) wrap.classList.add('hidden');
+        if (exact) exact.value = '';
+        branch.value = timeKey;
+
+        startAnalysis('F');
+        const data = currentResultData;
+        return {
+          timeKey,
+          resultTimeKey:data?.userTimeKey || '',
+          hourKnown:data?.calendarMeta?.hourKnown,
+          hourZhi:data?.pillars?.hour?.zhi || '',
+          hourPillar:data?.pillars?.hour ? ((data.pillars.hour.gan || '') + (data.pillars.hour.zhi || '')) : '',
+          visibleHour:document.getElementById('pillarHour')?.innerText || '',
+          resultVisible:document.getElementById('resultSection')?.style.display !== 'none',
+          firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('1/5'),
+          analysisReady:!!data?.analysisProfile && !!data?.gyeokguk && !!data?.yongshin,
+        };
+      }, timeKey);
+
+      if (timeKey === 'unknown') {
+        assert(row.resultTimeKey === 'unknown', `unknown: result time key drift ${JSON.stringify(row)}`);
+        assert(row.hourKnown === false && !row.hourZhi && !row.hourPillar,
+          `unknown: hour pillar leaked into final result ${JSON.stringify(row)}`);
+        assert(row.visibleHour.includes('시간 모름'),
+          `unknown: visible final hour should say time unknown ${JSON.stringify(row)}`);
+      } else {
+        assert(row.resultTimeKey === timeKey,
+          `${timeKey}: selected branch key did not reach final result ${JSON.stringify(row)}`);
+        assert(row.hourKnown === true && row.hourZhi === timeKey && row.hourPillar.endsWith(timeKey),
+          `${timeKey}: calculated hour pillar mismatch ${JSON.stringify(row)}`);
+        assert(row.visibleHour.includes(timeKey),
+          `${timeKey}: visible final hour pillar mismatch ${JSON.stringify(row)}`);
+      }
+      assert(row.resultVisible && row.firstNoteRendered && row.analysisReady,
+        `${timeKey}: final result/notes/classical analysis did not render ${JSON.stringify(row)}`);
+      const unexpected = errs.filter(x => !isExpectedBoundaryDiagnostic(x));
+      assert(unexpected.length === 0, `${timeKey}: browser errors: ${unexpected.join(' | ')}`);
+      mapped.push(row);
+      await page.close();
+    }
+    console.log('BIRTH_TIME_FINAL_RESULT_PASS', JSON.stringify(mapped));
+  }
+
+  // D. Full production-like UI path across all six concerns, F/T, solar/lunar/leap/time variants.
   const reports = [];
   for (const c of CASES) {
     const page = await context.newPage();
@@ -508,7 +581,7 @@ async function load(page) {
   }
   console.log('UI_PASS', JSON.stringify(reports));
 
-  // D. Invalid leap-month input must fail cleanly, not crash or create a result.
+  // E. Invalid leap-month input must fail cleanly, not crash or create a result.
   {
     const page = await context.newPage();
     const errs = [];
