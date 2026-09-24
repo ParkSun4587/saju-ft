@@ -883,6 +883,16 @@
     return core+". "+surface;
   }
 
+  function patternPressureSentence(reasoning){
+    const group=synthesisFor(reasoning).mechanisms?.drive?.pressureGroup||reasoning?.integrated?.pressureGroup||"unknown";
+    if(group==="self") return "이 장면에서는 남이 정한 답보다 내가 감당할 방식과 내 기준부터 지키려는 반응이 먼저 나와";
+    if(group==="print") return "이 장면에서는 바로 움직이기보다 조금 더 확인하고 안전해진 뒤 움직이려는 반응이 먼저 나와";
+    if(group==="output") return "이 장면에서는 답답함을 말하거나 뭔가 직접 해보는 쪽으로 먼저 힘이 빠져나가기 쉬워";
+    if(group==="wealth") return "이 장면에서는 손익·기회·보상처럼 현실적으로 남는 게 뭔지부터 계산하는 반응이 먼저 나와";
+    if(group==="officer") return "이 장면에서는 책임·기준·상대 기대를 먼저 맞추려는 쪽으로 반응하기 쉬워";
+    return "이 장면에서는 여러 조건을 한꺼번에 해결하려 하기보다, 무엇부터 처리할지 정하는 과정에서 반응이 갈리기 쉬워";
+  }
+
   function patternCapacitySentence(reasoning){
     const m=synthesisFor(reasoning).mechanisms?.capacity||{};
     const verdict=m.verdict||"중화";
@@ -1084,7 +1094,7 @@
     const trigger=stripHtml(p?.trigger||s.cue);
     const reaction=stripHtml(p?.reaction||"");
     const cost=stripHtml(p?.cost||"");
-    const pressure=plainSentence(pressureGroupLine(reasoning,s));
+    const pressure=plainSentence(patternPressureSentence(reasoning));
     const capacity=patternCapacitySentence(reasoning);
     const flow=flowGapSentence(reasoning);
     const relation=relationSentence(reasoning);
