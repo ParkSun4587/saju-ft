@@ -2376,7 +2376,7 @@
                 </div>
               </div>
 
-              <!-- 태어난 시간: 12시진 선택을 기본으로, 정확한 시각은 오른쪽에서 선택 입력 -->
+              <!-- 태어난 시간: 12시진을 메인으로, 모르면 오른쪽 체크 -->
               <div>
                 <div class="mb-1">
                   <label class="block text-[9.5px] font-bold text-slate-500"
@@ -2387,9 +2387,9 @@
                   <select
                     id="birthTimeBranch"
                     onchange="selectBirthTimeBranch(this)"
-                    class="flex-[1.65] min-w-0 h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[10.5px] text-slate-700 focus:bg-white focus:outline-none"
+                    class="flex-1 min-w-0 h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[10.5px] text-slate-700 focus:bg-white focus:outline-none"
                   >
-                    <option value="unknown" selected>(모름)</option>
+                    <option value="" selected>태어난 시간대 선택</option>
                     <option value="子">자시 · 23:30~01:29</option>
                     <option value="丑">축시 · 01:30~03:29</option>
                     <option value="寅">인시 · 03:30~05:29</option>
@@ -2403,16 +2403,19 @@
                     <option value="戌">술시 · 19:30~21:29</option>
                     <option value="亥">해시 · 21:30~23:29</option>
                   </select>
-                  <input
-                    id="birthTimeInput"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="5"
-                    placeholder="정확한 시간"
-                    aria-label="정확한 출생 시간"
-                    oninput="formatBirthTime(this)"
-                    class="flex-1 min-w-0 h-[35px] px-2 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[10.5px] text-slate-700 placeholder-slate-400 text-center font-mono focus:bg-white focus:outline-none"
-                  />
+                  <label
+                    for="birthTimeUnknownButton"
+                    class="inline-flex items-center gap-1.5 h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer select-none whitespace-nowrap"
+                  >
+                    <input
+                      id="birthTimeUnknownButton"
+                      type="checkbox"
+                      checked
+                      onchange="setBirthTimeUnknown()"
+                      class="w-4 h-4 rounded border-slate-300 accent-slate-600"
+                    />
+                    <span class="text-[10.5px] font-bold text-slate-600">시간 모름</span>
+                  </label>
                 </div>
               </div>
               <!-- 전송 버튼 영역 (스크립트 자동 주입) -->
@@ -4092,11 +4095,10 @@
             .getElementById("birthDateInput")
             .value.replace(/\D/g, ""),
           userTimeKey: (() => {
-            const exact=document.getElementById("birthTimeInput")?.value || "";
-            const normalized=normalizeExactBirthTime(exact);
-            if(normalized) return normalized;
-            const legacy=document.getElementById("birthTimeBranch")?.value || "unknown";
-            return BIRTH_TIME_BRANCHES.has(legacy) ? legacy : "unknown";
+            const checkbox=document.getElementById("birthTimeUnknownButton");
+            const branch=document.getElementById("birthTimeBranch")?.value || "";
+            if(checkbox?.checked) return "unknown";
+            return BIRTH_TIME_BRANCHES.has(branch) ? branch : "unknown";
           })(),
           userGender: document.getElementById("genderValue").value,
           userCalendar: document.getElementById("calendarSelect").value,
@@ -6111,30 +6113,22 @@ function generateConcernNotes(data, mode) {
         午:"오시", 未:"미시", 申:"신시", 酉:"유시", 戌:"술시", 亥:"해시"
       };
 
-      function selectBirthTimeBranch() {
-        const input=document.getElementById("birthTimeInput");
-        if(input) input.value="";
+      function selectBirthTimeBranch(select) {
+        const checkbox=document.getElementById("birthTimeUnknownButton");
+        if(BIRTH_TIME_BRANCHES.has(select?.value || "") && checkbox) {
+          checkbox.checked=false;
+        }
         saveInputDraft();
       }
 
-      function normalizeExactBirthTime(value) {
-        const raw=String(value || "").replace(/[^0-9]/g,"").slice(0,4);
-        if(raw.length!==4) return "";
-        const hh=raw.slice(0,2);
-        const mm=raw.slice(2,4);
-        const hour=Number(hh);
-        const minute=Number(mm);
-        if(hour>23 || minute>59) return "";
-        return hh+":"+mm;
-      }
-
-      function formatBirthTime(input) {
-        if(!input) return;
-        const digits=String(input.value || "").replace(/[^0-9]/g,"").slice(0,4);
-        input.value=digits.length>2 ? digits.slice(0,2)+":"+digits.slice(2) : digits;
-        const exact=normalizeExactBirthTime(input.value);
+      function setBirthTimeUnknown() {
         const select=document.getElementById("birthTimeBranch");
-        if(exact && select) select.value=birthTimeKeyToBranch(exact);
+        const checkbox=document.getElementById("birthTimeUnknownButton");
+        if(checkbox?.checked) {
+          if(select) select.value="";
+        } else if(select && !BIRTH_TIME_BRANCHES.has(select.value)) {
+          select.focus();
+        }
         saveInputDraft();
       }
 
@@ -6311,22 +6305,21 @@ function generateConcernNotes(data, mode) {
           let birthStr = rawBirth.replace(/[^0-9]/g, "");
 
           const birthTimeBranch = document.getElementById("birthTimeBranch");
-          const birthTimeInput = document.getElementById("birthTimeInput");
-          const rawBirthTime = String(birthTimeInput?.value || "").trim();
-          const exactBirthTime = normalizeExactBirthTime(rawBirthTime);
-          const legacyBranchTime = birthTimeBranch?.value || "unknown";
+          const birthTimeUnknown = document.getElementById("birthTimeUnknownButton");
+          const selectedBirthTimeBranch = birthTimeBranch?.value || "";
 
-          if (rawBirthTime && !exactBirthTime) {
+          if (!birthTimeUnknown?.checked && !BIRTH_TIME_BRANCHES.has(selectedBirthTimeBranch)) {
             showVoiceToast({
-              F: "태어난 시간만 한 번 봐줄래? 예: 09:42처럼 적으면 돼",
-              T: "태어난 시간을 확인해줘. 예: 09:42",
+              F: "태어난 시간대를 골라줘. 모르면 시간 모름에 체크하면 돼.",
+              T: "태어난 시간대를 선택해줘. 모르면 시간 모름을 체크해.",
             }, mode);
-            birthTimeInput?.focus();
+            birthTimeBranch?.focus();
             return;
           }
 
-          const birthTime = exactBirthTime ||
-            (BIRTH_TIME_BRANCHES.has(legacyBranchTime) ? legacyBranchTime : "unknown");
+          const birthTime = birthTimeUnknown?.checked
+            ? "unknown"
+            : selectedBirthTimeBranch;
 
           const isLunar =
             document.getElementById("calendarSelect").value === "lunar";
@@ -9616,7 +9609,7 @@ currentResultData = {
         const birthDateInput = document.getElementById("birthDateInput");
 
         const birthTimeBranch = document.getElementById("birthTimeBranch");
-        const birthTimeInput = document.getElementById("birthTimeInput");
+        const birthTimeUnknownButton = document.getElementById("birthTimeUnknownButton");
 
         const leapMonthCheck = document.getElementById("leapMonthCheck");
 
@@ -9645,12 +9638,14 @@ currentResultData = {
         }
 
         const savedTimeKey = String(savedData.userTimeKey || "unknown");
-        const savedExactTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(savedTimeKey) ? savedTimeKey : "";
-        if (birthTimeInput) birthTimeInput.value = savedExactTime;
+        const restoredBranch = BIRTH_TIME_BRANCHES.has(savedTimeKey)
+          ? savedTimeKey
+          : birthTimeKeyToBranch(savedTimeKey);
         if (birthTimeBranch) {
-          birthTimeBranch.value = savedExactTime
-            ? birthTimeKeyToBranch(savedExactTime)
-            : (BIRTH_TIME_BRANCHES.has(savedTimeKey) ? savedTimeKey : "unknown");
+          birthTimeBranch.value = BIRTH_TIME_BRANCHES.has(restoredBranch) ? restoredBranch : "";
+        }
+        if (birthTimeUnknownButton) {
+          birthTimeUnknownButton.checked = !BIRTH_TIME_BRANCHES.has(restoredBranch);
         }
 
         const concernOrder = [
