@@ -153,6 +153,9 @@ async function load(page) {
             mode,
             notes: notes.map((n) => ({badge:n.badge,title:n.title,desc:n.desc,checklist:n.checklist})),
             evidenceCoverage:data.noteV3Audit?.evidenceCoverage||null,
+            semanticCoverage:data.noteV3Audit?.semanticCoverage||null,
+            behaviorTemplateDependency:data.noteV3Audit?.behaviorTemplateDependency,
+            genericSituationDependency:data.noteV3Audit?.genericSituationDependency,
           });
         }
       }
@@ -162,7 +165,7 @@ async function load(page) {
       const b=generateConcernNotes(bData,'F');
       return {
         out,
-        personalized:a.filter((n,i)=>String(n.desc)!==String(b[i]?.desc)).length>=3,
+        personalized:a.filter((n,i)=>String(n.desc)!==String(b[i]?.desc)).length>=4,
         pageText: document.body.innerText,
       };
     });
@@ -220,9 +223,24 @@ async function load(page) {
       }
       assert(set.evidenceCoverage?.coverageRate===1 && set.evidenceCoverage?.missingRuleIds?.length===0,
         `supported evidence dropped ${set.key}/${set.mode}: ${JSON.stringify(set.evidenceCoverage)}`);
-      assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(full), `old/abstract answer wording ${set.key}/${set.mode}`);
+      assert(set.semanticCoverage?.coverageRate===1 && set.semanticCoverage?.noteCountWithFacts===5,
+        `semantic personalization facts missing ${set.key}/${set.mode}: ${JSON.stringify(set.semanticCoverage)}`);
+      assert(set.behaviorTemplateDependency===false && set.genericSituationDependency===false,
+        `concern choice is still creating behavior in ${set.key}/${set.mode}`);
+      assert(!/(비밀\s*메모|실전 룰|반복 패턴)/.test(full), `old answer wording ${set.key}/${set.mode}`);
       if (set.mode === 'F') fText += ' ' + full; else tText += ' ' + full;
       summary.push({key:set.key, mode:set.mode, titles:set.notes.map(n=>n.title)});
+    }
+    const behaviorTemplateForbidden=[
+      '지원보다 자격증·포트폴리오 수정만 계속해',
+      '말 한마디를 계속 해석하면서 내 표현은 줄여',
+      '작은 결제를 가볍게 넘기거나 계획에 없던 소비를 합리화해',
+      '웃고 넘기고 혼자 의미를 오래 곱씹어',
+      '휴식을 줄이고 속도가 떨어진 상태로 계속 버텨',
+    ];
+    for (const set of copyAudit.out) {
+      const full=set.notes.map(n=>n.desc||'').join(' ');
+      for(const phrase of behaviorTemplateForbidden) assert(!full.includes(phrase), `concern-only behavior template leaked: ${phrase} in ${set.key}/${set.mode}`);
     }
     for (const phrase of banned) assert(!copyAudit.pageText.includes(phrase), `banned visible UI phrase ${phrase}`);
     const fScore = fMarkers.filter(x => fText.includes(x)).length;
