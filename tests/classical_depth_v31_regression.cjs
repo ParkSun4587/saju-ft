@@ -477,7 +477,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert((r.canonicalTiming.longTermPivots||[]).every((x,i,a)=>i===0||x.year!==a[i-1].year),'duplicate long-term pivot year');
   assert(/결론/.test(r.canonicalTiming.scene)&&/반복이 갈리는 첫 지점|네 반복은 마지막 결과보다/.test(r.canonicalTiming.scene),
     'second answer lost chart-derived pattern explanation');
-  assert(/결론/.test(r.canonicalTiming.fit)&&/잘 맞는|맞는 조건|편하게 맞는/.test(r.canonicalTiming.fit),'fit answer lost concrete matching conditions');
+  assert(/결론/.test(r.canonicalTiming.fit)&&/맞춰야 할 조건|맞는 조건|조건은/.test(r.canonicalTiming.fit),'fit answer lost chart-derived matching conditions');
   assert(/지금 비교 기준/.test(r.canonicalTiming.timingAnswer),'timing answer lost chart-derived comparison criterion');
   assert(!/앞으로 5년 큰 흐름|이후 큰 흐름/.test(r.canonicalTiming.timingAnswer),'basic timing answer leaked full five-year annual disclosure');
   assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관|압박|구조)/.test(r.canonicalTiming.timingAnswer),'timing answer leaked internal jargon');
