@@ -2396,7 +2396,7 @@
                   <select
                     id="birthTimeBranch"
                     onchange="selectBirthTimeBranch(this)"
-                    class="flex-1 min-w-0 h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[10.5px] text-slate-700 focus:bg-white focus:outline-none"
+                    class="flex-1 min-w-0 h-[35px] px-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[10.5px] text-slate-400 focus:bg-white focus:outline-none"
                   >
                     <option value="unknown" selected>(모름)</option>
                     <option value="子">자시 · 23:30~01:29</option>
@@ -6133,10 +6133,18 @@ function generateConcernNotes(data, mode) {
         午:"오시", 未:"미시", 申:"신시", 酉:"유시", 戌:"술시", 亥:"해시"
       };
 
-      function selectBirthTimeBranch() {
+      function syncBirthTimeBranchTone(select=document.getElementById("birthTimeBranch")) {
+        if(!select) return;
+        const isUnknown=select.value==="unknown";
+        select.classList.toggle("text-slate-400", isUnknown);
+        select.classList.toggle("text-slate-700", !isUnknown);
+      }
+
+      function selectBirthTimeBranch(select) {
         const toggle=document.getElementById("birthTimeExactToggle");
         const wrap=document.getElementById("birthTimeExactWrap");
         const input=document.getElementById("birthTimeInput");
+        syncBirthTimeBranchTone(select);
         if(toggle) toggle.checked=false;
         if(wrap) wrap.classList.add("hidden");
         if(input) input.value="";
@@ -6174,7 +6182,10 @@ function generateConcernNotes(data, mode) {
         input.value=digits.length>2 ? digits.slice(0,2)+":"+digits.slice(2) : digits;
         const exact=normalizeExactBirthTime(input.value);
         const select=document.getElementById("birthTimeBranch");
-        if(exact && select) select.value=birthTimeKeyToBranch(exact);
+        if(exact && select) {
+          select.value=birthTimeKeyToBranch(exact);
+          syncBirthTimeBranchTone(select);
+        }
         saveInputDraft();
       }
 
@@ -9697,6 +9708,7 @@ currentResultData = {
           birthTimeBranch.value = savedExactTime
             ? birthTimeKeyToBranch(savedExactTime)
             : (BIRTH_TIME_BRANCHES.has(savedTimeKey) ? savedTimeKey : "unknown");
+          syncBirthTimeBranchTone(birthTimeBranch);
         }
 
         const concernOrder = [
@@ -9757,6 +9769,7 @@ currentResultData = {
         closePolicyModal();
         clearConversationReplies();
         document.getElementById("sazuForm").reset();
+        syncBirthTimeBranchTone();
         setGender("female");
         setCalendar("solar");
         document.getElementById("leapMonthCheck").checked = false;
