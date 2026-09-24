@@ -68,14 +68,55 @@
     }
 
     rolePlan.foundation.factDigest = {
-      dayMaster: chart.dayMaster,
-      fiveElements: chart.fiveElements,
-      dominantTenGod: topGod,
-      structure: chart.structure,
+      dayMaster: {
+        gan: chart.dayMaster?.gan || "",
+        element: chart.dayMaster?.element || "",
+        strength: chart.dayMaster?.strength || "",
+        deukryeong: chart.dayMaster?.deukryeong || null,
+        deukji: chart.dayMaster?.deukji || null,
+        deukse: chart.dayMaster?.deukse || null,
+        rootCount: (chart.dayMaster?.roots || []).length,
+      },
+      fiveElements: {
+        rawCount: chart.fiveElements?.rawCount || {},
+        weightedRank: (chart.fiveElements?.weightedRank || []).slice(0, 5),
+        rawVsWeightedMismatch: chart.fiveElements?.rawVsWeightedMismatch === true,
+      },
+      dominantTenGod: topGod
+        ? {
+            god: topGod.god || "",
+            group: topGod.group || "",
+            weight: topGod.weight ?? null,
+            visibleWeight: topGod.visibleWeight ?? null,
+            hiddenWeight: topGod.hiddenWeight ?? null,
+            roles: topGod.roles || [],
+          }
+        : null,
+      structure: {
+        gyeokName: chart.structure?.gyeokName || "",
+        status: chart.structure?.status || "",
+        sangsin: chart.structure?.sangsin || "",
+        gisin: chart.structure?.gisin || "",
+        touchul: chart.structure?.touchul === true,
+      },
     };
     rolePlan.mechanism.factDigest = {
-      capacity: mechanism.capacity || {},
-      drive: mechanism.drive || {},
+      capacity: {
+        verdict: mechanism.capacity?.verdict || "",
+        rootQuality: mechanism.capacity?.rootQuality || "",
+        rootCount: mechanism.capacity?.rootCount ?? null,
+        rootClashCount: mechanism.capacity?.rootClashCount ?? null,
+        seasonSupported: mechanism.capacity?.seasonSupported === true,
+        partySupported: mechanism.capacity?.partySupported === true,
+      },
+      drive: {
+        strongestElement: mechanism.drive?.strongestElement || "",
+        rawStrongest: mechanism.drive?.rawStrongest || "",
+        rawInfluenceMismatch: mechanism.drive?.rawInfluenceMismatch === true,
+        blockedAt: mechanism.drive?.blockedAt || null,
+        pressureGroup: mechanism.drive?.pressureGroup || "",
+        pressureOverload: mechanism.drive?.pressureOverload === true,
+      },
       friction: mechanism.friction || {},
       contradictionFlags: synthesis?.contradictionFlags || [],
     };
@@ -92,13 +133,26 @@
       harmfulGods: mechanism.structure?.harmfulGods || [],
       pressureGroup: mechanism.drive?.pressureGroup || "",
       pressureOverload: mechanism.drive?.pressureOverload === true,
-      conflicts: mechanism.adjustment?.conflicts || [],
+      conflictCount: (mechanism.adjustment?.conflicts || []).length,
+      rootClashCount: mechanism.capacity?.rootClashCount ?? null,
       friction: mechanism.friction || {},
     };
     rolePlan.timing.factDigest = {
       natalStrength: chart.dayMaster?.strength || "",
       natalStructure: chart.structure?.gyeokName || "",
-      rows: (timingRows || []).slice(0, 5),
+      rows: (timingRows || []).slice(0, 5).map((row) => ({
+        startYmd: row?.startYmd || row?.date || "",
+        endYmd: row?.endYmd || "",
+        class: row?.class || "",
+        daeunGanZhi: row?.daeunGanZhi || "",
+        seyounGanZhi: row?.seyounGanZhi || "",
+        majorSupport: Number(row?.evidence?.majorSupport || 0),
+        support: Number(row?.evidence?.support || 0),
+        majorCaution: Number(row?.evidence?.majorCaution || 0),
+        caution: Number(row?.evidence?.caution || 0),
+        wolunSupportCodes: (row?.layers?.wolun?.supportSignals || []).map((x) => x?.code).filter(Boolean),
+        wolunCautionCodes: (row?.layers?.wolun?.cautionSignals || []).map((x) => x?.code).filter(Boolean),
+      })),
     };
 
     const requiredEvidenceCoverageIds = unique([
