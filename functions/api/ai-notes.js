@@ -679,27 +679,8 @@ export async function onRequestPost(context) {
     },
   };
 
-  async function callOpenAI(extraInstruction = "") {
-    const requestPayload = {
-      ...baseRequestPayload,
-      input: extraInstruction
-        ? [
-            ...baseRequestPayload.input,
-            {
-              role: "user",
-              content: [
-                {
-                  type: "input_text",
-                  text:
-                    "[재작성 지시]\n" +
-                    extraInstruction +
-                    "\n처음 결과를 고치는 데만 집중하고, 같은 evidencePacket 밖의 사실은 추가하지 마.",
-                },
-              ],
-            },
-          ]
-        : baseRequestPayload.input,
-    };
+  async function callOpenAI() {
+    const requestPayload = baseRequestPayload;
 
     let openaiResponse;
     try {
@@ -785,67 +766,29 @@ export async function onRequestPost(context) {
     }
   }
 
-  const attempts = [];
-  let generated = await callOpenAI();
-  if (generated.payload?.usage) attempts.push(generated.payload.usage);
-
-  if (!generated.ok && generated.response) return generated.response;
-
-  if (!generated.ok && generated.validationError) {
-    const repairMap = {
-      SAJU_BASIS_MISSING:
-        "각 NOTE의 basis를 반드시 '네 사주에서는'으로 시작하고, 실제 강한 것과 약한 것/엇갈리는 점을 쉬운 말로 먼저 적어.",
-      ADVICE_REPLACED_DIAGNOSIS:
-        "title과 basis에서 조언·명령형을 제거하고, 사주 진단형 문장으로 다시 써.",
-      GENERIC_ADVICE_TITLE:
-        "누구에게나 할 수 있는 조언 제목을 버리고 이 사주에서 잡힌 비대칭 자체를 제목으로 써.",
-      INTERNAL_JARGON_LEAK:
-        "내부 명리용어를 쉬운 현실 언어로 바꾸되 사주 근거 자체는 숨기지 마.",
-      CONCERN_FOCUS_LOST:
-        "사용자가 고른 고민 범위 안에서만 번역하고 다른 영역으로 새지 마.",
-      INSUFFICIENT_STRUCTURAL_EVIDENCE:
-        "각 NOTE가 서로 독립된 사주 근거를 최소 2개 연결하도록 다시 구성해.",
-      TIMING_EVIDENCE_MISMATCH:
-        "시기 NOTE에 실제 timingEvidence ID를 포함하고 날짜와 그 신호의 의미를 정확히 연결해.",
-      TIMING_NATAL_LINK_MISSING:
-        "시기 NOTE에서 평소 사주 근거와 시기 근거를 함께 연결해.",
-      DUPLICATE_NOTE_FOCUS:
-        "6개 NOTE가 서로 다른 질문을 답하도록 focus를 완전히 분리해.",
-      DUPLICATE_NOTE_CLAIM:
-        "제목들이 같은 결론을 반복하지 않도록 각각 다른 발견을 뽑아.",
-      WEAK_NOTE_OUTPUT:
-        "사주 진단과 이유를 생략하지 말고 basis와 body를 충분히 구체적으로 써.",
-    };
-    const repairInstruction =
-      repairMap[generated.validationError] ||
-      "사주 근거가 먼저 보이고, 6개 NOTE가 서로 다른 발견이 되도록 전체를 다시 써.";
-    generated = await callOpenAI(
-      "첫 생성은 검증에서 " +
-        generated.validationError +
-        " 오류가 났어. " +
-        repairInstruction,
-    );
-    if (generated.payload?.usage) attempts.push(generated.payload.usage);
-  }
+  const generated = await callOpenAI();
 
   if (!generated.ok) {
     if (generated.response) return generated.response;
+    const failedUsage = generated.payload?.usage || null;
     return reply(502, {
       ok: false,
       code: generated.validationError || "AI_NOTE_VALIDATION_FAILED",
       message:
-        "AI NOTE가 사주 근거·고민 집중도·중복 검증을 두 번 연속 통과하지 못했습니다.",
+        "AI NOTE가 사주 근거·고민 집중도·중복 검증을 통과하지 못했습니다. 자동 재호출은 하지 않았습니다.",
+      usage: failedUsage,
+      usageBreakdown: usageBreakdown(failedUsage, model, context.env),
     });
   }
 
-  const combinedUsage = mergeUsage(attempts);
+  const usage = generated.payload?.usage || null;
   return reply(200, {
     ok: true,
     model,
     responseId: generated.payload?.id || "",
-    attempts: attempts.length,
-    usage: combinedUsage,
-    usageBreakdown: usageBreakdown(combinedUsage, model, context.env),
+    attempts: 1,
+    usage,
+    usageBreakdown: usageBreakdown(usage, model, context.env),
     notes: generated.notes,
   });
 }
