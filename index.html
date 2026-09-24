@@ -2383,7 +2383,7 @@
                     >태어난 시간</label
                   >
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="space-y-2">
                   <input
                     id="birthTimeInput"
                     type="text"
@@ -2391,20 +2391,23 @@
                     maxlength="5"
                     placeholder="예: 09:42"
                     oninput="formatBirthTime(this)"
-                    class="flex-1 min-w-0 h-[35px] px-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[11px] text-slate-700 placeholder-slate-400 text-center font-mono focus:bg-white focus:outline-none"
+                    class="w-full h-[35px] px-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-[11px] text-slate-700 placeholder-slate-400 text-center font-mono focus:bg-white focus:outline-none"
                   />
-                  <button
-                    id="birthTimeUnknownButton"
-                    type="button"
-                    data-selected="1"
-                    onclick="setBirthTimeUnknown()"
-                    class="h-[35px] px-3 rounded-xl border border-slate-200 bg-slate-100 text-[10.5px] font-bold text-slate-600 whitespace-nowrap"
-                  >시간 모름</button>
+                  <label
+                    for="birthTimeUnknownButton"
+                    class="inline-flex items-center gap-2 h-[28px] px-2.5 rounded-lg border border-slate-200 bg-slate-50 cursor-pointer select-none"
+                  >
+                    <input
+                      id="birthTimeUnknownButton"
+                      type="checkbox"
+                      checked
+                      onchange="setBirthTimeUnknown()"
+                      class="w-4 h-4 rounded border-slate-300 accent-slate-600"
+                    />
+                    <span class="text-[10.5px] font-bold text-slate-600">시간 모름</span>
+                  </label>
                 </div>
                 <input type="hidden" id="birthTimeBranch" value="unknown" />
-                <p id="birthTimeHelp" class="mt-1 text-[9px] font-medium text-slate-400 text-center">
-                  정확한 시간을 알면 그대로 적고, 모르면 시간 모름으로 봐도 돼
-                </p>
               </div>
               <!-- 전송 버튼 영역 (스크립트 자동 주입) -->
               <div id="originalFTButtons" style="display: none"></div>
@@ -6122,22 +6125,25 @@ function generateConcernNotes(data, mode) {
         const digits=String(input.value || "").replace(/[^0-9]/g,"").slice(0,4);
         input.value=digits.length>2 ? digits.slice(0,2)+":"+digits.slice(2) : digits;
         const hidden=document.getElementById("birthTimeBranch");
-        const btn=document.getElementById("birthTimeUnknownButton");
+        const checkbox=document.getElementById("birthTimeUnknownButton");
         const exact=normalizeExactBirthTime(input.value);
         if(hidden) hidden.value=exact || (digits ? "pending" : "unknown");
-        if(btn) btn.dataset.selected=digits ? "0" : "1";
+        if(checkbox) checkbox.checked=!digits;
         saveInputDraft();
       }
 
       function setBirthTimeUnknown() {
         const input=document.getElementById("birthTimeInput");
         const hidden=document.getElementById("birthTimeBranch");
-        const btn=document.getElementById("birthTimeUnknownButton");
-        const help=document.getElementById("birthTimeHelp");
-        if(input) input.value="";
-        if(hidden) hidden.value="unknown";
-        if(btn) btn.dataset.selected="1";
-        if(help) help.textContent="시간을 몰라도 괜찮아. 모르는 상태 그대로 계산할게";
+        const checkbox=document.getElementById("birthTimeUnknownButton");
+        if(checkbox?.checked) {
+          if(input) input.value="";
+          if(hidden) hidden.value="unknown";
+        } else {
+          const exact=normalizeExactBirthTime(input?.value || "");
+          if(hidden) hidden.value=exact || (input?.value ? "pending" : "unknown");
+          input?.focus();
+        }
         saveInputDraft();
       }
 
@@ -9654,11 +9660,7 @@ currentResultData = {
             ? savedExactTime
             : (BIRTH_TIME_BRANCHES.has(savedTimeKey) ? savedTimeKey : "unknown");
         }
-        if (birthTimeUnknownButton) birthTimeUnknownButton.dataset.selected = savedTimeKey === "unknown" ? "1" : "0";
-        const birthTimeHelp = document.getElementById("birthTimeHelp");
-        if (birthTimeHelp && BIRTH_TIME_BRANCHES.has(savedTimeKey)) {
-          birthTimeHelp.textContent = "예전에 고른 대략 시간대("+ (BIRTH_TIME_BRANCH_LABELS[savedTimeKey] || savedTimeKey) +")로 저장돼 있어. 정확한 시간을 알면 위에 다시 적어줘";
-        }
+        if (birthTimeUnknownButton) birthTimeUnknownButton.checked = savedTimeKey === "unknown";
 
         const concernOrder = [
           "money",
