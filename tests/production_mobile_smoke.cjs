@@ -395,8 +395,9 @@ async function inspect(page, mode) {
   },mode);
   r.resultLayout=await resultLayoutSnapshot(page);
   assertResultLayout(r.resultLayout,mode+' primary result');
-  assert(r.noteV2Audit?.version==='5.0.0'&&r.noteV2Audit?.structureFingerprint,mode+' five-answer audit missing');
+  assert(r.noteV2Audit?.version==='5.0.0'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
   assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
+  assert(r.noteV2Audit?.evidenceCoverage?.coverageRate===1&&r.noteV2Audit?.evidenceCoverage?.missingRuleIds?.length===0,mode+' supported classical evidence dropped '+JSON.stringify(r.noteV2Audit?.evidenceCoverage));
   assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six internal causal claims missing');
   assert(Array.isArray(r.noteV2Audit?.outputClaimMap)&&r.noteV2Audit.outputClaimMap.length===5,mode+' five-answer provenance map missing');
   for(const link of r.noteV2Audit.outputClaimMap){
@@ -404,9 +405,10 @@ async function inspect(page, mode) {
     assert(claim?.ditianRuleIds?.filter(Boolean).length&&claim?.zipingRuleIds?.filter(Boolean).length&&claim?.noteSentence,mode+' mapped claim provenance missing');
   }
   for(const [label,text] of [['core',r.n1],['scene',r.n2],['filter',r.n4],['timing',r.n5]]){
-    assert(text.length>=55&&text.length<=420,mode+' '+label+' answer length drift '+text.length);
+    assert(text.length>=110&&text.length<=950,mode+' '+label+' answer length drift '+text.length);
+    assert(text.includes('결론'),mode+' '+label+' answer does not lead with a conclusion '+text);
   }
-  assert(/보통|시작/.test(r.n2)&&/그러면|그다음/.test(r.n2)&&/결국/.test(r.n2),mode+' real-life scene chain missing '+r.n2);
+  assert(r.n2.includes('결론')&&/초반 장면|같은 순간/.test(r.n2)&&/예를 들면|이런 상황/.test(r.n2),mode+' grounded real-life scene explanation missing '+r.n2);
   assert(r.timingMeta?.concernSituation,mode+' timing answer metadata missing');
   assert(!norm(r.timingMeta?.firstBody)||!norm(r.timingMeta?.secondBody)||norm(r.timingMeta?.firstBody)!==norm(r.timingMeta?.secondBody),mode+' duplicate timing roles returned');
   assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(r.n1+' '+r.n2+' '+r.n4+' '+r.n5),mode+' old/abstract answer wording returned');
