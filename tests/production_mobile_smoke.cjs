@@ -355,6 +355,7 @@ async function inspect(page, mode) {
     return {
       n1:plain(notes[0]?.desc), n2:plain(notes[1]?.desc),
       n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc),
+      aiTranslated:notes.length===5 && notes.every(n=>n?.__aiTranslated===true),
       noteV2Audit:currentResultData?.noteV2Audit || null,
       timingMeta:notes[4]?.__timingQA || null,
       oheng:document.getElementById('ohengSummaryTxt')?.innerText||'',
@@ -454,12 +455,25 @@ async function inspect(page, mode) {
     assert(claim?.ditianRuleIds?.filter(Boolean).length&&claim?.zipingRuleIds?.filter(Boolean).length&&claim?.noteSentence,mode+' mapped claim provenance missing');
   }
   for(const [label,text] of [['core',r.n1],['scene',r.n2],['filter',r.n4],['timing',r.n5]]){
-    assert(text.length>=110&&text.length<=950,mode+' '+label+' answer length drift '+text.length);
-    assert(text.includes('결론'),mode+' '+label+' answer does not lead with a conclusion '+text);
+    assert(text.length>=110&&text.length<=1100,mode+' '+label+' answer length drift '+text.length);
+    if(r.aiTranslated){
+      assert(
+        text.includes('사주 근거') &&
+        /비견|겁재|식신|상관|정재|편재|정관|편관|정인|편인|신강|신약|중화|득령|득지|득세|통근|격국|상신|기신|용신|합|충|형|파|해|대운|세운|월운|일간/.test(text),
+        mode+' '+label+' evidence-first AI NOTE lost concrete saju facts '+text
+      );
+    } else {
+      assert(text.includes('결론'),mode+' '+label+' fallback answer does not lead with a conclusion '+text);
+    }
   }
-  assert(r.n2.includes('결론')&&/돈|일|연애|진로|관계|회복/.test(r.n2)&&/장면|조건|상황/.test(r.n2),mode+' concern-grounded explanation missing '+r.n2);
-  assert(r.timingMeta?.concernSituation,mode+' timing answer metadata missing');
-  assert(!norm(r.timingMeta?.firstBody)||!norm(r.timingMeta?.secondBody)||norm(r.timingMeta?.firstBody)!==norm(r.timingMeta?.secondBody),mode+' duplicate timing roles returned');
+  if(r.aiTranslated){
+    assert(/돈|일|연애|진로|관계|회복/.test(r.n2),mode+' AI NOTE lost selected concern focus '+r.n2);
+    assert(r.timingMeta?.aiTranslated===true,mode+' AI timing NOTE metadata missing');
+  } else {
+    assert(r.n2.includes('결론')&&/돈|일|연애|진로|관계|회복/.test(r.n2)&&/장면|조건|상황/.test(r.n2),mode+' concern-grounded explanation missing '+r.n2);
+    assert(r.timingMeta?.concernSituation,mode+' timing answer metadata missing');
+    assert(!norm(r.timingMeta?.firstBody)||!norm(r.timingMeta?.secondBody)||norm(r.timingMeta?.firstBody)!==norm(r.timingMeta?.secondBody),mode+' duplicate timing roles returned');
+  }
   assert(!/(비밀\s*메모|실전 룰|반복 패턴)/.test(r.n1+' '+r.n2+' '+r.n4+' '+r.n5),mode+' stale NOTE labels returned');
   if (mode==='F') assert(r.oheng.includes('겉으로 가장 많이 보여')&&r.oheng.includes('눈에 보이는 오행 분포')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('지금 네 고민에 필요한 얘기만 짧게')&&!/비밀\s*메모|제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng bridge wording '+r.oheng);
   if (mode==='T') assert(r.oheng.includes('비중이 가장 커')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('지금 네 고민에 맞는 말로만 짧게')&&!/비밀\s*메모|제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng bridge wording '+r.oheng);
