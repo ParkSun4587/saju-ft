@@ -319,8 +319,22 @@ function assertResultLayout(layout, label) {
   }
   assert(layout.overview.pillarItems.length===4 && layout.overview.pillarItems.every(x=>x.radius==='0px'&&transparent(x.bg)&&x.top==='0px'&&x.right==='0px'&&x.bottom==='0px'),
     label+' four pillars look like independent cards '+JSON.stringify(layout.overview.pillarItems));
-  assert(layout.overview.ohengItems.length===5 && layout.overview.ohengItems.every(x=>x.radius==='0px'&&transparent(x.bg)&&x.top==='0px'&&x.right==='0px'&&x.bottom==='0px') && layout.overview.graphFirst,
-    label+' five elements lost single-graph hierarchy '+JSON.stringify(layout.overview));
+  const ohengBase=layout.overview.ohengItems[0];
+  assert(
+    layout.overview.ohengItems.length===5 &&
+    !!ohengBase &&
+    layout.overview.ohengItems.every(x=>
+      x.radius===ohengBase.radius &&
+      x.bg===ohengBase.bg &&
+      x.top===ohengBase.top &&
+      x.right===ohengBase.right &&
+      x.bottom===ohengBase.bottom
+    ) &&
+    !transparent(ohengBase.bg) &&
+    ohengBase.top!=='0px' &&
+    !layout.overview.graphFirst,
+    label+' five elements lost uniform compact-card hierarchy '+JSON.stringify(layout.overview)
+  );
   assert(layout.memoMetaDisplay!=='none' && layout.memoMetaText.includes('1:1 맞춤 상담 기록'),
     label+' memo-book header metadata missing '+JSON.stringify({display:layout.memoMetaDisplay,text:layout.memoMetaText}));
   assert(layout.bridgeDisplay==='none',
