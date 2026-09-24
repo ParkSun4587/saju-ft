@@ -860,7 +860,7 @@
       element(
         "h3",
         "text-sm font-black text-slate-900 mb-1",
-        "오행·십신·격국까지 그대로 풀어쓴 새 6개 답변",
+        "오행·십신·격국을 근거 그대로 풀어쓴 새 5개 답변",
       ),
     );
     panel.appendChild(
@@ -874,7 +874,7 @@
     const button = element(
       "button",
       "w-full rounded-2xl bg-violet-600 px-4 py-3 text-xs font-black text-white border-0 cursor-pointer",
-      "AI 6개 NOTE 생성하기",
+      "AI 5개 NOTE 생성하기",
     );
     button.type = "button";
     panel.appendChild(button);
@@ -901,7 +901,7 @@
       try {
         const result = await generateAiNotes(data, mode);
         status.textContent =
-          "완료. 위 기존 NOTE와 아래 AI 6개 NOTE를 내용만 보고 비교해봐.";
+          "완료. 위 기존 NOTE와 아래 근거 우선 5개 NOTE를 내용만 보고 비교해봐.";
         renderAiNotes(panel, result);
       } catch (error) {
         status.textContent =
@@ -911,7 +911,7 @@
           (error?.detail ? "\n" + error.detail : "");
       } finally {
         button.disabled = false;
-        button.textContent = "AI 6개 NOTE 다시 생성하기";
+        button.textContent = "AI 5개 NOTE 다시 생성하기";
       }
     });
 
