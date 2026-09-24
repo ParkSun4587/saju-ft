@@ -854,6 +854,32 @@
     return first+". "+second;
   }
 
+  function dominantFunctionSentence(reasoning){
+    const row=(synthesisFor(reasoning).tenGodEvidence||[])[0];
+    if(!row?.god) return "";
+    const functionMap={
+      비견:"남이 정해준 답보다 내 기준으로 결정할 때 힘이 더 또렷해지는 편이야",
+      겁재:"경쟁하거나 함께 움직이는 상황에서 내 역할과 내 몫이 분명할수록 힘을 제대로 쓰는 편이야",
+      식신:"한 번에 크게 터뜨리기보다 꾸준히 만들고 쌓아갈 때 장점이 안정적으로 드러나는 편이야",
+      상관:"답답한 걸 그냥 참고 두기보다 말하거나 바꾸고 개선할 때 힘이 살아나는 편이야",
+      정재:"변수가 계속 바뀌는 환경보다 약속·시간·보상처럼 예측 가능한 기준이 있을 때 힘을 안정적으로 쓰는 편이야",
+      편재:"한 가지 가능성에만 갇히기보다 기회·사람·자원을 넓게 보고 움직일 때 힘을 쓰는 편이야",
+      정관:"역할과 기준이 분명할수록 책임감을 실제 결과로 바꾸기 쉬운 편이야",
+      편관:"난도가 있어도 내가 움직일 권한과 보호장치가 같이 있을 때 돌파력이 살아나는 편이야",
+      정인:"충분히 이해하고 준비할 시간이나 믿을 만한 지원이 있을 때 훨씬 안정적으로 움직이는 편이야",
+      편인:"남들이 그냥 넘기는 지점을 깊게 파고 다른 방법을 찾아볼 때 강점이 드러나는 편이야",
+    };
+    const core=functionMap[row.god]||"한 가지 방식만 밀기보다 실제 반응에 맞춰 조정할 때 힘이 살아나는 편이야";
+    const visible=Number(row.visibleWeight||0);
+    const hidden=Number(row.hiddenWeight||0);
+    const surface=visible>hidden*1.15
+      ? "이 방식은 생각 속에만 머무르기보다 실제 선택이나 행동으로 비교적 빨리 드러나는 쪽이야."
+      : hidden>visible*1.15
+        ? "다만 이 방식은 처음부터 겉으로 확 보이기보다, 익숙해진 상황이나 안쪽 판단에서 더 강하게 작동하는 쪽이야."
+        : "겉으로 보이는 선택과 안쪽 판단에서 이 방식이 둘 다 비슷하게 작동하는 편이야.";
+    return core+". "+surface;
+  }
+
   function flowGapSentence(reasoning){
     const d=synthesisFor(reasoning).mechanisms?.drive||{};
     const b=d.blockedAt;
@@ -978,6 +1004,7 @@
     return [
       lead+core,
       capacityLine,
+      dominantFunctionSentence(reasoning),
       workingLine,
       mismatch,
       actual ? (isT ? `<b>지금 고민에 적용</b> — ${actual}` : `지금 네 고민에 놓고 보면 <b>${actual}</b>`) : "",
