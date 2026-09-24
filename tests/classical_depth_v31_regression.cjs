@@ -415,7 +415,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(r.special.unsupported.some(x=>x.ruleId==='DTS_SPECIAL_120'),'special unimplemented provenance missing');
   assert(r.special.claims.every(x=>x.certainty==='guarded'),'special-structure candidate did not lower NOTE certainty');
   assert(r.special.claims.every(x=>!(x.ditianRuleIds||[]).includes('DTS_SPECIAL_120')&&!(x.zipingRuleIds||[]).includes('ZZ_CHANGE_130')),'unimplemented/detect-only rule leaked into NOTE provenance');
-  assert(/한쪽 반응이 아주 강하게 잡혀서/.test(r.special.note1),'special-structure uncertainty was not explained in user language');
+  assert(/힘이 한쪽으로 아주 크게 몰린 후보/.test(r.special.note1),'special-structure uncertainty was not explained in user language');
 
   assert(new Set(r.timing.natal).size===1,'changing transit data changed natal structure');
   assert(r.timing.fps[0]!==r.timing.fps[1],'different Daewoon did not change timing fingerprint');
@@ -475,8 +475,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   }),'NOTE6 selected a month without month-specific evidence');
   assert((r.canonicalTiming.longTermPivots||[]).every(x=>x.isStructuralPivot===true&&Array.isArray(x.pivotReasons)&&x.pivotReasons.length>0),'long-term teaser labeled a non-structural year as pivot');
   assert((r.canonicalTiming.longTermPivots||[]).every((x,i,a)=>i===0||x.year!==a[i-1].year),'duplicate long-term pivot year');
-  assert(/보통|그러면|결국/.test(r.canonicalTiming.scene),'second answer lost concrete real-life scene sequence');
-  assert(/잘 맞는 쪽|네 경우 특히/.test(r.canonicalTiming.fit),'fit answer lost concrete matching conditions');
+  assert(/결론/.test(r.canonicalTiming.scene)&&/초반 장면|같은 순간/.test(r.canonicalTiming.scene)&&/예를 들면|이런 상황/.test(r.canonicalTiming.scene),'second answer lost grounded real-life scene explanation');
+  assert(/결론/.test(r.canonicalTiming.fit)&&/잘 맞는|맞는 조건|편하게 맞는/.test(r.canonicalTiming.fit),'fit answer lost concrete matching conditions');
   assert(/지금 할 것/.test(r.canonicalTiming.timingAnswer),'timing answer lost immediate action');
   assert(!/앞으로 5년 큰 흐름|이후 큰 흐름/.test(r.canonicalTiming.timingAnswer),'basic timing answer leaked full five-year annual disclosure');
   assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관|압박|구조)/.test(r.canonicalTiming.timingAnswer),'timing answer leaked internal jargon');
