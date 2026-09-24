@@ -41,7 +41,9 @@ async function enter(page, mode) {
   assert((await page.locator('#birthTimeInput').inputValue())==='03:10','longshot exact birth-time input failed');
   await page.locator('#splitNextButton button').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
-  await page.waitForSelector('#note2PreviewCard',{state:'visible',timeout:10000});
+  const freeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
+  if(freeLaunch) await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
+  else await page.waitForSelector('#note2PreviewCard',{state:'visible',timeout:10000});
 }
 
 async function unlockForQa(page) {
