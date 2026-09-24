@@ -102,8 +102,9 @@ async function enter(page, mode, concern, situation) {
         placeholder:el.getAttribute('placeholder')||'',
         hiddenValue:hidden?.value||'',
         hiddenType:hidden?.type||'',
-        unknownSelected:unknown?.dataset?.selected||'',
-        unknownText:unknown?.innerText||'',
+        unknownChecked:!!unknown?.checked,
+        unknownType:unknown?.type||'',
+        unknownLabel:document.querySelector('label[for="birthTimeUnknownButton"]')?.innerText||'',
       }:null;
     })(),
     selected:document.querySelectorAll('#concernGrid .concern-chip.selected').length,
@@ -123,8 +124,9 @@ async function enter(page, mode, concern, situation) {
     'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
   assert(firstState.timeInput && firstState.timeInput.value==='' && firstState.timeInput.placeholder==='예: 09:42' &&
          firstState.timeInput.hiddenValue==='unknown' && firstState.timeInput.hiddenType==='hidden' &&
-         firstState.timeInput.unknownSelected==='1' && firstState.timeInput.unknownText.includes('시간 모름'),
-    'exact birth-time input should be primary with explicit unknown fallback '+JSON.stringify(firstState.timeInput));
+         firstState.timeInput.unknownChecked && firstState.timeInput.unknownType==='checkbox' &&
+         firstState.timeInput.unknownLabel.includes('시간 모름'),
+    'exact birth-time input should be primary with explicit unknown checkbox '+JSON.stringify(firstState.timeInput));
   assert(firstState.submitOpacity<=0.4,'disabled consultation CTA is still too visually active '+JSON.stringify(firstState));
   if (mode==='F') assert(
     firstState.sisterText==='응, 편하게 적어줘.' &&
