@@ -249,9 +249,9 @@
 
   function rootUser(root) {
     const quality = root?.facts?.quality;
-    if (quality === "month-rooted") return "그래도 가장 힘이 센 자리에서 네 힘을 받쳐주는 뿌리가 있어서, 압박을 전혀 못 버티는 구조는 아니야";
-    if (quality === "day-rooted") return "그래도 네 가까운 자리에서 받쳐주는 뿌리가 있어서, 완전히 힘이 빠져 있는 구조는 아니야";
-    if (quality === "other-rooted") return "강한 뿌리는 아니어도 다른 자리에서 받쳐주는 축이 있어서 완전히 떠 있는 구조는 아니야";
+    if (quality === "month-rooted") return "그래도 가장 힘이 센 자리에서 네 힘을 받쳐주는 뿌리가 있어서, 압박을 전혀 못 버티는 작동 방식은 아니야";
+    if (quality === "day-rooted") return "그래도 네 가까운 자리에서 받쳐주는 뿌리가 있어서, 완전히 힘이 빠져 있는 작동 방식은 아니야";
+    if (quality === "other-rooted") return "강한 뿌리는 아니어도 다른 자리에서 받쳐주는 축이 있어서 완전히 떠 있는 작동 방식은 아니야";
     if (quality === "rootless") return "반대로 스스로 버티게 해주는 뿌리가 뚜렷하지 않아서, 압박을 오래 들고 가는 방식은 손실이 커지기 쉬워";
     return "받치는 힘의 위치는 한쪽으로 단정하기 어려워";
   }
@@ -327,22 +327,22 @@
     if (path === "wealth-release") return "그래서 강한 표현과 산출을 현실 결과로 연결해야 힘이 막히지 않아";
     if (path === "print-control") return "그래서 바로 터뜨리기보다 한 번 정리하고 이해한 뒤 표현하는 순서가 힘을 살려";
     if (path === "officer-control") return "그래서 강한 자기 힘을 역할·책임·기준에 묶어 쓸 때 결과가 남기 쉬워";
-    if (path === "output-to-wealth") return "그래서 내 힘을 결과물로 빼고 그걸 실제 보상과 연결할 때 구조가 살아";
+    if (path === "output-to-wealth") return "그래서 내 힘을 결과물로 빼고 그걸 실제 보상과 연결할 때 작동 방식이 살아";
     const state = reasoning?.integrated?.zipingState;
-    if (state === "supported") return "중심 구조를 살려주는 연결이 실제 사주 안에 있어서, 조건만 맞으면 힘이 한 방향으로 모일 수 있어";
+    if (state === "supported") return "중심 작동 방식을 살려주는 연결이 실제 사주 안에 있어서, 조건만 맞으면 힘이 한 방향으로 모일 수 있어";
     if (state === "rescued") return "흐름을 깨는 힘이 있어도 다시 살려주는 연결이 함께 있어서, 무엇을 먼저 쓰느냐가 중요해";
-    if (state === "damaged") return "중심 구조를 흔드는 힘이 같이 있어서, 익숙한 방식만 계속 밀면 소모가 커질 수 있어";
+    if (state === "damaged") return "중심 작동 방식을 흔드는 힘이 같이 있어서, 익숙한 방식만 계속 밀면 소모가 커질 수 있어";
     if (state === "mixed") return "살리는 힘과 흔드는 힘이 같이 있어서, 같은 선택도 순서와 조건에 따라 결과 차이가 커질 수 있어";
-    return "중심 구조는 보이지만 무엇이 살리고 무엇이 깨는지는 한쪽으로 과장하지 않는 게 맞아";
+    return "중심 작동 방식은 보이지만 무엇이 살리고 무엇이 깨는지는 한쪽으로 과장하지 않는 게 맞아";
   }
 
   function zipingCauseSummary(reasoning) {
     const state = reasoning?.integrated?.zipingState;
-    if (state === "supported") return "살리는 조건이 들어오면 중심이 흩어지기보다 한 방향으로 모이는 구조야";
-    if (state === "rescued") return "한 번 흐트러져도 다시 받치는 힘이 이어질 때 회복되는 구조야";
-    if (state === "damaged") return "방해 조건을 그대로 두면 중심 흐름이 반복해서 깎이는 구조야";
-    if (state === "mixed") return "살리는 힘과 흔드는 힘이 같이 있어서 무엇을 먼저 쓰느냐가 결과를 가르는 구조야";
-    return "한 가지 힘만 보고 결론내리기보다 살리는 조건과 흔드는 조건을 함께 봐야 하는 구조야";
+    if (state === "supported") return "살리는 조건이 들어오면 중심이 흩어지기보다 한 방향으로 모이는 작동 방식이야";
+    if (state === "rescued") return "한 번 흐트러져도 다시 받치는 힘이 이어질 때 회복되는 작동 방식이야";
+    if (state === "damaged") return "방해 조건을 그대로 두면 중심 흐름이 반복해서 깎이는 작동 방식이야";
+    if (state === "mixed") return "살리는 힘과 흔드는 힘이 같이 있어서 무엇을 먼저 쓰느냐가 결과를 가르는 작동 방식이야";
+    return "한 가지 힘만 보고 결론내리기보다 살리는 조건과 흔드는 조건을 함께 봐야 하는 작동 방식이야";
   }
 
   function pressureChain(reasoning, situation, isT) {
@@ -397,8 +397,8 @@
     const monthLine = s.touchul
       ? "태어난 계절에서 잡힌 중심 힘이 겉의 선택과 행동까지 바로 이어지는 편"
       : "태어난 계절에서 잡힌 중심 힘이 바로 겉으로 튀어나오기보다 안에서 한 번 걸러지는 편";
-    const supportLine = helpful.length ? `이 구조를 살리는 쪽은 <b>${helpful.join("·")}</b>` : "이 구조를 살리는 힘은 한 가지로만 고정되지 않아";
-    const harmLine = harmful.length ? `반대로 <b>${harmful.join("·")}</b>이 앞에 서면 원래 흐름을 흔들 수 있어` : "지금 확인된 구조에서는 한 가지 방해 힘이 압도적으로 고정되진 않아";
+    const supportLine = helpful.length ? `이 작동 방식을 살리는 쪽은 <b>${helpful.join("·")}</b>` : "이 작동 방식을 살리는 힘은 한 가지로만 고정되지 않아";
+    const harmLine = harmful.length ? `반대로 <b>${harmful.join("·")}</b>이 앞에 서면 원래 흐름을 흔들 수 있어` : "지금 확인된 작동 방식에서는 한 가지 방해 힘이 압도적으로 고정되진 않아";
     const rescueLine = harmful.length && rescue.length
       ? `그래도 흐트러졌을 때 <b>${rescue.join("·")}</b>이 다시 받아주는 길이 있어`
       : "";
@@ -407,7 +407,7 @@
       : "";
     const relationLine = relationUser(reasoning);
     const conflictLine = conflict
-      ? "다만 몸이 감당하는 방향과 중심 구조가 요구하는 방향이 완전히 같진 않아서, 먼저 버틸 조건을 만든 다음 결과 쪽 힘을 써야 해."
+      ? "다만 몸이 감당하는 방향과 중심 작동 방식이 요구하는 방향이 완전히 같진 않아서, 먼저 버틸 조건을 만든 다음 결과 쪽 힘을 써야 해."
       : "";
     const resolution = String(conflictLine || zipingCauseSummary(reasoning)).replace(/[.!?]+$/,"");
     if (isT) {
@@ -440,7 +440,7 @@
     if (isT) {
       return `<b>첫 순서</b> — ${firstAction}.<br><br><b>그다음</b> — ${secondAction}.<br><br><b>지금 고민에 적용</b> — ${situation.move}.<br><br><b>7일 검증 기준</b> — ${situation.metric}.<br><br>${harmful.length ? `특히 ${harmful.join("·")}이 과해지는 선택은 줄여.` : "한 번에 변수 여러 개를 바꾸지 마."} ${conflictLine} ${caution}`;
     }
-    return `한꺼번에 바꾸기보다 순서가 중요해. <b>먼저 ${firstAction}</b>. 그다음 <b>${secondAction}</b>을 붙여봐.<br><br>지금 고민에서는 ${situation.move}. <b>이번 7일의 확인 기준은 ‘${situation.metric}’</b>이야.<br><br>${harmful.length ? `${harmful.join("·")}이 너무 커지는 방식은 오히려 원래 구조를 더 힘들게 만들 수 있어.` : "변수를 여러 개 한꺼번에 바꾸면 뭐가 효과 있었는지 놓치기 쉬워."} ${conflictLine} ${caution}`;
+    return `한꺼번에 바꾸기보다 순서가 중요해. <b>먼저 ${firstAction}</b>. 그다음 <b>${secondAction}</b>을 붙여봐.<br><br>지금 고민에서는 ${situation.move}. <b>이번 7일의 확인 기준은 ‘${situation.metric}’</b>이야.<br><br>${harmful.length ? `${harmful.join("·")}이 너무 커지는 방식은 오히려 원래 작동 방식을 더 힘들게 만들 수 있어.` : "변수를 여러 개 한꺼번에 바꾸면 뭐가 효과 있었는지 놓치기 쉬워."} ${conflictLine} ${caution}`;
   }
 
   function godSpecificCondition(god, domain, kind) {
@@ -584,7 +584,7 @@
       else if (/bridge|flow-unblock/.test(code)) effect = "막힌 연결을 이어주는 힘이";
       else if (/discharge/.test(code)) effect = "쌓인 힘을 밖으로 빼는 흐름이";
       else if (/control/.test(code)) effect = "힘을 역할과 기준으로 정리하는 흐름이";
-      else if (/ziping-support/.test(code)) effect = "중심 구조를 살리는 힘이";
+      else if (/ziping-support/.test(code)) effect = "중심 작동 방식을 살리는 힘이";
       else if (/root-clash/.test(code)) effect = "버티는 기반을 흔드는 신호가";
       else if (/body-cost/.test(code)) effect = "감당해야 할 부담을 키우는 신호가";
       else if (/ziping-harm/.test(code)) effect = "중심 흐름을 흔드는 신호가";
@@ -890,11 +890,11 @@
     if(!row?.god) return "";
     const roles=row.roles||[];
     const role=roles.includes("rescue")
-      ?"흔들린 구조를 다시 살리는 역할"
+      ?"흔들린 작동 방식을 다시 살리는 역할"
       :roles.includes("support")
-        ?"전체 구조를 받치는 역할"
+        ?"전체 작동 방식을 받치는 역할"
         :roles.includes("harm")
-          ?"과해질 때 구조를 흔드는 역할"
+          ?"과해질 때 작동 방식을 흔드는 역할"
           :"실제 세력에서 우선순위가 높은 역할";
     return "지금 고른 ‘"+s.label+"’에서는 사주 안의 "+(GOD_USER[row.god]||row.god)+" 신호를 우선 연결해서 봐야 해. "+evidenceLocationText(row)+"이고, "+role+"로 잡혀 있어";
   }
@@ -931,10 +931,10 @@
       return "결과를 만들어주는 방식과 네가 오래 감당할 수 있는 방식이 완전히 같지 않은 사주야. 잘 풀리는 방법을 그대로 오래 밀면 오히려 네 쪽 부담이 먼저 커질 수 있어서 순서가 특히 중요해";
     }
     if (flags.has("weak-but-rooted")) {
-      return "전체 세력은 약한 쪽인데 실제 뿌리는 남아 있어. 그래서 처음부터 약하게 보이는 사람이 아니라, 평소엔 버티다가 그 뿌리가 흔들리는 조건에서 체감이 갑자기 달라지기 쉬운 구조야";
+      return "전체 세력은 약한 쪽인데 실제 뿌리는 남아 있어. 그래서 처음부터 약하게 보이는 사람이 아니라, 평소엔 버티다가 그 뿌리가 흔들리는 조건에서 체감이 갑자기 달라지기 쉬운 작동 방식이야";
     }
     if (flags.has("strong-without-season-support")) {
-      return "계절의 도움만으로 강해진 사주가 아닌데도 다른 자리의 뿌리와 생조가 힘을 끌어올리고 있어. 그래서 겉으로는 단단해 보여도 어떤 환경에서 그 힘을 받는지에 따라 차이가 크게 나는 구조야";
+      return "계절의 도움만으로 강해진 사주가 아닌데도 다른 자리의 뿌리와 생조가 힘을 끌어올리고 있어. 그래서 겉으로는 단단해 보여도 어떤 환경에서 그 힘을 받는지에 따라 차이가 크게 나는 작동 방식이야";
     }
     if (Number(c.rootClashCount || 0) > 0) {
       return "버티는 뿌리 자체는 있는데 그 뿌리를 직접 흔드는 부딪힘도 같이 있어. 평소에 버티는 모습만 보고 계속 같은 강도로 밀어도 된다고 보면 오히려 핵심을 놓치는 사주야";
@@ -950,9 +950,9 @@
       return groupText(d.pressureGroup || "unknown").pressure + "이 단순한 배경이 아니라 실제로 과해질 수 있는 축이야. 네 사주는 무엇을 더 키울지보다 이 압력이 어느 순간부터 과부하로 바뀌는지를 보는 게 더 중요해";
     }
     if (top?.god) {
-      const role = (top.roles || []).includes("rescue") ? "구조가 흔들릴 때 다시 살려주는 역할까지 맡고"
-        : (top.roles || []).includes("support") ? "사주의 중심 구조를 받치는 역할까지 맡고"
-        : (top.roles || []).includes("harm") ? "잘못 쓰이면 구조를 흔드는 역할까지 맡고"
+      const role = (top.roles || []).includes("rescue") ? "작동 방식이 흔들릴 때 다시 살려주는 역할까지 맡고"
+        : (top.roles || []).includes("support") ? "사주의 중심 작동 방식을 받치는 역할까지 맡고"
+        : (top.roles || []).includes("harm") ? "잘못 쓰이면 작동 방식을 흔드는 역할까지 맡고"
         : "실제 세력에서도 우선순위가 높고";
       return (GOD_USER[top.god] || top.god) + "이 " + role + " 있어. " + evidenceLocationText(top) + "이라는 점까지 같이 봐야 네 사주의 중심이 보여";
     }
@@ -1043,17 +1043,17 @@
     const party=!!m.partySupported;
     const clash=Number(m.rootClashCount||0)>0;
     let first;
-    if(verdict==="신약"&&root==="rootless") first="받쳐주는 힘보다 밖으로 빠지는 힘이 더 큰데, 확인되는 뿌리도 약해. 그래서 처음부터 못 버틴다기보다 오래 들고 갈수록 소모가 먼저 커지는 구조야";
-    else if(verdict==="신약") first="전체 세력은 약한 쪽이지만 실제 뿌리는 남아 있어. 그래서 초반엔 꽤 버티는데 같은 부담이 길어질수록 뒤에서 피로가 더 빨리 쌓이는 구조야";
-    else if(verdict==="신강"&&["month-rooted","day-rooted"].includes(root)) first="받쳐주는 세력이 강한 데다 사주의 중심 자리에도 실제 뿌리가 있어. 쉽게 무너지기보다 스스로 더 오래 들고 가는 쪽으로 기울기 쉬운 구조야";
-    else if(verdict==="신강") first="전체 세력은 강한 쪽이지만 중심 뿌리 하나만으로 버티는 구조는 아니야. 여러 자리의 생조가 붙을 때 힘이 커지는 편이라 환경에 따라 강점의 체감 차이가 날 수 있어";
-    else first="받쳐주는 힘과 밖으로 빠지는 힘이 한쪽으로 크게 치우치지 않아. 그래서 무조건 강하다·약하다보다 어떤 조건에서 힘이 붙고 빠지는지를 같이 봐야 하는 구조야";
+    if(verdict==="신약"&&root==="rootless") first="받쳐주는 힘보다 밖으로 빠지는 힘이 더 큰데, 확인되는 뿌리도 약해. 그래서 처음부터 못 버틴다기보다 오래 들고 갈수록 소모가 먼저 커지는 작동 방식이야";
+    else if(verdict==="신약") first="전체 세력은 약한 쪽이지만 실제 뿌리는 남아 있어. 그래서 초반엔 꽤 버티는데 같은 부담이 길어질수록 뒤에서 피로가 더 빨리 쌓이는 작동 방식이야";
+    else if(verdict==="신강"&&["month-rooted","day-rooted"].includes(root)) first="받쳐주는 세력이 강한 데다 사주의 중심 자리에도 실제 뿌리가 있어. 쉽게 무너지기보다 스스로 더 오래 들고 가는 쪽으로 기울기 쉬운 작동 방식이야";
+    else if(verdict==="신강") first="전체 세력은 강한 쪽이지만 중심 뿌리 하나만으로 버티는 작동 방식은 아니야. 여러 자리의 생조가 붙을 때 힘이 커지는 편이라 환경에 따라 강점의 체감 차이가 날 수 있어";
+    else first="받쳐주는 힘과 밖으로 빠지는 힘이 한쪽으로 크게 치우치지 않아. 그래서 무조건 강하다·약하다보다 어떤 조건에서 힘이 붙고 빠지는지를 같이 봐야 하는 작동 방식이야";
 
     let second;
     if(season&&party) second="계절의 도움과 다른 자리의 생조가 같이 붙어서 받침이 한 군데에만 의존하지 않아.";
     else if(season&&!party) second="계절의 중심 도움은 있지만 다른 자리까지 항상 같은 방향으로 받쳐주는 건 아니야.";
     else if(!season&&party) second="계절이 바로 받쳐주진 않지만 다른 자리에서 보완하는 힘이 실제로 붙어 있어.";
-    else second="계절과 다른 자리의 생조가 동시에 강하게 붙는 구조는 아니라서, 무리한 조건에서는 같은 일도 체감 차이가 커질 수 있어.";
+    else second="계절과 다른 자리의 생조가 동시에 강하게 붙는 작동 방식은 아니라서, 무리한 조건에서는 같은 일도 체감 차이가 커질 수 있어.";
     if(clash) second+=" 여기에 실제 뿌리를 흔드는 충까지 있어서 평소의 버팀력만 보고 계속 밀면 오판하기 쉬워.";
     return first+" "+second;
   }
@@ -1074,11 +1074,11 @@
       편인:"남들이 그냥 넘기는 지점을 깊게 파고 다른 방법을 찾을 때 강점이 드러나는 쪽",
     };
     const role=(row.roles||[]).includes("rescue")
-      ?" 특히 이 힘은 구조가 흔들렸을 때 다시 살려주는 역할까지 잡혀 있어."
+      ?" 특히 이 힘은 작동 방식이 흔들렸을 때 다시 살려주는 역할까지 잡혀 있어."
       :(row.roles||[]).includes("support")
-        ?" 특히 이 힘은 사주의 중심 구조를 받치는 역할까지 잡혀 있어."
+        ?" 특히 이 힘은 사주의 중심 작동 방식을 받치는 역할까지 잡혀 있어."
         :(row.roles||[]).includes("harm")
-          ?" 다만 이 힘은 지금 구조에서는 과해질 때 장점을 흔드는 역할도 같이 잡혀 있어."
+          ?" 다만 이 힘은 지금 작동 방식에서는 과해질 때 장점을 흔드는 역할도 같이 잡혀 있어."
           :"";
     return (GOD_USER[row.god]||row.god)+"이 이 고민과 연결되는 실제 세력에서 우선순위가 높아. "+(functionMap[row.god]||"조건에 따라 방식 조절이 중요한 쪽")+"이고, "+evidenceLocationText(row)+"이야."+role;
   }
@@ -1212,10 +1212,10 @@
       else availability="이 힘은 사주에서 강하게 확보된 힘이 아니라 사람·환경·운에서 들어올 때 효과가 더 분명해질 수 있어";
       const roles=row.ev?.roles||[];
       const why=roles.includes("rescue") || (st.rescueGods||[]).includes(row.god)
-        ?"사주 구조가 흔들릴 때 다시 이어주는 역할로 잡힌 힘이야"
+        ?"사주 작동 방식이 흔들릴 때 다시 이어주는 역할로 잡힌 힘이야"
         :roles.includes("support") || (st.helpfulGods||[]).includes(row.god)
-          ?"사주의 중심 구조를 살리는 쪽으로 잡힌 힘이야"
-          :"전체 구조를 보조하는 후보로 남는 힘이야";
+          ?"사주의 중심 작동 방식을 살리는 쪽으로 잡힌 힘이야"
+          :"전체 작동 방식을 보조하는 후보로 남는 힘이야";
       return {
         god:row.god,
         label:GOD_USER[row.god]||row.god,
@@ -1230,14 +1230,14 @@
       const groups=[...new Set(reasoning?.integrated?.neededGroups||[])];
       groups.slice(0,2).forEach(g=>rows.push({
         god:null,label:groupText(g).noun,text:domain.help[g]||domain.help.unknown,
-        availability:"이 조건은 지금 강약 구조에서 감당력을 보완하는 기본 축으로 잡혀",
+        availability:"이 조건은 지금 강약 작동 방식에서 감당력을 보완하는 기본 축으로 잡혀",
         why:"전체 강약 판단에서 먼저 보완할 그룹으로 나온 조건이야",
         evidenceStatus:"needed-group",
       }));
     }
     if(!rows.length) rows.push({
       god:null,label:"확인 가능한 조건",text:domain.help.unknown,
-      availability:"한 가지 도움 힘이 압도적으로 고정되지는 않은 구조야",
+      availability:"한 가지 도움 힘이 압도적으로 고정되지는 않은 작동 방식이야",
       why:"여러 근거가 갈려 한 조건을 핵심으로 과장하지 않았어",
       evidenceStatus:"fallback",
     });
@@ -1256,8 +1256,8 @@
     const rows=gods.slice(0,3).map(g=>{
       const ev=evidence[g]||null;
       const visibility=!ev
-        ?"이 힘은 사주에서 강하게 드러난 힘은 아니지만 들어올 때 구조를 흔드는 조건으로 잡혀"
-        :evidenceLocationText(ev)+"이고, 현재 구조에서는 과해질 때 방해 쪽으로 작동해";
+        ?"이 힘은 사주에서 강하게 드러난 힘은 아니지만 들어올 때 작동 방식을 흔드는 조건으로 잡혀"
+        :evidenceLocationText(ev)+"이고, 현재 작동 방식에서는 과해질 때 방해 쪽으로 작동해";
       return {
         god:g,
         label:GOD_USER[g]||g,
@@ -1273,7 +1273,7 @@
         text:domain.harm[group]||domain.harm.unknown,
         evidence:syn.mechanisms?.drive?.pressureOverload
           ?"이 압력군은 실제 세력 비교에서 과부하 후보로 잡혀"
-          :"구조를 직접 흔드는 힘이 하나로 고정되지 않아, 실제 세력이 가장 큰 압력군을 대신 경계 기준으로 잡았어",
+          :"작동 방식을 직접 흔드는 힘이 하나로 고정되지 않아, 실제 세력이 가장 크게 부담을 주는 쪽을 대신 경계 기준으로 잡았어",
       });
     }
     return rows;
@@ -1287,7 +1287,7 @@
     if(names.length) parts.push("사주 안에서 힘이 이어지는 순서는 "+names.join(" → ")+" 쪽으로 잡혀 있어");
     if(a.bridgeElement&&a.bridgeStatus==="missing") parts.push("서로 맞서는 힘 사이를 이어줄 "+(FLOW_SHORT[a.bridgeElement]||"중간")+" 역할은 사주에서 비어 있어");
     else if(a.bridgeElement) parts.push("서로 맞서는 힘 사이를 이어주는 "+(FLOW_SHORT[a.bridgeElement]||"중간")+" 역할은 사주 안에 후보가 있어");
-    if((a.conflicts||[]).length) parts.push("구조를 살리는 힘과 네가 오래 감당하기 편한 힘이 완전히 같지는 않아");
+    if((a.conflicts||[]).length) parts.push("작동 방식을 살리는 힘과 네가 오래 감당하기 편한 힘이 완전히 같지는 않아");
     return parts.join(". ");
   }
 
@@ -1334,7 +1334,7 @@
     const closing=state==="rescued"
       ?"이 사주는 한 번 꼬여도 다시 살리는 통로가 확인돼. 처음부터 완벽한 조건보다 흔들렸을 때 실제로 다시 맞춰지는지가 더 중요해."
       :state==="damaged"
-        ?"지금 구조는 방해 조건이 반복되면 원래 장점까지 같이 깎이기 쉬워. 버틸 수 있느냐보다 같은 조건에서 힘이 계속 남느냐가 더 중요해."
+        ?"지금 작동 방식은 방해 조건이 반복되면 원래 장점까지 같이 깎이기 쉬워. 버틸 수 있느냐보다 같은 조건에서 힘이 계속 남느냐가 더 중요해."
         :state==="mixed"
           ?"살리는 힘과 흔드는 힘이 같이 있어서 어떤 힘이 먼저 작동하느냐에 따라 같은 상황도 체감 차이가 크게 날 수 있어."
           :"한 조건만으로 좋다·나쁘다를 고정하기보다 실제 도움 힘이 살아나는 순서를 보는 게 정확해.";
@@ -1346,7 +1346,7 @@
       rest.length
         ? (isT
           ?"추가 조건 — "+rest.map(x=>"<b>"+x.text+"</b> ("+x.why+")").join(" / ")
-          :"그다음은 "+rest.map(x=>"<b>"+x.text+"</b>").join(" / ")+" 순서로 보면 돼. 이것들도 실제 구조의 도움·회복 후보에서 고른 조건이야.")
+          :"그다음은 "+rest.map(x=>"<b>"+x.text+"</b>").join(" / ")+" 순서로 보면 돼. 이것들도 실제 작동 방식의 도움·회복 후보에서 고른 조건이야.")
         :"",
       adjust ? adjust+"." : "",
       closing,
@@ -1360,9 +1360,9 @@
     const drive=synthesisFor(reasoning).mechanisms?.drive||{};
     const overload=drive.pressureOverload
       ?"이 힘은 단순한 배경이 아니라 실제 세력 비교에서 과부하 후보로 잡혀 있어."
-      :"이 힘 하나만으로 나쁘다고 단정하지는 않지만, 현재 구조에서는 반복될 때 방해 쪽으로 기울 수 있는 조건이야.";
+      :"이 힘 하나만으로 나쁘다고 단정하지는 않지만, 현재 작동 방식에서는 반복될 때 방해 쪽으로 기울 수 있는 조건이야.";
     const conflict=(synthesisFor(reasoning).mechanisms?.adjustment?.conflicts||[]).length
-      ?"게다가 구조를 살리는 방식과 네가 오래 감당하기 편한 방식이 완전히 같지 않아서, 결과가 난다는 이유만으로 계속 밀면 오판하기 쉬워."
+      ?"게다가 작동 방식을 살리는 방식과 네가 오래 감당하기 편한 방식이 완전히 같지 않아서, 결과가 난다는 이유만으로 계속 밀면 오판하기 쉬워."
       :"";
     const criterion=cautionCriterionSentence(reasoning,s);
     return [
@@ -1391,12 +1391,12 @@
       if(/bridge|flow-unblock/.test(code)) return "평소 중간에서 끊기던 연결을 이어주는 신호가 들어와";
       if(/discharge/.test(code)) return "생각이나 준비를 표현·결과로 밖에 빼는 힘이 평소보다 잘 붙어";
       if(/control/.test(code)) return "흩어진 힘을 기준과 우선순위로 묶는 작용이 평소보다 잘 붙어";
-      if(/ziping-support/.test(code)) return "원래 사주 구조를 살리는 힘이 운에서도 같은 방향으로 겹쳐";
-      return "원래 구조를 돕는 신호가 다른 달보다 분명하게 겹쳐";
+      if(/ziping-support/.test(code)) return "원래 사주 작동 방식을 살리는 힘이 운에서도 같은 방향으로 겹쳐";
+      return "원래 작동 방식을 돕는 신호가 다른 달보다 분명하게 겹쳐";
     }
     if(/root-clash/.test(code)) return "평소 버티게 해주던 뿌리를 직접 흔드는 신호가 겹쳐";
     if(/body-cost/.test(code)) return "원래 감당력이 약해지는 쪽으로 부담 신호가 더 붙어";
-    if(/ziping-harm/.test(code)) return "원래 구조를 흔드는 힘이 운에서도 같은 방향으로 겹쳐";
+    if(/ziping-harm/.test(code)) return "원래 작동 방식을 흔드는 힘이 운에서도 같은 방향으로 겹쳐";
     if(/over-support/.test(code)) return "이미 강한 힘을 더 세게 만드는 신호가 붙어 과부하 가능성이 커져";
     return "원래 사주의 약한 지점을 건드리는 신호가 다른 달보다 더 분명하게 겹쳐";
   }
@@ -1437,8 +1437,8 @@
     const summary=first
       ? (["supportive","mild-support"].includes(first.class)
           ? (isT
-              ? "<b>결론</b> — 가까운 흐름에서 원래 구조를 도와주는 월 신호가 실제로 잡혀."
-              : "<b>결론</b> — 가까운 흐름을 보면, 네 원래 사주 구조를 실제로 도와주는 달이 잡혀.")
+              ? "<b>결론</b> — 가까운 흐름에서 원래 작동 방식을 도와주는 월 신호가 실제로 잡혀."
+              : "<b>결론</b> — 가까운 흐름을 보면, 네 원래 사주 작동 방식을 실제로 도와주는 달이 잡혀.")
           : (isT
               ? "<b>결론</b> — 가까운 흐름에서 원래 약한 지점을 더 건드리는 월 신호가 실제로 잡혀."
               : "<b>결론</b> — 가까운 흐름에는 네 원래 사주의 약한 지점을 더 건드리는 달도 보여."))
