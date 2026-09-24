@@ -883,6 +883,41 @@
     return core+". "+surface;
   }
 
+  function patternCapacitySentence(reasoning){
+    const m=synthesisFor(reasoning).mechanisms?.capacity||{};
+    const verdict=m.verdict||"중화";
+    const root=m.rootQuality||"unknown";
+    if(verdict==="신약"&&root==="rootless") return "이런 장면에서는 참고 버티는 시간을 늘릴수록 해결보다 소모가 먼저 커지기 쉬워";
+    if(verdict==="신약") return "초반에는 버텨서 넘어갈 수 있어도 같은 장면이 반복되면 뒤로 갈수록 네 쪽 피로가 더 빨리 쌓이기 쉬워";
+    if(verdict==="신강"&&["month-rooted","day-rooted"].includes(root)) return "문제가 보여도 바로 손을 떼기보다 '내가 정리하고 말지' 쪽으로 가기 쉬워서, 끊을 시점을 늦게 잡을 수 있어";
+    if(verdict==="신강") return "한번 잡은 문제를 끝까지 밀어보려는 쪽이라, 방향을 바꿔야 할 때도 조금 더 해본 뒤에야 멈추기 쉬워";
+    return "같은 일도 상황에 따라 버틸 때와 지칠 때 차이가 커서, 처음 반응보다 반복될수록 어떻게 달라지는지를 봐야 해";
+  }
+
+  function patternResolutionSentence(reasoning){
+    const s=synthesisFor(reasoning).mechanisms?.structure||{};
+    const path=s.path;
+    if(path==="print-transform") return "그래서 반복을 끊으려면 바로 맞서기보다 먼저 이해하고 정리할 시간을 만든 다음 움직이는 순서가 필요해";
+    if(path==="food-control") return "그래서 머릿속에서만 버티지 말고 작은 행동이나 결과물 하나로 밖에 빼야 같은 생각이 계속 도는 걸 줄일 수 있어";
+    if(path==="mixed-control-cost") return "행동으로 빼는 건 도움이 되지만, 더 많이 해내는 방식으로 해결하려 들면 다시 네 힘이 빠질 수 있어";
+    if(path==="wealth-release") return "표현이나 아이디어에서 멈추지 말고 실제 결과·보상까지 연결해야 같은 답답함이 반복되지 않아";
+    if(path==="print-control") return "바로 반응하는 것보다 한 번 정리한 뒤 말하는 순서를 지켜야 불필요한 충돌을 줄일 수 있어";
+    if(path==="officer-control") return "내가 다 알아서 하려 하기보다 역할·책임·기준을 먼저 세워야 반복이 줄어";
+    if(path==="output-to-wealth") return "생각이나 의욕을 실제 결과물로 만들고 보상까지 확인해야 힘이 헛돌지 않아";
+    if(s.state==="rescued") return "한번 꼬여도 다시 맞출 길이 있으니, 틀어졌을 때 바로 포기하기보다 조정이 실제로 되는지 확인하는 게 중요해";
+    if(s.state==="damaged") return "같은 방해 조건을 그대로 둔 채 의지만 더 쓰면 반복이 커지기 쉬워서, 사람이나 환경 조건부터 바꾸는 게 먼저야";
+    if(s.state==="mixed") return "좋은 조건과 흔드는 조건이 동시에 들어오면 순서 하나만 바뀌어도 결과가 달라지기 쉬워";
+    return "이 반복은 의지 하나보다 어떤 조건을 먼저 바꾸느냐에서 갈리는 편이야";
+  }
+
+  function relationFilterSentence(reasoning){
+    const f=synthesisFor(reasoning).mechanisms?.friction||{};
+    if(Number(f.monthClashCount||0)>0) return "특히 중심이 되는 생활 조건까지 흔드는 신호가 있어서, 한 부분만 맞고 전체가 계속 불편한 선택은 오래 두지 않는 게 좋아";
+    if(Number(f.clashCount||0)>0) return "한쪽을 맞추면 다른 쪽이 계속 깨지는 선택이라면, 네가 더 노력해서 메우기보다 조건 자체가 충돌하는지 먼저 봐";
+    if(Number(f.relationCount||0)>0) return "작은 불편함이 여러 방향에서 반복되면 한 번의 우연으로 넘기지 말고, 계속 같은 방식으로 피로가 쌓이는지 확인해";
+    return "";
+  }
+
   function flowGapSentence(reasoning){
     const d=synthesisFor(reasoning).mechanisms?.drive||{};
     const b=d.blockedAt;
@@ -1050,7 +1085,7 @@
     const reaction=stripHtml(p?.reaction||"");
     const cost=stripHtml(p?.cost||"");
     const pressure=plainSentence(pressureGroupLine(reasoning,s));
-    const capacity=capacitySentence(reasoning);
+    const capacity=patternCapacitySentence(reasoning);
     const flow=flowGapSentence(reasoning);
     const relation=relationSentence(reasoning);
     const conclusion=isT
@@ -1065,7 +1100,7 @@
       flow+".",
       scene,
       relation,
-      structureSentence(reasoning),
+      patternResolutionSentence(reasoning)+".",
     ].filter(Boolean).join("<br><br>");
   }
 
@@ -1125,7 +1160,7 @@
         : "",
       overload,
       conflict,
-      relationSentence(reasoning),
+      relationFilterSentence(reasoning),
       isT ? `<b>판단 기준</b> — ${criterion}.` : `<b>마지막으로 이것만 봐</b> — ${criterion}.`,
     ].filter(Boolean).join("<br><br>");
   }
