@@ -12,8 +12,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load',timeout:60000});
   await page.waitForFunction(()=>(
-    globalThis.__CLASSICAL_REASONING_V1__?.version==='1.2.0' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='4.0.0' &&
+    globalThis.__CLASSICAL_REASONING_V1__?.version==='2.0.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='5.0.0' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version==='2.2.0'
   ),null,{timeout:60000});
@@ -82,7 +82,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   });
 
   assert(runtime.oldGet==='undefined'&&runtime.oldBuild==='undefined','legacy timing functions still exist at runtime '+JSON.stringify(runtime));
-  assert(runtime.wrapped&&runtime.audit?.engine==='classical-causal','runtime NOTE path is not classical concern-note engine');
+  assert(runtime.wrapped&&runtime.audit?.engine==='classical-causal-full-evidence','runtime NOTE path is not classical concern-note engine');
   assert(!runtime.timingBadge.includes('2026-2027')&&!runtime.timingText.includes('2026-2027'),'legacy fixed-year timing badge/text generated');
   assert(runtime.meta.disclosureContract==='basic_concern'&&runtime.meta.fullFiveYearAllowed===false,'basic timing disclosure policy not enforced '+JSON.stringify(runtime.meta));
   assert(runtime.timing.nearCount>=17&&runtime.timing.publicYears.length>=5&&runtime.timing.internalYears.length>=10,'rolling timing coverage missing '+JSON.stringify(runtime.timing));
