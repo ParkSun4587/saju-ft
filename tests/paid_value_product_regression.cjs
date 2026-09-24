@@ -160,8 +160,13 @@ function norm(v) {
     assert(row.notes.length === 5, `${row.concern}/${row.situation}/${row.mode}: answer count ${row.notes.length}`);
     assert(row.notes.map(n=>n.badge).join('|') === '핵심|실제 장면|잘 맞는 조건|거를 신호|가까운 흐름',
       `${row.concern}/${row.situation}/${row.mode}: five-answer roles drift ${JSON.stringify(row.notes.map(n=>n.badge))}`);
-    assert(row.noteAudit?.version === '5.0.0' && row.noteAudit?.structureFingerprint, `${row.concern}/${row.situation}/${row.mode}: five-answer audit missing`);
+    assert(row.noteAudit?.version === '5.0.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
+      `${row.concern}/${row.situation}/${row.mode}: full-evidence audit missing`);
     assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
+    assert(row.noteAudit?.evidenceCoverage?.coverageRate === 1 && row.noteAudit?.evidenceCoverage?.missingRuleIds?.length === 0,
+      `${row.concern}/${row.situation}/${row.mode}: supported evidence dropped ${JSON.stringify(row.noteAudit?.evidenceCoverage)}`);
+    assert(Array.isArray(row.noteAudit?.noteEvidence) && row.noteAudit.noteEvidence.length === 5,
+      `${row.concern}/${row.situation}/${row.mode}: note evidence plan missing`);
     assert(Array.isArray(row.noteAudit?.claims) && row.noteAudit.claims.length === 6, `${row.concern}/${row.situation}/${row.mode}: six internal causal claims missing`);
     assert(Array.isArray(row.noteAudit?.outputClaimMap) && row.noteAudit.outputClaimMap.length === 5,
       `${row.concern}/${row.situation}/${row.mode}: rendered claim map missing`);
@@ -176,12 +181,13 @@ function norm(v) {
 
     for (const [i,note] of row.notes.entries()) {
       const body=String(note?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-      assert(body.length >= 55 && body.length <= 420,
+      assert(body.length >= 110 && body.length <= 950,
         `${row.concern}/${row.situation}/${row.mode}: answer ${i+1} length drift (${body.length})`);
+      assert(body.includes('결론'), `${row.concern}/${row.situation}/${row.mode}: answer ${i+1} does not lead with a conclusion`);
     }
     const n2=String(row.notes[1]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-    assert(/보통|시작/.test(n2) && /그러면|그다음/.test(n2) && /결국/.test(n2),
-      `${row.concern}/${row.situation}/${row.mode}: real-life scene sequence missing`);
+    assert(n2.includes('결론') && /초반 장면|같은 순간/.test(n2) && /예를 들면|이런 상황/.test(n2),
+      `${row.concern}/${row.situation}/${row.mode}: grounded real-life scene explanation missing`);
     const timing=row.notes[4]?.timing;
     assert(timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: timing metadata missing`);
     const firstTiming=norm(timing?.firstBody);
@@ -1038,6 +1044,7 @@ function norm(v) {
   const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.1'), 'paid value script include missing');
   assert(html.includes('./concern-note-engine-v2.js?v=5.0.0'), 'five-answer NOTE script include missing');
+  assert(html.includes('./classical-reasoning-engine-v1.js?v=2.0.0'), 'full-evidence reasoning script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.2.0'), 'entitlement/product script include missing');
   assert(
