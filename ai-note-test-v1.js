@@ -975,14 +975,21 @@
   const originalGenerate = global.generateConcernNotes;
   if (typeof originalGenerate === "function") {
     const wrappedGenerate = function (data, mode) {
-      const notes = originalGenerate(data, mode);
+      const normalizedMode = mode === "T" ? "T" : "F";
+      const translated = getProductionNotes(data || {}, normalizedMode);
+      const notes = Array.isArray(translated) && translated.length === 5
+        ? translated
+        : originalGenerate(data, normalizedMode);
       if (testEnabled()) {
-        setTimeout(() => mountTestPanel(data || {}, mode || "F"), 0);
+        setTimeout(() => mountTestPanel(data || {}, normalizedMode), 0);
       }
       return notes;
     };
     wrappedGenerate.__aiNoteTestWrapped = true;
     wrappedGenerate.__base = originalGenerate;
+    wrappedGenerate.__classicalCausal = originalGenerate.__classicalCausal === true;
+    wrappedGenerate.__noteV2Wrapped = originalGenerate.__noteV2Wrapped === true;
+    wrappedGenerate.__legacyBase = originalGenerate.__legacyBase;
     global.generateConcernNotes = wrappedGenerate;
   }
 
