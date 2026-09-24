@@ -413,6 +413,7 @@ async function load(page) {
         failureToast:visible.includes('만세력 연산에 실패했습니다') || visible.includes('연산 중 오류가 발생했습니다'),
         resultVisible:document.getElementById('resultSection')?.style.display !== 'none',
         firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('1/5'),
+        sourceFreeLaunch:FREE_LAUNCH_MODE,
         paywallHook:document.getElementById('payBoxHookMsg')?.innerText || '',
         paywallTeaser:document.getElementById('paywallNextTeaser')?.innerText || '',
         paywallFeatures:[...document.querySelectorAll('#payBoxFeatures > div')].map(x => x.querySelector('span:last-child')?.innerText.trim() || ''),
@@ -460,13 +461,15 @@ async function load(page) {
     assert(!report.failureToast, `${c.id}: calculation failure toast visible`);
     assert(report.resultVisible, `${c.id}: result section not visible`);
     assert(report.firstNoteRendered, `${c.id}: first 1/5 answer not rendered into result DOM`);
-    assert(report.paywallHook === report.expectedPaywall.hook, `${c.id}: paywall hook not situation-specific`);
-    assert(report.paywallTeaser.includes(report.expectedPaywall.teaser), `${c.id}: paywall teaser not situation-specific`);
-    assert(report.note2PreviewText.includes('결론') && norm(report.note2PreviewText).length >= 35, `${c.id}: second-answer preview lost the generated conclusion edge: ${JSON.stringify(report.note2PreviewText)}`);
-    assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), `${c.id}: paid outcomes mismatch`);
-    assert(report.paywallSubcopy === '맞는 조건 · 거를 신호 · 가까운 흐름까지', `${c.id}: paid scope copy drift`);
-    assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
-    assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
+    if (!report.sourceFreeLaunch) {
+      assert(report.paywallHook === report.expectedPaywall.hook, `${c.id}: paywall hook not situation-specific`);
+      assert(report.paywallTeaser.includes(report.expectedPaywall.teaser), `${c.id}: paywall teaser not situation-specific`);
+      assert(report.note2PreviewText.includes('결론') && norm(report.note2PreviewText).length >= 35, `${c.id}: second-answer preview lost the generated conclusion edge: ${JSON.stringify(report.note2PreviewText)}`);
+      assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), `${c.id}: paid outcomes mismatch`);
+      assert(report.paywallSubcopy === '맞는 조건 · 거를 신호 · 가까운 흐름까지', `${c.id}: paid scope copy drift`);
+      assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
+      assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
+    }
     if (c.id === 'user-branch-love-F') {
       assert(report.pillarText.join(',') === '무인,갑인,기해,을축',
         `${c.id}: pillar UI drift ${report.pillarText.join(',')}`);
