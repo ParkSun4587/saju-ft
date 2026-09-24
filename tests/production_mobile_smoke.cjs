@@ -440,7 +440,7 @@ async function inspect(page, mode) {
   }
   if(r.catalog){
     assert(r.recommendedReason.length>=10&&r.visible===4&&!r.catalog.includes('다른 방향 3개도 보기'),'all premium products should stay visible under one recommendation '+JSON.stringify({visible:r.visible,catalog:r.catalog}));
-    assert(r.catalog.includes('상대 사주까지 겹쳐')||r.catalog.includes('향후 5년 큰 흐름')||r.catalog.includes('두 사람 사주 교차'),'premium catalog does not explain product value boundary');
+    assert(r.catalog.includes('우리 둘 궁합')&&r.catalog.includes('내 전체 사주판')&&r.catalog.includes('고민 3개 더 깊게'),'premium catalog lost distinct product choices');
     assert(!r.catalog.includes('언니라면 이걸 먼저 이어서 볼 것 같아')&&!r.catalog.includes('다음으로 볼 가치는 이게 제일 커'),'premium catalog headline is still over-explaining');
     assert(!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
   }
