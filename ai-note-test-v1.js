@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.3.0";
+  const VERSION = "1.3.2";
   const TEST_PARAM = "ai_notes_test";
   const TEST_PANEL_ID = "aiNotesTestPanel";
   const ENDPOINT = "/api/ai-notes";
@@ -246,24 +246,81 @@
     };
   }
 
-  async function generateAiNotes(data, mode) {
-    const evidencePacket = buildEvidencePacket(data, mode);
-    const response = await fetch(ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ evidencePacket }),
-    });
+  async function checkAiEndpoint() {
+    let response;
+    try {
+      response = await fetch(ENDPOINT, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+    } catch {
+      const error = new Error("AI NOTE 서버에 연결할 수 없습니다.");
+      error.code = "AI_ENDPOINT_NETWORK_ERROR";
+      throw error;
+    }
 
+    const raw = await response.text();
     let payload = null;
     try {
-      payload = await response.json();
+      payload = raw ? JSON.parse(raw) : null;
     } catch {}
 
     if (!response.ok || !payload?.ok) {
       const error = new Error(
-        payload?.message || "AI NOTE 테스트 생성에 실패했습니다.",
+        payload?.message ||
+          "AI NOTE 서버가 아직 정상 배포되지 않았습니다. HTTP " +
+            response.status,
       );
-      error.code = payload?.code || "AI_NOTE_REQUEST_FAILED";
+      error.code =
+        payload?.code || "AI_ENDPOINT_HTTP_" + String(response.status || 0);
+      error.detail = payload?.detail || raw.slice(0, 160);
+      throw error;
+    }
+
+    if (!payload.configured) {
+      const error = new Error("Cloudflare의 OPENAI_API_KEY 설정을 확인해야 합니다.");
+      error.code = "OPENAI_API_KEY_MISSING";
+      throw error;
+    }
+
+    return payload;
+  }
+
+  async function generateAiNotes(data, mode) {
+    const evidencePacket = buildEvidencePacket(data, mode);
+
+    // Free preflight: if the Pages Function is not healthy, stop before spending OpenAI credits.
+    await checkAiEndpoint();
+
+    let response;
+    try {
+      response = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ evidencePacket }),
+      });
+    } catch {
+      const error = new Error("AI NOTE 서버 호출에 실패했습니다.");
+      error.code = "AI_NOTE_NETWORK_ERROR";
+      throw error;
+    }
+
+    const raw = await response.text();
+    let payload = null;
+    try {
+      payload = raw ? JSON.parse(raw) : null;
+    } catch {}
+
+    if (!response.ok || !payload?.ok) {
+      const error = new Error(
+        payload?.message ||
+          "AI NOTE 서버가 JSON 응답을 주지 못했습니다. HTTP " +
+            response.status,
+      );
+      error.code =
+        payload?.code || "AI_NOTE_HTTP_" + String(response.status || 0);
+      error.detail = payload?.detail || raw.slice(0, 180);
       throw error;
     }
 
@@ -533,7 +590,8 @@
         status.textContent =
           "생성 실패: " +
           (error?.message || "알 수 없는 오류") +
-          (error?.code ? " (" + error.code + ")" : "");
+          (error?.code ? " (" + error.code + ")" : "") +
+          (error?.detail ? "\n" + error.detail : "");
       } finally {
         button.disabled = false;
         button.textContent = "AI 6개 NOTE 다시 생성하기";
