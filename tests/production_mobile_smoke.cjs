@@ -12,7 +12,7 @@ async function deployed(page) {
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
         globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.0.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.2.0' &&
-        globalThis.__UNNI_AI_NOTE_V4__?.version === '2.1.0' &&
+        globalThis.__UNNI_AI_NOTE_V4__?.version === '2.1.1' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
@@ -586,14 +586,46 @@ async function inspect(page, mode) {
       })
     );
 
-    await page.waitForFunction(
-      () =>
-        currentResultData?.__aiNoteV4?.version === '2.1.0' &&
-        Array.isArray(currentResultData?.__aiNoteV4?.notes) &&
-        currentResultData.__aiNoteV4.notes.length === 5 &&
-        currentResultData.__aiNoteV4.notes.every((n)=>n?.__aiTranslated === true),
-      null,
-      { timeout: 120000 }
+    let aiOutcome = null;
+    try {
+      const handle = await page.waitForFunction(
+        () => {
+          const ready =
+            currentResultData?.__aiNoteV4?.version === '2.1.1' &&
+            Array.isArray(currentResultData?.__aiNoteV4?.notes) &&
+            currentResultData.__aiNoteV4.notes.length === 5 &&
+            currentResultData.__aiNoteV4.notes.every((n)=>n?.__aiTranslated === true);
+          const status =
+            globalThis.__UNNI_AI_NOTE_V4__?.productionNoteStatus?.(currentResultData) || null;
+          if (ready) return { ready:true, status };
+          if (status?.lastError) {
+            return {
+              ready:false,
+              status,
+              precisionStatus:document.getElementById('aiNotePrecisionStatus')?.innerText||'',
+            };
+          }
+          return null;
+        },
+        null,
+        { timeout: 118000 }
+      );
+      aiOutcome = await handle.jsonValue();
+    } catch {
+      aiOutcome = await page.evaluate(()=>({
+        ready:false,
+        status:globalThis.__UNNI_AI_NOTE_V4__?.productionNoteStatus?.(currentResultData)||null,
+        precisionStatus:document.getElementById('aiNotePrecisionStatus')?.innerText||'',
+        runtimeVersion:globalThis.__UNNI_AI_NOTE_V4__?.version||'',
+        cachedVersion:currentResultData?.__aiNoteV4?.version||'',
+      }));
+    }
+    assert(
+      aiOutcome?.ready === true,
+      'live AI NOTE did not become ready '+JSON.stringify({
+        outcome:aiOutcome,
+        httpErrors:httpErrors.filter(x=>x.url.includes('/api/ai-notes')),
+      })
     );
     await page.waitForFunction(
       () => (document.getElementById('notesListContainer')?.innerText || '').includes('사주 근거'),
@@ -610,7 +642,7 @@ async function inspect(page, mode) {
       status:globalThis.__UNNI_AI_NOTE_V4__?.productionNoteStatus?.(currentResultData)||null,
     }));
     assert(
-      liveAi.version==='2.1.0' &&
+      liveAi.version==='2.1.1' &&
       liveAi.count===5 &&
       liveAi.translated &&
       liveAi.visibleText.includes('사주 근거'),

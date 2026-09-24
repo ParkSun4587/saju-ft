@@ -694,8 +694,8 @@ async function handlePost(context) {
   const baseRequestPayload = {
     model,
     store: false,
-    reasoning: { effort: "high" },
-    max_output_tokens: 10000,
+    reasoning: { effort: "medium" },
+    max_output_tokens: 6000,
     input: [
       {
         role: "system",
@@ -735,6 +735,8 @@ async function handlePost(context) {
     }
 
     let openaiResponse;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 52000);
     try {
       openaiResponse = await fetch("https://api.openai.com/v1/responses", {
         method: "POST",
@@ -743,16 +745,22 @@ async function handlePost(context) {
           authorization: "Bearer " + context.env.OPENAI_API_KEY,
         },
         body: JSON.stringify(requestPayload),
+        signal: controller.signal,
       });
-    } catch {
+    } catch (error) {
+      const timedOut = error?.name === "AbortError";
       return {
         ok: false,
-        response: reply(502, {
+        response: reply(timedOut ? 504 : 502, {
           ok: false,
-          code: "OPENAI_NETWORK_ERROR",
-          message: "OpenAI 연결에 실패했습니다.",
+          code: timedOut ? "OPENAI_TIMEOUT" : "OPENAI_NETWORK_ERROR",
+          message: timedOut
+            ? "OpenAI NOTE 생성이 너무 오래 걸려 이번 요청을 종료했습니다."
+            : "OpenAI 연결에 실패했습니다.",
         }),
       };
+    } finally {
+      clearTimeout(timeoutId);
     }
 
     let payload;
