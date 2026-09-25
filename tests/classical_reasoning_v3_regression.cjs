@@ -10,8 +10,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   page.on('console',m=>{ if(m.type()==='error') errors.push(m.text()); });
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load'});
   await page.waitForFunction(() =>
-    globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.0' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='5.3.0' &&
+    globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.0.0' &&
     typeof buildClassicalReasoningV1==='function'
   );
 
@@ -204,7 +204,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     };
   });
 
-  assert(r.versions.note==='5.3.0'&&r.versions.profile==='2.1.0'&&r.versions.reasoning==='2.1.0','v3 runtime versions missing');
+  assert(r.versions.note==='6.0.0'&&r.versions.profile==='2.1.0'&&r.versions.reasoning==='2.1.1','v3 runtime versions missing');
 
   const requiredKinds=['strength','root','flow','pressure'];
   for(const kind of requiredKinds){
@@ -213,7 +213,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   const bridgeFinding=r.runtimeIntegrity.bridgeChartKinds.find(x=>x.id==='DTS_BRIDGE_112');
   assert(bridgeFinding?.kind==='bridge','runtime bridge finding kind missing: '+JSON.stringify(r.runtimeIntegrity.bridgeChartKinds));
   assert(bridgeFinding?.facts?.bridge,'runtime bridge finding has no bridge facts: '+JSON.stringify(bridgeFinding));
-  assert(r.runtimeIntegrity.claims.length===5,'five-answer provenance map missing');
+  assert(r.runtimeIntegrity.claims.length===6,'NOTE1-6 provenance map missing');
   for(const claim of r.runtimeIntegrity.claims){
     assert(claim.ditianRuleIds.filter(Boolean).length>0,'answer '+claim.noteNum+': no valid Ditian provenance');
     assert(claim.zipingRuleIds.filter(Boolean).length>0,'answer '+claim.noteNum+': no valid Ziping provenance');

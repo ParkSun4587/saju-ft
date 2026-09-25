@@ -12,7 +12,7 @@ async function deployed(page) {
         const flow=document.getElementById('resultConsultationFlow');
         const core=document.getElementById('resultCoreCard');
         return globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
-          globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.3.0' &&
+          globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.0.0' &&
           globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.0' &&
           typeof selectSplitMode === 'function' &&
           flow && core &&
@@ -60,7 +60,7 @@ async function unlockForQa(page) {
     preview:!!document.getElementById('note2PreviewCard'),
     products:document.querySelectorAll('#unniProductLadder [data-unni-product]').length,
   }));
-  assert(state.notes===5 && !state.preview && state.products===4,
+  assert(state.notes===7 && !state.preview && state.products===4,
     'unlocked longshot state drift '+JSON.stringify(state));
 }
 

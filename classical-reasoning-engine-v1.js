@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION="2.1.0";
+  const VERSION="2.1.1";
   const ELEMENTS=["mok","hwa","to","geum","su"];
   const GAN_ELEMENT={甲:"mok",乙:"mok",丙:"hwa",丁:"hwa",戊:"to",己:"to",庚:"geum",辛:"geum",壬:"su",癸:"su"};
   const ELEMENT_KR={mok:"목",hwa:"화",to:"토",geum:"금",su:"수"};
@@ -821,7 +821,9 @@
     if(w?.endYmd)return w.endYmd;
     if(w?.endYear&&w?.endMonth&&w?.endDay)return `${String(w.endYear).padStart(4,"0")}-${String(w.endMonth).padStart(2,"0")}-${String(w.endDay).padStart(2,"0")}`;
     if(w?.endMonth&&w?.endDay){
-      const ey=Number(w.endMonth)<Number(w.startMonth||1)?Number(year)+1:Number(year);
+      // 丑월(1월 소한~)은 세운 연도의 다음 해에 시작한다. 끝나는 해는 시작일의 연도를 기준으로 잡아야 1월이 빠지지 않는다.
+      const sy=Number(String(w?.startYmd||"").slice(0,4))||Number(year);
+      const ey=Number(w.endMonth)<Number(w.startMonth||1)?sy+1:sy;
       return `${ey}-${String(w.endMonth).padStart(2,"0")}-${String(w.endDay).padStart(2,"0")}`;
     }
     return w?.startYmd||"";

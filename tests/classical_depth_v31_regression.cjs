@@ -12,8 +12,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.waitForFunction(() =>
     globalThis.__CLASSICAL_ENGINE_V2__?.version==='2.2.0' &&
     globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version==='2.1.0' &&
-    globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.0' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='5.3.0'
+    globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.0.0'
   );
 
   const r=await page.evaluate(()=>{
@@ -373,7 +373,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     };
   });
 
-  assert(r.versions.classical==='2.2.0'&&r.versions.integrated==='2.1.0'&&r.versions.reasoning==='2.1.0'&&r.versions.note==='5.3.0','depth runtime version mismatch');
+  assert(r.versions.classical==='2.2.0'&&r.versions.integrated==='2.1.0'&&r.versions.reasoning==='2.1.1'&&r.versions.note==='6.0.0','depth runtime version mismatch');
 
   assert(r.rawMonth.sameRaw,'same-visible-count month test setup drift');
   assert(r.rawMonth.monthA!==r.rawMonth.monthB,'month test must change month command');

@@ -21,7 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '5.3.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.0.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.0' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.1.0' &&
     typeof generateConcernNotes === 'function' &&
@@ -138,7 +138,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.5.1', 'paid value layer missing');
-  assert(qa.noteVersion.version === '5.3.0', 'NOTE v3 engine missing');
+  assert(qa.noteVersion.version === '6.0.0', 'NOTE v3 engine missing');
   assert(qa.productVersion.version === '2.3.0' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
@@ -157,10 +157,10 @@ function norm(v) {
 
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
-    assert(row.notes.length === 5, `${row.concern}/${row.situation}/${row.mode}: answer count ${row.notes.length}`);
-    assert(row.notes.map(n=>n.badge).join('|') === '핵심|실제 장면|잘 맞는 조건|거를 신호|가까운 흐름',
-      `${row.concern}/${row.situation}/${row.mode}: five-answer roles drift ${JSON.stringify(row.notes.map(n=>n.badge))}`);
-    assert(row.noteAudit?.version === '5.3.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
+    assert(row.notes.length === 7, `${row.concern}/${row.situation}/${row.mode}: answer count ${row.notes.length}`);
+    assert(row.notes.map(n=>n.badge).join('|') === '핵심|진짜 원인|푸는 법|잘 맞는 것|가까운 흐름|조심할 것|이번 주 할 것',
+      `${row.concern}/${row.situation}/${row.mode}: seven-answer roles drift ${JSON.stringify(row.notes.map(n=>n.badge))}`);
+    assert(row.noteAudit?.version === '6.0.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
       `${row.concern}/${row.situation}/${row.mode}: full-evidence audit missing`);
     assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
     assert(row.noteAudit?.genericSituationDependency === false && row.noteAudit?.behaviorTemplateDependency === false &&
@@ -168,12 +168,12 @@ function norm(v) {
       `${row.concern}/${row.situation}/${row.mode}: concern selection is still inventing behavior`);
     assert(row.noteAudit?.evidenceCoverage?.coverageRate === 1 && row.noteAudit?.evidenceCoverage?.missingRuleIds?.length === 0,
       `${row.concern}/${row.situation}/${row.mode}: supported evidence dropped ${JSON.stringify(row.noteAudit?.evidenceCoverage)}`);
-    assert(row.noteAudit?.semanticCoverage?.coverageRate === 1 && row.noteAudit?.semanticCoverage?.noteCountWithFacts === 5,
+    assert(row.noteAudit?.semanticCoverage?.coverageRate === 1 && row.noteAudit?.semanticCoverage?.noteCountWithFacts === 7,
       `${row.concern}/${row.situation}/${row.mode}: semantic personalization facts did not reach every answer ${JSON.stringify(row.noteAudit?.semanticCoverage)}`);
-    assert(Array.isArray(row.noteAudit?.noteEvidence) && row.noteAudit.noteEvidence.length === 5,
+    assert(Array.isArray(row.noteAudit?.noteEvidence) && row.noteAudit.noteEvidence.length === 7,
       `${row.concern}/${row.situation}/${row.mode}: note evidence plan missing`);
     assert(Array.isArray(row.noteAudit?.claims) && row.noteAudit.claims.length === 6, `${row.concern}/${row.situation}/${row.mode}: six internal causal claims missing`);
-    assert(Array.isArray(row.noteAudit?.outputClaimMap) && row.noteAudit.outputClaimMap.length === 5,
+    assert(Array.isArray(row.noteAudit?.outputClaimMap) && row.noteAudit.outputClaimMap.length === 6,
       `${row.concern}/${row.situation}/${row.mode}: rendered claim map missing`);
     for (const link of row.noteAudit.outputClaimMap) {
       const claim=row.noteAudit.claims[link.claimNum-1];
@@ -192,8 +192,8 @@ function norm(v) {
     }
     const n2=String(row.notes[1]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
     const n2Facts=row.noteAudit?.semanticEvidence?.find(x=>x.noteNum===2)?.facts||{};
-    assert(n2.includes('결론') && /반복이 갈리는 첫 지점|네 반복은 마지막 결과보다/.test(n2) &&
-      (n2Facts.pressureGroup || n2Facts.blockedAt || n2Facts.structurePath || n2Facts.situationGod),
+    assert(n2.includes('결론') && /(왜 그러냐면|근거) — 네 사주에서 가장 큰 힘은/.test(n2) &&
+      n2Facts.causeGroup && (n2Facts.pressureGroup || n2Facts.blockedAt || n2Facts.structurePath || n2Facts.situationGod),
       `${row.concern}/${row.situation}/${row.mode}: chart-derived pattern explanation missing`);
     const timing=row.notes[4]?.timing;
     assert(timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: timing metadata missing`);
@@ -209,7 +209,7 @@ function norm(v) {
     assert(!/(작동 방식|압력군|과부하 후보|\b(mok|hwa|geum|officer|wealth|output)\b)/.test(row.allText),
       `${row.concern}/${row.situation}/${row.mode}: engine-internal wording leaked into NOTE`);
     const note1=String(row.notes[0]?.desc||'').replace(/<[^>]+>/g,' ');
-    assert(/일주 [가-힣]{2}의 윗글자/.test(note1) && /(비견|겁재|식신|상관|정재|편재|정관|편관|정인|편인)\(/.test(note1),
+    assert(/일주 [가-힣]{2}의 윗글자/.test(note1) && /(비견|겁재|식신|상관|정재|편재|정관|편관|정인|편인)\(/.test(note1) && /[가-힣]{2}일주/.test(row.notes[0]?.title||''),
       `${row.concern}/${row.situation}/${row.mode}: core answer must name the day pillar and a ten-god with its meaning`);
   }
 
@@ -474,21 +474,21 @@ function norm(v) {
     assert(!ui.previewVisible && !ui.paywallVisible, 'free-launch mode must keep the basic lock UI hidden');
   } else {
     assert(!ui.lockedCatalog, 'premium upsells must not appear before the basic unlock');
-    assert(ui.previewPlain && ui.previewPlain.includes('2/5') && ui.previewPlain.includes('실제 장면'), 'second-answer teaser missing before paywall');
+    assert(ui.previewPlain && ui.previewPlain.includes('2/7') && ui.previewPlain.includes('진짜 원인'), 'second-answer teaser missing before paywall');
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length,
       `second-answer teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-    assert(ui.fPaywallText.includes('로아 언니 · 이제 너한테 맞는 쪽을 보자') && ui.fPaywallText.includes('맞는 조건') && ui.fPaywallText.includes('100원'),
+    assert(ui.fPaywallText.includes('로아 언니 · 이제 너한테 맞는 쪽을 보자') && ui.fPaywallText.includes('진짜 원인') && ui.fPaywallText.includes('100원'),
       `F conversion handoff missing: ${ui.fPaywallText}`);
-    assert(ui.tPaywallText.includes('서아 언니 · 이제 구체적인 답만 보면 돼') && ui.tPaywallText.includes('거를 신호') && ui.tPaywallText.includes('100원'),
+    assert(ui.tPaywallText.includes('서아 언니 · 이제 구체적인 답만 보면 돼') && ui.tPaywallText.includes('푸는 법') && ui.tPaywallText.includes('100원'),
       `T conversion handoff missing: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three concrete benefits: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
     assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser,
       `locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
-    assert(ui.fPaywallText.includes('맞는 조건 · 거를 신호 · 가까운 흐름까지') && ui.tPaywallText.includes('맞는 조건 · 거를 신호 · 가까운 흐름까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText),
+    assert(ui.fPaywallText.includes('진짜 원인 · 푸는 법 · 올해 흐름까지') && ui.tPaywallText.includes('진짜 원인 · 푸는 법 · 올해 흐름까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText),
       'basic unlock scope or stale sale copy drift');
   }
-  assert(ui.unlockedNoteCards === 5 && !ui.previewAfterUnlock,
-    `unlock must replace teaser with all five full answers: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
+  assert(ui.unlockedNoteCards === 7 && !ui.previewAfterUnlock,
+    `unlock must replace teaser with all seven full answers: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3 && !ui.otherToggle && ui.otherVisible, `premium catalog should show all four products immediately: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherVisible:ui.otherVisible})}`);
@@ -515,7 +515,7 @@ function norm(v) {
   assert(ui.fOheng.includes('겉으로 가장 많이 보여') && ui.fOheng.includes('눈에 보이는 오행 분포') && ui.fOheng.includes('계절·뿌리·위치') && ui.fOheng.includes('지금 네 고민에 필요한 얘기만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.fOheng) && !/\d+%/.test(ui.fOheng) && ui.fOheng.length <= 260, `F five-element bridge wording drift: ${ui.fOheng}`);
   assert(ui.tOheng.includes('비중이 가장 커') && ui.tOheng.includes('계절·뿌리·위치') && ui.tOheng.includes('지금 네 고민에 맞는 말로만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.tOheng) && !/\d+%/.test(ui.tOheng) && ui.tOheng.length <= 235, `T five-element bridge wording drift: ${ui.tOheng}`);
   assert(await page.locator('#sisterSwitchCard').count() === 0, 'bottom F/T mode-switch CTA must be removed');
-  assert(ui.noteBadges.join('|')==='핵심|실제 장면|잘 맞는 조건|거를 신호|가까운 흐름',
+  assert(ui.noteBadges.join('|')==='핵심|진짜 원인|푸는 법|잘 맞는 것|가까운 흐름|조심할 것|이번 주 할 것',
     `five-answer badges drift: ${JSON.stringify(ui.noteBadges)}`);
   assert(ui.share.version === '5', `story card version ${ui.share.version}`);
   assert(ui.share.text.includes('사주 성향을 MBTI로 번역하면') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('너는 뭐 나왔어?') && ui.share.text.includes('나도 내 결과 보기') && ui.share.text.includes('sajuft.com'), 'story card viral/share copy missing');
@@ -1014,7 +1014,7 @@ function norm(v) {
   await page.locator('#unniProductAction').click();
   modal = await page.locator('#unniProductModal').innerText();
   const bundleArticles = await page.locator('#unniProductBody article').count();
-  assert(bundleArticles === 15, `bundle3 five-answer card count ${bundleArticles}`);
+  assert(bundleArticles === 21, `bundle3 seven-answer card count ${bundleArticles}`);
   assert(await page.locator('#unniProductBody [data-product-exclusive="concern_bundle3"]').count()===1,'bundle3 shared-structure exclusive block missing');
   assert(await page.locator('#unniProductBody [data-export-kind="full"]').count()===0,'bundle3 leaked full_saju chapters');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'bundle3 full-report save missing');
@@ -1057,7 +1057,7 @@ function norm(v) {
   modal = await page.locator('#unniProductModal').innerText();
   for (const label of ['돈·재물','학업·직장','연애·썸','진로·적성','사람·관계','마음·스트레스']) assert(modal.includes(label), `all-in-one missing ${label}`);
   const allInOneArticles = await page.locator('#unniProductBody article').count();
-  assert(allInOneArticles === 30, `all-in-one five-answer card count ${allInOneArticles}`);
+  assert(allInOneArticles === 42, `all-in-one seven-answer card count ${allInOneArticles}`);
   assert(await page.locator('#unniProductBody [data-product-exclusive="all_in_one"]').count()===1,'all-in-one cross-domain exclusive block missing');
   assert(!modal.includes('마음·스트레스은') && modal.includes('이 6개 고민은 서로 다른 문제처럼 보여도'), 'all-in-one dynamic domain join is unnatural');
   assert(await page.locator('#unniProductBody [data-export-compat-timing]').count()===0,'all-in-one must not include compatibility timeline');
@@ -1082,8 +1082,8 @@ function norm(v) {
   const html = fs.readFileSync('index.html','utf8');
   const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.1'), 'paid value script include missing');
-  assert(html.includes('./concern-note-engine-v2.js?v=5.3.0'), 'five-answer NOTE script include missing');
-  assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.0'), 'full-evidence reasoning script include missing');
+  assert(html.includes('./concern-note-engine-v2.js?v=6.0.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'seven-answer NOTE / saju signal script include missing');
+  assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.1'), 'full-evidence reasoning script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.0'), 'entitlement/product script include missing');
   assert(
@@ -1258,15 +1258,17 @@ function norm(v) {
   );
   assert(html.includes('BIRTH_TIME_BRANCHES') && html.includes('BIRTH_TIME_BRANCH_LABELS'), 'branch-time parsing/restore support missing');
   assert(
-    html.includes('맞는 조건 · 거를 신호 · 가까운 흐름까지') &&
+    html.includes('진짜 원인 · 푸는 법 · 올해 흐름까지') &&
     html.includes('"01": { label:"핵심"') &&
-    html.includes('"02": { label:"실제 장면"') &&
-    html.includes('"03": { label:"잘 맞는 조건"') &&
-    html.includes('"04": { label:"거를 신호"') &&
+    html.includes('"02": { label:"진짜 원인"') &&
+    html.includes('"03": { label:"푸는 법"') &&
+    html.includes('"04": { label:"잘 맞는 것"') &&
     html.includes('"05": { label:"가까운 흐름"') &&
+    html.includes('"06": { label:"조심할 것"') &&
+    html.includes('"07": { label:"이번 주 할 것"') &&
     html.includes('지금 네 고민에서 보이는 것') &&
     !/비밀\s*메모|NOTE2 다음부터 NOTE6까지|실전 룰|반복 패턴/.test(html),
-    'five-answer consultation/paywall contract drift'
+    'seven-answer consultation/paywall contract drift'
   );
   assert(html.includes('analysisErrorText(') && !html.includes('calcErr.message || {'), 'raw analysis-engine errors can still leak into user copy');
   assert(

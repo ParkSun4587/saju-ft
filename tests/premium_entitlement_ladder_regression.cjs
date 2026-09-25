@@ -266,7 +266,7 @@ function loadServer(){
   assert(report.annualYears.length===5&&report.annualYears.every(y=>report.section11.includes(String(y))),'full_saju five-year section not sourced from classical timing '+JSON.stringify(report.annualYears));
   assert(!report.section10.includes(report.before.timingAnswer)&&report.section10!==report.before.timingAnswer,'full_saju near-term copied the basic timing answer verbatim');
   assert(report.before.fp===report.after.fp&&JSON.stringify(report.before.claims)===JSON.stringify(report.after.claims),'premium rendering changed classical reasoning');
-  assert(report.all.fullSections===12&&report.all.notes===30&&report.all.common===1&&report.all.timing===1&&report.all.strategy===1,'all_in_one is not full_saju + six five-answer concerns + synthesis '+JSON.stringify(report.all));
+  assert(report.all.fullSections===12&&report.all.notes===42&&report.all.common===1&&report.all.timing===1&&report.all.strategy===1,'all_in_one is not full_saju + six seven-answer concerns + synthesis '+JSON.stringify(report.all));
   assert(report.all.compat===0,'all_in_one contains compatibility data');
   assert(report.graph.allFull&&report.graph.allBundle&&!report.graph.allCompat,'client entitlement graph invalid');
   assert(JSON.stringify([report.graph.none,report.graph.full,report.graph.bundle,report.graph.both,report.graph.compat])===JSON.stringify([100,100,100,100,100]),'client upgrade quotes drift '+JSON.stringify(report.graph));
