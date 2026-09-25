@@ -21,8 +21,8 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.1.0' &&
-    globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.1.1' &&
+    globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.1.0' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
@@ -138,8 +138,8 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.5.1', 'paid value layer missing');
-  assert(qa.noteVersion.version === '6.1.0', 'NOTE v3 engine missing');
-  assert(qa.productVersion.version === '2.3.0' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
+  assert(qa.noteVersion.version === '6.1.1', 'NOTE v3 engine missing');
+  assert(qa.productVersion.version === '2.3.1' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
   const expectedPrices = { concern_bundle3:100, full_saju:100, compatibility:100, all_in_one:100 };
@@ -160,7 +160,7 @@ function norm(v) {
     assert(row.notes.length === 7, `${row.concern}/${row.situation}/${row.mode}: answer count ${row.notes.length}`);
     assert(row.notes.map(n=>n.badge).join('|') === '핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것|이번 주 할 것',
       `${row.concern}/${row.situation}/${row.mode}: seven-answer roles drift ${JSON.stringify(row.notes.map(n=>n.badge))}`);
-    assert(row.noteAudit?.version === '6.1.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
+    assert(row.noteAudit?.version === '6.1.1' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
       `${row.concern}/${row.situation}/${row.mode}: full-evidence audit missing`);
     assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
     assert(row.noteAudit?.genericSituationDependency === false && row.noteAudit?.behaviorTemplateDependency === false &&
@@ -1082,10 +1082,10 @@ function norm(v) {
   const html = fs.readFileSync('index.html','utf8');
   const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.1'), 'paid value script include missing');
-  assert(html.includes('./concern-note-engine-v2.js?v=6.1.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'seven-answer NOTE / saju signal script include missing');
+  assert(html.includes('./concern-note-engine-v2.js?v=6.1.1') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'seven-answer NOTE / saju signal script include missing');
   assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.1'), 'full-evidence reasoning script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
-  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.0'), 'entitlement/product script include missing');
+  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.1'), 'entitlement/product script include missing');
   assert(
     html.includes('function hasStoredAllInOneGrant()') &&
     html.includes('checkAllConcernsEntitlement(data, version)') &&

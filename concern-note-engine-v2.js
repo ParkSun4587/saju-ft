@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "6.1.0";
+  const VERSION = "6.1.1";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   function hasBatchim(value) {
@@ -638,8 +638,10 @@
     const dm=dayMasterName(reasoning);
     const group=groupOfElement(dayElementOf(reasoning),el);
     const helps=st.deukryeong?.active===true;
-    return "태어난 달("+pillarName(reasoning,"month")+"의 "+ZHI_KR[monthZhi]+")의 중심 기운은 "+EL_KR[el]+"이고, "+
-      dm+"에게 "+EL_KR[el]+josaSuffix(EL_KR[el],"은","는")+" "+groupLabelJ(group,"이라","라")+" 계절이 너를 "+
+    const month=pillarName(reasoning,"month");
+    const plainEl=EL_PLAIN[el]||EL_KR[el];
+    return "태어난 달은 "+withJosa(month,"이고","고")+", 그 아랫글자 "+ZHI_KR[monthZhi]+"의 중심 기운은 "+withJosa(plainEl,"이야","야")+". "+
+      dm+"에게 "+plainEl+" 기운은 "+(GROUP_NAME[group]?GROUP_NAME[group]+", 곧 "+GROUP_MEANING[group]+" 쪽이라":"여러 힘이 섞인 쪽이라")+" 계절이 너를 "+
       (helps?"돕는 쪽이야.":"직접 돕지는 않아.");
   }
   function rootSentence(reasoning){
@@ -858,7 +860,7 @@
     if(clash?.aPos&&clash?.bPos){
       const monthOrDay=[clash.aPos,clash.bPos].some(x=>x==="month"||x==="day");
       const a=ZHI_KR[clash.aZhi]||"", b=ZHI_KR[clash.bZhi]||"";
-      return pillarName(reasoning,clash.aPos)+"의 "+a+josaSuffix(a,"과","와")+" "+pillarName(reasoning,clash.bPos)+"의 "+b+josaSuffix(b,"이","가")+" 정면으로 부딪히는 관계(충)라, "+
+      return pillarName(reasoning,clash.aPos)+"의 "+a+josaSuffix(a,"과","와")+" "+pillarName(reasoning,clash.bPos)+"의 "+b+josaSuffix(b,"이","가")+" 정면으로 부딪히는 충 관계라, "+
         (monthOrDay?"생활의 중심이 흔들리는 선택은 체감이 더 커.":"한쪽을 세게 밀면 다른 쪽이 흔들릴 수 있어.");
     }
     const other=[
@@ -869,7 +871,7 @@
     if(other.length){
       const x=other[0];
       const a=ZHI_KR[x.aZhi]||"", b=ZHI_KR[x.bZhi]||"";
-      return pillarName(reasoning,x.aPos)+"의 "+a+josaSuffix(a,"과","와")+" "+pillarName(reasoning,x.bPos)+"의 "+b+"처럼 아랫글자끼리 불편하게 걸리는 관계("+x.label+")도 있지만, 이것만으로 나쁘다고 보지 않고 다른 힘과 같이 봐.";
+      return pillarName(reasoning,x.aPos)+"의 "+a+josaSuffix(a,"과","와")+" "+pillarName(reasoning,x.bPos)+"의 "+b+"처럼 아랫글자끼리 불편하게 걸리는 "+x.label+" 관계도 있지만, 이것만으로 나쁘다고 보지 않고 다른 힘과 같이 봐.";
     }
     return "";
   }
@@ -1654,7 +1656,7 @@
       : "이 성향이 ‘"+s.label+"’ 고민에서 제일 먼저 드러나. 바로 다음에서 진짜 이유를 볼게.";
     const partner=top?godRows(reasoning).find(r=>r.group===top.group&&r.god!==top.god):null;
     const details=detailsBlock([
-      top?"가장 큰 힘: "+top.god+" — "+godPlaces(reasoning,top.god,2)+"에 있고 "+godShare(reasoning,top.god)+"%"+(partner?", "+GROUP_GODS[top.group]+"를 합친 "+GROUP_NAME[top.group]+"은 "+groupShare(reasoning,top.group)+"%":"")+".":"",
+      top?"가장 큰 힘: "+top.god+" — "+godPlaces(reasoning,top.god,2)+"에 있고 "+godShare(reasoning,top.god)+"%"+(partner?", "+withJosa(GROUP_GODS[top.group],"을","를")+" 합친 "+GROUP_NAME[top.group]+"은 "+groupShare(reasoning,top.group)+"%":"")+".":"",
       sig?.dayStage?"일주의 12운성: "+sig.dayStage+" — "+sig.dayStageScene:"",
       (sig?.sinsal||[]).length?"신살: "+sinsalList(sig)+".":"",
       centerSentence(reasoning),
@@ -2395,7 +2397,13 @@
   }
 
   // 유료 상품(전체판·궁합 등)이 NOTE와 같은 사주 사실·장면 문장을 쓰도록 한 사람 분의 사실 묶음을 만든다.
+  // 유료상품 문장도 NOTE처럼 괄호 뜻풀이 없이 쓴다. 뜻이 필요한 곳은 상품 쪽에서 "~을 뜻하는 정관"처럼 문장으로 풀어 쓴다.
   function chartFactsForData(data){
+    const prev=PLAIN_LABELS;
+    PLAIN_LABELS=true;
+    try { return chartFactsPlain(data); } finally { PLAIN_LABELS=prev; }
+  }
+  function chartFactsPlain(data){
     let reasoning=data?.noteDiagnosisV2?.reasoning||null;
     if(!reasoning&&typeof global.buildClassicalReasoningV1==="function"){
       try{ reasoning=global.buildClassicalReasoningV1(data||{}); }catch(_){ reasoning=null; }
@@ -2452,11 +2460,12 @@
       presentGods:[...present],
       concernLine:(concern,group)=>plainSentence(CONCERN_GROUP_LINES[concern]?.[group||pressure]||CONCERN_GROUP_LINES[concern]?.unknown||""),
       fitScene:(god)=>FIT_SCENE[god]||"",
-      godLabel:(god)=>godLabel(god),
+      godLabel:(god)=>String(god||""),
+      godMeaning:(god)=>GOD_MEANING[god]||"",
       godPlaces:(god)=>godPlaces(reasoning,god,1),
       godShare:(god)=>godShare(reasoning,god),
       groupName:(group)=>GROUP_NAME[group]||"",
-      groupLabel:(group)=>groupLabel(group),
+      groupLabel:(group)=>GROUP_NAME[group]||"여러 힘",
       groupMeaning:(group)=>GROUP_MEANING[group]||"",
       formatMonth:(row)=>formatMonth(row,reasoning.timing?.today||""),
       monthReason:(row,positive)=>monthReason(reasoning,row,positive),
