@@ -101,6 +101,9 @@ function norm(v) {
             notes:notes.map(n=>({
               badge:n.badge||'', title:n.title||'', desc:n.desc||'', checklist:n.checklist||'',
               timing:n.__timingQA||null,
+              __claim:n.__claim||null,
+              __interpretationEvidenceIds:n.__interpretationEvidenceIds||[],
+              __counterEvidenceIds:n.__counterEvidenceIds||[],
             })),
             audit,
             finalAudit:data.paidValueAudit||null,
