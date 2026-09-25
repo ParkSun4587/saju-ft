@@ -627,7 +627,7 @@ async function inspect(page, mode) {
     !engineNotes.precisionStatus &&
     engineNotes.autoAi===false &&
     engineNotes.visibleText.includes('결론') &&
-    /일주 [가-힣]{2}/.test(engineNotes.visibleText) &&
+    /[가-힣]{2}일주|일주 [가-힣]{2}/.test(engineNotes.visibleText) &&
     !/작동 방식|압력군|과부하 후보/.test(engineNotes.visibleText),
     'result NOTE must come from the saju engine without an automatic AI NOTE call '+JSON.stringify({
       aiNoteRequests,
