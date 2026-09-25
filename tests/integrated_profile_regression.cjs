@@ -110,7 +110,7 @@ function norm(v) {
   assert(result.exactProfile.fingerprint !== result.otherProfile.fingerprint, 'different charts share integrated fingerprint');
 
   assert(result.rows.length === 24, 'expected 24 situation rows, got '+result.rows.length);
-  const jargon=/(신강|신약|중화|격국|용신|상신|기신|지장간|월령|조후|통관|사령|원국|대운|세운|월운)/;
+  const jargon=/(priorityScore|pressureGroup|zipingState|rootQuality|neededGroups|structuralSupportGods|structuralHarmGods|작동 방식|압력군|과부하 후보)/;
 
   for (const row of result.rows) {
     assert(row.diagF.structureFingerprint === row.diagT.structureFingerprint,
