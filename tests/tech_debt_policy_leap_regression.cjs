@@ -13,7 +13,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load',timeout:60000});
   await page.waitForFunction(()=>(
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.3.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.4.0' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version==='2.3.1'
   ),null,{timeout:60000});
@@ -117,8 +117,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           d.__testNowYmd='2026-09-20';
           d.concernKey=concern; d.concernSituation=key; d.currentMode=mode;
           const notes=generateConcernNotes(d,mode);
-          if(notes.length!==7) failures.push(concern+'/'+key+'/'+mode+': answer count '+notes.length);
-          if(notes.map(n=>n.badge).join('|')!=='핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것|이번 주 할 것') failures.push(concern+'/'+key+'/'+mode+': answer roles drift');
+          if(notes.length!==6) failures.push(concern+'/'+key+'/'+mode+': answer count '+notes.length);
+          if(notes.map(n=>n.badge).join('|')!=='핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것') failures.push(concern+'/'+key+'/'+mode+': answer roles drift');
           if(!plain(notes[0]?.desc).includes(label)||!/[가-힣]{2}일주/.test(String(notes[0]?.title||''))) failures.push(concern+'/'+key+'/'+mode+': first answer lost day-pillar title or selected label');
           const visible=notes.map(n=>plain([n?.badge,n?.title,n?.desc,n?.checklist].join(' '))).join(' ');
           if(/\bundefined\b|\bnull\b|NaN/.test(visible)) failures.push(concern+'/'+key+'/'+mode+': undefined/null leaked');
@@ -150,9 +150,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     return {routeCount,answerChecks,signatureCount:signatures.size,concernKeys:Object.keys(ui),failures};
   });
   assert(copyQa.routeCount===24,'expected all 24 current concern/situation routes, got '+copyQa.routeCount);
-  assert(copyQa.answerChecks===24*2*7,'expected 24 situations × F/T × seven answers, got '+copyQa.answerChecks);
+  assert(copyQa.answerChecks===24*2*6,'expected 24 situations × F/T × six answers, got '+copyQa.answerChecks);
   assert(copyQa.signatureCount===48,'all 24 paths × F/T should keep distinct rendered signatures');
-  assert(copyQa.failures.length===0,'seven-answer route regression: '+copyQa.failures.join(' | '));
+  assert(copyQa.failures.length===0,'six-answer route regression: '+copyQa.failures.join(' | '));
 
 
   async function mockedTiming(ymd){

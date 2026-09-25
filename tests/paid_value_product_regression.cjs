@@ -21,7 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.3' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.3.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.4.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.1.0' &&
     typeof generateConcernNotes === 'function' &&
@@ -138,7 +138,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.5.3', 'paid value layer missing');
-  assert(qa.noteVersion.version === '6.3.0', 'NOTE v3 engine missing');
+  assert(qa.noteVersion.version === '6.4.0', 'NOTE v3 engine missing');
   assert(qa.productVersion.version === '2.3.1' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
@@ -157,10 +157,10 @@ function norm(v) {
 
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
-    assert(row.notes.length === 7, `${row.concern}/${row.situation}/${row.mode}: answer count ${row.notes.length}`);
-    assert(row.notes.map(n=>n.badge).join('|') === '핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것|이번 주 할 것',
-      `${row.concern}/${row.situation}/${row.mode}: seven-answer roles drift ${JSON.stringify(row.notes.map(n=>n.badge))}`);
-    assert(row.noteAudit?.version === '6.3.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
+    assert(row.notes.length === 6, `${row.concern}/${row.situation}/${row.mode}: answer count ${row.notes.length}`);
+    assert(row.notes.map(n=>n.badge).join('|') === '핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것',
+      `${row.concern}/${row.situation}/${row.mode}: six-answer roles drift ${JSON.stringify(row.notes.map(n=>n.badge))}`);
+    assert(row.noteAudit?.version === '6.4.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
       `${row.concern}/${row.situation}/${row.mode}: full-evidence audit missing`);
     assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
     assert(row.noteAudit?.genericSituationDependency === false && row.noteAudit?.behaviorTemplateDependency === false &&
@@ -168,9 +168,9 @@ function norm(v) {
       `${row.concern}/${row.situation}/${row.mode}: concern selection is still inventing behavior`);
     assert(row.noteAudit?.evidenceCoverage?.coverageRate === 1 && row.noteAudit?.evidenceCoverage?.missingRuleIds?.length === 0,
       `${row.concern}/${row.situation}/${row.mode}: supported evidence dropped ${JSON.stringify(row.noteAudit?.evidenceCoverage)}`);
-    assert(row.noteAudit?.semanticCoverage?.coverageRate === 1 && row.noteAudit?.semanticCoverage?.noteCountWithFacts === 7,
+    assert(row.noteAudit?.semanticCoverage?.coverageRate === 1 && row.noteAudit?.semanticCoverage?.noteCountWithFacts === 6,
       `${row.concern}/${row.situation}/${row.mode}: semantic personalization facts did not reach every answer ${JSON.stringify(row.noteAudit?.semanticCoverage)}`);
-    assert(Array.isArray(row.noteAudit?.noteEvidence) && row.noteAudit.noteEvidence.length === 7,
+    assert(Array.isArray(row.noteAudit?.noteEvidence) && row.noteAudit.noteEvidence.length === 6,
       `${row.concern}/${row.situation}/${row.mode}: note evidence plan missing`);
     assert(Array.isArray(row.noteAudit?.claims) && row.noteAudit.claims.length === 6, `${row.concern}/${row.situation}/${row.mode}: six internal causal claims missing`);
     assert(Array.isArray(row.noteAudit?.outputClaimMap) && row.noteAudit.outputClaimMap.length === 6,
@@ -476,7 +476,7 @@ function norm(v) {
     assert(!ui.previewVisible && !ui.paywallVisible, 'free-launch mode must keep the basic lock UI hidden');
   } else {
     assert(!ui.lockedCatalog, 'premium upsells must not appear before the basic unlock');
-    assert(ui.previewPlain && ui.previewPlain.includes('2/7'), 'second-answer teaser missing before paywall');
+    assert(ui.previewPlain && ui.previewPlain.includes('2/6'), 'second-answer teaser missing before paywall');
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length,
       `second-answer teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
     assert(ui.fPaywallText.includes('로아 언니 · 이제 너한테 맞는 쪽을 보자') && ui.fPaywallText.includes('질문에 대한 답') && ui.fPaywallText.includes('100원'),
@@ -489,8 +489,8 @@ function norm(v) {
     assert(ui.fPaywallText.includes('질문에 대한 답 · 이유 · 방법까지') && ui.tPaywallText.includes('질문에 대한 답 · 이유 · 방법까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText),
       'basic unlock scope or stale sale copy drift');
   }
-  assert(ui.unlockedNoteCards === 7 && !ui.previewAfterUnlock,
-    `unlock must replace teaser with all seven full answers: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
+  assert(ui.unlockedNoteCards === 6 && !ui.previewAfterUnlock,
+    `unlock must replace teaser with all six full answers: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3 && !ui.otherToggle && ui.otherVisible, `premium catalog should show all four products immediately: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherVisible:ui.otherVisible})}`);
@@ -517,9 +517,9 @@ function norm(v) {
   assert(ui.fOheng.includes('겉으로 가장 많이 보여') && ui.fOheng.includes('눈에 보이는 오행 분포') && ui.fOheng.includes('계절·뿌리·위치') && ui.fOheng.includes('지금 네 고민에 필요한 얘기만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.fOheng) && !/\d+%/.test(ui.fOheng) && ui.fOheng.length <= 260, `F five-element bridge wording drift: ${ui.fOheng}`);
   assert(ui.tOheng.includes('비중이 가장 커') && ui.tOheng.includes('계절·뿌리·위치') && ui.tOheng.includes('지금 네 고민에 맞는 말로만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.tOheng) && !/\d+%/.test(ui.tOheng) && ui.tOheng.length <= 235, `T five-element bridge wording drift: ${ui.tOheng}`);
   assert(await page.locator('#sisterSwitchCard').count() === 0, 'bottom F/T mode-switch CTA must be removed');
-  assert(ui.noteBadges.join('|')==='핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것|이번 주 할 것',
+  assert(ui.noteBadges.join('|')==='핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것',
     `five-answer badges drift: ${JSON.stringify(ui.noteBadges)}`);
-  assert(ui.noteRoleLabelCount===0 && ui.noteTitles.length===7 && ui.noteTitles.every(Boolean),
+  assert(ui.noteRoleLabelCount===0 && ui.noteTitles.length===6 && ui.noteTitles.every(Boolean),
     `dynamic NOTE titles must replace tiny role labels: ${JSON.stringify(ui.noteTitles)}`);
   assert(ui.share.version === '5', `story card version ${ui.share.version}`);
   assert(ui.share.text.includes('사주 성향을 MBTI로 번역하면') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('너는 뭐 나왔어?') && ui.share.text.includes('나도 내 결과 보기') && ui.share.text.includes('sajuft.com'), 'story card viral/share copy missing');
@@ -809,8 +809,8 @@ function norm(v) {
          JSON.stringify(ftScreen.f.claims)===JSON.stringify(ftScreen.t.claims),
     'final F/T screen comparison changed factual judgment');
   assert(ftScreen.f.notes!==ftScreen.t.notes &&
-         ftScreen.f.notes.includes('1/7') &&
-         ftScreen.t.notes.includes('1/7') &&
+         ftScreen.f.notes.includes('1/6') &&
+         ftScreen.t.notes.includes('1/6') &&
          !ftScreen.f.notes.includes('실전 룰') &&
          !ftScreen.t.notes.includes('실전 룰') &&
          ftScreen.f.greeting.includes('언니가 보니까') &&
@@ -1018,7 +1018,7 @@ function norm(v) {
   await page.locator('#unniProductAction').click();
   modal = await page.locator('#unniProductModal').innerText();
   const bundleArticles = await page.locator('#unniProductBody article').count();
-  assert(bundleArticles === 21, `bundle3 seven-answer card count ${bundleArticles}`);
+  assert(bundleArticles === 18, `bundle3 six-answer card count ${bundleArticles}`);
   assert(await page.locator('#unniProductBody [data-product-exclusive="concern_bundle3"]').count()===1,'bundle3 shared-structure exclusive block missing');
   assert(await page.locator('#unniProductBody [data-export-kind="full"]').count()===0,'bundle3 leaked full_saju chapters');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'bundle3 full-report save missing');
@@ -1061,7 +1061,7 @@ function norm(v) {
   modal = await page.locator('#unniProductModal').innerText();
   for (const label of ['돈·재물','학업·직장','연애·썸','진로·적성','사람·관계','마음·스트레스']) assert(modal.includes(label), `all-in-one missing ${label}`);
   const allInOneArticles = await page.locator('#unniProductBody article').count();
-  assert(allInOneArticles === 42, `all-in-one seven-answer card count ${allInOneArticles}`);
+  assert(allInOneArticles === 36, `all-in-one six-answer card count ${allInOneArticles}`);
   assert(await page.locator('#unniProductBody [data-product-exclusive="all_in_one"]').count()===1,'all-in-one cross-domain exclusive block missing');
   assert(!modal.includes('마음·스트레스은') && modal.includes('이 6개 고민은 서로 다른 문제처럼 보여도'), 'all-in-one dynamic domain join is unnatural');
   assert(await page.locator('#unniProductBody [data-export-compat-timing]').count()===0,'all-in-one must not include compatibility timeline');
@@ -1090,7 +1090,7 @@ function norm(v) {
   assert(aiServer.includes('OPENAI_AI_NOTE_TEST_ENABLED') && aiServer.includes('AI_NOTE_TEST_DISABLED') && aiClient.includes('payload.testEnabled'),
     'AI NOTE paid-call server lock missing');
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.3'), 'paid value script include missing');
-  assert(html.includes('./concern-note-engine-v2.js?v=6.3.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'seven-answer NOTE / saju signal script include missing');
+  assert(html.includes('./concern-note-engine-v2.js?v=6.4.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'six-answer NOTE / saju signal script include missing');
   assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.1'), 'full-evidence reasoning script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.1'), 'entitlement/product script include missing');
@@ -1269,11 +1269,11 @@ function norm(v) {
     html.includes('질문에 대한 답 · 이유 · 방법까지') &&
     html.includes('"01": { className:"note-role-diagnosis"') &&
     html.includes('"05": { className:"note-role-timing"') &&
-    html.includes('"07": { className:"note-role-action"') &&
+    !html.includes('note-role-action') &&
     !html.includes('<span class="note-role-label">') &&
     html.includes('지금 네 고민에서 보이는 것') &&
     !/비밀\s*메모|NOTE2 다음부터 NOTE6까지|실전 룰|반복 패턴/.test(html),
-    'seven-answer consultation/paywall contract drift'
+    'six-answer consultation/paywall contract drift'
   );
   assert(html.includes('analysisErrorText(') && !html.includes('calcErr.message || {'), 'raw analysis-engine errors can still leak into user copy');
   assert(

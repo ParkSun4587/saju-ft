@@ -2846,7 +2846,7 @@
                 </div>
               </div>
 
-              <!-- 7개 NOTE가 들어가는 본문 컨테이너 -->
+              <!-- 6개 NOTE가 들어가는 본문 컨테이너 -->
               <div id="notesListContainer" class="space-y-4 pt-1">
                 <!-- JS에서 첫 답 전체 + 두 번째 답 맛보기, 결제 후 나머지 답을 이어서 보여줍니다 -->
               </div>
@@ -7693,7 +7693,7 @@ currentResultData = {
         }
         if (vipSectionSubTitle) {
           vipSectionSubTitle.textContent = isT
-            ? "핵심 · 질문에 대한 답 · 왜 그런지 · 어떻게 할지 · 가까운 흐름 · 조심할 것 · 이번 주 할 것"
+            ? "핵심 · 질문에 대한 답 · 왜 그런지 · 어떻게 할지 · 가까운 흐름 · 조심할 것"
             : "너는 어떤 사람인지부터 질문에 대한 답, 이유, 방법, 올해 흐름까지 차례로 볼게";
         }
         if (mainShareBtnText) {
@@ -7967,7 +7967,7 @@ currentResultData = {
             : "text-[34px] sm:text-[40px] font-black tracking-widest font-mono text-rose-500 drop-shadow-sm leading-none pt-2 pb-1";
         }
 
-        // 7개 NOTE 렌더링: 무료는 첫 답 + 두 번째 답 맛보기, 결제 후 전체 공개
+        // 6개 NOTE 렌더링: 무료는 첫 답 + 두 번째 답 맛보기, 결제 후 전체 공개
         const notesData = generateConcernNotes(data, mode);
 
         const noteRoleMeta = {
@@ -7977,9 +7977,8 @@ currentResultData = {
           "04": { className:"note-role-fit" },
           "05": { className:"note-role-timing" },
           "06": { className:"note-role-cause" },
-          "07": { className:"note-role-action" },
         };
-        const noteTotal = notesData.length || 7;
+        const noteTotal = notesData.length || 6;
 
         const splitNoteParagraphs = (html) =>
           String(html || "")
@@ -10194,7 +10193,7 @@ currentResultData = {
     <script src="./classical-reasoning-engine-v1.js?v=2.1.1"></script>
     <script src="./paid-value-layer-v1.js?v=1.5.3"></script>
     <script src="./saju-signals-v1.js?v=1.0.0"></script>
-    <script src="./concern-note-engine-v2.js?v=6.3.0"></script>
+    <script src="./concern-note-engine-v2.js?v=6.4.0"></script>
     <script src="./ai-note-test-v1.js?v=2.2.0"></script>
     <script src="./product-content-policy-v1.js?v=1.1.0"></script>
     <script src="./product-entitlements-v1.js?v=1.0.1"></script>

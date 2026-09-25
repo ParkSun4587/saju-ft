@@ -46,7 +46,7 @@ async function load(page) {
     typeof renderConcernNotesV2 === 'function' &&
     globalThis.generateConcernNotes?.__classicalCausal === true &&
     typeof buildConcernDiagnosisV2 === 'function' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.3.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.4.0' &&
     typeof analyzeDayMasterStrengthV2 === 'function' &&
     globalThis.__MANSE_KOREA_V2__?.version === '2.2.0',
     null, {timeout:60000}
@@ -208,8 +208,8 @@ async function load(page) {
     let tText = '';
     const summary = [];
     for (const set of copyAudit.out) {
-      assert(set.notes.length === 7, `answer count ${set.key}/${set.mode}: ${set.notes.length}`);
-      assert(new Set(set.notes.map(n => n.title)).size === 7, `duplicate answer title ${set.key}/${set.mode}`);
+      assert(set.notes.length === 6, `answer count ${set.key}/${set.mode}: ${set.notes.length}`);
+      assert(new Set(set.notes.map(n => n.title)).size === 6, `duplicate answer title ${set.key}/${set.mode}`);
       const full = set.notes.map(n => `${n.badge} ${n.title} ${n.desc} ${n.checklist}`).join(' ');
       assert(!/(undefined|NaN|null)/.test(full), `bad token ${set.key}/${set.mode}`);
       for (const phrase of banned) assert(!full.includes(phrase), `banned phrase ${phrase} in ${set.key}/${set.mode}`);
@@ -223,7 +223,7 @@ async function load(page) {
       }
       assert(set.evidenceCoverage?.coverageRate===1 && set.evidenceCoverage?.missingRuleIds?.length===0,
         `supported evidence dropped ${set.key}/${set.mode}: ${JSON.stringify(set.evidenceCoverage)}`);
-      assert(set.semanticCoverage?.coverageRate===1 && set.semanticCoverage?.noteCountWithFacts===7,
+      assert(set.semanticCoverage?.coverageRate===1 && set.semanticCoverage?.noteCountWithFacts===6,
         `semantic personalization facts missing ${set.key}/${set.mode}: ${JSON.stringify(set.semanticCoverage)}`);
       assert(set.behaviorTemplateDependency===false && set.genericSituationDependency===false,
         `concern choice is still creating behavior in ${set.key}/${set.mode}`);
@@ -300,7 +300,7 @@ async function load(page) {
       return found;
     });
     assert(middle, 'could not locate deterministic middle-strength sample');
-    assert(middle.count===7,'middle-strength sample did not render seven answers');
+    assert(middle.count===6,'middle-strength sample did not render six answers');
     assert(!/(신강|신약|중화|압박|구조|월령|지장간|격국|용신)/.test(middle.text), 'internal strength/classical jargon leaked into user copy');
     assert(errs.length === 0, `middle-strength browser errors: ${errs.join(' | ')}`);
     console.log('MIDDLE_STRENGTH_PASS', JSON.stringify({date:middle.date, ratio:middle.ratio}));
@@ -404,7 +404,7 @@ async function load(page) {
           hourPillar:data?.pillars?.hour ? ((data.pillars.hour.gan || '') + (data.pillars.hour.zhi || '')) : '',
           visibleHour:document.getElementById('pillarHour')?.innerText || '',
           resultVisible:document.getElementById('resultSection')?.style.display !== 'none',
-          firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('1/7'),
+          firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('1/6'),
           analysisReady:!!data?.analysisProfile && !!data?.gyeokguk && !!data?.yongshin,
         };
       }, timeKey);
@@ -547,7 +547,7 @@ async function load(page) {
         badText:/(^|[^가-힣a-zA-Z])(undefined|NaN)([^가-힣a-zA-Z]|$)/.test(generated),
         failureToast:visible.includes('만세력 연산에 실패했습니다') || visible.includes('연산 중 오류가 발생했습니다'),
         resultVisible:document.getElementById('resultSection')?.style.display !== 'none',
-        firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('1/7'),
+        firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('1/6'),
         sourceFreeLaunch:FREE_LAUNCH_MODE,
         paywallHook:document.getElementById('payBoxHookMsg')?.innerText || '',
         paywallTeaser:document.getElementById('paywallNextTeaser')?.innerText || '',
@@ -587,20 +587,20 @@ async function load(page) {
     assert(!!report.gyeok, `${c.id}: gyeok missing`);
     assert(!!report.yongshin, `${c.id}: yongshin missing`);
     assert(report.classical.every(Boolean), `${c.id}: classical layer missing ${report.classical}`);
-    assert(report.noteCount === 7, `${c.id}: answers=${report.noteCount}`);
-    assert(report.noteNums.join(',') === '01,02,03,04,05,06,07', `${c.id}: numbering ${report.noteNums.join(',')}`);
+    assert(report.noteCount === 6, `${c.id}: answers=${report.noteCount}`);
+    assert(report.noteNums.join(',') === '01,02,03,04,05,06', `${c.id}: numbering ${report.noteNums.join(',')}`);
     assert(report.note1Valid, `${c.id}: core answer missing`);
     assert(report.note2Valid, `${c.id}: real-scene answer missing`);
     assert(report.note3Valid, `${c.id}: fit answer missing`);
     assert(report.note3Integrated, `${c.id}: classical diagnosis not integrated into five answers`);
-    assert(report.noteV2Version === '6.3.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
+    assert(report.noteV2Version === '6.4.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
     assert(report.note4Valid, `${c.id}: filter answer missing`);
     assert(report.note5Valid, `${c.id}: timing/action answer missing`);
     assert(!report.forbiddenVisible, `${c.id}: removed meta/explanation copy leaked into UI`);
     assert(!report.badText, `${c.id}: undefined/NaN leaked into generated note text`);
     assert(!report.failureToast, `${c.id}: calculation failure toast visible`);
     assert(report.resultVisible, `${c.id}: result section not visible`);
-    assert(report.firstNoteRendered, `${c.id}: first 1/7 answer not rendered into result DOM`);
+    assert(report.firstNoteRendered, `${c.id}: first 1/6 answer not rendered into result DOM`);
     if (!report.sourceFreeLaunch) {
       assert(report.paywallHook === report.expectedPaywall.hook, `${c.id}: paywall hook not situation-specific`);
       assert(report.paywallTeaser.includes(report.expectedPaywall.teaser), `${c.id}: paywall teaser not situation-specific`);

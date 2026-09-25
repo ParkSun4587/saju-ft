@@ -10,14 +10,14 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.3' &&
-        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.3.0' &&
+        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.4.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
         globalThis.__UNNI_AI_NOTE_V4__?.version === '2.2.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach seven-answer NOTE 6.3.0 / paid 1.5.3 / products 2.3.1');
+  throw new Error('production did not reach six-answer NOTE 6.4.0 / paid 1.5.3 / products 2.3.1');
 }
 
 async function clickCatalogProduct(page, productId) {
@@ -355,7 +355,7 @@ async function inspect(page, mode) {
     return {
       n1:plain(notes[0]?.desc), n2:plain(notes[2]?.desc), answer:plain(notes[1]?.desc),
       n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc),
-      aiTranslated:notes.length===7 && notes.every(n=>n?.__aiTranslated===true),
+      aiTranslated:notes.length===6 && notes.every(n=>n?.__aiTranslated===true),
       noteV2Audit:currentResultData?.noteV2Audit || null,
       timingMeta:notes[4]?.__timingQA || null,
       oheng:document.getElementById('ohengSummaryTxt')?.innerText||'',
@@ -445,7 +445,7 @@ async function inspect(page, mode) {
   },mode);
   r.resultLayout=await resultLayoutSnapshot(page);
   assertResultLayout(r.resultLayout,mode+' primary result');
-  assert(r.noteV2Audit?.version==='6.3.0'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
+  assert(r.noteV2Audit?.version==='6.4.0'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
   assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
   assert(r.noteV2Audit?.evidenceCoverage?.coverageRate===1&&r.noteV2Audit?.evidenceCoverage?.missingRuleIds?.length===0,mode+' supported classical evidence dropped '+JSON.stringify(r.noteV2Audit?.evidenceCoverage));
   assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six internal causal claims missing');
@@ -483,7 +483,7 @@ async function inspect(page, mode) {
     assert(r.count===4&&r.visible===4&&!r.otherToggle&&r.otherVisible,'free-launch should show all four premium products immediately '+JSON.stringify(r));
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
-    assert(r.note2Preview.includes('2/7')&&r.paywallVisible,'second-answer teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
+    assert(r.note2Preview.includes('2/6')&&r.paywallVisible,'second-answer teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
     if(mode==='F') assert(r.paywall.includes('로아 언니 · 이제 너한테 맞는 쪽을 보자')&&r.paywall.includes('질문에 대한 답')&&r.paywall.includes('이유'),'live F conversion paywall drift '+r.paywall);
     if(mode==='T') assert(r.paywall.includes('서아 언니 · 이제 구체적인 답만 보면 돼')&&r.paywall.includes('질문에 대한 답')&&r.paywall.includes('이유'),'T basic paywall handoff drift '+r.paywall);
     assert(r.paywall.includes('100원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
@@ -758,8 +758,8 @@ async function inspect(page, mode) {
       text:el.innerText||'',
     })),
   }));
-  assert(postUnlock.cards===7&&!postUnlock.preview&&postUnlock.catalogAfterNotes,'basic unlock must reveal all seven answers before post-report upsells '+JSON.stringify(postUnlock));
-  assert(postUnlock.roleLabelCount===0&&postUnlock.roles.length===7&&postUnlock.roles.every(x=>x.title.length>0),
+  assert(postUnlock.cards===6&&!postUnlock.preview&&postUnlock.catalogAfterNotes,'basic unlock must reveal all six answers before post-report upsells '+JSON.stringify(postUnlock));
+  assert(postUnlock.roleLabelCount===0&&postUnlock.roles.length===6&&postUnlock.roles.every(x=>x.title.length>0),
     'NOTE headers must use the bold dynamic title without tiny role labels '+JSON.stringify(postUnlock.roles));
   assert(['02','03','04','06'].every(role=>postUnlock.roles.find(x=>x.role===role)?.text.includes('결론')) &&
          postUnlock.roles.find(x=>x.role==='06')?.text.includes('조심') &&

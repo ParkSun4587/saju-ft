@@ -14,7 +14,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load',timeout:60000});
   await page.waitForFunction(()=>(
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.3.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.4.0' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version==='2.3.1'
   ),null,{timeout:60000});
@@ -159,7 +159,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     };
   });
 
-  assert(r.versions.reasoning==='2.1.1'&&r.versions.note==='6.3.0'&&r.versions.products==='2.3.1'&&r.versions.policy==='1.1.0','runtime versions drift');
+  assert(r.versions.reasoning==='2.1.1'&&r.versions.note==='6.4.0'&&r.versions.products==='2.3.1'&&r.versions.policy==='1.1.0','runtime versions drift');
 
   const c=r.contracts;
   assert(c.basic_concern.longTermDetail==='teaser-only'&&c.basic_concern.concernCount===1&&!c.basic_concern.compatibilityAllowed,'basic contract invalid');
@@ -192,7 +192,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   const fullYears=[...new Set((r.products.full.text.match(/20\d{2}년/g)||[]))];
   assert(fullYears.length>=5,'full_saju must expose five annual flow rows, got '+JSON.stringify(fullYears));
 
-  assert(r.products.bundle.articles===21&&r.products.bundle.exclusive,'bundle3 must provide three full five-answer concern analyses + common synthesis');
+  assert(r.products.bundle.articles===18&&r.products.bundle.exclusive,'bundle3 must provide three full five-answer concern analyses + common synthesis');
   assert(r.products.bundle.fullSections===0,'bundle3 leaked full_saju whole-chart chapters');
   assert(!r.products.bundle.text.includes('앞으로 5년 큰 흐름'),'bundle3 leaked full five-year roadmap');
 
@@ -201,7 +201,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   assert(r.products.compat.aFp&&r.products.compat.bFp&&r.products.compat.aFp!==r.products.compat.bFp&&r.products.compat.overlayFp,'compatibility does not prove two distinct charts + overlay');
   assert(!r.products.full.text.includes('둘이 같이 있을 때의 시기 흐름')&&!r.products.all.text.includes('둘이 같이 있을 때의 시기 흐름'),'one-person products leaked pair-specific result');
 
-  assert(r.products.all.articles===42&&r.products.all.fullSections===12&&r.products.all.exclusive,'all_in_one must include whole chart + six five-answer concerns + synthesis');
+  assert(r.products.all.articles===36&&r.products.all.fullSections===12&&r.products.all.exclusive,'all_in_one must include whole chart + six five-answer concerns + synthesis');
   assert(r.products.all.compatTiming===0&&r.products.all.compatExclusive===0,'all_in_one swallowed compatibility');
   assert(r.products.all.text.includes('두 사람 궁합은 포함하지 않아'),'all_in_one boundary not explicit');
 

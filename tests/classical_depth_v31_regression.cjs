@@ -13,7 +13,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     globalThis.__CLASSICAL_ENGINE_V2__?.version==='2.2.0' &&
     globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version==='2.1.0' &&
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.3.0'
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.4.0'
   );
 
   const r=await page.evaluate(()=>{
@@ -375,7 +375,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     };
   });
 
-  assert(r.versions.classical==='2.2.0'&&r.versions.integrated==='2.1.0'&&r.versions.reasoning==='2.1.1'&&r.versions.note==='6.3.0','depth runtime version mismatch');
+  assert(r.versions.classical==='2.2.0'&&r.versions.integrated==='2.1.0'&&r.versions.reasoning==='2.1.1'&&r.versions.note==='6.4.0','depth runtime version mismatch');
 
   assert(r.rawMonth.sameRaw,'same-visible-count month test setup drift');
   assert(r.rawMonth.monthA!==r.rawMonth.monthB,'month test must change month command');
@@ -481,7 +481,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     'second answer lost chart-derived cause explanation');
   assert(/결론/.test(r.canonicalTiming.fix)&&/네 사주에 제일 필요한 것/.test(r.canonicalTiming.fix)&&/사주 중심인 [가-힣]{2}/.test(r.canonicalTiming.fix),'fix answer lost chart-derived prescription and support condition');
   assert(/결론/.test(r.canonicalTiming.fit)&&/맞아|맞는/.test(r.canonicalTiming.fit),'fit answer lost chart-derived matching conditions');
-  assert(/지금 비교 기준/.test(r.canonicalTiming.timingAnswer),'timing answer lost chart-derived comparison criterion');
+  assert(/잘 가고 있다는 신호/.test(r.canonicalTiming.timingAnswer),'timing answer lost chart-derived comparison criterion');
   assert(!/앞으로 5년 큰 흐름|이후 큰 흐름/.test(r.canonicalTiming.timingAnswer),'basic timing answer leaked full five-year annual disclosure');
   assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관|압박|구조)/.test(r.canonicalTiming.timingAnswer),'timing answer leaked internal jargon');
 
