@@ -1917,7 +1917,7 @@
   function monthLabels(reasoning,s,data){
     const months=(reasoning?.timing?.nearMonths||[]).slice(0,6);
     return months.map((row,i)=>{
-      const sc=concernSignals(reasoning,s,data||{},monthCtx(row)).reduce((a,x)=>a+x.s,0)+(CLASS_BONUS[row?.class]||0);
+      const sc=concernSignals(reasoning,s,data||{},monthCtx(row)).reduce((a,x)=>a+x.s,0)+(CLASS_BONUS[row?.class]||0)*2;
       const m=Number(row.startMonth||0), d=Number(row.startDay||0);
       return {row,score:sc,label:sc>=2?"좋음":sc<=-2?"조심":"보통",when:i===0?"지금":(m&&d?m+"월 "+d+"일~":""),start:m&&d?m+"월 "+d+"일":""};
     });
@@ -2307,10 +2307,14 @@
       out.push("<b>효과 적은 길 — "+INCOME_AVOID[worst]+"</b>. 이건 네 사주에서 힘만 들고 수입은 잘 안 늘어.");
       out.push(whenLine(reasoning,"수입 얘기를 꺼내기 좋은 때"));
     } else if(k==="money/saving"){
-      out.push("<b>1순위 구멍 — "+LEAK_NAME[G1][0]+"</b>. "+LEAK_NAME[G1][1]+"이야. 네 사주에서 제일 큰 힘이 이쪽이라 돈도 제일 먼저 여기로 가.");
-      out.push("<b>2순위 구멍 — "+LEAK_NAME[G2][0]+"</b>. "+LEAK_NAME[G2][1]+"이야.");
-      out.push("<b>너한테 맞는 저축 방식</b> — "+SAVE_STYLE[N]+"이 제일 오래 가.");
-      out.push(whenLine(reasoning,"모으기 시작하기 좋은 때"));
+      const p=grounding?.selectedInterpretations?.[0]||null;
+      const q=grounding?.selectedInterpretations?.[1]||null;
+      out.push(lead(isT)+(p?"<b>"+p.safeTitle+"</b> 쪽이 돈이 안 모이는 고민과 가장 먼저 연결돼. "+p.safeReading:"특정 소비 습관을 사주만으로 찍기보다, 돈을 다루는 힘의 균형부터 보는 게 맞아."));
+      if(p) out.push("<b>첫 번째 근거</b> — "+p.why+". 실제로 배달·쇼핑·사람에게 쓴다고 단정한 건 아니야.");
+      if(q) out.push("<b>두 번째 근거</b> — "+q.safeTitle+". "+q.why+". "+q.safeReading);
+      out.push("<b>저축 방식으로 옮기면 — "+SAVE_STYLE[N]+"</b>. 이건 소비 원인을 맞혔다는 뜻이 아니라, 네 사주에서 필요한 "+withJosa(GROUP_NAME[N],"을","를")+" 현실의 규칙으로 고정하는 방법이야.");
+      out.push(savingCapacityLine(reasoning));
+      out.push(...T("저축을 시작하기 좋은 달","돈 결정을 한 번 더 확인할 달").lines);
     } else if(k==="money/flow"){
       out.push(whenLine(reasoning,"돈이 잘 도는 때"));
       out.push(cautionLine(reasoning,"조심할 때"));
@@ -2346,25 +2350,36 @@
       out.push("<b>상대 마음</b> — 상대 마음은 상대 사주가 있어야 정확히 보여. 여기선 네 쪽에서 되는 방법만 볼게.");
     } else if(k==="love/relationship"){
       const clash=dayRelation(reasoning,sig,["clash","wonjin"]);
-      out.push("<b>"+(dayCombine(reasoning)?"한번 맺은 인연을 오래 끌고 가는 사주야":clash?"큰 싸움 한 번이 고비가 되는 사주야":"큰 사건보다 작은 서운함 관리가 관건인 사주야")+"</b>. "+(dayCombine(reasoning)?"배우자 자리가 다른 자리와 묶여 있어서, 쉽게 놓지 않아.":clash?"배우자 자리가 부딪히는 배치라, 생활 문제로 크게 싸운 뒤를 조심해야 해.":"배우자 자리가 조용해서, 쌓이는 서운함만 풀면 오래 가."));
-      out.push(whenLine(reasoning,"관계가 편해지는 때"));
-      out.push(cautionLine(reasoning,"부딪히기 쉬운 때"));
-    } else if(k==="love/breakup"){
-      const sg=spouseGroupOf(data);
-      let score=0; const why=[];
-      if(dayCombine(reasoning)){ score++; why.push("배우자 자리가 묶여 있어서 한번 맺은 인연이 쉽게 안 끊겨"); }
-      if(sg&&groupShare(reasoning,sg)>=25){ score++; why.push("연인을 뜻하는 기운이 커서 인연이 다시 닿을 여지가 있어"); }
-      if(sg&&thisYearGroup(reasoning)===sg){ score++; why.push("올해 연인을 뜻하는 기운이 들어와"); }
-      if(dayRelation(reasoning,sig,["clash"])){ score--; why.push("배우자 자리가 부딪히는 배치라 같은 이유로 또 헤어지기 쉬워"); }
-      if(v==="신강"&&G1==="self"){ score--; why.push("자존심이 강해서 먼저 연락하기가 어려워"); }
-      out.push("<b>"+(score>=2?"다시 이어질 여지가 있는 편이야":score===1?"반반이야":"다시 만나기보다 정리하는 쪽이 네 사주엔 더 편한 편이야")+"</b>. "+(why.length?why.join(". ")+".":"사주에서 재회 쪽으로 강하게 끄는 신호도, 막는 신호도 두드러지지 않아."));
-      out.push(whenLine(reasoning,"연락이 닿기 쉬운 때"));
-      out.push("<b>한 가지만 기억해</b> — 상대 사주까지 봐야 확실해져. 여기선 네 쪽 사주로 보이는 것만 말했어.");
-    } else if(k==="love/new"){
+      const combine=dayCombine(reasoning);
+      out.push(lead(isT)+"<b>"+(combine?"관계 자리가 다른 자리와 묶이는 신호가 있어":clash?"관계 자리에 충돌 신호가 있어":"관계 자리에 강한 충돌 신호가 두드러지진 않아")+"</b>. "+(combine?"합이 있다고 관계가 오래 간다고 단정하진 않아. 관계를 유지하려는 힘이 어떤 조건에서 살아나는지 같이 봐야 해.":clash?"이 충돌 하나로 이별을 뜻하진 않아. 다만 갈등이 생길 때 생활 조건이 같이 흔들리는지는 확인할 가치가 있어.":"큰 사건을 예언하기보다, 서운함을 어떻게 처리하는지가 더 중요한 쪽으로 읽을게."));
+      out.push("<b>갈등이 생길 때 확인할 패턴</b> — "+FIGHT_PATTERN[G1]+" 실제로 이 패턴이 있는지는 네 경험이 우선이야.");
+      out.push("<b>오래 가는 조건으로 시험해볼 것 — "+KEEP_LOVE[N]+"</b>. 네 사주에 필요한 "+withJosa(NEED_POWER[N],"을","를")+" 관계 안에서 보완하는 방식이야.");
       const dz=dayBranchGod(reasoning);
-      out.push(whenLine(reasoning,"인연이 들어오기 좋은 때"));
-      out.push("<b>만나기 좋은 곳</b> — "+(el?MEET_PLACE[el]:"지인 소개나 오래 다닌 모임")+(sinsalOf(sig,"역마")?", 그리고 여행이나 이동 중":"")+(sinsalOf(sig,"도화")?", 그리고 사람이 많이 모이는 자리":"")+".");
-      if(PARTNER_SHORT[dz]) out.push("<b>잘 맞는 사람</b> — "+PARTNER_SHORT[dz]+". 배우자 자리에 "+withJosa(dz,"이","가")+" 있어서야.");
+      if(SPOUSE_WANTS[dz]) out.push("<b>관계에서 중요하게 느끼기 쉬운 조건</b> — 배우자 자리에 "+withJosa(dz,"이","가")+" 있어서, "+withJosa(SPOUSE_WANTS[dz],"을","를")+" 중요하게 느낄 가능성이 있어. 상대가 반드시 그렇게 해야 한다는 뜻은 아니야.");
+      out.push(...T("관계를 점검하기 좋은 달","갈등 결정을 한 번 더 확인할 달").lines);
+    } else if(k==="love/breakup"){
+      const {score,why}=breakupScore(reasoning,sig,data);
+      const direction=score>=2?"다시 연결을 검토할 신호가 몇 개 겹쳐":score<=0?"같은 충돌이 반복될 수 있다는 신호가 더 보여":"다시 연결 쪽과 정리 쪽 신호가 섞여 있어";
+      out.push(lead(isT)+"<b>"+direction+"</b>. 하지만 네 사주 하나로 재회 확률이나 상대의 연락 여부를 정할 수는 없어.");
+      if(why.length) out.push("<b>네 쪽에서 확인된 근거</b> — "+why.join(". ")+". 이건 가능성의 근거이지 재회를 확정하는 증거는 아니야.");
+      out.push(...T("연락을 검토하기 좋은 달","연락 결정을 한 번 더 확인할 달").lines);
+      out.push("<b>연락한다면</b> — "+CONTACT_WAY[G1]+" 상대 반응이 없으면 그 사실을 사주보다 우선해.");
+      out.push("<b>다시 만난다면 확인할 것</b> — "+REPEAT_FIX[G1]);
+      out.push("<b>한 가지만 기억해</b> — 재회는 두 사람의 선택이라 상대 사주와 실제 상황이 없으면 확정할 수 없어.");
+    } else if(k==="love/new"){
+      const t=T("인연을 넓혀보기 좋은 달","새 관계 결정을 한 번 더 확인할 달");
+      const b=t.plan.best[0]||t.plan.far[0];
+      const spouseGroup=spouseGroupOf(data);
+      const spouseShare=spouseGroup?groupShare(reasoning,spouseGroup):0;
+      out.push(lead(isT)+(b?"새 인연 고민에서 지원 신호가 가장 겹치는 때는 <b>"+monthSpan(b.row,t.plan.today)+"</b>야.":"새 인연은 특정 달 하나보다 실제 만남을 만드는 행동이 더 중요하게 보여.")+" 상대의 외모·직업·정확한 만남 장소는 네 사주 하나로 만들지 않을게.");
+      out.push(...t.lines);
+      out.push(concernYearAnswer(reasoning,s,data));
+      out.push("<b>사주에서 실제로 확인되는 것</b> — 연인을 뜻하는 "+withJosa(GROUP_NAME[spouseGroup]||"힘","은","는")+" 전체 힘의 "+spouseShare+"%야. 이 비중과 배우자 자리의 합·충을 같이 보고 인연의 강약만 판단해.");
+      const dz=dayBranchGod(reasoning);
+      if(SPOUSE_WANTS[dz]) out.push("<b>관계에서 중요하게 느끼기 쉬운 조건</b> — "+SPOUSE_WANTS[dz]+". 배우자 자리의 십신을 현실 조건으로 번역한 거라, 특정 사람의 성격을 예언한 건 아니야.");
+      const charm=(sig?.sinsal||[]).find(x=>["도화","홍염","역마"].includes(x.name));
+      if(charm) out.push("<b>보조 신호</b> — "+withJosa(charm.name,"이","가")+" 있어. 이건 만남 가능성을 보조해서 보는 신호일 뿐, 특정 상대가 나타난다고 확정하지 않아.");
+      out.push("<b>피해야 할 기준</b> — 사주에서 상대 외모나 직업을 맞혔다고 믿고 사람을 고르지 않는 것. 실제 대화와 행동이 먼저야.");
     } else if(k==="path/lost"){
       out.push("<b>1순위 — "+PATH_OPTION[rank[0]][0]+"</b>. "+PATH_OPTION[rank[0]][1]+"이 맞아."+(el?" 그중에서도 "+INDUSTRY[el]+" 쪽이면 더 잘 붙어.":"")+" "+why1);
       out.push("<b>2순위 — "+PATH_OPTION[rank[1]][0]+"</b>. "+PATH_OPTION[rank[1]][1]+"도 잘 맞아.");
@@ -2574,10 +2589,13 @@
     const limit=yearAheadYmd(reasoning);
     const scored=(reasoning?.timing?.nearMonths||[]).filter(r=>String(r?.endYmd||"")>today).map(row=>{
       const sigs=concernSignals(reasoning,s,data,monthCtx(row));
-      const score=sigs.reduce((a,x)=>a+x.s,0)+(CLASS_BONUS[row.class]||0);
-      return {row,sigs,score,near:!limit||String(row.startYmd)<limit};
+      const concernScore=sigs.reduce((a,x)=>a+x.s,0);
+      const engineScore=(CLASS_BONUS[row.class]||0)*2;
+      const score=concernScore+engineScore;
+      return {row,sigs,score,concernScore,engineScore,near:!limit||String(row.startYmd)<limit};
     });
-    const hasPos=x=>x.sigs.some(y=>y.s>0), hasNeg=x=>x.sigs.some(y=>y.s<0);
+    const hasPos=x=>x.sigs.some(y=>y.s>0)&&!["caution","mild-caution"].includes(x.row?.class);
+    const hasNeg=x=>x.sigs.some(y=>y.s<0)&&!["supportive","mild-support"].includes(x.row?.class);
     const byBest=(a,b)=>b.score-a.score||String(a.row.startYmd).localeCompare(String(b.row.startYmd));
     const best=scored.filter(x=>x.near&&x.score>=2&&hasPos(x)).sort(byBest).slice(0,2);
     const far=best.length?[]:scored.filter(x=>!x.near&&x.score>=2&&hasPos(x)).sort(byBest).slice(0,1);
@@ -2603,14 +2621,14 @@
     const first=p[0], second=p[1];
     const prev=posSigs(prevItem);
     const sameSecond=!!second&&!!prev[1]&&prev[1].n===second.n;
-    const secondText=second?(sameSecond?" 이 달에도 "+withJosa(second.n,"이","가")+" 같이 들어.":" 게다가 같은 달에 "+second.n+"까지 겹쳐."):"";
-    if(!first) return "이 고민에 도움이 되는 기운이 겹치는 달이야.";
-    if(prev[0]&&first.n===prev[0].n) return "1순위와 같은 기운인 "+withJosa(first.n,"이","가")+" 한 번 더 들어오는 달이야."+(second?(sameSecond?" 이 달에도 "+withJosa(second.n,"이","가")+" 같이 들어.":" 여기에 "+second.n+"까지 겹쳐."):"");
-    return first.a+" 달이야."+secondText+(first.e?" "+first.e+".":"");
+    const secondText=second?(sameSecond?" 이 달에도 "+withJosa(second.n,"이","가")+" 같이 들어.":" 여기에 "+second.n+"까지 겹쳐."):"";
+    if(!first) return "이 고민에 도움이 되는 신호가 겹치는 달이야.";
+    const repeat=prev[0]&&first.n===prev[0].n?"1순위와 같은 "+withJosa(first.n,"이","가")+" 다시 들어오는 달이야.":first.a+" 달이야.";
+    return repeat+secondText+" 사건을 확정하는 뜻이 아니라, 이 고민에서 움직임을 검토할 근거가 평소보다 겹친다는 뜻이야.";
   }
   function badMonthText(item){
     const n=negSigs(item)[0];
-    return n?n.a+" 달이라, "+n.e+".":"이 고민에서 약한 쪽을 건드리는 달이야.";
+    return n?n.a+" 달이야. 사건을 예언하는 뜻은 아니고, 이 고민에서 큰 결정을 한 번 더 확인할 신호로 봐.":"이 고민에서 조심 신호가 겹치는 달이야.";
   }
   // NOTE2의 "좋은 달 / 피할 달" 줄. 1순위·2순위는 이유와 그때 생기는 일까지, 피할 달은 이유와 할 일까지 쓴다.
   function timingAnswerLines(reasoning,s,data,good,bad){
@@ -3017,19 +3035,19 @@
     const elWhy=el?" 셋 다 네 사주에 필요한 "+EL_PLAIN[el]+" 기운이 도는 분야야.":"";
     if(k==="money/side"){
       const g1=rank[0], g2=rank[1];
-      out.push(lead(isT)+"네 사주에서 제일 돈이 되는 부업은 <b>"+withJosa(SIDE_OPTION[g1][0],"이야","야")+"</b>. 반대로 <b>"+withJosa(SIDE_AVOID[worst],"은","는")+"</b> 해도 남는 게 제일 적어.");
-      out.push("<b>1순위 — "+SIDE_OPTION[g1][0]+"</b>. 구체적으로는 "+SIDE_ITEMS[g1][EL]+" 같은 거야."+elWhy+" "+sideWhy(reasoning,g1,N,G1)+" "+SIDE_SHAPE[g1]);
-      out.push("<b>2순위 — "+SIDE_OPTION[g2][0]+"</b>. "+SIDE_ITEMS[g2][EL]+" 쪽이야. 1순위보다 돈은 덜 되지만, "+SIDE_PLUS[g2]);
+      out.push(lead(isT)+"사주 구조상 먼저 시험해볼 부업 방식은 <b>"+withJosa(SIDE_OPTION[g1][0],"이야","야")+"</b>. 반대로 <b>"+withJosa(SIDE_AVOID[worst],"은","는")+"</b> 구조상 소모가 커질 수 있어.");
+      out.push("<b>1순위 방향 — "+SIDE_OPTION[g1][0]+"</b>. 예시는 "+SIDE_ITEMS[g1][EL]+" 같은 거야."+elWhy+" "+sideWhy(reasoning,g1,N,G1)+" 실제 수익은 시장·가격·실행에 따라 달라.");
+      out.push("<b>2순위 방향 — "+SIDE_OPTION[g2][0]+"</b>. "+SIDE_ITEMS[g2][EL]+" 같은 방식도 시험해볼 수 있어. "+SIDE_PLUS[g2]);
       out.push(signalWorkLine(sig));
-      out.push("<b>제일 돈 안 되는 부업 — "+SIDE_AVOID[worst]+"</b>. "+SIDE_AVOID_WHY[worst]);
+      out.push("<b>덜 맞을 수 있는 방식 — "+SIDE_AVOID[worst]+"</b>. 이건 수익을 예측한 게 아니라, 네 사주에서 필요한 힘과 덜 겹치는 방향이라는 뜻이야.");
       out.push(...T("시작하기 좋은 달","시작을 피할 달").lines);
     } else if(k==="money/income"){
       const g1=rank[0], g2=rank[1];
-      out.push(lead(isT)+"네 수입을 제일 크게 늘리는 길은 <b>"+withJosa(INCOME_OPTION[g1][0],"이야","야")+"</b>. "+withJosa(INCOME_OPTION[g1][1],"이야","야")+".");
+      out.push(lead(isT)+"수입을 늘릴 때 사주 구조상 먼저 시험해볼 길은 <b>"+withJosa(INCOME_OPTION[g1][0],"이야","야")+"</b>. "+withJosa(INCOME_OPTION[g1][1],"이야","야")+". 실제 수입액이나 성공 확률을 뜻하진 않아.");
       out.push("<b>1순위 — 이렇게 해</b>. "+INCOME_HOW[g1]+" "+sideWhy(reasoning,g1,N,G1).replace("돈도 같이 붙어","수입도 같이 올라").replace("돈을 벌 수 있어","수입을 올릴 수 있어").replace("만든 게 그대로 돈이 돼","만든 게 그대로 수입이 돼").replace("실력만큼 돈이 돼","실력만큼 수입이 올라"));
-      out.push("<b>2순위 — "+INCOME_OPTION[g2][0]+"</b>. "+withJosa(INCOME_OPTION[g2][1],"이야","야")+". "+INCOME_HOW[g2]);
+      out.push("<b>2순위 방향 — "+INCOME_OPTION[g2][0]+"</b>. "+withJosa(INCOME_OPTION[g2][1],"이야","야")+". "+INCOME_HOW[g2]);
       out.push(moneyShapeLine(reasoning));
-      out.push("<b>효과 적은 길 — "+INCOME_AVOID[worst]+"</b>. "+INCOME_AVOID_WHY[worst]);
+      out.push("<b>덜 맞을 수 있는 길 — "+INCOME_AVOID[worst]+"</b>. 이건 소득을 예측한 게 아니라, 현재 사주 구조와의 적합도를 비교한 결과야.");
       out.push(...T("수입 얘기를 꺼내기 좋은 달","큰 결정을 미룰 달").lines);
     } else if(k==="money/saving"){
       out.push(lead(isT)+"네 돈은 <b>"+LEAK_NAME[G1][0]+"</b>으로 제일 많이 새. 이것만 막아도 통장이 달라져.");
@@ -3041,22 +3059,22 @@
     } else if(k==="money/flow"){
       const t=T("돈이 잘 도는 달","지출을 조심할 달");
       const b=t.plan.best[0];
-      out.push(lead(isT)+(b?"앞으로 1년 네 돈이 제일 잘 도는 때는 <b>"+monthSpan(b.row,t.plan.today)+"</b>야.":"앞으로 1년 네 돈은 한 달이 튀기보다 고르게 도는 편이야.")+(t.plan.worst?" 반대로 나가는 돈을 조심할 때는 <b>"+monthSpan(t.plan.worst.row,t.plan.today)+"</b>야.":""));
+      out.push(lead(isT)+(b?"앞으로 1년 돈 문제에서 지원 신호가 가장 겹치는 때는 <b>"+monthSpan(b.row,t.plan.today)+"</b>야.":"앞으로 1년은 돈 문제에서 특정 달 하나가 크게 튀지 않아.")+(t.plan.worst?" 반대로 결정을 한 번 더 확인할 때는 <b>"+monthSpan(t.plan.worst.row,t.plan.today)+"</b>야.":""));
       out.push(concernYearAnswer(reasoning,s,data));
       out.push(...t.lines);
-      out.push("<b>네 돈이 들어오는 길</b> — "+FLOW_WAY[G1]+"이 중심이야. 좋은 달엔 이 길을 넓히고, 조심할 달엔 나가는 돈부터 줄여.");
+      out.push("<b>돈을 다룰 때 먼저 살릴 방식</b> — "+FLOW_WAY[G1]+" 쪽이야. 특정 수입원이 생긴다는 예측이 아니라, 현재 사주에서 강한 힘을 돈 문제에 쓰는 방식으로 봐.");
       out.push(moneyShapeLine(reasoning));
     } else if(k==="career/exam"){
       out.push(lead(isT)+examVerdict(reasoning));
       out.push(...T("시험 보기 좋은 달","실력이 흔들리기 쉬운 달").lines);
-      out.push("<b>합격을 가르는 한 가지 — "+EXAM_KEY[G1]+"</b>. "+EXAM_KEY_WHY[G1]);
+      out.push("<b>시험에서 특히 챙길 한 가지 — "+EXAM_KEY[G1]+"</b>. "+EXAM_KEY_WHY[G1]);
       if(STUDY_STYLE[topGod]) out.push("<b>너한테 맞는 공부법 — "+STUDY_STYLE[topGod]+"</b>. 네 사주에서 제일 큰 힘이 "+withJosa(topGod,"이라서","라서")+", 이렇게 할 때 제일 오래 버텨.");
       if(EXAM_DAY[topGod]) out.push("<b>시험 날 조심할 것</b> — "+EXAM_DAY[topGod]);
     } else if(k==="career/jobsearch"){
       const g1=rank[0], g2=rank[1];
-      out.push(lead(isT)+"네가 붙을 확률이 제일 높은 곳은 <b>"+withJosa(JOB_OPTION[g1][0],"이야","야")+"</b>. 반대로 <b>"+JOB_OPTION[worst][0]+"</b> 쪽은 붙어도 오래 버티기 어려워.");
+      out.push(lead(isT)+"합격 확률을 사주로 계산하진 않을게. 대신 구조상 잘 맞는 채용 환경은 <b>"+withJosa(JOB_OPTION[g1][0],"이야","야")+"</b>. <b>"+JOB_OPTION[worst][0]+"</b> 쪽은 상대적으로 소모가 커질 수 있어.");
       out.push("<b>1순위 — "+JOB_OPTION[g1][0]+"</b>. 구체적으로는 "+JOB_ITEMS[g1][EL]+" 같은 자리야. "+JOB_WHY[g1]);
-      out.push("<b>2순위 — "+JOB_OPTION[g2][0]+"</b>. "+JOB_ITEMS[g2][EL]+" 쪽도 잘 맞아.");
+      out.push("<b>2순위 환경 — "+JOB_OPTION[g2][0]+"</b>. "+JOB_ITEMS[g2][EL]+" 같은 자리도 비교해볼 수 있어.");
       out.push(...T("붙기 좋은 달","결과가 늦어지기 쉬운 달").lines);
       if(INTERVIEW[topGod]) out.push("<b>면접에서 이기는 법</b> — "+INTERVIEW[topGod]);
     } else if(k==="career/move"){
@@ -3070,7 +3088,7 @@
       out.push("<b>옮긴다면 이런 곳</b> — "+JOB_ITEMS[N][EL]+" 같은 자리야. 네 사주에 제일 필요한 "+withJosa(NEED_POWER_WORK[N],"을","를")+" 채워주는 자리라, 옮긴 뒤에 힘이 붙어.");
       out.push(concernYearAnswer(reasoning,s,data));
     } else if(k==="career/current"){
-      out.push(lead(isT)+"지금 자리에서 인정받는 열쇠는 <b>"+withJosa(CURRENT_KEY[G1],"이야","야")+"</b>.");
+      out.push(lead(isT)+"지금 자리에서 인정받을 때 먼저 써볼 방식은 <b>"+withJosa(CURRENT_KEY[G1],"이야","야")+"</b>.");
       out.push("<b>1순위 — "+CURRENT_KEY[G1]+"</b>. "+CURRENT_WHY[G1]+" 예를 들면, "+CURRENT_EX[G1]);
       if(N!==G1) out.push("<b>2순위 — "+CURRENT_NEED[N]+"</b>. 네 사주에 제일 필요한 "+withJosa(NEED_POWER_WORK[N],"을","를")+" 채우는 방법이라, 하면 할수록 편해져.");
       const gui=sinsalOf(sig,"천을귀인");
@@ -3080,11 +3098,11 @@
     } else if(k==="love/crush"){
       const t=T("다가가기 좋은 달","오해가 생기기 쉬운 달");
       const soonGood=soonRow(t.plan,t.plan.best,2), soonBad=t.plan.worst&&soonRow(t.plan,[t.plan.worst],2);
-      out.push(lead(isT)+"<b>"+(soonGood&&!soonBad?"먼저 움직여도 되는 쪽이야":soonBad&&!soonGood?"지금보다 조금 뒤에 움직이는 게 유리해":"가볍게 먼저 움직여봐도 괜찮아")+"</b>. 다만 크게 고백하기보다 작게 다가가는 게 네 사주엔 맞아.");
+      out.push(lead(isT)+"<b>"+(soonGood&&!soonBad?"시기 신호는 먼저 움직이는 쪽에 조금 더 실려 있어":soonBad&&!soonGood?"시기 신호는 지금보다 조금 뒤가 덜 부담스러워":"시기만으로는 한쪽으로 강하게 기울지 않아")+"</b>. 상대 마음은 알 수 없으니, 크게 고백하기보다 작은 반응을 확인하는 방식이 안전해.");
       out.push(...t.lines);
       out.push("<b>너한테 맞는 다가가는 법 — "+CRUSH_MOVE[G1]+"</b>. "+CRUSH_WHY[G1]);
       const charm=(sig?.sinsal||[]).find(x=>["도화","홍염"].includes(x.name));
-      if(charm) out.push("<b>네 무기</b> — "+withJosa(charm.name,"이","가")+" 있어서, 네가 먼저 다가가도 상대가 부담스럽게 느끼지 않는 편이야.");
+      if(charm) out.push("<b>네 쪽의 호감 신호</b> — "+withJosa(charm.name,"이","가")+" 있어. 이건 네가 눈에 띄거나 호감을 표현하는 쪽의 참고 신호고, 상대 반응까지 보장하는 뜻은 아니야.");
       out.push("<b>꼭 피할 실수</b> — "+CRUSH_MISTAKE[G1]+". 이게 썸을 제일 빨리 식게 만들어.");
       out.push("<b>상대 마음</b> — 상대 마음은 상대 사주가 있어야 정확히 보여. 여기선 네 쪽에서 되는 방법만 봤어.");
     } else if(k==="love/relationship"){
@@ -3121,7 +3139,7 @@
       out.push("<b>피해야 할 사람</b> — "+AVOID_PARTNER[G1]+". 네 사주는 이미 "+GROUP_PLAIN[G1]+" 쪽 힘이 큰데, 이런 사람을 만나면 둘 다 그쪽으로만 기울어서 금방 지쳐.");
     } else if(k==="path/lost"){
       const g1=rank[0], g2=rank[1], g3=rank[2];
-      out.push(lead(isT)+"네 사주에서 제일 잘 맞는 분야는 <b>"+withJosa(PATH_OPTION[g1][0],"이야","야")+"</b>. 반대로 <b>"+PATH_OPTION[worst][0]+"</b>"+josaSuffix(PATH_OPTION[worst][0],"은","는")+" 네 사주에서 힘이 가장 안 붙어.");
+      out.push(lead(isT)+"사주 구조상 먼저 시험해볼 분야는 <b>"+withJosa(PATH_OPTION[g1][0],"이야","야")+"</b>. 반대로 <b>"+PATH_OPTION[worst][0]+"</b>"+josaSuffix(PATH_OPTION[worst][0],"은","는")+" 상대적으로 필요한 힘과 덜 겹쳐. 실제 적성은 경험으로 확인해야 해.");
       out.push("<b>1순위 — "+PATH_OPTION[g1][0]+"</b>. 구체적으로는 "+JOB_ITEMS[g1][EL]+" 같은 일이야. "+PATH_WHY[g1]);
       out.push("<b>2순위 — "+PATH_OPTION[g2][0]+"</b>. "+JOB_ITEMS[g2][EL]+" 쪽도 잘 맞아.");
       if(g3) out.push("<b>3순위 — "+PATH_OPTION[g3][0]+"</b>. 1·2순위가 막힐 때 열어둘 만한 쪽이야.");
@@ -3129,7 +3147,7 @@
       if(TALENT[topGod]) out.push("<b>네 재능 한 줄</b> — "+withJosa(TALENT[topGod],"이야","야")+". 어느 분야를 가든 이걸 쓰는 자리에서 제일 빨리 인정받아.");
       out.push(...T("방향을 정하기 좋은 달","급하게 정하면 안 되는 달").lines);
     } else if(k==="path/current"){
-      out.push(lead(isT)+"<b>지금 길이 "+PATH_OPTION[rank[0]][0]+"나 "+PATH_OPTION[rank[1]][0]+"에 가까우면 맞는 길이야</b>. 네 사주에서 힘이 제일 잘 붙는 두 방향이거든.");
+      out.push(lead(isT)+"<b>지금 길이 "+PATH_OPTION[rank[0]][0]+"나 "+PATH_OPTION[rank[1]][0]+"에 가까우면 사주 구조와 겹치는 부분이 많아</b>. 맞는 길인지 확정하려면 실제 만족도와 성과도 같이 봐야 해.");
       out.push("<b>계속 가도 되는 신호</b> — "+PATH_KEEP[G1]+" 계속 가도 돼. 네 사주는 이게 보일 때 제일 크게 자라.");
       out.push("<b>바꿔야 하는 신호</b> — "+PATH_CHANGE[G1]+", 그땐 방향을 다시 봐야 해.");
       out.push("<b>지금 길에서 더 잘되려면</b> — "+PATH_BOOST[N]+". 네 사주에 제일 필요한 "+withJosa(NEED_POWER_WORK[N],"을","를")+" 채우는 방법이야.");
@@ -3137,7 +3155,7 @@
     } else if(k==="path/switch"){
       const t=T("옮기기 좋은 달","옮기면 안 되는 달");
       const soonGood=soonRow(t.plan,t.plan.best,4), soonBad=t.plan.worst&&soonRow(t.plan,[t.plan.worst],4);
-      out.push(lead(isT)+"<b>"+(soonGood&&!soonBad?"바꿔도 되는 쪽이야":soonBad&&!soonGood?"바로 바꾸기보다 준비하고 옮기는 쪽이 유리해":"작게 시험해본 뒤 옮기는 쪽이 맞아")+"</b>. 옮긴다면 <b>"+PATH_OPTION[rank[0]][0]+"</b>"+josaSuffix(PATH_OPTION[rank[0]][0],"이","가")+" 1순위야.");
+      out.push(lead(isT)+"<b>"+(soonGood&&!soonBad?"전환을 검토할 지원 신호가 있어":soonBad&&!soonGood?"지금은 바로 바꾸기보다 준비 신호가 더 커":"작게 시험해본 뒤 판단하는 쪽이 안전해")+"</b>. 옮긴다면 <b>"+PATH_OPTION[rank[0]][0]+"</b>"+josaSuffix(PATH_OPTION[rank[0]][0],"이","가")+" 구조상 먼저 비교할 방향이야.");
       out.push("<b>1순위 — "+PATH_OPTION[rank[0]][0]+"</b>. "+JOB_ITEMS[rank[0]][EL]+" 같은 일이야. "+PATH_WHY[rank[0]]);
       out.push("<b>2순위 — "+PATH_OPTION[rank[1]][0]+"</b>. "+JOB_ITEMS[rank[1]][EL]+" 쪽이야.");
       out.push(...t.lines);
