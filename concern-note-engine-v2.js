@@ -1824,16 +1824,25 @@
     const conclusion=isT
       ? lead(isT)+"이 패턴은 "+(top?top.god:"가장 큰 힘")+" 하나가 아니라 강약·격국·통근·관계가 같이 만든 결과야."
       : lead(isT)+"여기서 중요한 건, "+(top?top.god:"한 가지 힘")+" 하나 때문에 네가 이러는 게 아니라는 거야. 강약이랑 격국, 통근, 관계가 같이 맞물려.";
+    const supportRatio=Number(reasoning?.profile?.strength?.supportRatio);
+    const strengthTech=Number.isFinite(supportRatio)
+      ? "<b>강약</b> — "+verdictOf(reasoning)+" 판정이고, 일간을 돕는 힘의 비율은 약 "+Math.round(supportRatio*100)+"%로 계산돼."
+      : "<b>강약</b> — "+verdictOf(reasoning)+" 판정이야.";
+    const rootTech=roots.length
+      ? "<b>통근</b> — 일간과 같은 기운이 지지 "+roots.length+"곳에 이어져 있어서, 뿌리가 전혀 없는 사주는 아니야."
+      : "<b>통근</b> — 일간과 같은 기운이 지지에 뚜렷하게 이어지지 않아.";
+    const relTech=rel?(()=>{
+      const x=relationPair(reasoning,rel);
+      return "<b>합충형파해</b> — "+x.refsA+"·"+x.refsB+" 사이에 "+withJosa(REL_PLAIN[rel.type],"이","가")+" 잡혀 있어.";
+    })():"";
     return [
       conclusion,
       top?"<b>"+top.god+"</b> — "+GOD_MEANING[top.god]+". 실제 세력 "+godShare(reasoning,top.god)+"%로 가장 먼저 작용해.":"",
       second?"<b>"+second.god+"</b> — "+GOD_MEANING[second.god]+". "+godShare(reasoning,second.god)+"%라 첫 번째 힘과 다른 방향도 같이 만들어.":"",
-      strengthTechnicalLine(reasoning),
+      strengthTech,
       center?"<b>격국</b> — "+center:"",
-      roots.length
-        ? "<b>통근</b> — 같은 기운의 뿌리가 "+roots.length+"곳 있어. "+rootSentence(reasoning)
-        : "<b>통근</b> — 같은 기운의 뚜렷한 뿌리가 없어. 그래서 반복되는 부담을 오래 끌면 소모가 커지기 쉬워.",
-      rel?"<b>합충형파해</b> — "+relationSentence(reasoning,rel):"",
+      rootTech,
+      relTech,
       "<b>그래서</b> — "+patternResolutionSentence(reasoning)+".",
       detailsBlock([seasonSentence(reasoning),weakLinkSentence(reasoning).replace(/<[^>]+>/g,""),bondSentence(reasoning)]),
     ].filter(Boolean).join("<br><br>");
@@ -1852,7 +1861,7 @@
       second?"<b>두 번째 조건</b> — "+second.text+". "+second.why:"",
       el?"<b>보완해서 볼 기운</b> — "+withJosa(elementName(el),"이야","야")+". 색이나 음식 같은 단순 팁보다 사람·환경·일 방식에서 이 기운의 역할이 실제로 생기는지를 봐.":"",
       "<b>고를 때 기준</b> — "+(DECISION_CRITERIA[s.concern]?.[s.key]||"같은 조건을 반복했을 때도 네 힘이 남는지 봐")+".",
-      detailsBlock([centerSentence(reasoning),...(rows.slice(2).map(x=>x.text+" — "+x.why))]),
+      detailsBlock(rows.slice(2).map(x=>x.text+" — "+x.why)),
     ].filter(Boolean).join("<br><br>");
   }
 
@@ -1868,7 +1877,7 @@
         : lead(isT)+"특정 기신 하나보다, 네 사주에서 이미 큰 부담이 더 커지는 조건을 조심해야 해.",
       first?"<b>근거</b> — "+first.evidence:"",
       second?"<b>같이 조심할 조건</b> — "+second.text+". "+second.evidence:"",
-      rel?"<b>관계에서 특히</b> — "+relationSentence(reasoning,rel):"",
+      rel?"<b>관계 신호</b> — "+relationShort(reasoning,rel).replace(/^그 밖에\s*/,""):"",
       "<b>현실 체크</b> — "+cautionCriterionSentence(reasoning,s)+".",
       detailsBlock([
         aux?"신살은 보조 신호로만 봐: "+aux.name+" — "+(SINSAL_CAUTION[aux.name]||""):"",
@@ -2688,7 +2697,10 @@
     if(idx===2) return "‘"+s.label+"’에서 반복되는 순서";
     if(idx===3) return "왜 이 패턴이 반복되냐면";
     if(idx===4) return ((DOMAIN[s.concern]||DOMAIN.money).name||"이 고민")+"에서 너한테 잘 맞는 조건";
-    if(idx===5) return ((DOMAIN[s.concern]||DOMAIN.money).name||"이 고민")+"에서 여기서부터 꼬여";
+    if(idx===5){
+      const titles={money:"돈이 꼬이기 시작하는 조건",career:"일이 꼬이기 시작하는 조건",love:"연애가 꼬이기 시작하는 조건",path:"진로가 꼬이기 시작하는 조건",people:"관계가 꼬이기 시작하는 조건",mental:"회복이 꼬이기 시작하는 조건"};
+      return titles[s.concern]||"여기서부터 꼬이기 시작하는 조건";
+    }
     return "그래서 지금은 이렇게 보면 돼";
   }
 
