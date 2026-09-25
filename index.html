@@ -926,10 +926,10 @@
   .note-editorial::before{display:none!important}
   .note-editorial-head{
     display:flex;
-    align-items:center;
-    gap:6px;
+    align-items:flex-start;
+    gap:7px;
     min-width:0;
-    margin-bottom:8px
+    margin-bottom:10px
   }
   .note-number{
     flex:none;
@@ -945,17 +945,12 @@
     white-space:nowrap
   }
   .note-tone-t .note-number{color:#347b9c!important;background:transparent!important;border:0!important}
-  .note-role-label{
-    flex:none;
-    font-size:9px;
-    font-weight:800;
-    color:#5b616b;
-    white-space:nowrap
-  }
   .note-badge{display:none!important}
   .note-editorial-title{
+    flex:1;
+    min-width:0;
     max-width:100%;
-    margin:0 0 10px;
+    margin:0;
     font-size:15.5px;
     line-height:1.44;
     font-weight:830;
@@ -1240,7 +1235,6 @@
     .note-editorial{padding:16px 0 17px!important}
     .note-editorial-head{gap:5px}
     .note-number{font-size:8px!important}
-    .note-role-label{font-size:8.75px}
     .note-editorial-title{font-size:15px}
     .note-body{font-size:12.15px}
     .note-role-diagnosis .note-body>p:first-child{font-size:12.55px}
@@ -1671,7 +1665,6 @@
     padding:17px 0 18px!important;
   }
   .note-number{font-weight:810!important}
-  .note-role-label{font-weight:760!important}
   .note-editorial-title{
     font-size:15.25px!important;
     line-height:1.46!important;
@@ -2905,7 +2898,7 @@
                     id="payBtnSubText"
                     class="text-[10.5px] font-bold text-white/88"
                   >
-                    질문에 대한 답 · 이유 · 방법까지
+                    질문에 대한 답 · 반복 장면 · 이유 · 조건 · 흐름까지
                   </span>
                 </button>
 
@@ -5350,6 +5343,10 @@ const SAJU_TERM_GLOSSARY = {
   "상신":"격국의 장점을 실제로 살려주는 핵심 십신이야.",
   "기신":"격국의 장점을 깨거나 흐트러뜨리기 쉬운 십신이야.",
   "용신":"사주의 불균형을 실제로 조절하는 데 우선해서 보는 기운이야.",
+  "투출":"지지 속에 있던 기운이 천간에 겉으로 드러난 상태를 말해.",
+  "파격":"격국의 장점이 방해받아 원래 구조대로 힘을 쓰기 어려운 상태를 말해.",
+  "구응":"흐트러진 격국을 다시 살려주는 보완 작용을 말해.",
+  "합충형파해":"지지끼리 묶이거나 부딪히고, 비틀리거나 깨지는 관계를 함께 부르는 말이야.",
   "대운":"약 10년 단위로 바뀌는 큰 환경 흐름이야.",
   "세운":"해마다 들어오는 기운이 원래 사주를 어떻게 건드리는지 보는 흐름이야.",
   "월운":"달마다 들어오는 기운이 원래 사주와 해의 흐름에 어떻게 겹치는지 보는 거야.",
@@ -7506,7 +7503,7 @@ currentResultData = {
             : "언니, 그것도 봐줘";
         }
         if (payBtnSubText) {
-          payBtnSubText.textContent = "질문에 대한 답 · 이유 · 방법까지";
+          payBtnSubText.textContent = "질문에 대한 답 · 반복 장면 · 이유 · 조건 · 흐름까지";
         }
         if (paywallSisterHeader) paywallSisterHeader.style.display = "flex";
         if (paywallSisterAvatar) paywallSisterAvatar.src = isT ? "./서아.webp" : "./로아.webp";
@@ -7888,13 +7885,13 @@ currentResultData = {
         const notesData = generateConcernNotes(data, mode);
 
         const noteRoleMeta = {
-          "01": { label:"핵심", className:"note-role-diagnosis" },
-          "02": { label:"질문에 대한 답", className:"note-role-pattern" },
-          "03": { label:"왜 그런지", className:"note-role-fit" },
-          "04": { label:"어떻게 할지", className:"note-role-fit" },
-          "05": { label:"가까운 흐름", className:"note-role-timing" },
-          "06": { label:"조심할 것", className:"note-role-cause" },
-          "07": { label:"이번 주 할 것", className:"note-role-action" },
+          "01": { className:"note-role-diagnosis" },
+          "02": { className:"note-role-pattern" },
+          "03": { className:"note-role-pattern" },
+          "04": { className:"note-role-cause" },
+          "05": { className:"note-role-fit" },
+          "06": { className:"note-role-cause" },
+          "07": { className:"note-role-timing" },
         };
         const noteTotal = notesData.length || 7;
 
@@ -7907,7 +7904,7 @@ currentResultData = {
         const renderNoteBody = (item) => {
           const source = decorateSajuTerms(item.desc);
           const parts = splitNoteParagraphs(source);
-          if (String(item.themeNum) === "05") {
+          if (String(item.themeNum) === "07") {
             return `<div class="note-body note-body-timeline">${parts
               .map((part)=>`<div class="note-time-row"><span class="note-time-dot"></span><div>${part}</div></div>`)
               .join("")}</div>`;
@@ -7917,7 +7914,7 @@ currentResultData = {
               .map((part)=>`<div class="note-flow-row"><span class="note-flow-line"></span><div>${part}</div></div>`)
               .join("")}</div>`;
           }
-          if (["03","04","06"].includes(String(item.themeNum))) {
+          if (["05","06"].includes(String(item.themeNum))) {
             return `<div class="note-body note-body-fit">${parts
               .map((part)=>`<section class="note-fit-criterion"><div class="note-fit-copy">${part}</div></section>`)
               .join("")}</div>`;
@@ -7929,12 +7926,8 @@ currentResultData = {
           return items
             .map((item) => {
               const num = String(item.themeNum).padStart(2,"0");
-              const meta = noteRoleMeta[num] || { label:item.badge || "", className:"" };
+              const meta = noteRoleMeta[num] || { className:"" };
               const accent = isT ? "note-tone-t" : "note-tone-f";
-              const badgeText = String(item.badge || "");
-              const badgeHtml = badgeText && badgeText !== meta.label
-                ? `<span class="note-badge">${badgeText}</span>`
-                : "";
               const checkHtml = item.checklist ? `
                         <div class="note-check">
                           <span class="note-check-mark">✓</span>
@@ -7944,10 +7937,8 @@ currentResultData = {
                     <div class="note-editorial ${meta.className} ${accent}" data-note-role="${num}">
                         <div class="note-editorial-head">
                           <span class="note-number">${Number(num)}/${noteTotal}</span>
-                          <span class="note-role-label">${meta.label}</span>
-                          ${badgeHtml}
+                          <h4 class="note-editorial-title">${decorateSajuTerms(item.title)}</h4>
                         </div>
-                        <h4 class="note-editorial-title">${decorateSajuTerms(item.title)}</h4>
                         ${renderNoteBody(item)}
                         ${checkHtml}
                     </div>`;
@@ -7979,12 +7970,8 @@ currentResultData = {
                   <div id="note2PreviewCard" class="note-editorial note-role-pattern ${isT ? "note-tone-t" : "note-tone-f"} relative overflow-hidden text-left">
                       <div class="note-editorial-head">
                           <span class="note-number">2/${noteTotal}</span>
-                          <span class="note-role-label">질문에 대한 답</span>
-                          ${String(nextNote.badge || "") !== "질문에 대한 답" ? `<span class="note-badge">${nextNote.badge}</span>` : ""}
+                          <h4 class="note-editorial-title">${decorateSajuTerms(nextNote.title)}</h4>
                       </div>
-                      <h4 class="note-editorial-title">
-                          ${decorateSajuTerms(nextNote.title)}
-                      </h4>
                       <div id="note2PreviewBody" class="note-body note-body-flow">
                         ${previewDesc}
                       </div>
@@ -10085,7 +10072,7 @@ currentResultData = {
     <script src="./classical-reasoning-engine-v1.js?v=2.1.1"></script>
     <script src="./paid-value-layer-v1.js?v=1.5.1"></script>
     <script src="./saju-signals-v1.js?v=1.0.0"></script>
-    <script src="./concern-note-engine-v2.js?v=6.1.1"></script>
+    <script src="./concern-note-engine-v2.js?v=6.2.0"></script>
     <script src="./ai-note-test-v1.js?v=2.2.0"></script>
     <script src="./product-content-policy-v1.js?v=1.1.0"></script>
     <script src="./product-entitlements-v1.js?v=1.0.1"></script>
