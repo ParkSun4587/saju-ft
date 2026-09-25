@@ -351,6 +351,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         answer:plain(CANON.notes[1].desc),
         fit:plain(CANON.notes[3].desc),
         fix:plain(CANON.notes[3].desc),
+        fixClaim:CANON.notes[3].__claim||null,
+        fixFacts:CANON.notes[3].__personalizationFacts||null,
         timingAnswer:plain(CANON.notes[4].desc),
         timingMeta:CANON.notes[4].__timingQA,
       },
@@ -469,8 +471,11 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert((r.canonicalTiming.longTermPivots||[]).every((x,i,a)=>i===0||x.year!==a[i-1].year),'duplicate long-term pivot year');
   assert(/결론/.test(r.canonicalTiming.scene)&&/(왜 그러냐면|근거)/.test(r.canonicalTiming.scene)&&/교차검증 근거/.test(r.canonicalTiming.scene)&&/1순위 — /.test(r.canonicalTiming.answer),
     'second answer lost cross-validated cause explanation');
-  assert(/결론/.test(r.canonicalTiming.fix)&&/네 사주에 제일 필요한 것/.test(r.canonicalTiming.fix)&&/사주 중심인 [가-힣]{2}/.test(r.canonicalTiming.fix),'fix answer lost chart-derived prescription and support condition');
-  assert(/결론/.test(r.canonicalTiming.fit)&&/맞아|맞는/.test(r.canonicalTiming.fit),'fit answer lost chart-derived matching conditions');
+  assert(/결론/.test(r.canonicalTiming.fix)&&/먼저 바꿀 기준/.test(r.canonicalTiming.fix)&&/구체적으로 확인할 것/.test(r.canonicalTiming.fix)&&/(왜 그러냐면|근거)/.test(r.canonicalTiming.fix)&&
+    r.canonicalTiming.fixFacts?.needGroup&&r.canonicalTiming.fixFacts?.needElement&&r.canonicalTiming.fixClaim?.source==='engine',
+    'fix answer lost chart-derived prescription or its preselected support claim');
+  assert(r.canonicalTiming.fix===r.canonicalTiming.fit&&r.canonicalTiming.fixClaim?.id,
+    'fit/fix answer lost the engine-selected prescription contract');
   assert(/잘 가고 있다는 신호/.test(r.canonicalTiming.timingAnswer),'timing answer lost chart-derived comparison criterion');
   assert(!/앞으로 5년 큰 흐름|이후 큰 흐름/.test(r.canonicalTiming.timingAnswer),'basic timing answer leaked full five-year annual disclosure');
   assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관|압박|구조)/.test(r.canonicalTiming.timingAnswer),'timing answer leaked internal jargon');
