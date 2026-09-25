@@ -184,15 +184,15 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         ditianKinds:A1.reasoning.ditian.findings.map(x=>({id:x.id,kind:x.kind})),
         bridgeChartKinds:BRIDGE.reasoning.ditian.findings.map(x=>({id:x.id,kind:x.kind,facts:x.facts})),
         claims:(A1.audit.outputClaimMap||[]).map(link=>{
-          const claim=A1.audit.claims[link.claimNum-1];
+          const note=A1.notes[link.noteNum-1];
           return {
             noteNum:link.noteNum,
-            claimNum:link.claimNum,
-            ditianRuleIds:claim?.ditianRuleIds||[],
-            zipingRuleIds:claim?.zipingRuleIds||[],
-            noteSentence:claim?.noteSentence||"",
-            actualSentence:plain(A1.notes[link.noteNum-1]?.desc),
-            sentenceMatches:claim?.noteSentence===plain(A1.notes[link.noteNum-1]?.desc),
+            claimId:link.claimId||"",
+            source:link.source||"",
+            confidence:link.confidence||"",
+            evidenceIds:note?.__interpretationEvidenceIds||note?.__claim?.evidenceIds||[],
+            counterEvidenceIds:note?.__counterEvidenceIds||note?.__claim?.counterEvidenceIds||[],
+            claimMatches:note?.__claim?.id===link.claimId,
           };
         }),
       },
@@ -213,11 +213,11 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   const bridgeFinding=r.runtimeIntegrity.bridgeChartKinds.find(x=>x.id==='DTS_BRIDGE_112');
   assert(bridgeFinding?.kind==='bridge','runtime bridge finding kind missing: '+JSON.stringify(r.runtimeIntegrity.bridgeChartKinds));
   assert(bridgeFinding?.facts?.bridge,'runtime bridge finding has no bridge facts: '+JSON.stringify(bridgeFinding));
-  assert(r.runtimeIntegrity.claims.length===6,'NOTE1-6 provenance map missing');
+  assert(r.runtimeIntegrity.claims.length===6,'NOTE1-6 claim-first plan missing');
   for(const claim of r.runtimeIntegrity.claims){
-    assert(claim.ditianRuleIds.filter(Boolean).length>0,'answer '+claim.noteNum+': no valid Ditian provenance');
-    assert(claim.zipingRuleIds.filter(Boolean).length>0,'answer '+claim.noteNum+': no valid Ziping provenance');
-    assert(claim.noteSentence && claim.sentenceMatches,'answer '+claim.noteNum+': audit noteSentence is not the actual rendered answer');
+    assert(claim.claimId && claim.source && claim.claimMatches,'answer '+claim.noteNum+': claim was not selected before NOTE rendering');
+    assert(['high','supported','guarded'].includes(claim.confidence),'answer '+claim.noteNum+': claim confidence missing');
+    if(claim.source==='concern-cross-validation') assert(claim.evidenceIds.length>0,'answer '+claim.noteNum+': concern claim has no evidence');
   }
 
   assert(r.A.sameDay && r.A.month1!==r.A.month2,'A setup invalid');
