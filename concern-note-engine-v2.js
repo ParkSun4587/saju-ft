@@ -2611,7 +2611,7 @@
     const secondText=second?(sameSecond?" 이 달에도 "+withJosa(second.n,"이","가")+" 같이 들어.":" 여기에 "+second.n+"까지 겹쳐."):"";
     if(!first) return "이 고민에 도움이 되는 신호가 겹치는 달이야.";
     const repeat=prev[0]&&first.n===prev[0].n?"1순위와 같은 "+withJosa(first.n,"이","가")+" 다시 들어오는 달이야.":first.a+" 달이야.";
-    return repeat+secondText+" 사건을 확정하는 뜻이 아니라, 이 고민에서 움직임을 검토할 근거가 평소보다 겹친다는 뜻이야.";
+    return repeat+secondText+(prevItem?" 앞달과 같은 방향의 보조 신호로 이어서 볼게.":" 사건을 확정하는 뜻이 아니라, 이 고민에서 움직임을 검토할 근거가 평소보다 겹친다는 뜻이야.");
   }
   function badMonthText(item){
     const n=negSigs(item)[0];
@@ -2989,11 +2989,11 @@
   function breakupScore(reasoning,sig,data){
     const sg=spouseGroupOf(data), v=verdictOf(reasoning), G1=topGroupOf(reasoning);
     let score=0; const why=[];
-    if(dayCombine(reasoning)){ score++; why.push("배우자 자리가 묶여 있어서 한번 맺은 인연이 쉽게 안 끊겨"); }
-    if(sg&&groupShare(reasoning,sg)>=25){ score++; why.push("연인을 뜻하는 기운이 커서 인연이 다시 닿을 여지가 있어"); }
-    if(sg&&thisYearGroup(reasoning)===sg){ score++; why.push("올해 연인을 뜻하는 기운이 들어와"); }
-    if(dayRelation(reasoning,sig,["clash"])){ score--; why.push("배우자 자리가 부딪히는 배치라 같은 이유로 또 헤어지기 쉬워"); }
-    if(v==="신강"&&G1==="self"){ score--; why.push("자존심이 강해서 먼저 연락하기가 어려워"); }
+    if(dayCombine(reasoning)){ score++; why.push("배우자 자리에 합 신호가 있어 관계를 다시 이어볼 때 참고할 근거가 하나 있어"); }
+    if(sg&&groupShare(reasoning,sg)>=25){ score++; why.push("연인을 뜻하는 힘의 비중이 높아서 관계 이슈가 사주에서 크게 작동해"); }
+    if(sg&&thisYearGroup(reasoning)===sg){ score++; why.push("올해 연인을 뜻하는 힘이 활성화되는 시기 신호가 있어"); }
+    if(dayRelation(reasoning,sig,["clash"])){ score--; why.push("배우자 자리에 충 신호가 있어 다시 이어갈 때 같은 갈등 축을 먼저 확인해야 해"); }
+    if(v==="신강"&&G1==="self"){ score--; why.push("내 기준을 지키는 힘이 커서 먼저 움직이는 선택이 부담이 될 수 있어"); }
     return {score,why};
   }
   function soonRow(plan,list,months){
