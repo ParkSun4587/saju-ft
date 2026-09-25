@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "6.4.0";
+  const VERSION = "6.5.0";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   function hasBatchim(value) {
@@ -1566,8 +1566,8 @@
     return g||"print";
   }
   function topGroupOf(reasoning){
-    const top=godRows(reasoning)[0];
-    return GROUP_NAME[top?.group] ? top.group : "self";
+    const ranked=groupsByShare(reasoning);
+    return GROUP_NAME[ranked[0]] ? ranked[0] : "self";
   }
   function burdenGroupOf(reasoning){
     const st=synthesisFor(reasoning).mechanisms?.structure||{};
@@ -1829,13 +1829,13 @@
     officer:"책임과 부담을 뜻하는 {god} 네 사주에 있어서, {word}에서도 해야 한다는 부담을 혼자 떠안기 쉬워.",
     print:"생각과 신중함을 뜻하는 {god} 네 사주에 있어서, {word}에서도 생각만 길어지고 움직임이 늦어지기 쉬워.",
   };
-  function noteCautionV6(reasoning,s,sig,isT,data){
+  function noteCautionV6(reasoning,s,sig,isT,data,grounding){
     const B=burdenGroupOf(reasoning);
     const main=CAUTION[s.concern]?.[B]||"";
     const relevantPos={love:["day"],people:["year","month","day","hour"],career:["year","month"],money:["year","month","day"]}[s.concern]||[];
     const relKey=x=>x?x.type+":"+[x.aPos,x.bPos].sort().join("-"):"";
     // NOTE2·NOTE3에서 이미 짚은 관계는 여기서 다시 쓰지 않는다.
-    const used=new Set([peopleAnswerRelation(reasoning,sig,s),...concernDiagnoses(reasoning,s,sig,data||{}).slice(0,2).map(x=>x.rel)].filter(Boolean).map(relKey));
+    const used=new Set([peopleAnswerRelation(reasoning,sig,s),...(grounding?.selectedInterpretations||concernInterpretations(reasoning,s,sig,data||{}).slice(0,2)).map(x=>x.rel)].filter(Boolean).map(relKey));
     const rows=relationRows(reasoning,sig).filter(x=>!used.has(relKey(x)));
     // 썸·새 인연에서는 아랫사람 자리(시주)와의 관계는 연애와 거리가 멀어서 짚지 않는다.
     const skipHour=s.concern==="love"&&["crush","new"].includes(s.key);
@@ -2168,6 +2168,90 @@
   }
   function groupsByShare(reasoning){
     return ["self","output","wealth","officer","print"].map(g=>({g,share:groupShare(reasoning,g)})).sort((a,b)=>b.share-a.share).map(x=>x.g);
+  }
+
+  // 엔진 사실을 생활 장면으로 바로 점프시키지 않는다.
+  // 고민별 후보를 찬성 근거·반대 근거·확신도로 교차검증한 뒤 NOTE에 올린다.
+  const CONCERN_GROUP_SAFE_TITLE={
+    money:{self:"내 몫과 공동 몫의 균형",output:"결과를 보상으로 잇는 힘",wealth:"돈·보상을 다루는 힘",officer:"돈에 규칙을 세우는 힘",print:"준비와 보상의 순서"},
+    career:{self:"내 방식과 조직 기준의 균형",output:"결과를 밖으로 보여주는 힘",wealth:"현실 보상과 조건을 보는 힘",officer:"책임·평가를 받는 힘",print:"준비·학습을 쌓는 힘"},
+    love:{self:"관계에서 내 기준의 비중",output:"호감·불만을 표현하는 힘",wealth:"관계의 현실 조건을 보는 힘",officer:"관계의 책임·기준을 보는 힘",print:"확신 전 생각과 확인의 비중"},
+    path:{self:"스스로 방향을 정하는 힘",output:"재능을 결과로 꺼내는 힘",wealth:"현실성과 보상을 보는 힘",officer:"기준과 방향을 고정하는 힘",print:"배우고 파고드는 힘"},
+    people:{self:"관계에서 대등함을 지키는 힘",output:"말과 표현이 관계에 미치는 힘",wealth:"주고받는 균형을 보는 힘",officer:"책임과 도리를 보는 힘",print:"상대를 이해하고 생각하는 힘"},
+    mental:{self:"혼자 버티는 힘",output:"쌓인 것을 밖으로 빼는 힘",wealth:"현실 걱정과 계산의 비중",officer:"해야 한다는 부담의 비중",print:"생각·회복에 머무는 힘"},
+  };
+  const CONCERN_GROUP_SAFE_READING={
+    money:{self:"돈 문제에서는 내 몫과 함께 쓰는 몫을 어디서 나누는지가 중요한 변수로 작동해.",output:"만든 결과가 실제 보상으로 이어지는 과정이 돈 문제에서 중요하게 작동해.",wealth:"돈과 보상 자체를 다루는 힘의 크기가 이 고민에 직접 연결돼.",officer:"예산·기한·규칙처럼 돈을 고정해서 관리하는 방식이 중요한 변수야.",print:"준비·학습에 힘이 먼저 가면 보상을 챙기는 시점이 뒤로 밀릴 수 있어."},
+    career:{self:"일에서는 내 방식과 조직이 요구하는 방식을 얼마나 맞출지가 중요한 변수야.",output:"한 일을 밖으로 보여주고 결과물로 만드는 과정이 평가와 연결되기 쉬워.",wealth:"조건·보상·실익을 따지는 힘이 직장 선택과 만족도에 영향을 줄 수 있어.",officer:"책임·평가·직급처럼 조직의 기준을 받는 방식이 일 문제에서 핵심 변수야.",print:"준비와 학습이 강점이지만, 준비가 실제 지원·실행보다 앞서면 속도가 늦어질 수 있어."},
+    love:{self:"연애에서는 내 기준을 지키는 힘과 상대에게 맞추는 정도의 균형이 중요해.",output:"호감이나 불만을 밖으로 표현하는 방식이 관계 진행 속도에 영향을 주기 쉬워.",wealth:"연애에서도 현실 조건과 주고받는 균형을 따지는 힘이 작동해.",officer:"관계에서 책임·약속·상대의 역할을 중요하게 보는 힘이 작동해.",print:"확신을 얻기 전에 생각하고 확인하는 과정이 길어질 수 있어."},
+    path:{self:"남의 기준보다 내가 납득한 방향을 잡을 때 힘이 붙는지가 중요해.",output:"재능을 실제 결과물로 꺼내보는 과정이 진로 판단의 핵심이야.",wealth:"좋아하는 것뿐 아니라 현실 보상과 지속 가능성을 함께 보는 힘이 작동해.",officer:"방향·기한·기준을 정해주는 틀이 있을 때 진로가 선명해지는지가 중요해.",print:"배우고 깊게 파는 힘이 강점이지만, 실제 경험으로 확인하는 단계까지 이어져야 해."},
+    people:{self:"관계에서는 한쪽만 맞추지 않고 대등함을 지키는 기준이 중요해.",output:"말과 표현의 세기가 관계의 거리 조절에 영향을 줄 수 있어.",wealth:"주고받는 몫이 기울었다고 느끼는 순간 관계 판단이 달라질 수 있어.",officer:"책임과 도리를 어디까지 맡을지 정하는 것이 관계 피로도와 연결돼.",print:"상대 입장을 오래 생각하는 힘이 크면 내 입장을 말하는 시점이 늦어질 수 있어."},
+    mental:{self:"혼자 버티는 힘이 큰 만큼 도움을 받는 시점을 놓치지 않는 게 중요해.",output:"생각이나 감정을 말·행동·결과물로 밖에 빼는 통로가 회복에 중요해.",wealth:"현실 손익과 경우의 수를 계속 계산하는 힘이 생각을 길게 만들 수 있어.",officer:"해야 한다는 책임과 기준이 계속 켜져 있으면 쉬는 동안에도 부담이 남을 수 있어.",print:"생각하고 회복하는 힘이 한쪽으로 몰리면, 생각을 멈추는 전환점이 늦어질 수 있어."},
+  };
+  function groupsFromGods(gods){
+    return new Set((gods||[]).map(godGroup).filter(g=>GROUP_NAME[g]));
+  }
+  function interpretationEvidence(reasoning,s,row){
+    const evidenceIds=[],counterEvidenceIds=[];
+    const group=row?.group||null;
+    const share=group?groupShare(reasoning,group):null;
+    if(group){
+      evidenceIds.push("GROUP:"+group+":"+share);
+      if(share>=30||share<10) evidenceIds.push("GROUP_EXTREME:"+group+":"+share);
+    }
+    if(row?.rel) evidenceIds.push("REL:"+row.rel.type+":"+[row.rel.aPos,row.rel.bPos].sort().join("-"));
+    const st=synthesisFor(reasoning).mechanisms?.structure||{};
+    const supportGroups=groupsFromGods([...(st.helpfulGods||[]),...(st.rescueGods||[]),...(st.structuralSupportGods||[]),...(st.structuralRescueGods||[])]);
+    const harmGroups=groupsFromGods([...(st.harmfulGods||[]),...(st.structuralHarmGods||[])]);
+    if(group&&supportGroups.has(group)) evidenceIds.push("STRUCT_SUPPORT:"+group);
+    if(group&&harmGroups.has(group)) evidenceIds.push("STRUCT_HARM:"+group);
+    const pressure=synthesisFor(reasoning).mechanisms?.drive?.pressureGroup||reasoning?.integrated?.pressureGroup||"";
+    if(group&&group===pressure) evidenceIds.push("PRESSURE:"+group);
+    const need=needGroupOf(reasoning);
+    if(group&&group===need) evidenceIds.push("PRESCRIPTION:"+group);
+    if(group&&supportGroups.has(group)&&harmGroups.has(group)) counterEvidenceIds.push("STRUCT_MIXED:"+group);
+    const flags=synthesisFor(reasoning).contradictionFlags||[];
+    if(flags.includes("body-vs-structure")) counterEvidenceIds.push("BODY_VS_STRUCTURE");
+    if(flags.includes("visible-vs-actual-force")&&group) counterEvidenceIds.push("VISIBLE_VS_ACTUAL");
+    const independent=[...new Set(evidenceIds)];
+    const score=independent.length*2-counterEvidenceIds.length*1.5+(row?.rel?1:0);
+    const confidence=independent.length>=4&&counterEvidenceIds.length===0?"high":independent.length>=2?"supported":"guarded";
+    const safeTitle=row?.rel?"관계 자리 사이의 "+(REL_TYPE_NAME[row.rel.type]||"관계")+" 신호":(CONCERN_GROUP_SAFE_TITLE[s.concern]?.[group]||row?.title||"확인할 구조");
+    const safeReading=row?.rel?"두 자리 사이에 실제 관계 신호가 있어. 다만 이 신호 하나만으로 특정 사건이나 상대 행동을 확정하지 않아.":(CONCERN_GROUP_SAFE_READING[s.concern]?.[group]||"이 힘이 현재 고민에서 어떻게 쓰이는지 다른 근거와 함께 봐야 해.");
+    return {...row,evidenceIds:independent,counterEvidenceIds,score,confidence,safeTitle,safeReading};
+  }
+  function concernInterpretations(reasoning,s,sig,data){
+    const rows=concernDiagnoses(reasoning,s,sig,data).map(row=>interpretationEvidence(reasoning,s,row));
+    const rank={high:2,supported:1,guarded:0};
+    return rows.sort((a,b)=>b.score-a.score||(rank[b.confidence]-rank[a.confidence]));
+  }
+  function buildConcernGroundingPlan(reasoning,s,sig,data){
+    const interpretations=concernInterpretations(reasoning,s,sig,data);
+    const supported=interpretations.filter(x=>x.confidence!=="guarded");
+    const selected=(supported.length?supported:interpretations).slice(0,2);
+    const byShare=groupsByShare(reasoning);
+    const primaryGroup=selected.find(x=>x.group)?.group||byShare[0]||"self";
+    const secondaryGroup=selected.find(x=>x.group&&x.group!==primaryGroup)?.group||byShare.find(g=>g!==primaryGroup)||primaryGroup;
+    return {interpretations,selectedInterpretations:selected,primaryGroup,secondaryGroup,rankedGroups:rankGroups(reasoning),needGroup:needGroupOf(reasoning),burdenGroup:burdenGroupOf(reasoning),groupShares:Object.fromEntries(["self","output","wealth","officer","print"].map(g=>[g,groupShare(reasoning,g)]))};
+  }
+  function engineClaimByShape(reasoning,shape){
+    const claims=reasoning?.claims||[];
+    if(shape==="core") return claims.find(c=>c?.rawFacts?.strength)||null;
+    if(shape==="support") return claims.find(c=>c?.rawFacts?.prescription)||null;
+    if(shape==="timing") return claims.find(c=>String(c?.conclusion||"").includes("시간축"))||null;
+    if(shape==="caution") return claims.find(c=>c?.rawFacts?.relations&&c?.rawFacts?.root)||null;
+    return null;
+  }
+  function engineClaimDigest(claim,fallbackId){
+    if(!claim) return {id:fallbackId,source:"engine",confidence:"guarded",evidenceIds:[],counterEvidenceIds:[]};
+    return {id:claim.id||fallbackId,source:"engine",confidence:claim.certainty==="supported"?"supported":"guarded",evidenceIds:[...(claim.ditianRuleIds||[]),...(claim.zipingRuleIds||[])],counterEvidenceIds:claim.exceptions||[]};
+  }
+  function buildNoteClaimPlan(reasoning,s,grounding){
+    const primary=grounding?.selectedInterpretations?.[0]||null;
+    const secondary=grounding?.selectedInterpretations?.[1]||null;
+    const concernClaim={id:"CONCERN:"+s.concern+"/"+s.key,source:"concern-cross-validation",confidence:primary?.confidence||"guarded",evidenceIds:primary?.evidenceIds||[],counterEvidenceIds:primary?.counterEvidenceIds||[],conclusion:primary?.safeTitle||""};
+    const causeClaim={id:"CAUSE:"+s.concern+"/"+s.key,source:"concern-cross-validation",confidence:primary?.confidence||"guarded",evidenceIds:[...new Set([...(primary?.evidenceIds||[]),...(secondary?.evidenceIds||[])])],counterEvidenceIds:[...new Set([...(primary?.counterEvidenceIds||[]),...(secondary?.counterEvidenceIds||[])])],conclusion:[primary?.safeTitle,secondary?.safeTitle].filter(Boolean).join(" / ")};
+    return [engineClaimDigest(engineClaimByShape(reasoning,"core"),"ENGINE:core"),concernClaim,causeClaim,engineClaimDigest(engineClaimByShape(reasoning,"support"),"ENGINE:support"),engineClaimDigest(engineClaimByShape(reasoning,"timing"),"ENGINE:timing"),engineClaimDigest(engineClaimByShape(reasoning,"caution"),"ENGINE:caution")];
   }
   function signalWorkLine(sig){
     const hit=(sig?.sinsal||[]).find(x=>SIGNAL_WORK[x.name]);
@@ -2913,15 +2997,15 @@
     return (list||[]).find(x=>x&&String(x.row.startYmd)<lim)||null;
   }
 
-  function noteAnswerV8(reasoning,s,sig,data,isT){
+  function noteAnswerV8(reasoning,s,sig,data,isT,grounding){
     const k=s.concern+"/"+s.key;
     const el=prescriptionElement(reasoning);
     const EL=el||dayElementOf(reasoning);
-    const N=needGroupOf(reasoning);
-    const G1=topGroupOf(reasoning);
+    const N=grounding?.needGroup||needGroupOf(reasoning);
+    const G1=grounding?.primaryGroup||topGroupOf(reasoning);
     const byShare=groupsByShare(reasoning);
-    const G2=byShare.find(g=>g!==G1)||G1;
-    const rank=rankGroups(reasoning);
+    const G2=grounding?.secondaryGroup||byShare.find(g=>g!==G1)||G1;
+    const rank=grounding?.rankedGroups||rankGroups(reasoning);
     const hint=el?INDUSTRY[el].split("·"):[];
     const clashes=g=>[...(PATH_OPTION[g]||[""])[0].split(/[·\s]/),...(SIDE_OPTION[g]||[""])[1].split(/[·\s]/)].some(w=>w&&hint.includes(w));
     const worst=[...rank].reverse().find(g=>!clashes(g))||rank[rank.length-1];
@@ -3217,27 +3301,21 @@
     return out;
   }
 
-  function noteCauseV8(reasoning,s,sig,data,isT){
-    const G=topGroupOf(reasoning);
+  function noteCauseV8(reasoning,s,sig,data,isT,grounding){
+    const G=grounding?.primaryGroup||topGroupOf(reasoning);
     const top=godRows(reasoning)[0];
-    const list=concernDiagnoses(reasoning,s,sig,data);
+    const list=grounding?.selectedInterpretations||concernInterpretations(reasoning,s,sig,data).slice(0,2);
     const fallback=CAUSE[s.concern]?.[s.key]?.[G]||"";
     const d1=list[0]||null, d2=list[1]||null;
-    const lead1=d1
-      ? lead(isT)+"<b>"+d1.title+"</b>. "+d1.scene
-      : lead(isT)+fallback.replace(/^(.+?[.?!])(\s|$)/,"<b>$1</b>$2");
-    // 보이는 "왜 그러냐면"은 이 이유의 근거만 쓴다. "가장 큰 힘" 같은 사주 전체 사실은 접힌 근거로 보낸다.
-    const why=whyLabel(isT)+(d1?d1.why+".":GROUP_MEANING[G]+" 쪽 힘이 "+groupShare(reasoning,G)+"%로 가장 커서, "+(CONCERN_WORD[s.concern]||"이 고민")+"에서도 이 힘이 제일 먼저 움직여.");
-    const second=d2?"<b>두 번째 이유 — "+d2.title+"</b>. "+d2.why+". "+d2.scene:(d1&&fallback&&d1.group!==G?"<b>그리고</b> — "+fallback:"");
+    const lead1=d1?lead(isT)+"<b>"+d1.safeTitle+"</b>. "+d1.safeReading:lead(isT)+fallback.replace(/^(.+?[.?!])(\s|$)/,"<b>$1</b>$2");
+    const why=whyLabel(isT)+(d1?d1.why+".":GROUP_MEANING[G]+" 쪽 힘이 사주 전체에서 크게 잡혀 있어.");
+    const second=d2?"<b>두 번째 구조 — "+d2.safeTitle+"</b>. "+d2.why+". "+d2.safeReading:"";
+    const guarded=d1?.confidence==="guarded"?"이 해석은 독립된 근거가 충분히 겹치지 않아서 실제 경험을 확정하지 않을게.":d1?.counterEvidenceIds?.length?"반대 방향 근거도 같이 잡혀 있어서, 이 결론은 경향으로만 볼게.":"";
     const modifier=causeModifier(reasoning,s,sig);
     const weakest=weakestGroupOf(reasoning);
-    const weakUsed=list.slice(0,2).some(x=>x.group===weakest?.g);
-    const details=detailsBlock([
-      top?"근거 — 네 사주에서 가장 큰 힘은 "+top.god+"이고, 사주 기운의 "+godShare(reasoning,top.god)+"%야.":"",
-      bondSentence(reasoning),
-      weakUsed?"":weakLinkSentence(reasoning).replace(/<[^>]+>/g,""),
-    ]);
-    return [lead1,why,second,list.length?"":modifier,details].filter(Boolean).join("<br><br>");
+    const weakUsed=list.some(x=>x.group===weakest?.g);
+    const details=detailsBlock([d1?"교차검증 근거 "+d1.evidenceIds.length+"개 · 반대 근거 "+d1.counterEvidenceIds.length+"개":"",top?"사주에서 가장 큰 개별 십신은 "+top.god+"이고, 전체 힘의 "+godShare(reasoning,top.god)+"%야.":"",bondSentence(reasoning),weakUsed?"":weakLinkSentence(reasoning).replace(/<[^>]+>/g,"")]);
+    return [lead1,why,second,guarded,list.length?"":modifier,details].filter(Boolean).join("<br><br>");
   }
 
   function formatMonth(row,today){
@@ -3552,16 +3630,18 @@
     // NOTE 본문은 고민별 미리 작성된 trigger/reaction/cost/keep/cut/place를 읽지 않는다.
     // 고민 선택값은 같은 명리 사실을 어느 현실 영역으로 번역할지만 정한다.
     const sig=signalsOf(r);
+    const grounding=buildConcernGroundingPlan(r,s,sig,data);
+    const claimPlan=buildNoteClaimPlan(r,s,grounding);
     const p={label:s.label,topGod:(r.synthesis?.tenGodEvidence||[])[0]?.god||"",headline:headlineOf(r),iljuName:sig?.ilju?.name||""};
     const timing=compactTimingNote(r,s,p,isT,data);
     const signalFacts={ilju:sig?.ilju?.key||null,dayStage:sig?.dayStage||null,sinsal:(sig?.sinsal||[]).map(x=>x.name),gongmang:sig?.gongmang?.positions||[],wonjin:sig?.wonjin?.positions||[]};
     const spec=[
-      {desc:noteCoreV6(r,s,sig,isT),role:"core",facts:{...personalizationFactsForRole(r,"core",s),...signalFacts}},
-      {desc:noteAnswerV8(r,s,sig,data,isT),role:"fit",facts:{answerRank:rankGroups(r),needGroup:needGroupOf(r),bestMonths:concernTimingPlan(r,s,data).best.map(x=>x.row.startYmd),dayBranchGod:dayBranchGod(r),gender:data.gender||null}},
-      {desc:noteCauseV8(r,s,sig,data,isT),role:"pattern",facts:{...personalizationFactsForRole(r,"pattern",s),causeGroup:topGroupOf(r),diagnoses:concernDiagnoses(r,s,sig,data).slice(0,2).map(x=>x.title)}},
-      {desc:noteHowV7(r,s,sig,data,isT),role:"fit",facts:{...personalizationFactsForRole(r,"fit",s),needGroup:needGroupOf(r),needElement:prescriptionElement(r)}},
-      {desc:timing.desc,role:"timing",facts:timing.personalizationFacts||{},timing:true},
-      {desc:noteCautionV6(r,s,sig,isT,data),role:"caution",facts:{...personalizationFactsForRole(r,"caution",s),burdenGroup:burdenGroupOf(r),relations:relationRows(r,sig).map(x=>x.type)}},
+      {desc:noteCoreV6(r,s,sig,isT),role:"core",facts:{...personalizationFactsForRole(r,"core",s),...signalFacts},claim:claimPlan[0]},
+      {desc:noteAnswerV8(r,s,sig,data,isT,grounding),role:"fit",facts:{answerRank:grounding.rankedGroups,needGroup:grounding.needGroup,bestMonths:concernTimingPlan(r,s,data).best.map(x=>x.row.startYmd),dayBranchGod:dayBranchGod(r),gender:data.gender||null},claim:claimPlan[1]},
+      {desc:noteCauseV8(r,s,sig,data,isT,grounding),role:"pattern",facts:{...personalizationFactsForRole(r,"pattern",s),causeGroup:grounding.primaryGroup,diagnoses:grounding.selectedInterpretations.map(x=>x.safeTitle)},claim:claimPlan[2]},
+      {desc:noteHowV7(r,s,sig,data,isT),role:"fit",facts:{...personalizationFactsForRole(r,"fit",s),needGroup:grounding.needGroup,needElement:prescriptionElement(r)},claim:claimPlan[3]},
+      {desc:timing.desc,role:"timing",facts:timing.personalizationFacts||{},timing:true,claim:claimPlan[4]},
+      {desc:noteCautionV6(r,s,sig,isT,data,grounding),role:"caution",facts:{...personalizationFactsForRole(r,"caution",s),burdenGroup:grounding.burdenGroup,relations:relationRows(r,sig).map(x=>x.type)},claim:claimPlan[5]},
     ];
     const notes=spec.map((x,idx)=>{
       const note={
@@ -3571,30 +3651,19 @@
         checklist:"",
         __evidenceRuleIds:x.timing?[...new Set([...evidenceIdsForRole(r,"timing"),...(timing.evidenceRuleIds||[])])]:evidenceIdsForRole(r,x.role),
         __personalizationFacts:x.facts,
+        __claim:x.claim||null,
+        __interpretationEvidenceIds:x.claim?.evidenceIds||[],
+        __counterEvidenceIds:x.claim?.counterEvidenceIds||[],
       };
       if(x.timing) note.__timingQA=timing.meta;
       return note;
     });
 
-    // 노트 번호 → 내부 명리 근거(claim) 번호.
-    const claimMap=[0,4,1,3,5,2];
-    (r.claims||[]).forEach(claim=>{
-      if(claim){
-        claim.userNoteIndex=null;
-        if(Object.prototype.hasOwnProperty.call(claim,"noteSentence")) delete claim.noteSentence;
-      }
-    });
+    // claim은 NOTE 뒤에 붙이지 않는다. 위에서 claimPlan을 먼저 만들고 그 claim을 받아 NOTE를 렌더링한다.
     notes.forEach((note,idx)=>{
       note.themeNum=String(idx+1).padStart(2,"0");
-      const claim=claimMap[idx]===null?null:r.claims?.[claimMap[idx]];
-      if(claim?.evidenceStatus==="insufficient-evidence"){
-        note.desc += isT
-          ? "<br><br>이 부분은 근거가 한쪽만 잡혀 있어서 확정해서 말하지 않을게."
-          : "<br><br>이 부분은 근거가 한쪽만 잡혀 있어서 언니도 확정해서 말하진 않을게.";
-      }
-      if(claim){
-        claim.userNoteIndex=idx+1;
-        claim.noteSentence=stripHtml(note.desc);
+      if(note.__claim?.confidence==="guarded"){
+        note.desc += isT?"<br><br>이 부분은 독립된 근거가 충분히 겹치지 않아서 확정하지 않을게.":"<br><br>이 부분은 근거가 아직 한쪽이라 언니도 확정해서 말하진 않을게.";
       }
     });
 
@@ -3617,15 +3686,22 @@
       genericClusterDependency:false,
       genericSituationDependency:false,
       behaviorTemplateDependency:false,
-      behaviorTemplateFieldsUsed:[],
+      behaviorTemplateRole:"expression-only",
+      behaviorTemplateFieldsUsed:["SIDE_OPTION","SIDE_ITEMS","INCOME_OPTION","JOB_OPTION","PATH_OPTION","SAVE_STYLE"],
       structureFingerprint:r.structureFingerprint,
       timingFingerprint:r.timingFingerprint,
       synthesisFingerprint:r.synthesis?.fingerprint||"",
       situation:{concern:s.concern,key:s.key},
       noteCount:notes.length,
-      outputClaimMap:claimMap.map((claimIndex,noteIndex)=>claimIndex===null?null:({noteNum:noteIndex+1,claimNum:claimIndex+1})).filter(Boolean),
+      outputClaimMap:notes.map((note,index)=>({noteNum:index+1,claimId:note.__claim?.id||null,source:note.__claim?.source||null,confidence:note.__claim?.confidence||"guarded"})),
       noteEvidence:notes.map((note,index)=>({noteNum:index+1,ruleIds:note.__evidenceRuleIds||[]})),
       semanticEvidence:semanticRows,
+      interpretationPlan:{
+        primaryGroup:grounding.primaryGroup,
+        secondaryGroup:grounding.secondaryGroup,
+        groupShares:grounding.groupShares,
+        selected:grounding.selectedInterpretations.map(x=>({title:x.safeTitle,group:x.group||null,confidence:x.confidence,evidenceIds:x.evidenceIds,counterEvidenceIds:x.counterEvidenceIds})),
+      },
       semanticCoverage:{
         noteCountWithFacts:semanticCovered,
         totalNotes:notes.length,
@@ -3661,7 +3737,7 @@
 
   global.buildConcernDiagnosisV2=buildConcernDiagnosisV2;
   global.renderConcernNotesV2=renderConcernNotesV2;
-  global.__CONCERN_NOTE_ENGINE_V2__={version:VERSION,situations:SITUATIONS,describeTerm:describeTermForData,facts:chartFactsForData};
+  global.__CONCERN_NOTE_ENGINE_V2__={version:VERSION,situations:SITUATIONS,describeTerm:describeTermForData,facts:chartFactsForData,_testTopGroup:topGroupOf,_testGrounding:(reasoning,situation,data)=>buildConcernGroundingPlan(reasoning,situation,signalsOf(reasoning),data||{})};
 
   const legacy=global.generateConcernNotes;
   const wrapped=function(data,mode){
