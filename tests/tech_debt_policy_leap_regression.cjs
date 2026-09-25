@@ -67,9 +67,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       oldGet:typeof globalThis.getTrueBaziTiming,
       oldBuild:typeof globalThis.buildNoteSixTiming,
       wrapped:!!globalThis.generateConcernNotes?.__classicalCausal,
-      timingBadge:notes[4]?.badge||'',
-      timingText:String(notes[4]?.desc||'').replace(/<[^>]+>/g,' '),
-      meta:notes[4]?.__timingQA||{},
+      timingBadge:notes[6]?.badge||'',
+      timingText:String(notes[6]?.desc||'').replace(/<[^>]+>/g,' '),
+      meta:notes[6]?.__timingQA||{},
       audit:d.noteV3Audit,
       timing:{
         today:timing.today,detailEnd:timing.detailEnd,horizonEnd:timing.horizonEnd,
@@ -96,7 +96,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     let answerChecks=0;
     const signatures=new Set();
     const plain=(v)=>String(v||'').replace(/<br\s*\/?\s*>/gi,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
-    const forbidden=/(비밀\s*메모|실전 룰|반복 패턴|압박|구조|원국|격국|용신|상신|기신|통관|월령|지장간|신강|신약)/;
+    const forbidden=/(비밀\s*메모|실전 룰|반복 패턴|작동 방식|압력군|과부하 후보|priorityScore|pressureGroup|zipingState|rootQuality|neededGroups)/;
     const badJoins=[
       /[가-힣]\s+(?:이야|야)(?=[.!?]|$)/,
       /느냐\s+야\b/,
@@ -176,7 +176,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           nearCount:t.concernNearTerm?.months?.length||0,
           publicYears:t.fullSajuTimeline?.years?.map(x=>x.year)||[],
           internalYears:t.fullHorizon?.years?.map(x=>x.year)||[],
-          timingMeta:notes[4]?.__timingQA||{},
+          timingMeta:notes[6]?.__timingQA||{},
         };
       } finally {
         globalThis.Date=RealDate;
