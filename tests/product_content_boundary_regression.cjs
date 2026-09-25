@@ -40,8 +40,8 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
         structureFingerprint:rr.structureFingerprint,timingFingerprint:rr.timingFingerprint,
         claimConclusions:rr.claims.map(x=>x.conclusion),
         timing:rr.timing,
-        timingAnswer:plain(notes[4]?.desc),
-        timingMeta:notes[4]?.__timingQA||{},
+        timingAnswer:plain(notes[6]?.desc),
+        timingMeta:notes[6]?.__timingQA||{},
       });
     }
 
@@ -80,7 +80,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
       return {
         concern:key,fp:d.classicalReasoningV1.structureFingerprint,
         core:d.classicalReasoningV1.claims.slice(0,5).map(x=>x.conclusion),
-        timingAnswer:plain(notes[4]?.desc),
+        timingAnswer:plain(notes[6]?.desc),
       };
     });
 
