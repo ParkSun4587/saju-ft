@@ -191,8 +191,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
             ditianRuleIds:claim?.ditianRuleIds||[],
             zipingRuleIds:claim?.zipingRuleIds||[],
             noteSentence:claim?.noteSentence||"",
+            noteSentences:claim?.noteSentences||[],
             actualSentence:plain(A1.notes[link.noteNum-1]?.desc),
-            sentenceMatches:claim?.noteSentence===plain(A1.notes[link.noteNum-1]?.desc),
+            sentenceMatches:(claim?.noteSentences||[]).includes(plain(A1.notes[link.noteNum-1]?.desc)),
           };
         }),
       },
@@ -213,7 +214,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   const bridgeFinding=r.runtimeIntegrity.bridgeChartKinds.find(x=>x.id==='DTS_BRIDGE_112');
   assert(bridgeFinding?.kind==='bridge','runtime bridge finding kind missing: '+JSON.stringify(r.runtimeIntegrity.bridgeChartKinds));
   assert(bridgeFinding?.facts?.bridge,'runtime bridge finding has no bridge facts: '+JSON.stringify(bridgeFinding));
-  assert(r.runtimeIntegrity.claims.length===6,'six internal causal claims missing');
+  assert(r.runtimeIntegrity.claims.length===7,'seven NOTE turns must map to classical claims');
   for(const claim of r.runtimeIntegrity.claims){
     assert(claim.ditianRuleIds.filter(Boolean).length>0,'answer '+claim.noteNum+': no valid Ditian provenance');
     assert(claim.zipingRuleIds.filter(Boolean).length>0,'answer '+claim.noteNum+': no valid Ziping provenance');
