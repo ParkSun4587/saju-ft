@@ -354,10 +354,10 @@ async function inspect(page, mode) {
     const products=[...document.querySelectorAll('#unniProductLadder [data-unni-product]')];
     return {
       n1:plain(notes[0]?.desc), n2:plain(notes[2]?.desc), answer:plain(notes[1]?.desc),
-      n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc),
+      n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc), n7:plain(notes[6]?.desc),
       aiTranslated:notes.length===7 && notes.every(n=>n?.__aiTranslated===true),
       noteV2Audit:currentResultData?.noteV2Audit || null,
-      timingMeta:notes[4]?.__timingQA || null,
+      timingMeta:notes[6]?.__timingQA || null,
       oheng:document.getElementById('ohengSummaryTxt')?.innerText||'',
       dayMasterTag:document.getElementById('dayMasterTag')?.innerText||'',
       sourceFreeLaunch:FREE_LAUNCH_MODE,
