@@ -2376,7 +2376,7 @@
       out.push(concernYearAnswer(reasoning,s,data));
       out.push("<b>사주에서 실제로 확인되는 것</b> — 연인을 뜻하는 "+withJosa(GROUP_NAME[spouseGroup]||"힘","은","는")+" 전체 힘의 "+spouseShare+"%야. 이 비중과 배우자 자리의 합·충을 같이 보고 인연의 강약만 판단해.");
       const dz=dayBranchGod(reasoning);
-      if(SPOUSE_WANTS[dz]) out.push("<b>관계에서 중요하게 느끼기 쉬운 조건</b> — "+SPOUSE_WANTS[dz]+". 배우자 자리의 십신을 현실 조건으로 번역한 거라, 특정 사람의 성격을 예언한 건 아니야.");
+      if(SPOUSE_WANTS[dz]) out.push("<b>관계에서 중요하게 느끼기 쉬운 조건</b> — "+SPOUSE_WANTS[dz]+". 배우자 자리에서 보이는 힘을 현실 조건으로 풀어쓴 거라, 특정 사람의 성격을 예언한 건 아니야.");
       const charm=(sig?.sinsal||[]).find(x=>["도화","홍염","역마"].includes(x.name));
       if(charm) out.push("<b>보조 신호</b> — "+withJosa(charm.name,"이","가")+" 있어. 이건 만남 가능성을 보조해서 보는 신호일 뿐, 특정 상대가 나타난다고 확정하지 않아.");
       out.push("<b>피해야 할 기준</b> — 사주에서 상대 외모나 직업을 맞혔다고 믿고 사람을 고르지 않는 것. 실제 대화와 행동이 먼저야.");
@@ -3332,7 +3332,7 @@
     const modifier=causeModifier(reasoning,s,sig);
     const weakest=weakestGroupOf(reasoning);
     const weakUsed=list.some(x=>x.group===weakest?.g);
-    const details=detailsBlock([d1?"교차검증 근거 "+d1.evidenceIds.length+"개 · 반대 근거 "+d1.counterEvidenceIds.length+"개":"",top?"사주에서 가장 큰 개별 십신은 "+top.god+"이고, 전체 힘의 "+godShare(reasoning,top.god)+"%야.":"",bondSentence(reasoning),weakUsed?"":weakLinkSentence(reasoning).replace(/<[^>]+>/g,"")]);
+    const details=detailsBlock([d1?"교차검증 근거 "+d1.evidenceIds.length+"개 · 반대 근거 "+d1.counterEvidenceIds.length+"개":"",top?"사주에서 가장 크게 잡힌 힘은 "+top.god+"이고, 전체 힘의 "+godShare(reasoning,top.god)+"%야.":"",bondSentence(reasoning),weakUsed?"":weakLinkSentence(reasoning).replace(/<[^>]+>/g,"")]);
     return [lead1,why,second,guarded,list.length?"":modifier,details].filter(Boolean).join("<br><br>");
   }
 
