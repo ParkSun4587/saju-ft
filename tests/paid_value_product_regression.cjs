@@ -164,8 +164,9 @@ function norm(v) {
       `${row.concern}/${row.situation}/${row.mode}: full-evidence audit missing`);
     assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
     assert(row.noteAudit?.genericSituationDependency === false && row.noteAudit?.behaviorTemplateDependency === false &&
-      Array.isArray(row.noteAudit?.behaviorTemplateFieldsUsed) && row.noteAudit.behaviorTemplateFieldsUsed.length===0,
-      `${row.concern}/${row.situation}/${row.mode}: concern selection is still inventing behavior`);
+      row.noteAudit?.behaviorTemplateRole === 'expression-only' &&
+      Array.isArray(row.noteAudit?.behaviorTemplateFieldsUsed) && row.noteAudit.behaviorTemplateFieldsUsed.length>0,
+      `${row.concern}/${row.situation}/${row.mode}: behavior templates are not limited to expression-only use`);
     assert(row.noteAudit?.evidenceCoverage?.coverageRate === 1 && row.noteAudit?.evidenceCoverage?.missingRuleIds?.length === 0,
       `${row.concern}/${row.situation}/${row.mode}: supported evidence dropped ${JSON.stringify(row.noteAudit?.evidenceCoverage)}`);
     assert(row.noteAudit?.semanticCoverage?.coverageRate === 1 && row.noteAudit?.semanticCoverage?.noteCountWithFacts === 6,
@@ -176,12 +177,13 @@ function norm(v) {
     assert(Array.isArray(row.noteAudit?.outputClaimMap) && row.noteAudit.outputClaimMap.length === 6,
       `${row.concern}/${row.situation}/${row.mode}: rendered claim map missing`);
     for (const link of row.noteAudit.outputClaimMap) {
-      const claim=row.noteAudit.claims[link.claimNum-1];
-      const actual=String(row.notes[link.noteNum-1]?.desc||'').replace(/<br\s*\/?\s*>/gi,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
-      assert(claim?.rawFacts && claim.ditianRuleIds?.filter(Boolean).length && claim.zipingRuleIds?.filter(Boolean).length,
-        `${row.concern}/${row.situation}/${row.mode}: mapped rule provenance missing`);
-      assert(claim.noteSentence===actual,
-        `${row.concern}/${row.situation}/${row.mode}: mapped claim is not bound to rendered answer ${link.noteNum}`);
+      const note=row.notes[link.noteNum-1];
+      assert(link.claimId && link.source && note?.__claim?.id===link.claimId,
+        `${row.concern}/${row.situation}/${row.mode}: NOTE was not rendered from a preselected claim ${link.noteNum}`);
+      if(link.source==='concern-cross-validation'){
+        assert(Array.isArray(note.__interpretationEvidenceIds) && note.__interpretationEvidenceIds.length>0,
+          `${row.concern}/${row.situation}/${row.mode}: concern claim lacks cross-validated evidence ${link.noteNum}`);
+      }
     }
 
     for (const [i,note] of row.notes.entries()) {
@@ -192,9 +194,9 @@ function norm(v) {
     }
     const n2=String(row.notes[2]?.desc||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
     const n2Facts=row.noteAudit?.semanticEvidence?.find(x=>x.noteNum===3)?.facts||{};
-    assert(n2.includes('결론') && /(왜 그러냐면|근거) — 네 사주에서 가장 큰 힘은/.test(n2) &&
-      n2Facts.causeGroup && (n2Facts.pressureGroup || n2Facts.blockedAt || n2Facts.structurePath || n2Facts.situationGod),
-      `${row.concern}/${row.situation}/${row.mode}: chart-derived pattern explanation missing`);
+    assert(n2.includes('결론') && /(왜 그러냐면|근거)/.test(n2) &&
+      n2Facts.causeGroup && row.noteAudit?.interpretationPlan?.selected?.length,
+      `${row.concern}/${row.situation}/${row.mode}: cross-validated pattern explanation missing`);
     const timing=row.notes[4]?.timing;
     assert(timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: timing metadata missing`);
     const firstTiming=norm(timing?.firstBody);
