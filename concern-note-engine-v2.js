@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "6.2.1";
+  const VERSION = "6.3.0";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   function hasBatchim(value) {
@@ -1815,28 +1815,28 @@
     const months=(reasoning?.timing?.nearMonths||[]).slice(1);
     return months.find(row=>["supportive","mild-support"].includes(row?.class))||null;
   }
-  function noteActionV6(reasoning,s,sig,isT,timingRow){
+  function noteActionV6(reasoning,s,sig,isT,timingRow,data){
     const el=prescriptionElement(reasoning);
     const G=topGroupOf(reasoning);
     const when=el?ELEMENT_WHEN[el]:"";
-    const cls=timingRow?.class||"";
-    const positive=["supportive","mild-support"].includes(cls);
-    const caution=["caution","mild-caution"].includes(cls);
-    const now=timingRow?formatMonth(timingRow,reasoning?.timing?.today||""):"";
+    // 지금 달과 다음 타이밍도 NOTE2와 같은 고민별 기준으로 본다.
+    const plan=concernTimingPlan(reasoning,s,data||{});
+    const short=CONCERN_SHORT[s.concern]||"이 고민";
+    const nowItem=plan.scored.find(x=>String(x.row.startYmd)<=plan.today)||null;
+    const positive=!!nowItem&&nowItem.score>=2;
+    const caution=!!nowItem&&nowItem.score<=-2;
     const lines=[
       lead(isT)+"이번 주엔 딱 하나만 해. <b>"+plainSentence(s.metric).replace(/[.]$/,"")+"</b>"+(when?" — "+when+" 해봐.":"."),
       (isT?"<b>이유</b> — ":"<b>왜 이거냐면</b> — ")+(["strength","flow"].includes(s.key)
         ? "앞에서 본 ‘"+(CAUSE_TITLE[s.concern]?.[s.key]||"네 강점")+"’을 실제로 써보는 가장 작은 행동이라서야. "+GROUP_MEANING[G]+" 쪽 힘이 네 사주에서 제일 크거든."
         : "앞에서 본 진짜 이유를 끊는 가장 작은 행동이라서야. 큰 결심보다 이런 작은 행동이 "+(CONCERN_WORD[s.concern]||"이 고민")+"에서 "+GROUP_MEANING[G]+" 쪽으로 쏠린 힘을 제일 빨리 돌려놔.")+
-        (positive?" 마침 "+now+" 구간이 네 사주를 돕는 쪽이라 시작하기 좋아.":caution?" "+now+" 구간은 약한 쪽을 건드리는 때라, 크게 바꾸기보다 이 정도 작은 것부터 하는 게 맞아.":""),
+        (positive?" 마침 지금이 "+short+" 쪽으로 힘이 붙는 때라 시작하기 좋아.":caution?" 지금은 "+short+" 쪽으로 조심할 때라, 크게 바꾸기보다 이 정도 작은 것부터 하는 게 맞아.":""),
       (()=>{
-        const next=nextGoodRow(reasoning);
-        const limit=yearAheadYmd(reasoning);
-        if(next&&limit&&String(next.startYmd)>=limit)
-          return "<b>다음 타이밍</b> — 1년 안에는 힘이 확 붙는 달이 잡히지 않아. 그래서 때를 기다리기보다, "+(CONCERN_WORD[s.concern]||"이 고민")+"에서 이번 주에 해본 걸 작게 이어가면서 달라진 것만 남겨.";
-        return next
-          ? "<b>다음 타이밍</b> — "+formatMonth(next,reasoning?.timing?.today||"")+"가 다음으로 힘이 붙는 구간이야. "+(CONCERN_WORD[s.concern]||"이 고민")+"에서 이번 주에 해본 걸 그때 한 단계 더 키워."
-          : "<b>다음 타이밍</b> — 가까운 달 중엔 특별히 힘이 붙는 달보다 고르게 가는 달이 많아. "+(CONCERN_WORD[s.concern]||"이 고민")+"에서 7일 해보고 달라진 게 있으면 그대로 이어가면 돼.";
+        const upcoming=[...plan.best].filter(x=>String(x.row.startYmd)>plan.today).sort((a,b)=>String(a.row.startYmd).localeCompare(String(b.row.startYmd)))[0]||null;
+        if(upcoming) return "<b>다음 타이밍</b> — "+withJosa(monthSpan(upcoming.row,plan.today),"이","가")+" 다음으로 "+short+" 쪽 힘이 붙는 구간이야. 이번 주에 해본 걸 그때 한 단계 더 키워.";
+        if(plan.far.length) return "<b>다음 타이밍</b> — 1년 안에는 "+short+" 쪽으로 힘이 확 붙는 달이 잡히지 않아. 그래서 때를 기다리기보다, 이번 주에 해본 걸 작게 이어가면서 달라진 것만 남겨.";
+        if(plan.best.length) return "<b>다음 타이밍</b> — 지금이 바로 "+short+" 쪽으로 힘이 붙는 구간이야. 이번 주에 해본 걸 이번 달 안에 한 단계 더 키워.";
+        return "<b>다음 타이밍</b> — 가까운 달 중엔 특별히 힘이 붙는 달보다 고르게 가는 달이 많아. "+(CONCERN_WORD[s.concern]||"이 고민")+"에서 7일 해보고 달라진 게 있으면 그대로 이어가면 돼.";
       })(),
     ];
     return lines.filter(Boolean).join("<br><br>");
@@ -1869,16 +1869,21 @@
     });
     return out;
   }
-  function monthStrip(reasoning){
+  // 앞으로 6개월을 이 고민 기준(NOTE2와 같은 계산)으로 좋음·보통·조심으로 한 줄에 보여준다.
+  function monthStrip(reasoning,s,data){
     const timing=reasoning?.timing||{};
     const months=(timing.nearMonths||[]).slice(0,6);
     if(months.length<3) return "";
-    const today=String(timing.today||"");
     const label=row=>{
+      if(s&&data){
+        const sc=concernSignals(reasoning,s,data,monthCtx(row)).reduce((a,x)=>a+x.s,0)+(CLASS_BONUS[row?.class]||0);
+        return sc>=2?"좋음":sc<=-2?"조심":"보통";
+      }
       const cls=row?.class||"";
       return ["supportive","mild-support"].includes(cls)?"좋음":["caution","mild-caution"].includes(cls)?"조심":"보통";
     };
-    return "<b>앞으로 6개월 한눈에</b> — "+months.map((row,i)=>{
+    const short=s?CONCERN_SHORT[s.concern]:"";
+    return "<b>앞으로 6개월 "+(short?short+" 흐름":"한눈에")+"</b> — "+months.map((row,i)=>{
       const m=Number(row.startMonth||0), d=Number(row.startDay||0);
       const when=i===0?"지금":(m&&d?m+"월 "+d+"일~":"");
       return when+" "+label(row);
@@ -2258,6 +2263,892 @@
     return out.filter(Boolean).join("<br><br>");
   }
 
+  // ===== v8: 고민마다 "사람들이 진짜 궁금한 것"을 끝까지 답하는 층 =====
+  // 날짜는 전체 운이 아니라 고민별로 명리에서 실제로 보는 기준으로 고른다.
+  // 연애=배우자 별(남 재성·여 관성)과 배우자 자리(일지)의 합·충·도화, 돈=재성·식상·겁재,
+  // 시험=인성·관성·재성, 직장=관성·상관·역마, 관계=비겁·인성·충, 마음=인성·식신·편관.
+  const ZHI_ELEMENT={子:"su",丑:"to",寅:"mok",卯:"mok",辰:"to",巳:"hwa",午:"hwa",未:"to",申:"geum",酉:"geum",戌:"to",亥:"su"};
+  const ZHI_TRIAD_GROUP={寅:"fire",午:"fire",戌:"fire",申:"water",子:"water",辰:"water",巳:"metal",酉:"metal",丑:"metal",亥:"wood",卯:"wood",未:"wood"};
+  const DOHWA_BY_TRIAD={fire:"卯",water:"酉",metal:"午",wood:"子"};
+  const YEOKMA_BY_TRIAD={fire:"申",water:"寅",metal:"亥",wood:"巳"};
+  const ZHI_COMBINE_PAIRS=new Set(["子丑","丑子","寅亥","亥寅","卯戌","戌卯","辰酉","酉辰","巳申","申巳","午未","未午"]);
+  const ZHI_CLASH_PAIRS=new Set(["子午","午子","丑未","未丑","寅申","申寅","卯酉","酉卯","辰戌","戌辰","巳亥","亥巳"]);
+  const ELEMENT_CONTROLS={mok:"to",to:"su",su:"hwa",hwa:"geum",geum:"mok"};
+  const ELEMENT_CONTROLLED_BY={to:"mok",su:"to",hwa:"su",geum:"hwa",mok:"geum"};
+  const CLASS_BONUS={supportive:1,"mild-support":0.5,caution:-1,"mild-caution":-0.5};
+  const CONCERN_SHORT={money:"돈",career:"일",love:"연애",path:"진로",people:"관계",mental:"회복"};
+
+  function natalSpecialZhi(reasoning,table){
+    const p=pillarsOf(reasoning); const out=new Set();
+    for(const pos of ["day","year"]){ const t=ZHI_TRIAD_GROUP[p[pos]?.zhi]; if(t) out.add(table[t]); }
+    return out;
+  }
+  function monthCtx(row){
+    const w=row?.layers?.wolun||{};
+    const rel=(type,pos)=>(w.relations||[]).some(x=>x.type===type&&pos.includes(x.natalPos));
+    return {g:w.god||row?.sipsin||"",bg:(w.branchGods||[])[0]||"",zhi:w.zhi||String(row?.ganZhi||"").charAt(1)||"",
+      dayComb:rel("combine",["day"]),dayClash:rel("clash",["day"]),monthClash:rel("clash",["month"]),familyClash:rel("clash",["year","month"]),unit:"달"};
+  }
+  function yearCtx(reasoning,yr){
+    const zhi=String(yr?.seyunGanZhi||"").charAt(1);
+    const p=pillarsOf(reasoning);
+    const has=(set,pos)=>!!zhi&&pos.some(ps=>p[ps]?.zhi&&set.has(zhi+p[ps].zhi));
+    return {g:yr?.seyunGod||"",bg:"",zhi,dayComb:has(ZHI_COMBINE_PAIRS,["day"]),dayClash:has(ZHI_CLASH_PAIRS,["day"]),
+      monthClash:has(ZHI_CLASH_PAIRS,["month"]),familyClash:has(ZHI_CLASH_PAIRS,["year","month"]),unit:"해"};
+  }
+
+  // 한 달(또는 한 해)이 이 고민에 어떤 기운인지. a=“…가 들어오는”(뒤에 달/해가 붙는 꾸밈말), n=짧은 이름, e=그때 실제로 생기는 일.
+  function concernSignals(reasoning,s,data,ctx){
+    const {g,bg,zhi,dayComb,dayClash,monthClash,familyClash,unit}=ctx;
+    const k=s.key, c=s.concern, male=data?.gender==="male";
+    const out=[];
+    const add=(score,a,n,e)=>out.push({s:score,a,n,e:e||""});
+    const pick=map=>map[k]||map.default||"";
+    const dohwa=!!zhi&&natalSpecialZhi(reasoning,DOHWA_BY_TRIAD).has(zhi);
+    const yeokma=!!zhi&&natalSpecialZhi(reasoning,YEOKMA_BY_TRIAD).has(zhi);
+    const weak=verdictOf(reasoning)==="신약";
+    if(c==="love"){
+      const star=male?["정재","편재"]:["정관","편관"];
+      if(male&&g==="정재") add(3,"남자 사주에서 진지한 연인을 뜻하는 정재가 들어오는","진지한 연인을 뜻하는 정재",pick({new:"이때 만난 사람은 가볍게 끝나지 않고 진지하게 이어지기 쉬워",crush:"썸이 진지한 사이로 넘어가기 좋아",relationship:"결혼이나 앞날 얘기를 꺼내기 좋아",breakup:"다시 연락이 닿으면 진지한 대화로 이어지기 쉬워"}));
+      if(male&&g==="편재") add(3,"남자 사주에서 연애·이성 인연을 뜻하는 편재가 들어오는","이성 인연을 뜻하는 편재",pick({new:"소개나 모임에서 호감 가는 사람이 여럿 생기기 쉬워",crush:"분위기가 확 달아오르기 쉬워",relationship:"데이트나 여행으로 설렘을 되살리기 좋아",breakup:"예전 사람 소식이 들려오기 쉬워"}));
+      if(!male&&g==="정관") add(3,"여자 사주에서 진지한 연인·남편감을 뜻하는 정관이 들어오는","진지한 연인을 뜻하는 정관",pick({new:"믿음 가는 사람을 소개받거나 오래 볼 사람을 만나기 쉬워",crush:"상대가 먼저 진지하게 나오기 쉬워",relationship:"결혼 얘기가 자연스럽게 나오기 좋아",breakup:"상대가 먼저 연락해올 여지가 생겨"}));
+      if(!male&&g==="편관") add(3,"여자 사주에서 강하게 끌리는 인연을 뜻하는 편관이 들어오는","강하게 끌리는 인연을 뜻하는 편관",pick({new:"첫눈에 끌리는 사람이 나타나기 쉬워",crush:"밀고 당기기가 세게 오가기 쉬워",relationship:"감정이 커지는 만큼 부딪힘도 같이 커질 수 있어",breakup:"다시 강하게 끌리는 순간이 오기 쉬워"}));
+      if(!star.includes(g)&&star.includes(bg)) add(1,unit+"의 아랫글자에 연인 기운이 숨어 드는","숨은 연인 기운","겉으로 티는 안 나도 가까운 곳에서 인연이 움직여");
+      if(dayComb) add(3,"배우자 자리와 합이 되는","배우자 자리와의 합",pick({new:"만난 사람과 빠르게 가까워지기 쉬워",crush:"관계를 확정하기 좋아",relationship:"둘 사이가 한 단계 가까워지기 좋아",breakup:"끊겼던 인연이 다시 묶이기 쉬워"}));
+      if(dohwa) add(2,"사람을 끄는 도화가 드는","사람을 끄는 도화","가만히 있어도 눈에 띄고 호감을 사기 쉬워");
+      if(k==="crush"&&g==="식신") add(1,"마음을 편하게 표현하기 좋은 식신이 들어오는","표현을 돕는 식신","먼저 말을 걸거나 약속을 잡기 편해");
+      if(dayClash) add(-3,"배우자 자리와 정면으로 부딪히는","배우자 자리와의 충",pick({new:"급하게 시작한 관계는 오래 가기 어려워",crush:"작은 말 한마디로 오해가 생기기 쉬워",relationship:"사소한 말다툼이 크게 번지기 쉬워",breakup:"연락해도 예전 싸움이 되풀이되기 쉬워"}));
+      if(male&&g==="겁재") add(-2,"경쟁자를 뜻하는 겁재가 들어오는","경쟁자를 뜻하는 겁재","좋아하는 사람을 두고 경쟁이 생기거나 친구로 남기 쉬워");
+      if(!male&&g==="상관") add(-2,"연인 기운을 누르는 상관이 들어오는","연인 기운을 누르는 상관","말이 날카로워져서 좋은 사람도 밀어내기 쉬워");
+    } else if(c==="money"){
+      if(g==="정재") add(k==="side"?2:3,"차곡차곡 쌓이는 돈을 뜻하는 정재가 들어오는","쌓이는 돈을 뜻하는 정재",pick({saving:"이때 시작한 저축은 중간에 깨지 않고 오래 가",income:"고정 수입이 늘어나는 얘기가 나오기 좋아",side:"작아도 매달 꾸준히 들어오는 수입을 만들기 좋아",flow:"들어오는 돈이 안정적으로 늘어"}));
+      if(g==="편재") add(k==="saving"?1:3,"큰돈이 움직이는 편재가 들어오는","큰돈이 움직이는 편재",pick({saving:"돈이 크게 도는 만큼 쓰기도 쉬워서, 들어온 날 바로 떼어둬야 남아",income:"성과급이나 추가 수입 기회가 오기 쉬워",side:"거래나 판매가 한 번에 크게 붙기 쉬워",flow:"큰돈이 들어오기 쉬운데, 그만큼 크게 나갈 일도 같이 생겨"}));
+      if(g==="식신"&&k!=="saving") add(2,"실력이 결과물로 나오는 식신이 들어오는","결과물을 뜻하는 식신",pick({income:"일한 만큼 인정받고 보상 얘기가 나오기 좋아",side:"만든 게 꾸준히 팔리기 시작하기 좋아",flow:"돈을 만드는 활동이 늘어"}));
+      if(g==="상관"){
+        if(k==="saving") add(-1,"충동 지출이 늘기 쉬운 상관이 들어오는","충동 지출을 부르는 상관","사고 싶은 게 늘어나니 결제 전에 하루만 참아");
+        else add(2,"아이디어가 돈이 되는 상관이 들어오는","아이디어를 뜻하는 상관",pick({income:"새로운 방식으로 수입을 늘릴 아이디어가 먹히기 좋아",side:"새 아이템을 시험해보기 좋아",flow:"새로운 돈줄이 생기기 쉬워"}));
+      }
+      if(g==="정관"&&k==="income") add(2,"자리와 평가가 올라가는 정관이 들어오는","평가를 뜻하는 정관","연봉이나 직급 얘기를 꺼내기 좋아");
+      if(g==="정인"&&k==="saving") add(1,"문서와 계약을 뜻하는 정인이 들어오는","계약을 뜻하는 정인","적금이나 청약처럼 묶어두는 계약을 하기 좋아");
+      if(g==="겁재") add(-3,"돈이 새기 쉬운 겁재가 들어오는","돈이 새는 겁재","빌려주기·동업·충동 결제는 이때 특히 조심해");
+      if(g==="비견"&&["saving","flow"].includes(k)) add(-1,"나눠 쓸 일이 생기는 비견이 들어오는","나눠 쓰는 비견","모임이나 경조사로 돈이 나가기 쉬워");
+    } else if(c==="career"){
+      if(k==="exam"){
+        if(g==="정인") add(3,"합격 문서를 뜻하는 정인이 들어오는","합격 문서를 뜻하는 정인","준비한 만큼 점수가 나오기 좋아");
+        if(g==="편인") add(2,"깊게 파고드는 집중력의 편인이 들어오는","집중력을 뜻하는 편인","어려운 과목을 파고들기 좋아");
+        if(g==="정관") add(2,"시험과 평가를 뜻하는 정관이 들어오는","평가를 뜻하는 정관","실전에서 긴장보다 집중이 앞서기 좋아");
+        if(g==="편관") add(1,"마감 앞에서 힘이 나는 편관이 들어오는","마감의 힘을 뜻하는 편관","몰아서 준비하는 막판 스퍼트가 잘 돼");
+        if(["정재","편재"].includes(g)) add(-2,"공부 집중을 흩뜨리는 재성이 들어오는","집중을 흩뜨리는 재성","돈·약속 같은 딴 일이 자꾸 끼어들기 쉬워");
+        if(g==="상관") add(-1,"실수가 늘기 쉬운 상관이 들어오는","실수를 부르는 상관","아는 문제에서 실수하지 않게 검토를 꼭 해");
+      } else if(k==="jobsearch"){
+        if(g==="정관") add(3,"새 자리를 뜻하는 정관이 들어오는","새 자리를 뜻하는 정관","합격 소식이나 좋은 제안이 오기 쉬워");
+        if(g==="편관") add(2,"도전하는 자리를 뜻하는 편관이 들어오는","도전하는 자리를 뜻하는 편관","경쟁이 센 곳에서도 붙기 좋아");
+        if(g==="정인") add(2,"합격 통보와 계약 문서를 뜻하는 정인이 들어오는","합격 통보를 뜻하는 정인","서류 통과나 합격 연락이 오기 쉬워");
+        if(yeokma) add(1,"이동을 뜻하는 역마가 드는","이동을 뜻하는 역마","새 지역이나 새 분야로 움직이기 좋아");
+        if(g==="상관") add(-2,"말이 앞서기 쉬운 상관이 들어오는","말이 앞서는 상관","면접에서 불만이나 과한 말을 조심해");
+        if(g==="겁재") add(-1,"경쟁자가 늘어나는 겁재가 들어오는","경쟁자를 뜻하는 겁재","지원자가 몰려 결과가 늦게 오기 쉬워");
+      } else if(k==="move"){
+        if(yeokma) add(2,"이동을 뜻하는 역마가 드는","이동을 뜻하는 역마","자리를 옮기는 일이 자연스럽게 풀려");
+        if(monthClash) add(2,"지금 일 자리를 뜻하는 월주와 부딪히는","일 자리와의 충","지금 자리에 변화가 생기면서 옮길 명분이 생기기 쉬워");
+        if(g==="정관") add(2,"새 자리를 뜻하는 정관이 들어오는","새 자리를 뜻하는 정관","더 나은 제안이 오기 쉬워");
+        if(g==="정인") add(1,"계약 문서를 뜻하는 정인이 들어오는","계약 문서를 뜻하는 정인","조건을 문서로 확정하기 좋아");
+        if(g==="겁재") add(-2,"조건 경쟁이 붙는 겁재가 들어오는","조건 경쟁을 뜻하는 겁재","급하게 옮기면 조건에서 손해 보기 쉬워");
+        if(g==="상관") add(-1,"말이 앞서기 쉬운 상관이 들어오는","말이 앞서는 상관","퇴사 얘기를 감정적으로 꺼내기 쉬워");
+      } else {
+        if(g==="정관") add(3,"인정과 승진을 뜻하는 정관이 들어오는","인정과 승진을 뜻하는 정관","평가나 승진 얘기가 나오기 좋아");
+        if(g==="정인") add(2,"윗사람이 끌어주는 정인이 들어오는","윗사람의 도움을 뜻하는 정인","도와주는 상사나 선배가 생기기 쉬워");
+        if(g==="식신") add(1,"성과가 눈에 보이게 나오는 식신이 들어오는","성과를 뜻하는 식신","한 일을 보여주기 좋아");
+        if(g==="상관") add(-3,"윗사람과 부딪히기 쉬운 상관이 들어오는","윗사람과 부딪히는 상관","불만은 말로 하지 말고 글로 정리해서 전해");
+        if(monthClash) add(-1,"일 자리를 뜻하는 월주와 부딪히는","일 자리와의 충","부서 이동이나 업무 변화로 어수선해지기 쉬워");
+      }
+    } else if(c==="path"){
+      if(g==="식신") add(2,"재능이 드러나는 식신이 들어오는","재능을 뜻하는 식신","해보고 싶은 걸 작게 시작해보기 좋아");
+      if(g==="상관") add(2,"새 방식이 떠오르는 상관이 들어오는","새 방식을 뜻하는 상관","안 해본 분야를 시험해보기 좋아");
+      if(g==="정인") add(2,"배움과 자격을 뜻하는 정인이 들어오는","배움을 뜻하는 정인","수업이나 자격증처럼 방향을 잡아줄 배움을 시작하기 좋아");
+      if(g==="편인") add(1,"깊게 파고드는 편인이 들어오는","깊이 파는 편인","관심 분야를 깊게 알아보기 좋아");
+      if(g==="정관"&&k!=="switch") add(1,"방향을 잡아주는 정관이 들어오는","방향을 잡아주는 정관","진로를 정하고 계획을 세우기 좋아");
+      if(k==="switch"&&yeokma) add(2,"이동을 뜻하는 역마가 드는","이동을 뜻하는 역마","새 분야로 옮기는 일이 자연스럽게 풀려");
+      if(k==="switch"&&monthClash) add(1,"지금 일 자리를 뜻하는 월주와 부딪히는","일 자리와의 충","지금 자리에 변화가 생기면서 옮길 계기가 생겨");
+      if(k==="switch"&&g==="편관") add(-2,"부담이 커지는 편관이 들어오는","부담을 뜻하는 편관","새 시작보다 지금 일을 정리하는 데 써");
+      if(g==="겁재") add(-1,"남과 비교가 커지는 겁재가 들어오는","비교를 부르는 겁재","남 따라 급하게 정하지 마");
+    } else if(c==="people"){
+      if(k==="friend"){
+        if(g==="비견") add(2,"마음 맞는 친구를 뜻하는 비견이 들어오는","친구를 뜻하는 비견","새 친구가 생기거나 옛 친구와 다시 가까워지기 쉬워");
+        if(g==="정인") add(2,"나를 이해해주는 사람을 뜻하는 정인이 들어오는","이해해주는 사람을 뜻하는 정인","속 얘기를 꺼내기 좋아");
+        if(g==="식신") add(1,"편하게 어울리기 좋은 식신이 들어오는","편한 어울림을 뜻하는 식신","가볍게 만나 웃기 좋아");
+        if(g==="겁재") add(-2,"비교와 돈 문제로 부딪히기 쉬운 겁재가 들어오는","비교를 부르는 겁재","돈 거래나 비교하는 말은 피해");
+        if(dayClash) add(-2,"너 자신의 자리와 부딪히는","너 자신의 자리와의 충","작은 말에도 서운해지기 쉬워");
+      } else if(k==="work"){
+        if(g==="정인") add(2,"윗사람이 도와주는 정인이 들어오는","윗사람의 도움을 뜻하는 정인","상사와 관계를 풀기 좋아");
+        if(g==="정관") add(2,"역할과 선이 분명해지는 정관이 들어오는","역할을 정리하는 정관","업무 분담을 다시 정하기 좋아");
+        if(g==="식신") add(1,"분위기가 부드러워지는 식신이 들어오는","부드러운 분위기의 식신","팀 사람들과 가벼운 대화를 늘리기 좋아");
+        if(g==="상관") add(-2,"말실수로 부딪히기 쉬운 상관이 들어오는","말실수를 부르는 상관","회의에서 반박은 한 번 참고 나중에 따로 말해");
+        if(g==="편관") add(-2,"윗사람 부담이 커지는 편관이 들어오는","윗사람 부담을 뜻하는 편관","무리한 지시가 늘 수 있으니 기록을 남겨");
+        if(monthClash) add(-2,"직장 자리를 뜻하는 월주와 부딪히는","직장 자리와의 충","팀 이동이나 사람 변화로 어수선해져");
+      } else if(k==="family"){
+        if(g==="정인") add(3,"집안 어른과 풀리기 좋은 정인이 들어오는","집안 어른과의 화해를 뜻하는 정인","부모님과 대화를 다시 시작하기 좋아");
+        if(g==="비견") add(1,"형제·또래 가족과 가까워지는 비견이 들어오는","형제를 뜻하는 비견","형제자매와 편하게 얘기하기 좋아");
+        if(g==="식신") add(1,"집안 분위기가 부드러워지는 식신이 들어오는","부드러운 분위기의 식신","같이 밥 먹는 자리를 만들기 좋아");
+        if(familyClash) add(-3,"부모·집안 자리와 부딪히는","집안 자리와의 충","집안의 큰 얘기는 이때 꺼내지 마");
+        if(g==="겁재") add(-1,"집안 돈 문제가 생기기 쉬운 겁재가 들어오는","집안 돈 문제를 부르는 겁재","가족 간 돈 약속은 미뤄");
+      } else {
+        if(g==="식신") add(2,"하고 싶은 말을 부드럽게 꺼내기 좋은 식신이 들어오는","부드러운 말을 돕는 식신","거리를 두겠다는 말을 해도 덜 상처가 돼");
+        if(g==="정관") add(2,"선을 긋기 좋은 정관이 들어오는","선을 긋는 정관","만나는 횟수를 정해 알리기 좋아");
+        if(g==="편인") add(1,"혼자 정리할 시간이 생기는 편인이 들어오는","혼자만의 시간을 뜻하는 편인","자연스럽게 연락을 줄이기 좋아");
+        if(g==="겁재") add(-2,"감정싸움이 붙기 쉬운 겁재가 들어오는","감정싸움을 부르는 겁재","이때 결론 내리면 싸움으로 끝나기 쉬워");
+        if(dayClash) add(-2,"너 자신의 자리와 부딪히는","너 자신의 자리와의 충","감정이 격해지기 쉬우니 중요한 말은 미뤄");
+      }
+    } else {
+      if(k==="overthink"){
+        if(g==="식신") add(3,"생각을 밖으로 풀어내기 좋은 식신이 들어오는","생각을 풀어내는 식신","몸을 쓰거나 뭔가 만들면서 생각이 줄어들어");
+        if(g==="상관") add(1,"말로 풀어내기 좋은 상관이 들어오는","말로 푸는 상관","털어놓으면 금방 가벼워져");
+        if(g==="정인") add(2,"회복을 뜻하는 정인이 들어오는","회복을 뜻하는 정인","잠이 깊어지고 마음이 차분해지기 쉬워");
+        if(g==="편인") add(-2,"생각이 더 깊어지기 쉬운 편인이 들어오는","생각을 키우는 편인","혼자 곱씹는 시간을 정해두고 끊어");
+        if(g==="편관") add(-2,"부담이 몰려오는 편관이 들어오는","부담을 뜻하는 편관","새 일을 받지 말고 일정을 비워둬");
+      } else {
+        if(g==="정인") add(3,"회복을 뜻하는 정인이 들어오는","회복을 뜻하는 정인","쉬는 만큼 기운이 확실히 채워져");
+        if(g==="식신") add(2,"즐거움이 돌아오는 식신이 들어오는","즐거움을 뜻하는 식신","좋아하는 걸 하면서 기분이 풀리기 쉬워");
+        if(g==="편인") add(1,"혼자 쉬며 정리하기 좋은 편인이 들어오는","혼자 쉬는 편인","혼자만의 시간이 약이 돼");
+        if(g==="비견"&&weak) add(1,"기댈 사람이 생기는 비견이 들어오는","기댈 사람을 뜻하는 비견","친구나 동료에게 힘든 걸 말하기 좋아");
+        if(g==="편관") add(-3,"부담이 몰려오는 편관이 들어오는","부담을 뜻하는 편관","새 일을 받지 말고 일정을 비워둬");
+        if(g==="상관") add(-1,"예민해지기 쉬운 상관이 들어오는","예민함을 키우는 상관","잠부터 먼저 챙겨");
+        if(g==="겁재") add(-1,"남과 비교가 커지는 겁재가 들어오는","비교를 부르는 겁재","SNS를 줄여");
+      }
+    }
+    return out;
+  }
+
+  function concernTimingPlan(reasoning,s,data){
+    const today=String(reasoning?.timing?.today||"");
+    const limit=yearAheadYmd(reasoning);
+    const scored=(reasoning?.timing?.nearMonths||[]).filter(r=>String(r?.endYmd||"")>today).map(row=>{
+      const sigs=concernSignals(reasoning,s,data,monthCtx(row));
+      const score=sigs.reduce((a,x)=>a+x.s,0)+(CLASS_BONUS[row.class]||0);
+      return {row,sigs,score,near:!limit||String(row.startYmd)<limit};
+    });
+    const hasPos=x=>x.sigs.some(y=>y.s>0), hasNeg=x=>x.sigs.some(y=>y.s<0);
+    const byBest=(a,b)=>b.score-a.score||String(a.row.startYmd).localeCompare(String(b.row.startYmd));
+    const best=scored.filter(x=>x.near&&x.score>=2&&hasPos(x)).sort(byBest).slice(0,2);
+    const far=best.length?[]:scored.filter(x=>!x.near&&x.score>=2&&hasPos(x)).sort(byBest).slice(0,1);
+    const worst=scored.filter(x=>x.near&&x.score<=-2&&hasNeg(x))
+      .sort((a,b)=>a.score-b.score||String(a.row.startYmd).localeCompare(String(b.row.startYmd)))[0]||null;
+    const used=new Set([...best,...far,worst].filter(Boolean).map(x=>x.row.startYmd));
+    const extra=scored.filter(x=>x.near&&!used.has(x.row.startYmd)&&x.score>=2&&hasPos(x)).sort(byBest).slice(0,1);
+    return {scored,best,far,worst,extra,today};
+  }
+  function monthSpan(row,today){
+    const y=Number(String(today).slice(0,4));
+    const start=String(row?.startYmd||""), end=String(row?.endYmd||"");
+    const sy=Number(start.slice(0,4)), ey=Number(end.slice(0,4));
+    const isNow=start<=today;
+    const endText=(ey&&ey!==(isNow?y:sy)?ey+"년 ":"")+Number(end.slice(5,7))+"월 "+Number(end.slice(8,10))+"일 전까지";
+    if(isNow) return "지금부터 "+endText;
+    return (sy&&sy!==y?sy+"년 ":"")+Number(start.slice(5,7))+"월 "+Number(start.slice(8,10))+"일부터 "+endText;
+  }
+  function posSigs(item){ return [...(item?.sigs||[])].filter(x=>x.s>0).sort((a,b)=>b.s-a.s); }
+  function negSigs(item){ return [...(item?.sigs||[])].filter(x=>x.s<0).sort((a,b)=>a.s-b.s); }
+  function goodMonthText(item,prevItem){
+    const p=posSigs(item);
+    const first=p[0], second=p[1];
+    const prev=posSigs(prevItem);
+    const sameSecond=!!second&&!!prev[1]&&prev[1].n===second.n;
+    const secondText=second?(sameSecond?" 이 달에도 "+withJosa(second.n,"이","가")+" 같이 들어.":" 게다가 같은 달에 "+second.n+"까지 겹쳐."):"";
+    if(!first) return "이 고민에 도움이 되는 기운이 겹치는 달이야.";
+    if(prev[0]&&first.n===prev[0].n) return "1순위와 같은 기운인 "+withJosa(first.n,"이","가")+" 한 번 더 들어오는 달이야."+(second?(sameSecond?" 이 달에도 "+withJosa(second.n,"이","가")+" 같이 들어.":" 여기에 "+second.n+"까지 겹쳐."):"");
+    return first.a+" 달이야."+secondText+(first.e?" "+first.e+".":"");
+  }
+  function badMonthText(item){
+    const n=negSigs(item)[0];
+    return n?n.a+" 달이라, "+n.e+".":"이 고민에서 약한 쪽을 건드리는 달이야.";
+  }
+  // NOTE2의 "좋은 달 / 피할 달" 줄. 1순위·2순위는 이유와 그때 생기는 일까지, 피할 달은 이유와 할 일까지 쓴다.
+  function timingAnswerLines(reasoning,s,data,good,bad){
+    const plan=concernTimingPlan(reasoning,s,data);
+    const lines=[];
+    if(plan.best.length){
+      const b1=plan.best[0], b2=plan.best[1];
+      lines.push("<b>"+good+" 1순위 — "+monthSpan(b1.row,plan.today)+"</b>. "+goodMonthText(b1));
+      if(b2) lines.push("<b>2순위 — "+monthSpan(b2.row,plan.today)+"</b>. "+goodMonthText(b2,b1));
+    } else if(plan.far.length){
+      lines.push("<b>"+good+"</b> — 1년 안에는 이 고민에 딱 맞는 달이 두드러지지 않아. 가장 가까운 건 "+monthSpan(plan.far[0].row,plan.today)+"이고, "+goodMonthText(plan.far[0]));
+    } else {
+      lines.push("<b>"+good+"</b> — 앞으로 1년 반 동안 이 고민에서 특별히 튀는 달 없이 고르게 가. 그래서 날짜를 기다리기보다 준비되는 대로 움직이는 게 맞아.");
+    }
+    if(plan.worst) lines.push("<b>"+bad+" — "+monthSpan(plan.worst.row,plan.today)+"</b>. "+badMonthText(plan.worst));
+    return {lines,plan};
+  }
+  // 올해·내년이 이 고민에 어떤 해인지 한 줄로.
+  function concernYearAnswer(reasoning,s,data){
+    const y=Number(String(reasoning?.timing?.today||"").slice(0,4));
+    const years=reasoning?.timing?.years||[];
+    const rows=[y,y+1].map(yy=>years.find(r=>r?.year===yy)).filter(Boolean);
+    if(rows.length<2) return "";
+    const info=rows.map(yr=>{
+      const sigs=concernSignals(reasoning,s,data,yearCtx(reasoning,yr));
+      const gz=String(yr.seyunGanZhi||"");
+      return {name:(GAN_KR[gz[0]]||"")+(ZHI_KR[gz[1]]||"")+"년",score:sigs.reduce((a,x)=>a+x.s,0),top:[...sigs].sort((a,b)=>Math.abs(b.s)-Math.abs(a.s))[0]||null};
+    });
+    const word=CONCERN_SHORT[s.concern]||"이 고민";
+    const part=(x,last)=>x.top?x.top.a+" "+(last?"해야":"해고"):word+" 쪽으로 크게 움직이지 않는 "+(last?"해야":"해고");
+    const head=!info[0].top&&!info[1].top
+      ? "올해 "+withJosa(info[0].name,"과","와")+" 내년 "+info[1].name+" 모두 "+word+" 쪽으로 크게 움직이는 해는 아니야."
+      : "올해 "+withJosa(info[0].name,"은","는")+" "+part(info[0],false)+", 내년 "+withJosa(info[1].name,"은","는")+" "+part(info[1],true)+".";
+    const a=info[0].score, b=info[1].score;
+    const tail=a>=2&&b>=2?" 두 해 모두 "+word+" 쪽으로 열려 있어서, 이 2년이 제일 좋은 시기야."
+      :a>=2?" 올해가 더 좋은 해라, 올해 안에 움직이는 게 유리해."
+      :b>=2?" 내년이 더 좋은 해라, 올해는 준비하고 내년에 크게 움직여."
+      :a<=-2&&b<=-2?" 두 해 모두 "+word+" 쪽은 조심스럽게 가는 해라, 크게 벌리기보다 지키는 게 먼저야."
+      :a<=-2?" 올해는 조심스럽게 가고, 내년에 다시 보는 게 좋아."
+      :!info[0].top&&!info[1].top?" 그래서 한 해를 통째로 믿기보다, 달 단위로 좋은 때를 골라 움직이는 게 맞아."
+      :" 두 해 모두 크게 기울지 않아서, 달 단위로 좋은 때를 골라 움직이면 돼.";
+    return "<b>올해와 내년</b> — "+head+tail;
+  }
+
+  // ----- v8 답 재료: 구체적인 이름까지 쓰기 위한 표 -----
+  // [그룹][필요한 오행] → 실제로 할 수 있는 부업 예시
+  const SIDE_ITEMS={
+    output:{mok:"손글씨·일러스트 굿즈, 식물·원예 소품, 옷 리폼",hwa:"숏폼 영상 편집, 네일·메이크업 출장, 디저트·베이킹 판매",to:"수제 반찬·건강 간식, 도자기·공예품, 인테리어 소품 제작",geum:"액세서리·금속 공예, 사진 촬영·보정, 전자기기 커스텀",su:"음료·커피 레시피 판매, 여행 사진·영상 콘텐츠, 향초·디퓨저 제작"},
+    wealth:{mok:"중고 의류·책 리셀, 식물·꽃 공동구매, 교육용품 유통",hwa:"화장품·뷰티템 공동구매, 공연·행사 티켓 대행, 인기 굿즈 리셀",to:"지역 농산물·특산품 판매, 중고 가구 리셀, 생활용품 공동구매",geum:"전자기기·카메라 중고 거래, 명품·시계 리셀, 운동용품 구매대행",su:"해외 직구 대행, 수입 식품·음료 판매, 여행 상품 제휴 판매"},
+    print:{mok:"과외·학습 코칭, 독서·글쓰기 모임 운영, 전자책 출판",hwa:"말하기·발표 코칭, 뷰티·스타일링 클래스, 온라인 강의",to:"살림·재테크 노하우 강의, 상담·멘토링, 자격증 스터디 운영",geum:"엑셀·코딩 강의, 운동 지도, 분석 리포트 작성",su:"외국어 과외, 여행 코스 설계, 심리·명상 상담"},
+    officer:{mok:"교육기관 운영 대행, 행사 진행 스태프, 블로그 관리 대행",hwa:"SNS 계정 운영 대행, 행사·파티 기획 대행, 매장 홍보 관리",to:"숙소·공간 관리 대행, 사무 행정 대행, 주말 매장 관리",geum:"회계·세무 보조, 데이터 정리 대행, 장비 점검 관리",su:"배송·물류 관리, 해외 거래처 연락 대행, 예약·고객응대 대행"},
+    self:{mok:"1:1 레슨, 프리랜스 번역·교정, 인테리어 컨설팅",hwa:"프리랜스 디자인, 퍼스널컬러·스타일 컨설팅, 행사 MC·촬영 모델",to:"정리수납 서비스, 청소·이사 전문 서비스, 반려동물 돌봄",geum:"프리랜스 개발, 기기·차량 수리, 퍼스널 트레이닝",su:"프리랜스 통역, 음악 레슨·작곡, 1인 배달·운송"},
+  };
+  const SIDE_SHAPE={
+    output:"돈이 들어오는 모양은, 처음엔 작게 팔리다가 후기가 쌓이면서 꾸준히 늘어나는 식이야.",
+    wealth:"돈이 들어오는 모양은, 건당 수익이 크고 달마다 들쭉날쭉한 식이야.",
+    print:"돈이 들어오는 모양은, 한 번 만든 강의나 자료가 반복해서 팔리는 식이야.",
+    officer:"돈이 들어오는 모양은, 매달 정해진 금액이 안정적으로 들어오는 식이야.",
+    self:"돈이 들어오는 모양은, 네가 움직인 만큼 바로바로 들어오는 식이야.",
+  };
+  const SIDE_PLUS={
+    output:"만드는 걸 좋아하면 오래 할 수 있어.",wealth:"사람 만나는 걸 좋아하면 빨리 벌 수 있어.",print:"아는 게 쌓일수록 몸값이 올라가.",
+    officer:"본업과 시간이 겹치지 않으면 안정적인 부수입이 돼.",self:"이미 가진 기술이 있으면 바로 시작할 수 있어.",
+  };
+  const SIDE_AVOID_WHY={
+    self:"사람이 끼는 순간 돈이 나눠지고 관계까지 불편해져서, 네 사주에선 벌어도 남는 게 제일 적어.",
+    output:"만드는 데 힘을 다 써서 팔 기운이 안 남고, 안 팔린 재고가 그대로 손해가 돼.",
+    wealth:"한 번 크게 걸었다가 잃으면 네 사주는 회복이 오래 걸려서, 번 것보다 잃는 게 커지기 쉬워.",
+    officer:"본업 책임까지 겹쳐서 둘 다 흐트러지고, 결국 부업 때문에 본업 평가까지 떨어지기 쉬워.",
+    print:"준비만 길어지고 돈이 되는 단계까지 가질 못해서, 쓴 돈만 남기 쉬워.",
+  };
+  const INCOME_HOW={
+    officer:"평가 시즌 전에 올해 한 일을 숫자로 정리해서 먼저 보여주고, 원하는 직급과 금액을 분명히 말해.",
+    wealth:"성과가 숫자로 바로 찍히는 일을 맡고, 그 숫자를 근거로 성과급이나 수당을 요구해.",
+    output:"지금 받는 단가를 한 단계 올려서 제시하고, 따로 받는 외주를 하나 만들어.",
+    print:"자격증이나 전문 분야 하나를 정해서, 그걸 근거로 몸값을 다시 매겨.",
+    self:"회사 밖에서 내 이름으로 받는 일을 작게 시작해서, 내 몫을 직접 정하는 방식으로 옮겨가.",
+  };
+  const INCOME_AVOID_WHY={
+    self:"네 사주는 말 안 하면 아무도 안 챙겨주는 쪽이라, 기다리는 동안 수입은 그대로야.",
+    output:"싸게 많이 하면 일만 늘고 몸값은 안 올라서, 나중엔 올리기가 더 어려워져.",
+    wealth:"옮길 때마다 처음부터 다시 쌓아야 해서, 길게 보면 오히려 손해야.",
+    officer:"책임만 늘고 보상 얘기를 미루면, 일 잘하는 사람으로만 남고 돈은 안 따라와.",
+    print:"준비가 끝나길 기다리면 협상할 타이밍을 계속 놓쳐.",
+  };
+  const LEAK_WHY={
+    self:"나와 같은 힘인 비겁이 제일 커서, 사람 사이 의리로 돈을 쓰는 게 자연스러운 사주야.",
+    output:"표현하고 즐기는 힘인 식상이 제일 커서, 기분이 곧 지출로 이어지기 쉬워.",
+    wealth:"돈을 굴리는 힘인 재성이 제일 커서, 여기저기 조금씩 걸어두는 돈이 많아.",
+    officer:"책임과 체면을 뜻하는 관성이 제일 커서, 안 내면 불편한 돈을 못 끊어.",
+    print:"생각과 회복을 뜻하는 인성이 제일 커서, 지친 나를 달래는 데 돈이 나가.",
+  };
+  const LEAK_FIX={
+    self:"빌려주거나 대신 내기 전에 이번 달 사람 예산을 정해두고, 그 안에서만 써.",
+    output:"사고 싶은 건 장바구니에 넣고 사흘 뒤에 다시 봐. 그때도 필요하면 사.",
+    wealth:"걸어둔 투자·구독·할인 결제를 전부 적어보고, 수익이 안 나는 건 이번 달에 정리해.",
+    officer:"경조사·선물은 한 달 한도를 정하고, 넘으면 마음만 전해도 돼.",
+    print:"배달·택시·자기계발비를 한 통장으로 묶어서 한도를 정해.",
+  };
+  const SAVE_WHY={
+    print:"네 사주에 필요한 게 인성이라, 믿을 만한 곳에 맡겨두면 마음이 편해서 오래 가.",
+    self:"네 사주에 필요한 게 비겁이라, 내가 직접 정하고 지키는 방식이 제일 잘 맞아.",
+    output:"네 사주에 필요한 게 식상이라, 모은 돈으로 할 일이 눈에 보여야 계속 모아.",
+    wealth:"네 사주에 필요한 게 재성이라, 통장마다 돈의 자리를 정해두면 새지 않아.",
+    officer:"네 사주에 필요한 게 관성이라, 한번 정한 규칙을 못 깨게 묶어두는 게 맞아.",
+  };
+  // [그룹][오행] → 실제 직무·직업 이름
+  const JOB_ITEMS={
+    officer:{mok:"교육청·학교 행정, 교육기업 관리직, 공공기관 기획",hwa:"방송·광고 대기업 관리직, 공기업 홍보, 문화재단 행정",to:"공기업·지자체 행정, 건설·부동산 대기업 관리직, 병원 행정",geum:"은행·금융권, 대기업 인사·총무, 군무원·경찰 행정",su:"무역·물류 대기업, 항공·해운사 관리직, 공공기관 대외협력"},
+    wealth:{mok:"교육·출판 영업, 패션 MD, 인테리어 영업",hwa:"뷰티·광고 영업, 이커머스 MD, 마케팅 성과 분석",to:"부동산·건설 영업, 식품 MD, 구매·자재 관리",geum:"증권·보험·은행 영업, 재무·회계, IT 기기 영업",su:"무역 영업, 유통·물류 구매, 여행 상품 기획"},
+    output:{mok:"교육 콘텐츠 기획, 편집 디자인, 패션 디자인",hwa:"영상·광고 콘텐츠 제작, UX·UI 디자인, 방송 작가",to:"공간·인테리어 설계, 식품 연구개발, 건축 설계",geum:"개발자, 제품 디자인, 품질·설계 엔지니어",su:"마케팅 콘텐츠, 음료·여행 브랜드 기획, 음향·영상 편집"},
+    print:{mok:"교사·강사, 연구원, 편집자",hwa:"교육 코디네이터, 상담사, 기자·에디터",to:"사회복지사, 보건 전문직, 자격 기반 사무직",geum:"데이터 분석가, 법무·세무 보조, 연구 기술직",su:"통번역, 심리상담, 해외 교육 코디"},
+    self:{mok:"물리치료사, 헤어디자이너, 플로리스트",hwa:"메이크업 아티스트, 사진가, 요리사",to:"간호사·치위생사, 공인중개사, 조리사",geum:"정비·기술직, 약사·임상병리사, 트레이너",su:"바리스타·소믈리에, 승무원, 물류 전문기사"},
+  };
+  const JOB_WHY={
+    officer:"정해진 틀 안에서 믿음을 쌓는 자리라, 네 사주가 가장 안정적으로 평가받는 곳이야.",
+    wealth:"한 만큼 숫자로 돌아오는 자리라, 네 사주가 가장 빨리 성과를 내는 곳이야.",
+    output:"만든 걸 보여주는 자리라, 네 사주의 재주가 그대로 실력으로 인정받는 곳이야.",
+    print:"아는 게 무기가 되는 자리라, 네 사주가 오래 갈수록 값이 올라가는 곳이야.",
+    self:"내 손기술이 곧 내 몫인 자리라, 네 사주가 남 눈치 안 보고 버티는 곳이야.",
+  };
+  const INTERVIEW={
+    정관:"성실함보다 ‘맡으면 끝까지 책임진 경험’ 하나를 구체적으로 말해.",편관:"힘든 상황을 버텨서 결과를 낸 경험을 앞에 세워.",
+    정재:"숫자로 남긴 성과를 먼저 말해. 금액이든 기간이든 하나만 있어도 돼.",편재:"사람을 만나서 일을 성사시킨 경험을 이야기로 풀어.",
+    식신:"꾸준히 만들어온 결과물을 직접 보여줘.",상관:"문제를 바꾼 경험은 좋지만, 이전 회사 흉은 절대 꺼내지 마.",
+    정인:"배운 걸 실제로 적용한 사례를 말해. 공부한 목록만 나열하면 약해.",편인:"네 방식이 달랐던 이유를 짧게 설명하고, 결과로 마무리해.",
+    비견:"혼자 끝까지 해낸 일을 말하되, 팀과 맞춘 부분도 한 줄 붙여.",겁재:"경쟁에서 이긴 경험보다 같이 이긴 경험을 말해.",
+  };
+  const STUDY_STYLE={
+    정관:"계획표를 짜고 시간 단위로 지키는 방식",편관:"모의고사와 마감을 먼저 걸어두고 몰아붙이는 방식",
+    정재:"분량을 잘게 쪼개서 매일 체크하는 방식",편재:"짧고 굵게 몰아서 하고 확실히 쉬는 방식",
+    식신:"같은 시간·같은 장소에서 꾸준히 반복하는 방식",상관:"문제를 풀고 틀린 걸 남에게 설명해보는 방식",
+    정인:"강의를 듣고 내 말로 정리하는 방식",편인:"한 과목씩 끝까지 깊게 파는 방식",
+    비견:"혼자 내 페이스대로 하는 방식",겁재:"스터디에서 서로 경쟁하는 방식",
+  };
+  const EXAM_DAY={
+    정관:"긴장하면 아는 문제도 두 번 의심해. 처음 고른 답을 믿어.",편관:"초반에 어려운 문제에 오래 매달리지 마.",
+    정재:"시간 배분을 미리 정해두고 그대로 지켜.",편재:"자신 있는 문제부터 빠르게 풀고 돌아와.",
+    식신:"평소 루틴대로 먹고 자는 게 제일 중요해.",상관:"아는 문제에서 실수가 나기 쉬우니 검토 시간을 꼭 남겨.",
+    정인:"완벽하게 이해하려다 시간이 부족해지기 쉬워.",편인:"한 문제에 생각이 깊어지면 표시하고 넘어가.",
+    비견:"남과 비교하지 말고 내 속도대로 풀어.",겁재:"옆 사람 속도에 휘둘리지 마.",
+  };
+  const EXAM_KEY_WHY={
+    self:"네 사주는 고집이 있어서, 안 되는 방식을 끝까지 붙잡는 게 제일 큰 손해야.",
+    output:"네 사주는 새로운 걸 좋아해서, 지루한 반복에서 무너지기 쉬워.",
+    wealth:"네 사주는 효율을 따져서, 기본을 건너뛰고 응용부터 하다가 구멍이 생겨.",
+    officer:"네 사주는 평가 앞에서 긴장이 커서, 실전 연습이 점수를 제일 크게 바꿔.",
+    print:"네 사주는 이해하는 데 시간을 많이 써서, 정리만 하다 문제 풀 시간이 모자라.",
+  };
+  const CURRENT_WHY={
+    self:"네 사주는 혼자 조용히 끝내는 편이라, 말 안 하면 네 몫이 안 보여.",
+    output:"네 사주는 아이디어는 좋은데, 윗사람 입장에서 들으면 불만처럼 들릴 때가 있어.",
+    wealth:"네 사주는 계산이 빨라서, 보상 얘기를 먼저 꺼내면 손해 보는 사람처럼 보이기 쉬워.",
+    officer:"네 사주는 알아서 해주길 기다리는 편이라, 원하는 걸 말 안 하면 계속 뒤로 밀려.",
+    print:"네 사주는 완벽해질 때까지 붙잡고 있다가, 보고 타이밍을 놓치기 쉬워.",
+  };
+  const CURRENT_NEED={
+    self:"내 담당 범위를 분명히 해서 성과가 내 이름으로 남게 하는 것",output:"한 일을 보고서나 발표처럼 눈에 보이게 만드는 것",
+    wealth:"한 일을 숫자로 기록해두는 것",officer:"자격이나 직함처럼 공식적인 인정을 챙기는 것",print:"끌어줄 선배나 멘토 한 명을 만드는 것",
+  };
+  const CURRENT_EX={
+    self:"일주일에 한 번, 끝낸 일 세 줄 요약을 보내는 것부터 해.",
+    output:"‘이건 문제예요’ 대신 ‘이렇게 바꾸면 이만큼 좋아져요’로 말해.",
+    wealth:"이번 분기 성과를 숫자로 먼저 쌓고, 평가 면담에서 그 숫자를 꺼내.",
+    officer:"‘이 업무를 맡고 싶어요’처럼 원하는 걸 한 문장으로 요청해.",
+    print:"마감 이틀 전에 중간본을 먼저 보여주고 의견을 받아.",
+  };
+  // 배우자 자리(일지) 오행 → 외모 인상
+  const PARTNER_LOOK={
+    mok:"키가 크거나 몸선이 길고 곧은 편이야. 얼굴선은 갸름하고 눈매가 순해서 첫인상이 부드러워.",
+    hwa:"표정이 밝고 눈빛이 또렷해서 첫인상이 화사해. 옷차림이나 머리 스타일에 신경을 쓰는 편이라 멀리서도 눈에 띄어.",
+    to:"체격이 듬직하고 얼굴형이 둥글거나 각진 편이야. 웃는 얼굴이 편안해서 처음 봐도 믿음이 가는 인상이야.",
+    geum:"피부가 맑고 이목구비가 또렷해. 깔끔하고 단정한 스타일이라 처음엔 살짝 차가워 보일 수 있어.",
+    su:"눈매가 깊고 얼굴선이 부드러운 곡선이야. 말수가 많지 않아도 분위기가 있어서 자꾸 눈이 가는 인상이야.",
+  };
+  const PARTNER_LOOK_SHORT={mok:"키가 크고 선이 곧은 사람",hwa:"표정이 밝고 화사한 사람",to:"듬직하고 편안한 인상의 사람",geum:"깔끔하고 이목구비가 또렷한 사람",su:"눈매가 깊고 분위기 있는 사람"};
+  const PARTNER_STYLE={mok:"캐주얼하고 자연스러운",hwa:"화사하고 트렌디한",to:"편안하고 무난한",geum:"깔끔하고 정돈된",su:"차분하고 분위기 있는"};
+  const PARTNER_CHAR={
+    정재:"성실하고 생활력이 강한 사람이야. 약속을 잘 지키고 돈 관리도 알뜰해서, 같이 있으면 생활이 안정돼.",
+    편재:"활동적이고 통이 큰 사람이야. 사람 만나는 걸 좋아하고 씀씀이도 시원해서, 같이 있으면 새로운 경험이 많아.",
+    정관:"반듯하고 책임감이 강한 사람이야. 말과 행동이 같고 예의가 발라서, 믿고 기댈 수 있어.",
+    편관:"카리스마 있고 결단이 빠른 사람이야. 추진력이 세서 끌려가듯 빠져들 수 있는데, 고집도 센 편이야.",
+    정인:"따뜻하고 잘 챙겨주는 사람이야. 네 얘기를 끝까지 들어주고, 힘들 때 먼저 알아채 줘.",
+    편인:"생각이 깊고 독특한 감각을 가진 사람이야. 말은 많지 않지만 한마디가 깊고, 혼자만의 세계가 있어.",
+    식신:"편하고 잘 웃는 사람이야. 맛있는 거 먹고 즐겁게 지내는 걸 좋아해서, 같이 있으면 마음이 풀어져.",
+    상관:"말을 잘하고 재치 있는 사람이야. 대화가 끊이지 않고 센스가 있는데, 할 말은 하는 편이야.",
+    비견:"친구처럼 대등한 사람이야. 서로 간섭하지 않고 각자 일을 존중해줘서 편해.",
+    겁재:"에너지 넘치고 승부욕 있는 사람이야. 같이 있으면 활력이 생기는데, 자존심 싸움은 조심해야 해.",
+  };
+  const MEET_ROUTE={
+    정재:"지인 소개나 오래 알던 사람 중에서 인연이 이어지기 쉬워. 처음부터 불꽃 튀기보다 편하게 알던 사이가 연인이 되는 식이야.",
+    편재:"모임·여행·행사처럼 사람이 많이 오가는 자리에서 우연히 만나기 쉬워.",
+    정관:"직장이나 학교, 믿을 만한 사람의 소개처럼 공식적인 자리에서 만나기 쉬워.",
+    편관:"운동·일·프로젝트처럼 같이 부딪히며 뭔가 하는 자리에서 강하게 끌리기 쉬워.",
+    정인:"스터디·강의·어른의 소개처럼 배우거나 챙김받는 자리에서 만나기 쉬워.",
+    편인:"온라인이나 취미 커뮤니티처럼 관심사가 맞는 좁은 곳에서 만나기 쉬워.",
+    식신:"맛집 모임·취미 클래스처럼 즐겁게 노는 자리에서 자연스럽게 가까워지기 쉬워.",
+    상관:"대화가 많은 자리나 메시지로 먼저 말이 통하면서 가까워지기 쉬워.",
+    비견:"친구의 친구나 동호회처럼 친구 관계가 넓어지는 자리에서 만나기 쉬워.",
+    겁재:"친구 모임이나 경쟁하는 자리에서 만나기 쉬운데, 친구와 겹치는 사람은 조심해.",
+  };
+  const MEET_PLACE_LONG={
+    mok:"서점·도서관·강의실이나 공원 산책로처럼 배우고 걷는 곳",hwa:"공연장·전시·페스티벌이나 밝은 카페처럼 사람 많고 화사한 곳",
+    to:"동네 모임·요리 클래스·봉사나 동호회처럼 편하게 오래 머무는 곳",geum:"헬스장·러닝 모임·전문 세미나처럼 깔끔하고 목적이 분명한 곳",
+    su:"바닷가·여행지나 조용한 와인 모임처럼 분위기 있는 곳",
+  };
+  const AVOID_PARTNER={
+    self:"처음부터 너랑 경쟁하려 들거나 자존심을 세우는 사람",output:"네 말을 가볍게 넘기거나 표현을 부담스러워하는 사람",
+    wealth:"만나자마자 조건·돈 얘기부터 꺼내는 사람",officer:"책임만 떠넘기고 너한테 맞추라고만 하는 사람",
+    print:"생각할 시간을 안 주고 결정을 재촉하는 사람",
+  };
+  const CRUSH_WHY={
+    self:"네 사주는 자존심이 세서, 크게 고백하면 거절이 두려워 오히려 못 움직여.",
+    output:"네 사주는 표현이 빨라서, 상대보다 먼저 너무 많이 보여주면 부담으로 느껴져.",
+    wealth:"네 사주는 챙겨주는 걸로 마음을 보여줘서, 잘해주기만 하다 좋은 사람으로 끝나기 쉬워.",
+    officer:"네 사주는 확실해질 때까지 기다리는 편이라, 타이밍을 놓치기 쉬워.",
+    print:"네 사주는 상대 말 한마디를 오래 해석해서, 혼자 결론 내리기 쉬워.",
+  };
+  const CRUSH_MISTAKE={
+    self:"답장이 늦다고 너도 일부러 늦게 보내는 것",output:"하루에 너무 많은 메시지를 보내는 것",wealth:"선물이나 밥값으로 마음을 대신하는 것",
+    officer:"상대가 먼저 고백하길 끝까지 기다리는 것",print:"상대 SNS를 보며 혼자 의미를 붙이는 것",
+  };
+  const FIGHT_PATTERN={
+    self:"누가 맞는지 끝까지 따지다가 둘 다 지치는 쪽이야.",output:"서운한 걸 바로 말하는데, 말이 세게 나가서 상처가 되기 쉬워.",
+    wealth:"누가 더 많이 했는지 계산이 시작되면서 싸움이 커져.",officer:"참고 맞춰주다가 한 번에 터지는 쪽이야.",
+    print:"말 안 하고 혼자 곱씹다가, 상대는 이유도 모르고 멀어지는 쪽이야.",
+  };
+  const KEEP_LOVE={
+    self:"각자 시간을 존중하고, 내 기준을 한 번은 분명히 말하는 것",output:"서운한 건 그날 말하되, 한 가지만 짧게 말하는 것",
+    wealth:"데이트·돈·시간을 둘이 같이 계획하는 것",officer:"둘만의 약속과 규칙을 정해서 지키는 것",
+    print:"싸운 뒤엔 따뜻한 말 한마디로 먼저 챙겨주는 것",
+  };
+  const SPOUSE_WANTS={
+    정재:"꾸준함과 약속",편재:"같이 하는 새로운 경험",정관:"믿음과 예의",편관:"확실한 결정과 편",정인:"따뜻한 관심",편인:"혼자만의 시간",
+    식신:"편안한 일상",상관:"말이 통하는 대화",비견:"대등한 관계",겁재:"같은 편이라는 확신",
+  };
+  const CONTACT_WAY={
+    self:"길게 설명하지 말고 ‘잘 지내?’처럼 가볍게 한 줄만 보내.",output:"감정을 쏟아내는 긴 메시지는 보내지 마. 짧게, 한 번만.",
+    wealth:"선물이나 부탁을 핑계로 연락하지 말고, 안부 하나로 시작해.",officer:"사과할 게 있으면 사과부터, 짧고 분명하게 해.",
+    print:"상대 반응을 오래 해석하지 말고, 답이 없으면 그대로 받아들여.",
+  };
+  const REPEAT_FIX={
+    self:"다시 만나면 누가 맞는지 따지는 대신 ‘이번엔 네 말대로 해보자’를 한 번은 해.",output:"다시 만나면 서운한 건 그날 말하되, 말투를 한 단계 낮춰.",
+    wealth:"다시 만나면 누가 더 했는지 세지 않기로 먼저 약속해.",officer:"다시 만나면 참다가 터지지 말고, 작을 때 말하는 연습을 해.",
+    print:"다시 만나면 혼자 결론 내리지 말고 직접 물어보는 걸 약속해.",
+  };
+  const PATH_WHY={
+    officer:"정해진 틀에서 신뢰를 쌓는 일이라, 네 사주가 가장 오래 안정적으로 버티는 방향이야.",
+    wealth:"결과가 돈으로 바로 보이는 일이라, 네 사주가 가장 빨리 성과를 내는 방향이야.",
+    output:"손과 머리로 뭔가를 만들어내는 일이라, 네 사주의 재주가 가장 잘 드러나는 방향이야.",
+    print:"배우고 알려주는 일이라, 네 사주가 할수록 깊어지고 값이 올라가는 방향이야.",
+    self:"내 이름과 기술로 하는 일이라, 네 사주가 남 밑에서보다 훨씬 힘을 내는 방향이야.",
+  };
+  const TALENT={
+    정관:"맡은 일을 흐트러짐 없이 끝내는 신뢰",편관:"어려운 상황에서 버티고 밀어붙이는 힘",정재:"꼼꼼하게 관리하고 계산하는 감각",
+    편재:"사람과 기회를 연결하는 감각",식신:"한 가지를 꾸준히 만들어내는 힘",상관:"문제를 찾아서 새롭게 바꾸는 머리",
+    정인:"깊게 이해하고 쉽게 설명하는 힘",편인:"남들이 못 보는 걸 찾아내는 눈",비견:"혼자서도 끝까지 해내는 힘",겁재:"경쟁 앞에서 오히려 커지는 추진력",
+  };
+  const PATH_BOOST={
+    self:"네 이름이 남는 결과를 하나 만들어",output:"만든 걸 사람들에게 보여주는 창구를 하나 열어",wealth:"성과를 숫자로 기록해",
+    officer:"자격이나 직함처럼 공식적인 인정을 하나 챙겨",print:"배운 걸 누군가에게 가르쳐봐",
+  };
+  const SWITCH_KEY={
+    self:"옮기기 전에 새 분야에서 혼자 해볼 수 있는 작은 일 하나를 먼저 끝내봐.",output:"옮기기 전에 새 분야 결과물을 하나 만들어서 반응부터 봐.",
+    wealth:"옮기기 전에 새 분야에서 받을 수 있는 금액을 먼저 확인해.",officer:"옮기기 전에 새 분야 자격이나 소속부터 확보해.",
+    print:"옮기기 전에 새 분야를 석 달만 배워보고 정해.",
+  };
+  const TALENT_SCENE={
+    self:"남들이 포기할 때도 혼자 끝까지 붙잡고 있어서, 결국 마무리는 네가 하는 경우가 많지?",
+    output:"뭔가 만들거나 말로 풀어낼 때 사람들이 ‘어떻게 이런 생각을 했어?’ 하지?",
+    wealth:"어디서 돈이 새는지, 뭐가 이득인지 남들보다 빨리 보이지?",
+    officer:"한번 맡으면 끝까지 책임져서, 중요한 일은 결국 너한테 오지?",
+    print:"남들이 대충 넘기는 것도 끝까지 이해해서, 설명을 잘한다는 말을 듣지?",
+  };
+  const STRENGTH_USE={
+    self:"혼자 맡아서 끝내는 프로젝트나 1인 사업에서 제일 크게 쓰여.",output:"콘텐츠·디자인·기획처럼 결과물이 남는 일에서 제일 크게 쓰여.",
+    wealth:"영업·재무·거래처럼 숫자가 오가는 일에서 제일 크게 쓰여.",officer:"관리·운영처럼 믿고 맡기는 자리에서 제일 크게 쓰여.",
+    print:"교육·상담·연구처럼 깊이가 필요한 일에서 제일 크게 쓰여.",
+  };
+  const FRIEND_FIT={
+    self:"자기 일이 있고 서로 간섭하지 않는 친구",output:"같이 뭔가 하면서 웃을 수 있는 친구",wealth:"약속과 돈 계산이 깔끔한 친구",
+    officer:"예의 있고 선을 지키는 친구",print:"네 얘기를 판단 없이 들어주는 친구",
+  };
+  const FRIEND_AVOID={
+    self:"늘 비교하고 이기려 드는 친구",output:"네 말꼬리를 잡거나 뒷말하는 친구",wealth:"돈 얘기가 흐리고 빌려가는 친구",
+    officer:"부탁만 하고 네 부탁은 안 들어주는 친구",print:"네가 힘들 땐 연락이 없는 친구",
+  };
+  const WORK_FIT={
+    self:"네 담당을 존중해주는 동료",output:"네 아이디어를 들어주는 상사",wealth:"성과를 공정하게 봐주는 상사",
+    officer:"기준을 분명하게 말해주는 상사",print:"차근차근 알려주는 선배",
+  };
+  const WORK_CLASH={
+    self:"네 일에 간섭하는 사람",output:"말을 끝까지 안 듣고 자르는 사람",wealth:"성과를 가로채는 사람",
+    officer:"기준 없이 일을 떠넘기는 사람",print:"급하게 몰아붙이는 사람",
+  };
+  const DISTANCE_HOW={
+    self:"끊는다고 선언하기보다 만나는 횟수를 조용히 줄여.",output:"하고 싶은 말은 한 번만, 짧고 담담하게 해.",
+    wealth:"돈이나 부탁이 얽혀 있으면 그것부터 정리하고 거리를 둬.",officer:"도리 때문에 만나는 자리는 한 달에 한 번처럼 정해두고 그 이상은 거절해.",
+    print:"혼자 참다가 멀어지지 말고, 서운했던 한 가지만 말하고 정해.",
+  };
+  const DISTANCE_CHECK={
+    self:"그 사람을 만나고 나면 네 기준이 흔들리는지",output:"만나고 나서 할 말을 못 해 답답했는지",wealth:"주고받는 게 계속 한쪽으로 기울었는지",
+    officer:"만남이 즐거움보다 의무로 느껴지는지",print:"만나고 나면 며칠씩 기분이 가라앉는지",
+  };
+  const TIRE_WHY={
+    self:"네 사주는 도움을 청하기보다 혼자 해결하는 쪽이라, 짐이 한 사람한테 몰려.",
+    output:"네 사주는 에너지를 밖으로 쓰는 쪽이라, 채우는 속도보다 쓰는 속도가 빨라.",
+    wealth:"네 사주는 챙길 게 많은 쪽이라, 한꺼번에 몰리면 머리가 쉴 틈이 없어.",
+    officer:"네 사주는 책임감이 커서, 힘들어도 맡은 걸 내려놓질 못해.",
+    print:"네 사주는 생각이 많은 쪽이라, 몸은 쉬어도 머리는 계속 일해.",
+  };
+  const RECOVER_BY_GROUP={
+    self:"믿는 사람 한 명에게 힘든 걸 털어놓는 것",output:"몸을 쓰거나 뭔가를 만드는 것",wealth:"해야 할 일을 적고 절반을 지우는 것",
+    officer:"자는 시간과 일어나는 시간을 정해서 지키는 것",print:"충분히 자고 좋아하는 걸 조용히 즐기는 것",
+  };
+  const GUI_INTRO={year:"집안 어른이나 윗사람",month:"직장이나 부모님 쪽",day:"가까운 지인",hour:"후배나 아랫사람"};
+  const FAMILY_PERSON={year:"조부모님이나 집안 어른",month:"부모님이나 형제",day:"배우자",hour:"자녀"};
+  const THINK_CAUSE={
+    self:"남한테 기대지 않고 혼자 결론을 내려는 성향",output:"머릿속에서 계속 말을 만들어내는 성향",wealth:"경우의 수를 계속 계산하는 성향",
+    officer:"잘못될까 봐 미리 걱정하는 성향",print:"한 가지를 끝까지 곱씹는 성향",
+  };
+
+  function sideWhy(reasoning,g,N,G1){
+    const sh=x=>groupShare(reasoning,x);
+    if(g==="output"&&sh("output")>=10&&sh("wealth")>=8) return "만드는 힘인 식상이 돈을 뜻하는 재성으로 바로 이어지는 사주라, 만든 게 그대로 돈이 돼.";
+    if(g===N) return "네 사주에 제일 필요한 "+GROUP_NAME[N]+" 쪽 일이라, 하면 할수록 네 힘이 채워지면서 돈도 같이 붙어.";
+    if(g===G1) return "네 사주에서 제일 큰 힘인 "+GROUP_NAME[G1]+" 쪽 일이라, 원래 잘하는 걸로 바로 돈을 벌 수 있어.";
+    return "네 사주에서 힘이 잘 붙는 쪽이라, 들인 시간에 비해 남는 게 커.";
+  }
+  function moneyShapeLine(reasoning){
+    const sh=x=>groupShare(reasoning,x);
+    const rows=godRows(reasoning);
+    const jj=Number(rows.find(r=>r.god==="정재")?.weight||0), pj=Number(rows.find(r=>r.god==="편재")?.weight||0);
+    const v=verdictOf(reasoning);
+    if(sh("wealth")<8) return "<b>네 돈복의 모양</b> — 돈이 저절로 따라오는 사주는 아니야. 대신 기술이나 자리로 돈을 불러오면 꾸준히 들어와서, 한 방보다 몸값을 올리는 쪽이 맞아.";
+    if(v==="신약"&&sh("wealth")>=30) return "<b>네 돈복의 모양</b> — 돈 기회는 많은데, 한꺼번에 다 잡으면 버거운 사주야. 크게 한 번 거는 것보다 여러 개를 작게 굴리는 쪽이 맞아.";
+    if(pj>jj) return "<b>네 돈복의 모양</b> — 크게 벌고 크게 움직이는 사업형이야. 월급 하나로는 답답하고, 기회가 올 때 한 번씩 크게 불리는 쪽이 맞아.";
+    return "<b>네 돈복의 모양</b> — 꾸준히 들어오는 돈을 쌓아서 불리는 월급형이야. 한 방보다 오래 쌓을수록 확실하게 커져.";
+  }
+  function savingCapacityLine(reasoning){
+    const sh=x=>groupShare(reasoning,x);
+    const v=verdictOf(reasoning);
+    if(v==="신약"&&sh("wealth")>=30) return "<b>모을 수 있는 사주야?</b> — 돈은 잘 도는데 붙잡아두는 힘이 약한 편이야. 그래서 의지로 참는 것보다, 월급날 자동으로 빠져나가게 해두는 게 제일 확실해.";
+    if(sh("wealth")<8) return "<b>모을 수 있는 사주야?</b> — 큰돈이 한 번에 모이는 사주는 아니야. 대신 정해진 금액을 꾸준히 쌓으면, 새는 게 적어서 생각보다 빨리 불어나.";
+    if(v==="신강"&&sh("wealth")>=15) return "<b>모을 수 있는 사주야?</b> — 벌고 지키는 힘이 둘 다 있는 사주야. 새는 구멍만 막으면 확실하게 모여.";
+    return "<b>모을 수 있는 사주야?</b> — 새는 구멍만 막으면 무난하게 모이는 사주야. 큰 욕심보다 꾸준함이 이기는 쪽이야.";
+  }
+  function examVerdict(reasoning){
+    const sh=x=>groupShare(reasoning,x);
+    if(sh("print")>=20) return "공부 운이 받쳐주는 사주야. 준비한 만큼 결과가 나오는 편이라, 방법만 맞추면 충분히 붙어.";
+    if(sh("wealth")>=25&&sh("print")<15) return "실력은 되는데 집중이 흩어지기 쉬운 사주야. 공부 환경만 잡으면 점수가 확 올라.";
+    if(sh("officer")>=20&&sh("print")<10) return "시험 자체엔 강한데, 공부를 오래 붙잡는 힘은 약한 사주야. 긴 계획보다 짧게 끊어서 가는 게 맞아.";
+    return "벼락치기보다 꾸준히 쌓을 때 붙는 사주야. 하루 공부량을 일정하게 지키는 게 제일 중요해.";
+  }
+  function spouseElementOf(reasoning,data){
+    const d=dayElementOf(reasoning);
+    return data?.gender==="male"?ELEMENT_CONTROLS[d]:ELEMENT_CONTROLLED_BY[d];
+  }
+  function starTypeLine(reasoning,data){
+    const rows=godRows(reasoning);
+    const male=data?.gender==="male";
+    const [a,b]=male?["정재","편재"]:["정관","편관"];
+    const wa=Number(rows.find(r=>r.god===a)?.weight||0), wb=Number(rows.find(r=>r.god===b)?.weight||0);
+    if(!wa&&!wb) return "";
+    return wa>=wb
+      ? "연인 기운 중에 "+withJosa(a,"이","가")+" 더 커서, 가볍게 만나기보다 오래 볼 진지한 관계로 이어질 사람이야."
+      : "연인 기운 중에 "+withJosa(b,"이","가")+" 더 커서, 같이 있으면 설레고 활기찬 연애를 하게 될 사람이야.";
+  }
+  function breakupScore(reasoning,sig,data){
+    const sg=spouseGroupOf(data), v=verdictOf(reasoning), G1=topGroupOf(reasoning);
+    let score=0; const why=[];
+    if(dayCombine(reasoning)){ score++; why.push("배우자 자리가 묶여 있어서 한번 맺은 인연이 쉽게 안 끊겨"); }
+    if(sg&&groupShare(reasoning,sg)>=25){ score++; why.push("연인을 뜻하는 기운이 커서 인연이 다시 닿을 여지가 있어"); }
+    if(sg&&thisYearGroup(reasoning)===sg){ score++; why.push("올해 연인을 뜻하는 기운이 들어와"); }
+    if(dayRelation(reasoning,sig,["clash"])){ score--; why.push("배우자 자리가 부딪히는 배치라 같은 이유로 또 헤어지기 쉬워"); }
+    if(v==="신강"&&G1==="self"){ score--; why.push("자존심이 강해서 먼저 연락하기가 어려워"); }
+    return {score,why};
+  }
+  function soonRow(plan,list,months){
+    const today=plan.today;
+    const lim=(()=>{ const d=new Date(today+"T00:00:00Z"); if(isNaN(d)) return ""; d.setUTCMonth(d.getUTCMonth()+months); return d.toISOString().slice(0,10); })();
+    return (list||[]).find(x=>x&&String(x.row.startYmd)<lim)||null;
+  }
+
+  function noteAnswerV8(reasoning,s,sig,data,isT){
+    const k=s.concern+"/"+s.key;
+    const el=prescriptionElement(reasoning);
+    const EL=el||dayElementOf(reasoning);
+    const N=needGroupOf(reasoning);
+    const G1=topGroupOf(reasoning);
+    const byShare=groupsByShare(reasoning);
+    const G2=byShare.find(g=>g!==G1)||G1;
+    const rank=rankGroups(reasoning);
+    const hint=el?INDUSTRY[el].split("·"):[];
+    const clashes=g=>[...(PATH_OPTION[g]||[""])[0].split(/[·\s]/),...(SIDE_OPTION[g]||[""])[1].split(/[·\s]/)].some(w=>w&&hint.includes(w));
+    const worst=[...rank].reverse().find(g=>!clashes(g))||rank[rank.length-1];
+    const v=verdictOf(reasoning);
+    const top=godRows(reasoning)[0];
+    const topGod=top?.god||"";
+    const out=[];
+    const T=(good,bad)=>timingAnswerLines(reasoning,s,data,good,bad);
+    const elWhy=el?" 셋 다 네 사주에 필요한 "+EL_PLAIN[el]+" 기운이 도는 분야야.":"";
+    if(k==="money/side"){
+      const g1=rank[0], g2=rank[1];
+      out.push(lead(isT)+"네 사주에서 제일 돈이 되는 부업은 <b>"+withJosa(SIDE_OPTION[g1][0],"이야","야")+"</b>. 반대로 <b>"+withJosa(SIDE_AVOID[worst],"은","는")+"</b> 해도 남는 게 제일 적어.");
+      out.push("<b>1순위 — "+SIDE_OPTION[g1][0]+"</b>. 구체적으로는 "+SIDE_ITEMS[g1][EL]+" 같은 거야."+elWhy+" "+sideWhy(reasoning,g1,N,G1)+" "+SIDE_SHAPE[g1]);
+      out.push("<b>2순위 — "+SIDE_OPTION[g2][0]+"</b>. "+SIDE_ITEMS[g2][EL]+" 쪽이야. 1순위보다 돈은 덜 되지만, "+SIDE_PLUS[g2]);
+      out.push(signalWorkLine(sig));
+      out.push("<b>제일 돈 안 되는 부업 — "+SIDE_AVOID[worst]+"</b>. "+SIDE_AVOID_WHY[worst]);
+      out.push(...T("시작하기 좋은 달","시작을 피할 달").lines);
+    } else if(k==="money/income"){
+      const g1=rank[0], g2=rank[1];
+      out.push(lead(isT)+"네 수입을 제일 크게 늘리는 길은 <b>"+withJosa(INCOME_OPTION[g1][0],"이야","야")+"</b>. "+withJosa(INCOME_OPTION[g1][1],"이야","야")+".");
+      out.push("<b>1순위 — 이렇게 해</b>. "+INCOME_HOW[g1]+" "+sideWhy(reasoning,g1,N,G1).replace("돈도 같이 붙어","수입도 같이 올라").replace("돈을 벌 수 있어","수입을 올릴 수 있어").replace("만든 게 그대로 돈이 돼","만든 게 그대로 수입이 돼"));
+      out.push("<b>2순위 — "+INCOME_OPTION[g2][0]+"</b>. "+withJosa(INCOME_OPTION[g2][1],"이야","야")+". "+INCOME_HOW[g2]);
+      out.push(moneyShapeLine(reasoning));
+      out.push("<b>효과 적은 길 — "+INCOME_AVOID[worst]+"</b>. "+INCOME_AVOID_WHY[worst]);
+      out.push(...T("수입 얘기를 꺼내기 좋은 달","큰 결정을 미룰 달").lines);
+    } else if(k==="money/saving"){
+      out.push(lead(isT)+"네 돈은 <b>"+LEAK_NAME[G1][0]+"</b>으로 제일 많이 새. 이것만 막아도 통장이 달라져.");
+      out.push("<b>1순위 구멍 — "+LEAK_NAME[G1][0]+"</b>. "+LEAK_NAME[G1][1]+"이야. "+LEAK_WHY[G1]+" <b>막는 법</b> — "+LEAK_FIX[G1]);
+      out.push("<b>2순위 구멍 — "+LEAK_NAME[G2][0]+"</b>. "+LEAK_NAME[G2][1]+"이야. "+LEAK_FIX[G2]);
+      out.push("<b>너한테 맞는 저축 방식 — "+SAVE_STYLE[N]+"</b>. "+SAVE_WHY[N]);
+      out.push(savingCapacityLine(reasoning));
+      out.push(...T("모으기 시작하기 좋은 달","돈이 새기 쉬운 달").lines);
+    } else if(k==="money/flow"){
+      const t=T("돈이 잘 도는 달","지출을 조심할 달");
+      const b=t.plan.best[0];
+      out.push(lead(isT)+(b?"앞으로 1년 네 돈이 제일 잘 도는 때는 <b>"+monthSpan(b.row,t.plan.today)+"</b>야.":"앞으로 1년 네 돈은 한 달이 튀기보다 고르게 도는 편이야.")+(t.plan.worst?" 반대로 나가는 돈을 조심할 때는 <b>"+monthSpan(t.plan.worst.row,t.plan.today)+"</b>야.":""));
+      out.push(concernYearAnswer(reasoning,s,data));
+      out.push(...t.lines);
+      out.push("<b>네 돈이 들어오는 길</b> — "+FLOW_WAY[G1]+"이 중심이야. 좋은 달엔 이 길을 넓히고, 조심할 달엔 나가는 돈부터 줄여.");
+      out.push(moneyShapeLine(reasoning));
+    } else if(k==="career/exam"){
+      out.push(lead(isT)+examVerdict(reasoning));
+      out.push(...T("시험 보기 좋은 달","실력이 흔들리기 쉬운 달").lines);
+      out.push("<b>합격을 가르는 한 가지 — "+EXAM_KEY[G1]+"</b>. "+EXAM_KEY_WHY[G1]);
+      if(STUDY_STYLE[topGod]) out.push("<b>너한테 맞는 공부법 — "+STUDY_STYLE[topGod]+"</b>. 네 사주에서 제일 큰 힘이 "+withJosa(topGod,"이라서","라서")+", 이렇게 할 때 제일 오래 버텨.");
+      if(EXAM_DAY[topGod]) out.push("<b>시험 날 조심할 것</b> — "+EXAM_DAY[topGod]);
+    } else if(k==="career/jobsearch"){
+      const g1=rank[0], g2=rank[1];
+      out.push(lead(isT)+"네가 붙을 확률이 제일 높은 곳은 <b>"+withJosa(JOB_OPTION[g1][0],"이야","야")+"</b>. 반대로 <b>"+JOB_OPTION[worst][0]+"</b> 쪽은 붙어도 오래 버티기 어려워.");
+      out.push("<b>1순위 — "+JOB_OPTION[g1][0]+"</b>. 구체적으로는 "+JOB_ITEMS[g1][EL]+" 같은 자리야. "+JOB_WHY[g1]);
+      out.push("<b>2순위 — "+JOB_OPTION[g2][0]+"</b>. "+JOB_ITEMS[g2][EL]+" 쪽도 잘 맞아.");
+      out.push(...T("붙기 좋은 달","결과가 늦어지기 쉬운 달").lines);
+      if(INTERVIEW[topGod]) out.push("<b>면접에서 이기는 법</b> — "+INTERVIEW[topGod]);
+    } else if(k==="career/move"){
+      const t=T("옮기기 좋은 달","옮기면 손해 보기 쉬운 달");
+      const soonGood=soonRow(t.plan,t.plan.best,4), soonBad=t.plan.worst&&soonRow(t.plan,[t.plan.worst],4);
+      const verdict=soonGood&&!soonBad?"지금은 움직여도 되는 쪽이야"
+        :soonBad&&!soonGood?"지금 바로 나가기보다, 준비하고 움직이는 쪽이 유리해"
+        :t.plan.best.length?"당장보다 좋은 달을 골라 움직이는 쪽이 유리해":"지금은 반반이야. 조건이 확실해질 때 움직여";
+      out.push(lead(isT)+"<b>"+verdict+"</b>. "+MOVE_FIT[G1]);
+      out.push(...t.lines);
+      out.push("<b>옮긴다면 이런 곳</b> — "+JOB_ITEMS[N][EL]+" 같은 자리야. 네 사주에 제일 필요한 "+GROUP_NAME[N]+" 쪽 자리라, 옮긴 뒤에 힘이 붙어.");
+      out.push(concernYearAnswer(reasoning,s,data));
+    } else if(k==="career/current"){
+      out.push(lead(isT)+"지금 자리에서 인정받는 열쇠는 <b>"+withJosa(CURRENT_KEY[G1],"이야","야")+"</b>.");
+      out.push("<b>1순위 — "+CURRENT_KEY[G1]+"</b>. "+CURRENT_WHY[G1]+" 예를 들면, "+CURRENT_EX[G1]);
+      if(N!==G1) out.push("<b>2순위 — "+CURRENT_NEED[N]+"</b>. 네 사주에 제일 필요한 "+GROUP_NAME[N]+" 쪽을 채우는 방법이라, 하면 할수록 편해져.");
+      const gui=sinsalOf(sig,"천을귀인");
+      out.push("<b>힘이 되는 사람</b> — "+withJosa(HELPER[N],"이야","야")+"."+(gui?" 천을귀인이 "+gui.positions.map(p=>PILLAR_KR[p]).join("·")+"에 있어서, "+gui.positions.map(p=>POS_PERSON[p]).join("·")+" 쪽에서 도움이 오기 쉬워.":" 네 사주에 부족한 걸 채워주는 쪽이야."));
+      out.push(...T("인정받기 좋은 달","평가가 흔들리기 쉬운 달").lines);
+      out.push(concernYearAnswer(reasoning,s,data));
+    } else if(k==="love/crush"){
+      const t=T("다가가기 좋은 달","오해가 생기기 쉬운 달");
+      const soonGood=soonRow(t.plan,t.plan.best,2), soonBad=t.plan.worst&&soonRow(t.plan,[t.plan.worst],2);
+      out.push(lead(isT)+"<b>"+(soonGood&&!soonBad?"먼저 움직여도 되는 쪽이야":soonBad&&!soonGood?"지금보다 조금 뒤에 움직이는 게 유리해":"가볍게 먼저 움직여봐도 괜찮아")+"</b>. 다만 크게 고백하기보다 작게 다가가는 게 네 사주엔 맞아.");
+      out.push(...t.lines);
+      out.push("<b>너한테 맞는 다가가는 법 — "+CRUSH_MOVE[G1]+"</b>. "+CRUSH_WHY[G1]);
+      const charm=(sig?.sinsal||[]).find(x=>["도화","홍염"].includes(x.name));
+      if(charm) out.push("<b>네 무기</b> — "+withJosa(charm.name,"이","가")+" 있어서, 네가 먼저 다가가도 상대가 부담스럽게 느끼지 않는 편이야.");
+      out.push("<b>꼭 피할 실수</b> — "+CRUSH_MISTAKE[G1]+". 이게 썸을 제일 빨리 식게 만들어.");
+      out.push("<b>상대 마음</b> — 상대 마음은 상대 사주가 있어야 정확히 보여. 여기선 네 쪽에서 되는 방법만 봤어.");
+    } else if(k==="love/relationship"){
+      const clash=dayRelation(reasoning,sig,["clash","wonjin"]);
+      out.push(lead(isT)+"<b>"+(dayCombine(reasoning)?"한번 맺은 인연을 오래 끌고 가는 사주야":clash?"큰 싸움 한 번이 고비가 되는 사주야":"큰 사건보다 작은 서운함 관리가 관건인 사주야")+"</b>. "+(dayCombine(reasoning)?"배우자 자리가 다른 자리와 묶여 있어서, 쉽게 놓지 않아.":clash?"배우자 자리가 부딪히는 배치라, 생활 문제로 크게 싸운 뒤를 조심해야 해.":"배우자 자리가 조용해서, 쌓이는 서운함만 풀면 오래 가."));
+      out.push("<b>너희가 싸우는 패턴</b> — 너는 "+FIGHT_PATTERN[G1]+" 그래서 싸움 자체보다 싸운 뒤가 더 중요해.");
+      out.push("<b>오래 가는 비결 — "+KEEP_LOVE[N]+"</b>. 네 사주에 부족한 "+GROUP_NAME[N]+" 쪽을 채우는 방법이라, 이것만 지켜도 싸움이 확 줄어.");
+      const dz=dayBranchGod(reasoning);
+      if(SPOUSE_WANTS[dz]) out.push("<b>네가 연인에게 제일 바라는 것</b> — 배우자 자리에 "+withJosa(dz,"이","가")+" 있어서, 너는 연인에게 "+withJosa(SPOUSE_WANTS[dz],"을","를")+" 제일 바라. 이게 채워지면 웬만한 건 다 넘어가지는 편이야.");
+      out.push(...T("관계가 깊어지기 좋은 달","다투기 쉬운 달").lines);
+    } else if(k==="love/breakup"){
+      const {score,why}=breakupScore(reasoning,sig,data);
+      out.push(lead(isT)+"<b>"+(score>=2?"다시 이어질 여지가 있는 편이야":score===1?"반반이야":"다시 만나기보다 정리하는 쪽이 네 사주엔 더 편한 편이야")+"</b>. "+(why.length?why.join(". ")+".":"사주에서 재회 쪽으로 강하게 끄는 신호도, 막는 신호도 두드러지지 않아."));
+      out.push(...T("연락해보기 좋은 달","연락을 피할 달").lines);
+      out.push("<b>연락한다면 이렇게</b> — "+CONTACT_WAY[G1]);
+      out.push("<b>다시 만나도 같은 이유로 안 헤어지려면</b> — "+REPEAT_FIX[G1]);
+      out.push("<b>한 가지만 기억해</b> — 상대 사주까지 봐야 확실해져. 여기선 네 쪽 사주로 보이는 것만 말했어.");
+    } else if(k==="love/new"){
+      const dz=dayBranchGod(reasoning);
+      const dzEl=ZHI_ELEMENT[pillarsOf(reasoning).day?.zhi]||EL;
+      const spEl=spouseElementOf(reasoning,data);
+      const t=T("인연이 들어오는 때","새로 시작하지 말 달");
+      const b=t.plan.best[0]||t.plan.far[0];
+      out.push(lead(isT)+(b?"네 인연이 제일 크게 들어오는 때는 <b>"+monthSpan(b.row,t.plan.today)+"</b>야.":"네 인연은 특정 달보다 네가 움직이는 만큼 들어와.")+" 그 사람은 <b>"+PARTNER_LOOK_SHORT[dzEl]+"</b>일 가능성이 커.");
+      out.push(...t.lines);
+      out.push(concernYearAnswer(reasoning,s,data));
+      out.push("<b>그 사람 외모</b> — "+PARTNER_LOOK[dzEl]+(spEl&&spEl!==dzEl?" 옷차림은 "+PARTNER_STYLE[spEl]+" 스타일을 좋아할 가능성이 커.":"")+" 배우자 자리인 일주 아랫글자가 "+EL_PLAIN[dzEl]+" 기운이라서야.");
+      if(PARTNER_CHAR[dz]) out.push("<b>성격</b> — "+PARTNER_CHAR[dz]+" "+starTypeLine(reasoning,data));
+      if(spEl) out.push("<b>하는 일</b> — "+INDUSTRY[spEl]+" 쪽 일을 하거나, 그런 분위기를 가진 사람일 가능성이 커. 네 사주에서 연인을 뜻하는 기운이 "+EL_PLAIN[spEl]+" 기운이라서야.");
+      const gui=sinsalOf(sig,"천을귀인");
+      const mods=[gui?"특히 "+GUI_INTRO[gui.positions[0]]+" 소개가 잘 풀려":"",sinsalOf(sig,"역마")?"여행이나 이동 중에 만나는 인연도 커":"",sinsalOf(sig,"도화")?"네가 눈에 띄는 자리에 나갈수록 인연이 빨리 와":""].filter(Boolean);
+      if(MEET_ROUTE[dz]) out.push("<b>만나는 방식</b> — "+MEET_ROUTE[dz]+(mods.length?" "+mods.join(", ")+".":""));
+      if(spEl) out.push("<b>만나기 좋은 곳</b> — "+MEET_PLACE_LONG[spEl]+"이야.");
+      out.push("<b>피해야 할 사람</b> — "+AVOID_PARTNER[G1]+". 네 사주는 이미 "+GROUP_NAME[G1]+" 쪽 힘이 커서, 이런 사람을 만나면 그 쏠림이 더 심해져서 금방 지쳐.");
+    } else if(k==="path/lost"){
+      const g1=rank[0], g2=rank[1], g3=rank[2];
+      out.push(lead(isT)+"네 사주에서 제일 잘 맞는 분야는 <b>"+withJosa(PATH_OPTION[g1][0],"이야","야")+"</b>. 반대로 <b>"+PATH_OPTION[worst][0]+"</b>"+josaSuffix(PATH_OPTION[worst][0],"은","는")+" 네 사주에서 힘이 가장 안 붙어.");
+      out.push("<b>1순위 — "+PATH_OPTION[g1][0]+"</b>. 구체적으로는 "+JOB_ITEMS[g1][EL]+" 같은 일이야. "+PATH_WHY[g1]);
+      out.push("<b>2순위 — "+PATH_OPTION[g2][0]+"</b>. "+JOB_ITEMS[g2][EL]+" 쪽도 잘 맞아.");
+      if(g3) out.push("<b>3순위 — "+PATH_OPTION[g3][0]+"</b>. 1·2순위가 막힐 때 열어둘 만한 쪽이야.");
+      out.push(signalWorkLine(sig));
+      if(TALENT[topGod]) out.push("<b>네 재능 한 줄</b> — "+withJosa(TALENT[topGod],"이야","야")+". 어느 분야를 가든 이걸 쓰는 자리에서 제일 빨리 인정받아.");
+      out.push(...T("방향을 정하기 좋은 달","급하게 정하면 안 되는 달").lines);
+    } else if(k==="path/current"){
+      out.push(lead(isT)+"<b>지금 길이 "+PATH_OPTION[rank[0]][0]+"나 "+PATH_OPTION[rank[1]][0]+"에 가까우면 맞는 길이야</b>. 네 사주에서 힘이 제일 잘 붙는 두 방향이거든.");
+      out.push("<b>계속 가도 되는 신호</b> — "+PATH_KEEP[G1]+" 계속 가도 돼. 네 사주는 이게 보일 때 제일 크게 자라.");
+      out.push("<b>바꿔야 하는 신호</b> — "+PATH_CHANGE[G1]+", 그땐 방향을 다시 봐야 해.");
+      out.push("<b>지금 길에서 더 잘되려면</b> — "+PATH_BOOST[N]+". 네 사주에 제일 필요한 "+GROUP_NAME[N]+" 쪽을 채우는 방법이야.");
+      out.push(...T("성과가 드러나기 좋은 달","흔들리기 쉬운 달").lines);
+    } else if(k==="path/switch"){
+      const t=T("옮기기 좋은 달","옮기면 안 되는 달");
+      const soonGood=soonRow(t.plan,t.plan.best,4), soonBad=t.plan.worst&&soonRow(t.plan,[t.plan.worst],4);
+      out.push(lead(isT)+"<b>"+(soonGood&&!soonBad?"바꿔도 되는 쪽이야":soonBad&&!soonGood?"바로 바꾸기보다 준비하고 옮기는 쪽이 유리해":"작게 시험해본 뒤 옮기는 쪽이 맞아")+"</b>. 옮긴다면 <b>"+PATH_OPTION[rank[0]][0]+"</b>"+josaSuffix(PATH_OPTION[rank[0]][0],"이","가")+" 1순위야.");
+      out.push("<b>1순위 — "+PATH_OPTION[rank[0]][0]+"</b>. "+JOB_ITEMS[rank[0]][EL]+" 같은 일이야. "+PATH_WHY[rank[0]]);
+      out.push("<b>2순위 — "+PATH_OPTION[rank[1]][0]+"</b>. "+JOB_ITEMS[rank[1]][EL]+" 쪽이야.");
+      out.push(...t.lines);
+      out.push("<b>전환이 성공하는 조건</b> — "+SWITCH_KEY[G1]);
+      out.push(concernYearAnswer(reasoning,s,data));
+    } else if(k==="path/strength"){
+      const W=byShare[byShare.length-1];
+      const G3=byShare.find(g=>g!==G1&&g!==G2);
+      out.push(lead(isT)+"네 제일 센 강점은 <b>"+withJosa(STRENGTH_NAME[G1],"이야","야")+"</b>. "+TALENT_SCENE[G1]);
+      out.push("<b>1순위 강점 — "+STRENGTH_NAME[G1]+"</b>. 네 사주에서 제일 큰 힘이야. "+STRENGTH_USE[G1]);
+      out.push("<b>2순위 강점 — "+STRENGTH_NAME[G2]+"</b>. "+STRENGTH_USE[G2]);
+      if(G3&&G3!==W) out.push("<b>3순위 강점 — "+STRENGTH_NAME[G3]+"</b>. 1·2순위만큼 크진 않지만, 같이 쓰면 강점이 두 배로 보여.");
+      out.push("<b>상대적으로 약한 쪽 — "+STRENGTH_NAME[W]+"</b>. 이건 혼자 키우기보다 잘하는 사람과 같이 하는 게 빨라.");
+      if(TALENT[topGod]) out.push("<b>한 줄로 말하면</b> — 너는 "+withJosa(TALENT[topGod],"을","를")+" 가진 사람이야.");
+      out.push(...T("강점을 보여주기 좋은 달","실수하기 쉬운 달").lines);
+    } else if(s.concern==="people"){
+      const rel=peopleAnswerRelation(reasoning,sig,s);
+      if(s.key==="friend"){
+        out.push(lead(isT)+"너한테 맞는 친구는 <b>"+FRIEND_FIT[N]+"</b>"+josaSuffix(FRIEND_FIT[N],"이고","고")+", 멀리할 친구는 <b>"+FRIEND_AVOID[G1]+"</b>"+josaSuffix(FRIEND_AVOID[G1],"이야","야")+".");
+        const sh=groupShare(reasoning,"self");
+        out.push("<b>네 친구 자리</b> — 친구를 뜻하는 비겁이 "+sh+"%"+(sh>=25?"로 커서, 친구와 얽히는 일이 많고 비교도 생기기 쉬운 편이야.":sh>=10?"로 적당해서, 넓게보다 맞는 몇 명과 오래 가는 편이야.":"로 적어서, 친구가 많진 않아도 한번 믿으면 깊게 가는 편이야."));
+        out.push("<b>이 관계에서 네가 지킬 선 — "+PEOPLE_LINE[G1]+"</b>. 네 사주에서 제일 큰 힘이 이쪽이라, 여기서 무너지면 지쳐.");
+      } else if(s.key==="work"){
+        out.push(lead(isT)+"직장에서 너랑 잘 맞는 사람은 <b>"+WORK_FIT[N]+"</b>"+josaSuffix(WORK_FIT[N],"이고","고")+", 부딪히는 사람은 <b>"+WORK_CLASH[G1]+"</b>"+josaSuffix(WORK_CLASH[G1],"이야","야")+".");
+        out.push("<b>네가 지킬 선 — "+WORK_LINE[G1]+"</b>. 네 사주에서 제일 큰 힘이 이쪽이라, 여기서 무너지면 지쳐.");
+        const gui=sinsalOf(sig,"천을귀인");
+        if(gui) out.push("<b>도와주는 사람</b> — 천을귀인이 "+gui.positions.map(p=>PILLAR_KR[p]).join("·")+"에 있어서, "+gui.positions.map(p=>POS_PERSON[p]).join("·")+" 쪽에서 도움이 오기 쉬워.");
+      } else if(s.key==="family"){
+        const fam=rel?(rel.aPos==="day"||rel.bPos==="day"
+          ?"가족 중에서는 <b>"+FAMILY_PERSON[rel.aPos==="day"?rel.bPos:rel.aPos]+"</b> 쪽과 제일 부딪히기 쉬워."
+          :"<b>"+FAMILY_PERSON[rel.aPos]+"</b>"+josaSuffix(FAMILY_PERSON[rel.aPos],"과","와")+" <b>"+FAMILY_PERSON[rel.bPos]+"</b> 사이가 부딪히는 배치라, 그 사이에서 네가 끼기 쉬워."):"가족 중 특정 한 사람과 부딪히는 배치는 두드러지지 않아. 대신 네 쪽에서 반복되는 패턴이 있어.";
+        out.push(lead(isT)+fam);
+        out.push("<b>네가 지킬 선 — "+FAMILY_LINE[G1]+"</b>. 네 사주에서 제일 큰 힘이 이쪽이라, 여기서 무너지면 지쳐.");
+      } else {
+        const hard=rel&&["clash","wonjin","punishment"].includes(rel.type);
+        out.push(lead(isT)+"<b>"+(hard?"거리를 두는 쪽이 네 마음엔 더 편한 편이야":G1==="self"?"끊기보다 만나는 횟수만 줄이는 쪽이 맞아":G1==="officer"?"도리 때문에 붙잡고 있는 거라면 거리를 둬도 돼":"한 번은 할 말을 하고, 반응을 보고 정하는 쪽이 맞아")+"</b>.");
+        out.push("<b>거리 두는 법</b> — "+DISTANCE_HOW[G1]);
+        out.push("<b>후회 안 하려면 이것부터 확인해</b> — "+DISTANCE_CHECK[G1]+". 여기에 해당하면 거리를 둬도 네 잘못이 아니야.");
+      }
+      out.push(...T(s.key==="distance"?"말을 꺼내기 좋은 달":"관계가 풀리기 좋은 달",s.key==="distance"?"결론 내리면 안 되는 달":s.key==="family"?"집안 얘기를 피할 달":"부딪히기 쉬운 달").lines);
+    } else {
+      if(s.key==="burnout"){
+        out.push(lead(isT)+"<b>"+(v==="신강"?"지금은 쌓인 걸 빼낼 때야":"지금은 더 버틸 때가 아니라 채울 때야")+"</b>. 지친 이유 1순위는 "+TIRE_NAME[G1]+"이고, 2순위는 "+TIRE_NAME[G2]+"이야.");
+        out.push("<b>왜 이렇게 지쳤냐면</b> — "+TIRE_WHY[G1]);
+      } else if(s.key==="overthink"){
+        out.push(lead(isT)+"네 생각이 멈추지 않는 이유는 <b>"+THINK_CAUSE[G1]+"</b> 때문이야. 생각을 줄이려고 애쓰기보다, 생각이 갈 곳을 만들어주는 게 맞아.");
+        out.push("<b>1순위 — "+THINK_STOP[G1]+"</b>. 네 사주에서 제일 큰 힘을 거꾸로 쓰는 방법이라 제일 빨리 먹혀.");
+        if(G2!==G1) out.push("<b>2순위 — "+THINK_STOP[G2]+"</b>.");
+      } else if(s.key==="low"){
+        out.push(lead(isT)+"다시 움직이는 첫걸음은 <b>"+withJosa(LOW_STEP[G1],"이야","야")+"</b>. 크게 바꾸려 하지 말고 이것 하나만 해.");
+        out.push("<b>두 번째 걸음 — "+LOW_STEP[N]+"</b>. 네 사주에 제일 필요한 "+GROUP_NAME[N]+" 쪽을 채우는 거라, 여기까지 하면 기운이 돌아오기 시작해.");
+      } else {
+        out.push(lead(isT)+"네 회복이 제일 빨리 붙는 방법은 <b>"+withJosa(el?QUICK_RECOVER[el]:"같은 시간에 자고 먹기","이야","야")+"</b>. 네 사주에 제일 필요한 "+(el?EL_PLAIN[el]+" ":"")+"기운을 채우는 방법이거든.");
+      }
+      if(s.key!=="recover"&&el) out.push("<b>제일 빨리 효과 보는 것</b> — "+QUICK_RECOVER[el]+". 네 사주에 필요한 "+EL_PLAIN[el]+" 기운을 채우는 방법이야.");
+      if(s.key!=="low") out.push("<b>"+(s.key==="recover"?"두 번째 방법":"또 하나 효과 있는 것")+" — "+RECOVER_BY_GROUP[N]+"</b>. 네 사주에 부족한 "+GROUP_NAME[N]+" 쪽을 채워줘.");
+      out.push(...T(s.key==="recover"?"회복이 붙는 달":"나아지기 시작하는 달","더 지치기 쉬운 달").lines);
+    }
+    out.push(detailsBlock([
+      "순위 기준: 네 사주에 제일 필요한 기운은 "+(el?elementName(el)+" 쪽 ":"")+GROUP_NAME[N]+", 가장 큰 힘은 "+(top?top.god:"고르게 나뉜 힘")+", 너 자신은 "+strengthPlain(reasoning)+"이야.",
+      "날짜 기준: 이 고민에서 명리가 보는 기운이 들어오는 달을 좋은 달로, 이 고민에서 약한 곳을 건드리는 달을 피할 달로 골랐어.",
+    ]));
+    return out.filter(Boolean).join("<br><br>");
+  }
+
+  // ----- v8 NOTE3: "진짜 이유"를 사주 진단으로 -----
+  // 고민별로 명리에서 문제를 만드는 배치(연인 기운 과다+약한 나, 연인 기운 부재, 경쟁 기운 과다, 배우자 자리 충 등)를 찾아
+  // 원인 → 사주 근거 → 네가 실제로 겪었을 장면 순서로 쓴다. 숫자는 뜻을 설명할 때만 쓴다.
+  function concernDiagnoses(reasoning,s,sig,data){
+    const sh=g=>groupShare(reasoning,g);
+    const gs=god=>godShare(reasoning,god);
+    const v=verdictOf(reasoning), weak=v==="신약", strong=v==="신강";
+    const male=data?.gender==="male";
+    const k=s.key, c=s.concern;
+    const out=[];
+    const pick=map=>typeof map==="string"?map:(map[k]||map.default||"");
+    // 0%는 "0%로 적어" 대신 "거의 없어"로 쓴다.
+    const zero=w=>String(w||"").replace(/이 0%로 (아주 |가장 )?적어$/,"이 사주에 거의 없어").replace(/이 0%로 적고/,"이 거의 없고");
+    const add=(title,why,scene,group)=>{ const t=pick(title); if(t&&scene) out.push({title:t,why:zero(why),scene,group:group||null}); };
+    const dayClash=relationRows(reasoning,sig).find(x=>(x.aPos==="day"||x.bPos==="day")&&x.type==="clash");
+    const dayGong=(sig?.gongmang?.positions||[]).includes("day");
+    if(c==="love"){
+      const star=male?"wealth":"officer", starName=male?"재성":"관성";
+      const st=sh(star);
+      if(st>=35&&weak) add("연인 기운은 많은데, 그걸 감당할 네 힘이 약해","연인을 뜻하는 "+withJosa(starName,"이","가")+" "+st+"%나 되는데, 너 자신은 약한 편이야",pick({new:"그래서 만날 기회는 적지 않은데, 조건을 따지거나 결정을 미루다가 흐지부지되기 쉬워.",crush:"좋아하는 마음은 큰데 먼저 움직일 힘이 안 나서 타이밍을 놓치기 쉬워.",relationship:"상대에게 맞추느라 네 에너지가 먼저 바닥나기 쉬워.",breakup:"마음은 남아 있는데, 다시 시작할 힘이 없다고 느끼기 쉬워."}),star);
+      if(st<8) add("연인을 뜻하는 기운이 사주에 거의 없어",withJosa(starName,"이","가")+" "+st+"%로 아주 적어",pick({new:"그래서 인연이 저절로 굴러오는 사주가 아니야. 가만히 있으면 몇 년이 그냥 지나가고, 네가 직접 만남의 자리를 만들어야 인연이 생겨.",crush:"그래서 연애 신호를 읽는 게 서툴러서, 상대의 호감을 놓치기 쉬워.",relationship:"연애를 해도 연애가 삶의 중심이 되진 않아서, 상대가 서운해하기 쉬워.",breakup:"그래서 먼저 움직이지 않으면 인연이 다시 닿을 계기가 잘 안 생겨."}),star);
+      if(male&&sh("self")>=30&&sh("self")>st) add("연인 기운보다 경쟁·친구 기운이 더 커","나와 같은 힘인 비겁이 "+sh("self")+"%로 연인을 뜻하는 재성 "+st+"%보다 커",pick({new:"그래서 좋은 사람을 만나도 친구로 끝나거나, 다른 사람에게 먼저 뺏기기 쉬워.",crush:"그래서 썸이 친구 같은 사이로 흘러가기 쉬워.",relationship:"연애에서도 누가 이기나 자존심 싸움이 붙기 쉬워.",breakup:"자존심 때문에 먼저 연락하는 게 제일 어려워."}),"self");
+      if(!male&&sh("self")>=35) add("네 기준이 강해서 상대에게 맞추기가 어려워","나와 같은 힘인 비겁이 "+sh("self")+"%로 커",pick({new:"그래서 괜찮은 사람이 와도 ‘굳이?’ 하는 마음이 먼저 들어.",crush:"그래서 먼저 다가가는 게 자존심 상하는 일처럼 느껴져.",relationship:"연애에서도 내 방식을 지키려다 부딪히기 쉬워.",breakup:"자존심 때문에 먼저 연락하는 게 제일 어려워."}),"self");
+      if(male&&sh("officer")>=35) add("일과 책임이 먼저라, 연애에 쓸 힘이 남지 않아","책임과 평가를 뜻하는 관성이 "+sh("officer")+"%로 커",pick({new:"퇴근하고 나면 사람 만날 힘이 없고, 주말엔 쉬고 싶지? 그래서 연애가 늘 다음 순서로 밀려.",crush:"좋아하는 마음이 있어도 일이 먼저라, 연락이 뜸해지기 쉬워.",relationship:"일이 바쁠 때 연인을 뒤로 미루게 돼서, 상대가 서운해하기 쉬워.",breakup:"헤어진 이유가 결국 네가 바빴던 거라면, 그게 그대로면 다시 만나도 같아."}),"officer");
+      if(!male&&gs("정관")>=8&&gs("편관")>=8) add("끌리는 사람이 두 부류로 갈려","안정적인 연인을 뜻하는 정관과 강하게 끌리는 인연을 뜻하는 편관이 둘 다 있어",pick({new:"편한 사람은 설렘이 없고, 설레는 사람은 불안해서 한 사람으로 정하기가 어려워.",crush:"지금 상대가 편한 쪽인지 설레는 쪽인지에 따라 네 마음이 계속 흔들려.",relationship:"안정적인데 심심하다는 마음과 설레는데 불안하다는 마음이 번갈아 와.",breakup:"헤어진 사람이 편한 쪽이었는지 설레는 쪽이었는지에 따라 미련의 크기가 달라."}),"officer");
+      if(!male&&sh("output")>=30) add("상대를 보는 기준이 높고, 말이 먼저 나가","표현을 뜻하는 식상이 "+sh("output")+"%로 커서, 연인 기운인 관성을 누르는 배치야",pick({new:"마음에 안 드는 점이 먼저 보이고, 그걸 말하다 보면 상대가 물러서기 쉬워.",crush:"좋아도 장난이나 지적으로 표현해서, 상대가 헷갈리기 쉬워.",relationship:"서운한 걸 말할 때 말이 세게 나가서, 싸움이 커지기 쉬워.",breakup:"헤어질 때 했던 말이 상대 마음에 오래 남아 있을 수 있어."}),"output");
+      if(sh("print")>=35) add("마음이 확실해질 때까지 너무 오래 생각해","생각과 신중함을 뜻하는 인성이 "+sh("print")+"%로 커",pick({new:"좋은 사람이다 싶어도 확신이 올 때까지 기다리다가, 상대가 먼저 지쳐서 떠나기 쉬워.",crush:"상대 말 한마디를 며칠씩 해석하느라, 정작 답장은 늦어져.",relationship:"서운한 걸 말하기 전에 혼자 결론을 내려버리기 쉬워.",breakup:"헤어진 이유를 혼자 계속 곱씹으면서 시간이 흘러가."}),"print");
+      if(dayClash) add("배우자 자리가 다른 자리와 정면으로 부딪혀",relationCore(reasoning,dayClash),pick({new:"그래서 불꽃처럼 시작한 관계가 생활 문제에서 쉽게 흔들려.",crush:"그래서 가까워질 만하면 꼭 한 번씩 엇갈려.",relationship:"좋을 땐 좋다가, 한번 싸우면 크게 번지기 쉬워.",breakup:"그래서 다시 만나도 같은 지점에서 부딪히기 쉬워."}));
+      if(dayGong) add("배우자 자리가 비어 있는 공망 배치야","일주 아랫글자가 공망에 걸려 있어",pick({new:"누굴 만나도 뭔가 채워지지 않는 느낌이 들어서, 이상형이 자꾸 높아지기 쉬워.",default:"상대가 곁에 있어도 가끔 허전한 마음이 드는 편이야."}));
+      if(sh("output")<8) add("좋아해도 티를 잘 안 내","표현을 뜻하는 식상이 "+sh("output")+"%로 적어",pick({new:"속으로는 호감이 있는데 상대는 네 마음을 몰라서, 그냥 아는 사이로 지나가기 쉬워.",crush:"네 마음을 상대가 몰라서, 썸이 제자리걸음이야.",relationship:"사랑한다는 말이나 표현이 부족해서, 상대가 불안해하기 쉬워.",breakup:"헤어질 때도 네 진짜 마음을 제대로 못 전했을 가능성이 커."}),"output");
+    } else if(c==="money"){
+      if(sh("wealth")>=35&&weak) add({saving:"돈 기운은 큰데, 붙잡아둘 네 힘이 약해",income:"기회는 많은데, 다 잡을 힘이 부족해",side:"벌이는 건 빠른데, 끝까지 키울 힘이 약해",flow:"돈은 크게 도는데, 관리할 힘이 약해"},"돈을 뜻하는 재성이 "+sh("wealth")+"%인데 너 자신은 약한 편이야",pick({saving:"돈은 잘 돌아오는데 들어오는 만큼 여기저기 나가서, 통장에 남는 게 없지?",income:"벌 기회는 많은데 다 잡으려다 지쳐서, 결국 제대로 키운 게 없기 쉬워.",side:"이것저것 벌이다가 하나도 끝까지 못 키우기 쉬워.",flow:"큰돈이 들어올 때도 있지만, 관리가 안 되면 그대로 빠져나가."}),"wealth");
+      if(sh("self")>=25&&sh("wealth")>0&&sh("self")>sh("wealth")) add("돈이 사람 사이에서 나눠지는 배치야","나와 같은 힘인 비겁이 "+sh("self")+"%로 돈을 뜻하는 재성 "+sh("wealth")+"%보다 커",pick({saving:"모임비, 빌려준 돈, 대신 내준 밥값으로 돈이 흩어지지? 사람 좋다는 말은 듣는데 돈은 안 남아.",income:"같이 일하면 네 몫이 줄어들기 쉬워서, 공은 나눠지고 보상은 적어.",side:"동업이나 같이 하는 부업은 돈 문제로 끝나기 쉬워.",flow:"돈이 들어와도 사람 일로 나가는 게 커서, 흐름이 자꾸 끊겨."}),"self");
+      if(sh("wealth")<8) add("돈이 저절로 따라오는 사주는 아니야","돈을 뜻하는 재성이 "+sh("wealth")+"%로 적어",pick({saving:"그래서 크게 한 번 모이기보다, 조금씩 꾸준히 쌓아야 모여.",income:"운 좋게 돈이 굴러오길 기다리면 안 와. 대신 기술이나 자리로 돈을 불러오면 꾸준히 들어와.",side:"아무 부업이나 하면 시간만 쓰고 끝나. 네 기술이 들어가는 일이어야 돈이 돼.",flow:"그래서 돈 흐름이 크게 출렁이진 않지만, 크게 불어나지도 않아."}),"wealth");
+      if(sh("output")>=20&&sh("wealth")<12) add("재주는 있는데 돈으로 바꾸는 단계가 약해","만들어내는 힘인 식상은 "+sh("output")+"%인데 돈을 뜻하는 재성은 "+sh("wealth")+"%야",pick({default:"잘한다는 말은 많이 듣는데, 가격을 붙이거나 돈 얘기를 꺼내는 건 어색하지? 그래서 실력에 비해 버는 게 적어."}),"output");
+      if(sh("officer")>=35) add({saving:"책임과 체면에 나가는 돈이 커",income:"책임은 큰데, 보상 얘기를 못 꺼내",side:"본업 책임이 무거워서 부업에 쓸 힘이 없어",flow:"들어온 돈이 의무 지출로 먼저 빠져"},"책임과 체면을 뜻하는 관성이 "+sh("officer")+"%로 커",pick({saving:"경조사, 선물, 회비처럼 안 내면 불편한 돈이 계속 나가.",income:"책임은 계속 느는데 보상 얘기는 못 꺼내서, 일한 만큼 못 받아.",side:"본업 책임이 무거워서 부업에 쓸 힘이 잘 안 남아.",flow:"들어온 돈이 의무 지출로 먼저 빠져서, 남는 게 적어."}),"officer");
+      if(sh("print")>=35) add({saving:"준비와 자기계발에 돈이 새",default:"준비에 돈을 쓰고, 돈 버는 실행은 늦어"},"공부와 준비를 뜻하는 인성이 "+sh("print")+"%로 커",pick({default:"강의·책·자격증엔 돈을 쓰는데, 그걸로 돈을 버는 단계까지는 잘 안 가."}),"print");
+    } else if(c==="career"){
+      if(sh("officer")>=35&&weak) add({exam:"시험 부담이 네 힘보다 커",jobsearch:"붙어야 한다는 부담이 네 힘보다 커",default:"맡은 책임이 네 힘보다 커"},"책임과 평가를 뜻하는 관성이 "+sh("officer")+"%인데 너 자신은 약한 편이야",pick({exam:"시험에 대한 부담이 실력보다 커서, 시험장에서 긴장이 점수를 깎기 쉬워.",jobsearch:"붙어야 한다는 부담이 너무 커서, 면접에서 네 모습이 잘 안 나와.",move:"일이 계속 늘어나는데 쉴 틈이 없어서, 떠나고 싶은 마음이 커진 거야.",current:"일은 계속 늘어나는데, 잘하고 있어도 늘 버거운 느낌이지?"}),"officer");
+      if(gs("상관")>=12&&sh("officer")>=10) add({exam:"정해진 답보다 네 답이 먼저 나와",jobsearch:"솔직함이 불만처럼 들리기 쉬워",default:"윗사람과 부딪히기 쉬운 배치야"},"바꾸려는 힘인 상관이 "+gs("상관")+"%, 윗사람과 평가를 뜻하는 관성이 "+sh("officer")+"%라 서로 부딪혀",pick({exam:"정해진 방식이 답답해서, 출제자가 원하는 답보다 내 답을 쓰기 쉬워.",jobsearch:"면접에서 솔직한 말이 불만처럼 들리기 쉬워.",move:"불합리한 걸 참다가 쌓인 게 이직 생각으로 이어진 거야.",current:"불합리한 걸 보면 말하고 싶은데, 말하면 찍히고 참으면 속이 터지지?"}),"output");
+      if(sh("officer")<8) add({exam:"남이 짠 계획으로는 힘이 안 나",jobsearch:"큰 조직의 틀에 맞추면 힘이 안 나",move:"지금 조직의 틀이 너한테 안 맞아",current:"조직이 알아서 챙겨주는 사주가 아니야"},"자리와 평가를 뜻하는 관성이 "+sh("officer")+"%로 적어",pick({exam:"누가 정해준 계획보다 네 방식대로 할 때 성적이 나오는데, 틀에 맞추려다 흐트러지기 쉬워.",jobsearch:"큰 조직의 틀에 맞추려고 하면 힘이 안 나. 네 역할이 분명한 곳에서 붙어.",move:"지금 조직의 틀 자체가 너한테 안 맞는 걸 수 있어.",current:"조직이 알아서 챙겨주길 기다리면 계속 밀려. 네가 먼저 드러내야 보여."}),"officer");
+      if(k==="exam"&&sh("wealth")>=25&&sh("print")<=15) add("공부에 집중할 힘을 딴 일이 흩트려","돈과 현실 일을 뜻하는 재성이 "+sh("wealth")+"%인데, 공부를 뜻하는 인성은 "+sh("print")+"%야",pick({default:"공부하려고 앉아도 돈, 약속, 할 일이 계속 떠올라서 집중이 끊기지?"}),"wealth");
+      if(sh("print")>=35) add({exam:"준비는 충분한데 실전 감각이 부족해",jobsearch:"준비만 길고 지원이 늦어",move:"옮길 준비만 하다 타이밍을 놓쳐",current:"완벽해질 때까지 붙잡고 있다가 늦어"},"준비와 공부를 뜻하는 인성이 "+sh("print")+"%로 커",pick({exam:"공부한 양은 많은데 시험장에선 생각만큼 안 나오지? 정리만 하다 문제 풀 시간이 모자랐던 거야.",jobsearch:"준비만 길어지고 지원은 늦어서, 좋은 자리를 먼저 놓치기 쉬워.",move:"옮길 준비만 계속하다가 타이밍을 놓치기 쉬워.",current:"완벽해질 때까지 붙잡고 있다가 보고 타이밍을 놓치기 쉬워."}),"print");
+      if(sh("self")>=35) add("조직의 지시보다 네 방식이 앞서","나와 같은 힘인 비겁이 "+sh("self")+"%로 커",pick({exam:"남들 따라 하는 공부법이 안 맞아서, 네 방식을 찾기 전까지 헤매.",jobsearch:"시키는 대로 하는 자리에선 오래 못 버틸 것 같은 느낌이 먼저 들어.",move:"간섭이 많아질수록 떠나고 싶은 마음이 커져.",current:"시키는 대로 하는 게 답답해서, 조직 안에서 네 몫이 안 보이기 쉬워."}),"self");
+    } else if(c==="path"){
+      if(sh("output")<8) add("재능을 밖으로 꺼내는 힘이 약해","표현과 결과물을 뜻하는 식상이 "+sh("output")+"%로 적어",pick({lost:"뭘 잘하는지 몰라서가 아니라, 해보기 전에 멈춰서 네 재능이 드러날 기회가 없었던 거야.",current:"지금 길에서도 네가 잘하는 걸 보여줄 기회를 스스로 안 만들어서, 제자리처럼 느껴지는 거야.",switch:"지금 분야가 싫다기보다, 네 재능을 써볼 기회가 없어서 답답한 걸 수 있어.",strength:"강점이 없어서가 아니라, 밖으로 보여준 적이 적어서 스스로도 잘 몰라."}),"output");
+      if(sh("print")>=35) add("생각이 행동보다 앞서","생각과 준비를 뜻하는 인성이 "+sh("print")+"%로 커",pick({lost:"알아보고 고민하는 시간은 긴데, 직접 해본 경험이 적어서 확신이 안 생겨.",current:"지금 길이 맞는지 계속 생각만 하다가, 확인해볼 행동은 미뤄.",switch:"옮길 분야를 계속 알아보기만 하고, 실제로 발을 담가본 적은 없어서 결정이 안 나.",strength:"생각은 깊은데 결과로 보여준 게 적어서, 강점이 잘 안 드러나."}),"print");
+      if(sh("officer")<8&&k!=="strength") add("방향을 정해줄 기준이 약해","자리와 기준을 뜻하는 관성이 "+sh("officer")+"%로 적어",pick({lost:"하고 싶은 건 많은데 하나로 정하는 게 제일 어렵지? 기준이 없으니 매번 처음부터 고민하게 돼.",current:"잘하고 있는지 판단할 기준이 없어서, 남의 말 한마디에 흔들려.",switch:"옮기고 싶은 이유가 분명하지 않아서, 옮겨도 또 흔들릴 수 있어."}),"officer");
+      if(godRows(reasoning)[0]&&gs(godRows(reasoning)[0].god)<25) add("힘이 여러 곳에 고르게 나뉘어 있어","가장 큰 힘도 "+gs(godRows(reasoning)[0].god)+"%라, 한쪽으로 크게 쏠리지 않았어",pick({lost:"이것도 되고 저것도 돼서, 오히려 하나로 못 정하는 거야.",current:"여러 방향이 다 조금씩 맞아서, 지금 길만 고집할 이유가 약하게 느껴져.",switch:"다른 길도 될 것 같아서 자꾸 눈이 가는 거야.",strength:"강점이 한 가지로 튀지 않아서, 스스로 뭘 잘하는지 헷갈려."}));
+      if(sh("self")>=35) add("남이 정한 길이 안 맞는 사주야","나와 같은 힘인 비겁이 "+sh("self")+"%로 커",pick({lost:"누가 좋다는 길을 가면 금방 흥미를 잃지? 네가 납득한 길이어야 오래 가.",current:"지금 길이 네가 고른 게 아니라면, 계속 답답할 수밖에 없어.",switch:"남이 정한 틀에서 벗어나고 싶은 마음이 전환 생각의 진짜 이유일 수 있어.",strength:"혼자 해낸 것들이 강점인데, 남 기준으로 보면 안 보여."}),"self");
+    } else if(c==="people"){
+      const pos={friend:["day"],work:["month"],family:["year","month"],distance:["year","month","day","hour"]}[k]||[];
+      const rel=relationRows(reasoning,sig).find(x=>pos.includes(x.aPos)||pos.includes(x.bPos));
+      if(rel) add("애초에 부딪히기 쉬운 자리 배치가 있어",relationCore(reasoning,rel),pick({friend:"그래서 가까운 사이일수록 작은 말에 서운함이 쌓이기 쉬워.",work:"그래서 일하는 자리에서 특정 사람과 자꾸 엇갈려.",family:"그래서 가족 사이에서 같은 문제로 되풀이해서 부딪혀.",distance:"그래서 이 관계는 노력해도 완전히 편해지긴 어려운 쪽이야."}));
+      if(sh("officer")>=35) add("거절을 못 해서 관계가 버거워져","책임과 도리를 뜻하는 관성이 "+sh("officer")+"%로 커",pick({default:"부탁을 받으면 일단 들어주고, 나중에 혼자 지치지? 그래서 관계가 점점 의무처럼 느껴져."}),"officer");
+      if(sh("self")>=30) add("대등함이 깨지면 참기가 힘들어","나와 같은 힘인 비겁이 "+sh("self")+"%로 커",pick({default:"한쪽만 맞춰주는 관계가 되면 속으로 계속 불편해져. 누가 위냐가 은근히 신경 쓰이는 편이야."}),"self");
+      if(sh("output")>=30) add("말이 먼저 나가서 오해가 생겨","표현을 뜻하는 식상이 "+sh("output")+"%로 커",pick({default:"솔직하게 말한 건데 상대는 공격으로 받아들여서, 의도와 다르게 멀어지기 쉬워."}),"output");
+      if(sh("print")>=35) add("혼자 이해하고 참다가 지쳐","생각과 배려를 뜻하는 인성이 "+sh("print")+"%로 커",pick({default:"상대 입장을 먼저 이해해주다 보니, 네 서운함은 말할 타이밍을 계속 놓쳐."}),"print");
+      if(sh("wealth")>=35) add("주고받는 게 기울면 계산이 시작돼","현실 감각을 뜻하는 재성이 "+sh("wealth")+"%로 커",pick({default:"내가 더 많이 한다는 느낌이 들면, 겉으론 웃어도 속으론 거리를 두기 시작해."}),"wealth");
+    } else {
+      if(weak&&sh("print")<15) add("충전하는 힘이 원래 약한 사주야","회복을 뜻하는 인성이 "+sh("print")+"%로 적고, 너 자신도 약한 편이야",pick({default:"쉬어도 개운하지 않고, 주말이 지나도 피곤이 그대로지? 그냥 쉬는 걸로는 부족하고, 제대로 채우는 방법이 따로 필요해."}),"print");
+      if(sh("officer")>=35) add("해야 할 일의 무게가 계속 쌓여","책임을 뜻하는 관성이 "+sh("officer")+"%로 커",pick({default:"쉬는 날에도 해야 할 일이 머릿속에서 안 떠나지? 몸은 쉬어도 마음은 계속 일하고 있어."}),"officer");
+      if(gs("편인")>=15||sh("print")>=35) add("생각이 멈추지 않는 사주야","깊게 곱씹는 힘인 인성이 "+sh("print")+"%로 커",pick({default:"누우면 오늘 있었던 말들이 다시 떠오르지? 생각이 쉬질 않아서 몸보다 머리가 먼저 지쳐."}),"print");
+      if(sh("output")<8) add("쌓인 감정을 밖으로 빼는 통로가 좁아","감정을 밖으로 풀어내는 식상이 "+sh("output")+"%로 적어",pick({default:"힘든 걸 말로 안 해서, 속에서만 계속 쌓여."}),"output");
+      if(sh("output")>=30&&weak) add("에너지를 밖으로 너무 많이 써","밖으로 쓰는 힘인 식상이 "+sh("output")+"%인데 너 자신은 약한 편이야",pick({default:"남들 챙기고 할 말 하고 나면, 정작 너한테 쓸 힘이 안 남아."}),"output");
+      if(sh("self")>=35) add("힘든 걸 혼자 다 떠안아","나와 같은 힘인 비겁이 "+sh("self")+"%로 커",pick({default:"도와달라는 말을 잘 안 해서, 힘든 게 너한테만 쌓여."}),"self");
+    }
+    // 모든 고민 공통: 가장 약한 힘이 10% 아래면, 그 빈자리가 이 고민에서 어떻게 드러나는지도 이유로 쓴다.
+    const used=new Set(out.map(x=>x.group).filter(Boolean));
+    const weakest=["self","output","wealth","officer","print"].map(g=>({g,v:sh(g)})).sort((a,b)=>a.v-b.v)[0];
+    const WEAK_TITLE={output:"생각을 밖으로 꺼내는 힘이 약해",wealth:"애쓴 만큼 챙겨 받는 힘이 약해",officer:"스스로 기준과 기한을 세우는 힘이 약해",print:"쉬고 채우는 힘이 약해",self:"내 기준을 지키는 힘이 약해"};
+    const WEAK_MEAN={output:"표현과 결과물을 뜻하는 식상",wealth:"돈과 보상을 뜻하는 재성",officer:"기준과 책임을 뜻하는 관성",print:"회복과 배움을 뜻하는 인성",self:"나 자신을 지키는 힘인 비겁"};
+    const w={money:"돈 문제",career:"일",love:"연애",path:"진로",people:"관계",mental:"마음"}[c]||"이 고민";
+    const WEAK_SCENE={output:"그래서 "+w+"에서 생각은 많은데 말이나 행동으로 꺼내는 게 늦어져.",wealth:"그래서 "+w+"에서 애쓴 만큼 챙겨 받는 건 늘 뒤로 밀려.",officer:"그래서 "+w+"에서 정해진 기한이 없으면 끝까지 가기 어려워.",print:"그래서 "+w+"에서 지쳐도 제대로 쉬지 못하고 계속 버텨.",self:"그래서 "+w+"에서 남 맞추다 내 기준이 흐려지기 쉬워."};
+    if(weakest&&weakest.v<10&&!used.has(weakest.g)) add(WEAK_TITLE[weakest.g],WEAK_MEAN[weakest.g]+"이 "+weakest.v+"%로 가장 적어",WEAK_SCENE[weakest.g],weakest.g);
+    return out;
+  }
+
+  function noteCauseV8(reasoning,s,sig,data,isT){
+    const G=topGroupOf(reasoning);
+    const top=godRows(reasoning)[0];
+    const list=concernDiagnoses(reasoning,s,sig,data);
+    const fallback=CAUSE[s.concern]?.[s.key]?.[G]||"";
+    const d1=list[0]||null, d2=list[1]||null;
+    const lead1=d1
+      ? lead(isT)+"<b>"+d1.title+"</b>. "+d1.scene
+      : lead(isT)+fallback.replace(/^(.+?[.?!])(\s|$)/,"<b>$1</b>$2");
+    const why=whyLabel(isT)+(top?"네 사주에서 가장 큰 힘은 "+top.god+"이고, "+(d1?d1.why+".":GROUP_MEANING[G]+" 쪽 힘이 "+groupShare(reasoning,G)+"%로 가장 커서 "+(CONCERN_WORD[s.concern]||"이 고민")+"에서도 이 힘이 제일 먼저 움직여."):(d1?d1.why+".":""));
+    const second=d2?"<b>두 번째 이유 — "+d2.title+"</b>. "+d2.why+". "+d2.scene:(d1&&fallback&&d1.group!==G?"<b>그리고</b> — "+fallback:"");
+    const modifier=causeModifier(reasoning,s,sig);
+    const details=detailsBlock([
+      patternPressureSentence(reasoning)+".",
+      patternCapacitySentence(reasoning)+".",
+      bondSentence(reasoning),
+      weakLinkSentence(reasoning).replace(/<[^>]+>/g,""),
+    ]);
+    return [lead1,why,second,list.length?"":modifier,details].filter(Boolean).join("<br><br>");
+  }
+
   function formatMonth(row,today){
     if(!row) return "뚜렷하게 짚을 달 없음";
     const start=String(row.startYmd||"");
@@ -2305,7 +3196,7 @@
     return "다른 달보다 약한 지점을 건드리는 글자가 분명하게 겹쳐";
   }
 
-  function compactTimingNote(reasoning,s,p,isT){
+  function compactTimingNote(reasoning,s,p,isT,data){
     const timing=reasoning?.timing||{};
     const today=timing.today||"";
     const policy=global.__UNNI_PRODUCT_CONTENT_POLICY_V1__;
@@ -2313,57 +3204,46 @@
       ? policy.filterTimingForProduct("basic_concern",timing)
       : {concernNearTerm:timing.concernNearTerm||null,longTermPivots:(timing.longTermPivots||[]).slice(0,2)};
     const near=disclosed.concernNearTerm||{};
-    const signalRows=(near.highlights||[]).filter(row=>{
-      const ms=row?.monthSpecific||{};
-      return Number(ms.support||0)>0||Number(ms.caution||0)>0;
-    });
-    // "가까운 달"에는 1년 안의 달을 먼저 쓴다. 1년 안에 뚜렷한 달이 없을 때만 그 뒤의 달 하나를 쓴다.
-    const yearAhead=yearAheadYmd(reasoning);
-    const withinYear=yearAhead?signalRows.filter(row=>String(row?.startYmd||"")<yearAhead):signalRows;
-    const highlights=withinYear.length?withinYear:signalRows.slice(0,1);
-    const uniqueHighlights=[];
-    const seen=new Set();
-    for(const row of highlights){
-      const positive=["supportive","mild-support"].includes(row.class);
-      const caution=["caution","mild-caution"].includes(row.class);
-      const reason=positive?monthReason(reasoning,row,true):caution?monthReason(reasoning,row,false):"mixed";
-      const key=(positive?"P":caution?"C":"M")+"|"+reason;
-      if(seen.has(key)) continue;
-      seen.add(key); uniqueHighlights.push(row);
-      if(uniqueHighlights.length>=2) break;
-    }
+    // 흐름 NOTE도 NOTE2와 같은 고민별 기준으로 달을 본다. NOTE2에서 이미 짚은 달은 빼고, 그 밖에 눈여겨볼 달만 보여준다.
+    const plan=concernTimingPlan(reasoning,s,data||{});
+    const usedDates=new Set([...plan.best,...plan.far,plan.worst].filter(Boolean).map(x=>x.row.startYmd));
+    const extraBad=plan.scored.filter(x=>x.near&&!usedDates.has(x.row.startYmd)&&x.score<=-2&&x.sigs.some(y=>y.s<0))
+      .sort((a,b)=>a.score-b.score||String(a.row.startYmd).localeCompare(String(b.row.startYmd)))[0]||null;
+    const shown=[...plan.extra,extraBad].filter(Boolean);
+    const uniqueHighlights=(shown.length?shown:[...plan.best,plan.worst].filter(Boolean)).map(x=>x.row);
     const pivot=(disclosed.longTermPivots||[]).find(x=>x?.isStructuralPivot===true)||null;
+    const planRows=[...plan.best,...plan.far,plan.worst,...shown].filter(Boolean).map(x=>x.row);
     const evidenceRuleIds=[...new Set([
       ...evidenceIdsForRole(reasoning,"timing"),
-      ...uniqueHighlights.flatMap(row=>[
+      ...planRows.flatMap(row=>[
         ...(row?.layers?.wolun?.supportSignals||[]),
         ...(row?.layers?.wolun?.cautionSignals||[]),
       ].flatMap(x=>x?.sourceRuleIds||[])),
       ...(pivot?.sourceRuleIds||[]),
     ].filter(Boolean))];
 
-    const first=uniqueHighlights[0]||null;
-    const summary=first
-      ? (["supportive","mild-support"].includes(first.class)
-          ? (isT
-              ? "<b>결론</b> — 가까운 흐름에서 네 사주에 도움이 되는 달이 먼저 잡혀."
-              : "<b>결론</b> — 가까운 흐름을 보면, 네 사주에 도움이 되는 달이 먼저 잡혀.")
-          : (isT
-              ? "<b>결론</b> — 가까운 흐름에서 네 사주의 약한 지점을 건드리는 달이 먼저 잡혀."
-              : "<b>결론</b> — 가까운 흐름에는 네 사주의 약한 지점을 건드리는 달도 보여."))
-      : (isT
-          ? "<b>결론</b> — 가까운 18개월은 계산되지만 다른 달과 분명히 갈리는 달이 약해. 특정 달은 억지로 찍지 않을게."
-          : "<b>결론</b> — 가까운 18개월 흐름은 다 봤는데, 다른 달과 확실히 갈리는 달이 약해. 그래서 언니도 그럴듯하게 날짜를 만들어 찍진 않을게.");
+    const short=CONCERN_SHORT[s.concern]||"이 고민";
+    const soonLimit=(()=>{ const d=new Date(String(today)+"T00:00:00Z"); if(isNaN(d)) return ""; d.setUTCMonth(d.getUTCMonth()+3); return d.toISOString().slice(0,10); })();
+    const soonGood=plan.best.some(x=>String(x.row.startYmd)<soonLimit);
+    const soonBad=!!plan.worst&&String(plan.worst.row.startYmd)<soonLimit;
+    const summary=soonGood&&!soonBad
+      ? "<b>결론</b> — 가까운 달에 "+short+" 쪽으로 힘이 붙는 달이 먼저 잡혀."
+      : soonBad&&!soonGood
+        ? "<b>결론</b> — 가까운 달에는 "+short+" 쪽으로 조심할 달이 먼저 보여."
+        : soonGood&&soonBad
+          ? "<b>결론</b> — 가까운 달에 "+short+" 쪽으로 좋은 달과 조심할 달이 같이 들어 있어."
+          : plan.best.length||plan.far.length
+            ? "<b>결론</b> — 가까운 몇 달은 고르게 가다가, 뒤로 갈수록 "+short+" 쪽으로 힘이 붙어."
+            : (isT
+                ? "<b>결론</b> — 가까운 18개월은 계산되지만 다른 달과 분명히 갈리는 달이 약해. 특정 달은 억지로 찍지 않을게."
+                : "<b>결론</b> — 가까운 18개월 흐름은 다 봤는데, 다른 달과 확실히 갈리는 달이 약해. 그래서 언니도 그럴듯하게 날짜를 만들어 찍진 않을게.");
 
-    const lines=uniqueHighlights.map(row=>{
-      const when=formatMonth(row,today);
-      const positive=["supportive","mild-support"].includes(row.class);
-      const caution=["caution","mild-caution"].includes(row.class);
-      const lead="<b>"+when+"</b> — ";
-      const tail="";
-      if(positive) return lead+monthReason(reasoning,row,true)+". "+timingRealityCheck(reasoning,s,row,true)+"."+tail;
-      if(caution) return lead+monthReason(reasoning,row,false)+". "+timingRealityCheck(reasoning,s,row,false)+"."+tail;
-      return lead+"도움과 주의가 같이 잡혀서 한쪽으로 강하게 단정하기 어려운 달이야."+tail;
+    const lines=shown.map(x=>{
+      const pos=x.sigs.filter(y=>y.s>0).sort((a,b)=>b.s-a.s)[0];
+      const neg=x.sigs.filter(y=>y.s<0).sort((a,b)=>a.s-b.s)[0];
+      return x.score>0&&pos
+        ? "<b>"+monthSpan(x.row,today)+"</b> — "+pos.a+" 달이라, "+short+" 쪽으로 한 번 더 힘이 붙는 구간이야."
+        : "<b>"+monthSpan(x.row,today)+"</b> — "+(neg?neg.a+" 달이라, ":"")+"여기서도 속도를 늦추는 게 좋아.";
     });
 
     if(pivot?.year){
@@ -2386,7 +3266,7 @@
       const sName=sz.length>=2&&GAN_KR[sz[0]]?GAN_KR[sz[0]]+(ZHI_KR[sz[1]]||""):"";
       if(dName&&sName) lines.unshift("<b>지금 흐름</b> — 10년 단위 큰 흐름은 "+dName+", 올해 기운은 "+withJosa(sName,"이야","야")+". 이 두 흐름 위에서 특정 달만 두드러지게 갈리는 신호는 약하다는 뜻이야.");
     }
-    const strip=monthStrip(reasoning);
+    const strip=monthStrip(reasoning,s,data);
     if(strip) lines.unshift(strip);
     lines.unshift(...yearLine(reasoning,s,isT));
     const criterion=DECISION_CRITERIA[s.concern]?.[s.key]||"실제로 바뀌는 행동이 생기는지 봐";
@@ -2575,17 +3455,17 @@
     // 고민 선택값은 같은 명리 사실을 어느 현실 영역으로 번역할지만 정한다.
     const sig=signalsOf(r);
     const p={label:s.label,topGod:(r.synthesis?.tenGodEvidence||[])[0]?.god||"",headline:headlineOf(r),iljuName:sig?.ilju?.name||""};
-    const timing=compactTimingNote(r,s,p,isT);
+    const timing=compactTimingNote(r,s,p,isT,data);
     const nowRow=(r.timing?.nearMonths||[])[0]||null;
     const signalFacts={ilju:sig?.ilju?.key||null,dayStage:sig?.dayStage||null,sinsal:(sig?.sinsal||[]).map(x=>x.name),gongmang:sig?.gongmang?.positions||[],wonjin:sig?.wonjin?.positions||[]};
     const spec=[
       {desc:noteCoreV6(r,s,sig,isT),role:"core",facts:{...personalizationFactsForRole(r,"core",s),...signalFacts}},
-      {desc:noteAnswerV7(r,s,sig,data,isT),role:"fit",facts:{answerRank:rankGroups(r),needGroup:needGroupOf(r),bestMonths:goodRows(r).map(x=>x.startYmd),momentum:momentumOf(r),dayBranchGod:dayBranchGod(r),gender:data.gender||null}},
-      {desc:noteCauseV6(r,s,sig,data,isT),role:"pattern",facts:{...personalizationFactsForRole(r,"pattern",s),causeGroup:topGroupOf(r)}},
+      {desc:noteAnswerV8(r,s,sig,data,isT),role:"fit",facts:{answerRank:rankGroups(r),needGroup:needGroupOf(r),bestMonths:concernTimingPlan(r,s,data).best.map(x=>x.row.startYmd),dayBranchGod:dayBranchGod(r),gender:data.gender||null}},
+      {desc:noteCauseV8(r,s,sig,data,isT),role:"pattern",facts:{...personalizationFactsForRole(r,"pattern",s),causeGroup:topGroupOf(r),diagnoses:concernDiagnoses(r,s,sig,data).slice(0,2).map(x=>x.title)}},
       {desc:noteHowV7(r,s,sig,data,isT),role:"fit",facts:{...personalizationFactsForRole(r,"fit",s),needGroup:needGroupOf(r),needElement:prescriptionElement(r)}},
       {desc:timing.desc,role:"timing",facts:timing.personalizationFacts||{},timing:true},
       {desc:noteCautionV6(r,s,sig,isT),role:"caution",facts:{...personalizationFactsForRole(r,"caution",s),burdenGroup:burdenGroupOf(r),relations:relationRows(r,sig).map(x=>x.type)}},
-      {desc:noteActionV6(r,s,sig,isT,nowRow),role:"core",facts:{metric:s.metric,needElement:prescriptionElement(r),nowClass:nowRow?.class||null}},
+      {desc:noteActionV6(r,s,sig,isT,nowRow,data),role:"core",facts:{metric:s.metric,needElement:prescriptionElement(r),nowClass:nowRow?.class||null}},
     ];
     const notes=spec.map((x,idx)=>{
       const note={

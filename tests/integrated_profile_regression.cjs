@@ -17,7 +17,7 @@ function norm(v) {
 
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil:'load' });
   await page.waitForFunction(() =>
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.2.1' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.3.0' &&
     globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version === '2.1.0' &&
     globalThis.__CLASSICAL_REASONING_V1__?.version === '2.1.1' &&
     typeof buildIntegratedSajuProfile === 'function' &&
@@ -99,7 +99,7 @@ function norm(v) {
     };
   });
 
-  assert(result.engine?.version === '6.2.1', 'NOTE v3 engine missing');
+  assert(result.engine?.version === '6.3.0', 'NOTE v3 engine missing');
   assert(result.integrated?.version === '2.1.0', 'integrated profile v2 missing');
   assert(result.reasoning?.version === '2.1.1', 'classical reasoning engine missing');
   assert(result.wrapper, 'full-evidence classical NOTE wrapper missing');
@@ -121,7 +121,7 @@ function norm(v) {
     for (const [mode,notes,audit] of [['F',row.notesF,row.auditF],['T',row.notesT,row.auditT]]) {
       assert(notes.length === 7, row.concern+'/'+row.situation+'/'+mode+': expected seven answers');
       assert(notes.map(n=>n.themeNum).join(',') === '01,02,03,04,05,06,07', row.concern+'/'+row.situation+'/'+mode+': seven-answer numbering drift');
-      assert(audit?.version === '6.2.1' && audit?.engine === 'classical-causal-full-evidence', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
+      assert(audit?.version === '6.3.0' && audit?.engine === 'classical-causal-full-evidence', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
       assert(audit.genericClusterDependency === false, row.concern+'/'+row.situation+'/'+mode+': generic cluster dependency returned');
       assert(audit.structureFingerprint && audit.timingFingerprint && audit.synthesisFingerprint, row.concern+'/'+row.situation+'/'+mode+': fingerprints missing');
       assert(audit.evidenceCoverage?.coverageRate === 1 && audit.evidenceCoverage?.missingRuleIds?.length === 0,
@@ -154,7 +154,7 @@ function norm(v) {
       assert(!/(undefined|NaN|null)/.test(all), row.concern+'/'+row.situation+'/'+mode+': bad token leaked');
       for (const [i,note] of notes.entries()) {
         const len=plain(note.desc).length;
-        assert(len >= 110 && len <= 950, row.concern+'/'+row.situation+'/'+mode+': answer '+(i+1)+' length drift '+len);
+        assert(len >= 110 && len <= 1600, row.concern+'/'+row.situation+'/'+mode+': answer '+(i+1)+' length drift '+len);
         assert(plain(note.desc).includes('결론'), row.concern+'/'+row.situation+'/'+mode+': answer '+(i+1)+' does not lead with a conclusion');
       }
       assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(all), row.concern+'/'+row.situation+'/'+mode+': old/abstract consultation wording leaked');

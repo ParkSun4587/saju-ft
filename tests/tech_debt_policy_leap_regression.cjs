@@ -13,7 +13,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load',timeout:60000});
   await page.waitForFunction(()=>(
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.2.1' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.3.0' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version==='2.3.1'
   ),null,{timeout:60000});
@@ -126,7 +126,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           if(forbidden.test(visible)) failures.push(concern+'/'+key+'/'+mode+': old/abstract wording leaked');
           notes.forEach((note,i)=>{
             const text=plain(note?.desc);
-            if(text.length<110||text.length>950) failures.push(concern+'/'+key+'/'+mode+': answer '+(i+1)+' length '+text.length);
+            if(text.length<110||text.length>1600) failures.push(concern+'/'+key+'/'+mode+': answer '+(i+1)+' length '+text.length);
             if(!text.includes('결론')) failures.push(concern+'/'+key+'/'+mode+': answer '+(i+1)+' missing conclusion');
             for(const pattern of badJoins){ if(pattern.test(text)) failures.push(concern+'/'+key+'/'+mode+': Korean join error '+text); pattern.lastIndex=0; }
             answerChecks+=1;
