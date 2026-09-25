@@ -160,7 +160,7 @@ function norm(v) {
         assert(plain(note.desc).includes('결론'), row.concern+'/'+row.situation+'/'+mode+': answer '+(i+1)+' does not lead with a conclusion');
       }
       assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(all), row.concern+'/'+row.situation+'/'+mode+': old/abstract consultation wording leaked');
-      assert(notes[4]?.__timingQA?.structureFingerprint === audit.structureFingerprint,
+      assert(notes[6]?.__timingQA?.structureFingerprint === audit.structureFingerprint,
         row.concern+'/'+row.situation+'/'+mode+': timing answer lost natal fingerprint');
     }
 
