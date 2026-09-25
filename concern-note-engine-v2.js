@@ -3210,7 +3210,10 @@
     const extraBad=plan.scored.filter(x=>x.near&&!usedDates.has(x.row.startYmd)&&x.score<=-2&&x.sigs.some(y=>y.s<0))
       .sort((a,b)=>a.score-b.score||String(a.row.startYmd).localeCompare(String(b.row.startYmd)))[0]||null;
     const shown=[...plan.extra,extraBad].filter(Boolean);
-    const uniqueHighlights=(shown.length?shown:[...plan.best,plan.worst].filter(Boolean)).map(x=>x.row);
+    const metaItems=shown.length?shown:[...plan.best,plan.worst].filter(Boolean);
+    const uniqueHighlights=metaItems.map(x=>x.row);
+    // QA용 본문 키: 달 범위 + 이 고민에서의 역할(좋은 달/조심할 달) + 이유 + 간지라서 서로 겹치지 않는다.
+    const metaBody=x=>x?monthSpan(x.row,today)+" "+(x.score>0?"concern-good":"concern-caution")+" "+((x.score>0?posSigs(x):negSigs(x))[0]?.n||"")+" "+(x.row.ganZhi||""):"";
     const pivot=(disclosed.longTermPivots||[]).find(x=>x?.isStructuralPivot===true)||null;
     const planRows=[...plan.best,...plan.far,plan.worst,...shown].filter(Boolean).map(x=>x.row);
     const evidenceRuleIds=[...new Set([
@@ -3286,8 +3289,8 @@
       meta:{
         firstDate:label(uniqueHighlights[0]||null),
         secondDate:label(uniqueHighlights[1]||null),
-        firstBody:uniqueHighlights[0]?label(uniqueHighlights[0])+" "+(uniqueHighlights[0].class||""):"",
-        secondBody:uniqueHighlights[1]?label(uniqueHighlights[1])+" "+(uniqueHighlights[1].class||""):"",
+        firstBody:metaBody(metaItems[0]),
+        secondBody:metaBody(metaItems[1]),
         concernSituation:s.key,
         structureFingerprint:reasoning?.structureFingerprint||"",
         timingFingerprint:reasoning?.timingFingerprint||"",
