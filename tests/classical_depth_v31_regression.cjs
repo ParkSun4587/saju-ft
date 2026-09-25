@@ -358,8 +358,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         answer:plain(CANON.notes[1].desc),
         fit:plain(CANON.notes[3].desc),
         fix:plain(CANON.notes[3].desc),
-        timingAnswer:plain(CANON.notes[4].desc),
-        timingMeta:CANON.notes[4].__timingQA,
+        timingAnswer:plain(CANON.notes[6].desc),
+        timingMeta:CANON.notes[6].__timingQA,
       },
       traces:[
         trace('canonical-weak-officer',CANON),
