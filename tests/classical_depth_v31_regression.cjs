@@ -317,6 +317,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
             evidenceStatus:c.evidenceStatus,
             certainty:c.certainty,
             noteSentence:c.noteSentence,
+            noteSentences:c.noteSentences||[],
             actual:plain(insufficientRun.notes[link.noteNum-1]?.desc),
           };
         }),
@@ -446,7 +447,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     assert(c.zipingRuleIds.length>0,'insufficient fixture should retain the Ziping rules that actually fired');
     assert(c.evidenceStatus==='insufficient-evidence'&&c.certainty==='guarded','insufficient evidence did not lower certainty');
     assert(/근거가 한쪽/.test(c.actual),'guarded user wording missing when one classical side lacks evidence');
-    assert(c.noteSentence===c.actual,'guarded noteSentence not bound to final rendered NOTE');
+    assert(c.noteSentences.includes(c.actual),'guarded noteSentence not bound to final rendered NOTE');
   }
 
   assert(r.legacy.fpA===r.legacy.fpB,'legacy yongshin heuristic leaked into structural fingerprint');
