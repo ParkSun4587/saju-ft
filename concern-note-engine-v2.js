@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "6.2.0";
+  const VERSION = "6.2.1";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   function hasBatchim(value) {
@@ -1633,50 +1633,36 @@
   function lead(isT){ return "<b>결론</b> — "; }
   function whyLabel(isT){ return isT?"<b>근거</b> — ":"<b>왜 그러냐면</b> — "; }
 
-  // 1. 언니가 먼저 본 너 — 단일 십신이 아니라 복합 signature로 잡는다.
-  function strengthTechnicalLine(reasoning){
+  // 1. 핵심 — 너는 이런 사람
+  function noteCoreV6(reasoning,s,sig,isT){
+    const top=godRows(reasoning)[0];
+    const dm=dayMasterName(reasoning);
     const verdict=verdictOf(reasoning);
-    if(verdict==="신약") return "<b>신약</b> — 나를 받치는 힘보다 밖으로 쓰이거나 눌리는 힘이 상대적으로 큰 편이야.";
-    if(verdict==="신강") return "<b>신강</b> — 내 힘과 뿌리가 충분해서 한번 잡은 방향을 오래 밀 수 있는 편이야.";
-    return "<b>중화</b> — 한쪽 힘으로만 설명하기보다 상황에 따라 강점과 부담이 같이 움직이는 편이야.";
-  }
-
-  function signatureRows(reasoning){
-    const rows=godRows(reasoning);
-    const top=rows[0]||null;
-    const second=rows.find((row,i)=>i>0&&row?.group!==top?.group)||rows[1]||null;
-    return {top,second};
-  }
-
-  function noteCoreV7(reasoning,s,sig,isT){
-    const {top,second}=signatureRows(reasoning);
-    const roots=[...(reasoning?.profile?.strength?.roots||[])].sort((a,b)=>Number(b.weight||0)-Number(a.weight||0));
-    const topShare=top?godShare(reasoning,top.god):0;
-    const secondShare=second?godShare(reasoning,second.god):0;
-    const first=top
-      ? "네 사주에서 제일 먼저 움직이는 힘은 <b>"+top.god+"</b>이야. "+GOD_MEANING[top.god]+" 쪽 힘이 실제 세력 "+topShare+"%로 가장 커."
-      : "네 사주는 한 가지 힘만 크게 튀기보다 여러 힘이 나뉘어 있어.";
-    const secondLine=second
-      ? "근데 <b>"+second.god+"</b>도 "+secondShare+"%로 바로 뒤에 있어. 그래서 "+GOD_MEANING[top.god]+"만 강한 사람처럼 단순하게 보면 안 돼."
-      : "";
-    const rootLine=roots.length
-      ? "게다가 "+withJosa(dayMasterName(reasoning),"과","와")+" 같은 뿌리가 "+roots.length+"곳 있어서, 부담이 와도 바로 무너지는 쪽으로만 보긴 어려워."
-      : "반대로 같은 기운의 뿌리는 뚜렷하지 않아서, 같은 부담도 오래 끌수록 소모가 먼저 커질 수 있어.";
-    const intro=isT
-      ? lead(isT)+"한 단어로 보면 안 돼. "+first
-      : lead(isT)+"언니가 제일 먼저 본 건, 네가 한쪽 성격으로만 설명되는 사람이 아니라는 거야. "+first;
+    const ilju=sig?.ilju||{};
+    const special=(sig?.sinsal||[]).find(x=>x.tone!=="caution");
+    const bullets=[
+      ilju.scene,
+      top?CORE_SCENE[top.god]:"",
+      special?special.scene:(STRENGTH_SCENE[verdict]||STRENGTH_SCENE.중화).replace(/^그리고 /,""),
+    ].filter(Boolean).map(x=>"· "+x);
+    const tag=ilju.tag||headlineOf(reasoning)||"한쪽으로 치우치지 않은 사람";
+    const conclusion=(isT?"<b>결론</b> — ":"<b>결론</b> — 언니가 딱 보니까 이거야. ")+"너는 <b>"+withJosa(tag,"이야","야")+"</b>.<br>"+bullets.join("<br>");
+    const why=whyLabel(isT)+(sig?.ilju?.name?"네 일주는 "+withJosa(sig.ilju.name.replace(/일주$/,""),"이야","야")+". ":"")+pillarName(reasoning,"day")+"의 윗글자 "+withJosa(dm,"이","가")+" 너 자신이고"+
+      (top?", 사주에서 가장 큰 힘은 <b>"+godLabel(top.god)+"</b> "+godShare(reasoning,top.god)+"%야":"")+
+      (special?". 여기에 "+withJosa(special.name,"이","가")+" "+special.positions.map(p=>PILLAR_KR[p]).join("·")+"에 있어":"")+
+      ". 그리고 너 자신은 "+strengthPlain(reasoning)+"이야.";
     const tie=isT
-      ? "이 조합이 ‘"+s.label+"’에서 어떻게 드러나는지는 다음 답에서 바로 볼게."
-      : "이제 네가 물어본 ‘"+s.label+"’에서는 이 조합이 어떻게 드러나는지 바로 이어서 볼게.";
+      ? "이 성향이 ‘"+s.label+"’에서 어떻게 나오는지 바로 다음에 볼게."
+      : "이 성향이 ‘"+s.label+"’ 고민에서 제일 먼저 드러나. 바로 다음에서 진짜 이유를 볼게.";
+    const partner=top?godRows(reasoning).find(r=>r.group===top.group&&r.god!==top.god):null;
     const details=detailsBlock([
-      sig?.ilju?.name?"일주: "+sig.ilju.name+" — "+(sig.ilju.tag||""):"",
-      top?"가장 큰 십신: "+top.god+" — "+godPlaces(reasoning,top.god,2)+" / 실제 비중 "+topShare+"%":"",
-      second?"두 번째 핵심 십신: "+second.god+" — "+godPlaces(reasoning,second.god,2)+" / 실제 비중 "+secondShare+"%":"",
+      top?"가장 큰 힘: "+top.god+" — "+godPlaces(reasoning,top.god,2)+"에 있고 "+godShare(reasoning,top.god)+"%"+(partner?", "+withJosa(GROUP_GODS[top.group],"을","를")+" 합친 "+GROUP_NAME[top.group]+"은 "+groupShare(reasoning,top.group)+"%":"")+".":"",
+      sig?.dayStage?"일주의 12운성: "+sig.dayStage+" — "+sig.dayStageScene:"",
+      (sig?.sinsal||[]).length?"신살: "+sinsalList(sig)+".":"",
       centerSentence(reasoning),
       rootSentence(reasoning),
-      (sig?.sinsal||[]).length?"보조 신호로 보는 신살: "+sinsalList(sig)+".":"",
     ]);
-    return [intro,secondLine,strengthTechnicalLine(reasoning),rootLine,guardSentence(reasoning,isT),tie,details].filter(Boolean).join("<br><br>");
+    return [conclusion,why,guardSentence(reasoning,isT),tie,details].filter(Boolean).join("<br><br>");
   }
 
   function concernEvidence(reasoning,s,sig,data){
@@ -1771,7 +1757,7 @@
     if(c==="path") return top?"<b>너한테 맞는 분야</b> — "+PATH_FIT[top.god]+"가 잘 맞아.":"";
     if(c==="love"){
       const dz=dayBranchGod(reasoning);
-      return PARTNER_FIT[dz]?"<b>너랑 먼저 편하게 느낄 수 있는 사람</b> — "+PARTNER_FIT[dz]:"";
+      return PARTNER_FIT[dz]?"<b>너랑 잘 맞는 사람</b> — "+PARTNER_FIT[dz]:"";
     }
     if(c==="people"){
       const gui=sinsalOf(sig,"천을귀인");
@@ -1789,121 +1775,21 @@
     return parts.join("<br><br>");
   }
 
-  // 3. 너한텐 실제로 이렇게 반복돼 — FACT → CLAIM → 현실 장면.
-  function noteSceneV7(reasoning,s,sig,isT){
-    const {top,second}=signatureRows(reasoning);
-    const trigger=concernMechanismScene(reasoning,s);
-    const response=patternPressureSentence(reasoning);
-    const capacity=patternCapacitySentence(reasoning);
-    const rel=relationRows(reasoning,sig)[0]||null;
-    const supportFacts=[
-      top?"가장 큰 힘 "+top.god+" "+godShare(reasoning,top.god)+"%":"",
-      second?"두 번째 핵심 "+second.god+" "+godShare(reasoning,second.god)+"%":"",
-      verdictOf(reasoning),
-      rel?REL_PLAIN[rel.type]:"",
-    ].filter(Boolean);
-    const opening=isT
-      ? lead(isT)+"반복 순서는 ‘상황 → 먼저 나오는 반응 → 누적될 때의 변화’로 보면 돼."
-      : lead(isT)+"이게 현실에서는 한 장면으로 끝나기보다 비슷한 순서로 반복되는 편이야.";
-    return [
-      opening,
-      "<b>상황이 오면</b> — "+trigger+".",
-      "<b>제일 먼저</b> — "+response+".",
-      "<b>반복되면</b> — "+capacity+".",
-      rel?"<b>특히 흔들리는 자리</b> — "+relationSentence(reasoning,rel):"",
-      whyLabel(isT)+"이 장면은 "+supportFacts.join(" · ")+"가 같이 잡혀서 보여주는 거야. 한 가지 십신만 보고 만든 장면은 아니야.",
-    ].filter(Boolean).join("<br><br>");
-  }
-
-  // 4. 왜 이런 패턴이 생기냐면 — 월령·강약·격국·통근·관계를 causal chain으로 설명한다.
-  function noteWhyV7(reasoning,s,sig,isT){
-    const {top,second}=signatureRows(reasoning);
-    const roots=[...(reasoning?.profile?.strength?.roots||[])];
-    const center=centerSentence(reasoning);
-    const rel=relationRows(reasoning,sig)[0]||null;
-    const conclusion=isT
-      ? lead(isT)+"이 패턴은 "+(top?top.god:"가장 큰 힘")+" 하나가 아니라 강약·격국·통근·관계가 같이 만든 결과야."
-      : lead(isT)+"여기서 중요한 건, "+(top?top.god:"한 가지 힘")+" 하나 때문에 네가 이러는 게 아니라는 거야. 강약이랑 격국, 통근, 관계가 같이 맞물려.";
-    const supportRatio=Number(reasoning?.profile?.strength?.supportRatio);
-    const strengthTech=Number.isFinite(supportRatio)
-      ? "<b>강약</b> — "+verdictOf(reasoning)+" 판정이고, 일간을 돕는 힘의 비율은 약 "+Math.round(supportRatio*100)+"%로 계산돼."
-      : "<b>강약</b> — "+verdictOf(reasoning)+" 판정이야.";
-    const rootTech=roots.length
-      ? "<b>통근</b> — 일간과 같은 기운이 지지 "+roots.length+"곳에 이어져 있어서, 뿌리가 전혀 없는 사주는 아니야."
-      : "<b>통근</b> — 일간과 같은 기운이 지지에 뚜렷하게 이어지지 않아.";
-    const relTech=rel?(()=>{
-      const x=relationPair(reasoning,rel);
-      return "<b>합충형파해</b> — "+x.refsA+"·"+x.refsB+" 사이에 "+withJosa(REL_PLAIN[rel.type],"이","가")+" 잡혀 있어.";
-    })():"";
-    return [
-      conclusion,
-      top?"<b>"+top.god+"</b> — "+GOD_MEANING[top.god]+". 실제 세력 "+godShare(reasoning,top.god)+"%로 가장 먼저 작용해.":"",
-      second?"<b>"+second.god+"</b> — "+GOD_MEANING[second.god]+". "+godShare(reasoning,second.god)+"%라 첫 번째 힘과 다른 방향도 같이 만들어.":"",
-      strengthTech,
-      center?"<b>격국</b> — "+center:"",
-      rootTech,
-      relTech,
-      "<b>그래서</b> — "+patternResolutionSentence(reasoning)+".",
-      detailsBlock([seasonSentence(reasoning),weakLinkSentence(reasoning).replace(/<[^>]+>/g,""),bondSentence(reasoning)]),
-    ].filter(Boolean).join("<br><br>");
-  }
-
-  // 5. 너한테 잘 맞는 조건 — 오행 생활팁이 아니라 실제 도움 구조를 선택 조건으로 번역한다.
-  function noteFitV7(reasoning,s,sig,data,isT){
-    const rows=supportRows(reasoning,s);
-    const first=rows[0]||null, second=rows[1]||null;
-    const el=prescriptionElement(reasoning);
-    return [
-      first
-        ? lead(isT)+"너한테 잘 맞는 건 <b>"+first.text+"</b>이야."
-        : lead(isT)+"한 가지 정답보다, 네 힘이 실제로 살아나는 조건을 확인하면서 고르는 게 맞아.",
-      first?"<b>왜 잘 맞냐면</b> — "+first.why:"",
-      second?"<b>두 번째 조건</b> — "+second.text+". "+second.why:"",
-      el?"<b>보완해서 볼 기운</b> — "+withJosa(elementName(el),"이야","야")+". 색이나 음식 같은 단순 팁보다 사람·환경·일 방식에서 이 기운의 역할이 실제로 생기는지를 봐.":"",
-      "<b>고를 때 기준</b> — "+(DECISION_CRITERIA[s.concern]?.[s.key]||"같은 조건을 반복했을 때도 네 힘이 남는지 봐")+".",
-      detailsBlock(rows.slice(2).map(x=>x.text+" — "+x.why)),
-    ].filter(Boolean).join("<br><br>");
-  }
-
-  // 6. 여기서부터 꼬여 — 신살보다 실제 기신/과부하/충돌을 우선한다.
-  function noteCautionV7(reasoning,s,sig,isT){
-    const harms=harmRows(reasoning,s);
-    const first=harms[0]||null, second=harms[1]||null;
-    const rel=relationRows(reasoning,sig)[0]||null;
-    const aux=(sig?.sinsal||[]).find(x=>SINSAL_CAUTION[x.name])||null;
-    return [
-      first
-        ? lead(isT)+"여기서부터 꼬이기 쉬워. <b>"+first.text+"</b>."
-        : lead(isT)+"특정 기신 하나보다, 네 사주에서 이미 큰 부담이 더 커지는 조건을 조심해야 해.",
-      first?"<b>근거</b> — "+first.evidence:"",
-      second?"<b>같이 조심할 조건</b> — "+second.text+". "+second.evidence:"",
-      rel?"<b>관계 신호</b> — "+relationShort(reasoning,rel).replace(/^그 밖에\s*/,""):"",
-      "<b>현실 체크</b> — "+cautionCriterionSentence(reasoning,s)+".",
-      detailsBlock([
-        aux?"신살은 보조 신호로만 봐: "+aux.name+" — "+(SINSAL_CAUTION[aux.name]||""):"",
-        ...relationRows(reasoning,sig).filter(x=>x!==rel).slice(0,2).map(x=>relationShort(reasoning,x)),
-      ]),
-    ].filter(Boolean).join("<br><br>");
-  }
-
-  // 7. 그래서 지금은 이렇게 봐 — timing + 판단 기준 + 지금 할 행동 하나.
-  function noteClosingV7(reasoning,s,sig,isT,timing){
-    const action=plainSentence(s.move);
-    return [
-      String(timing?.desc||""),
-      isT?"<b>지금 할 일</b> — "+action:"<b>언니가 마지막으로 하나만 잡아줄게</b> — "+action,
-      isT
-        ? "시기는 정답이 아니라 실행 강도를 조절하는 기준으로 써."
-        : "시기는 운이 대신 결정해주는 날짜가 아니라, 네가 움직일 강도를 조절하는 기준으로 쓰면 돼.",
-    ].filter(Boolean).join("<br><br>");
-  }
-
   // 6. 조심할 것
+  // 사람·관계 고민의 NOTE2(답)가 이미 쓴 관계는 조심할 것에서 다시 쓰지 않는다.
+  function peopleAnswerRelation(reasoning,sig,s){
+    if(s?.concern!=="people") return null;
+    const pos={friend:[],work:["month"],family:["year","month"],distance:["year","month","day","hour"]}[s.key]||[];
+    return relationRows(reasoning,sig).find(x=>pos.includes(x.aPos)||pos.includes(x.bPos))||null;
+  }
   function noteCautionV6(reasoning,s,sig,isT){
     const B=burdenGroupOf(reasoning);
     const main=CAUTION[s.concern]?.[B]||"";
     const relevantPos={love:["day"],people:["year","month","day","hour"],career:["year","month"],money:["year","month","day"]}[s.concern]||[];
-    const rel=relationRows(reasoning,sig).find(x=>relevantPos.includes(x.aPos)||relevantPos.includes(x.bPos))||null;
+    const usedRow=peopleAnswerRelation(reasoning,sig,s);
+    const relKey=x=>x?x.type+":"+[x.aPos,x.bPos].sort().join("-"):"";
+    const used=relKey(usedRow);
+    const rel=relationRows(reasoning,sig).find(x=>relKey(x)!==used&&(relevantPos.includes(x.aPos)||relevantPos.includes(x.bPos)))||null;
     const bad=(sig?.sinsal||[]).find(x=>SINSAL_CAUTION[x.name]);
     const gm=(sig?.gongmang?.positions||[])[0];
     const harm=harmRows(reasoning,s)[0];
@@ -1919,7 +1805,7 @@
       bad?"<b>이것도 기억해</b> — "+SINSAL_CAUTION[bad.name]:"",
       gm?"<b>기대를 낮출 쪽</b> — "+POS_PERSON[gm]+" 자리인 "+withJosa(pillarName(reasoning,gm),"이","가")+" 비어 있는 공망 배치라, 그쪽 도움은 크게 기대하기보다 스스로 준비해두는 게 마음이 편해.":"",
       whyLabel(isT)+whyText,
-      detailsBlock(relationRows(reasoning,sig).filter(r=>r!==rel).slice(0,2).map(r=>relationShort(reasoning,r))),
+      detailsBlock(relationRows(reasoning,sig).filter(r=>r!==rel&&relKey(r)!==used).slice(0,2).map(r=>relationShort(reasoning,r))),
     ];
     return lines.filter(Boolean).join("<br><br>");
   }
@@ -1945,6 +1831,9 @@
         (positive?" 마침 "+now+" 구간이 네 사주를 돕는 쪽이라 시작하기 좋아.":caution?" "+now+" 구간은 약한 쪽을 건드리는 때라, 크게 바꾸기보다 이 정도 작은 것부터 하는 게 맞아.":""),
       (()=>{
         const next=nextGoodRow(reasoning);
+        const limit=yearAheadYmd(reasoning);
+        if(next&&limit&&String(next.startYmd)>=limit)
+          return "<b>다음 타이밍</b> — 1년 안에는 힘이 확 붙는 달이 잡히지 않아. 그래서 때를 기다리기보다, "+(CONCERN_WORD[s.concern]||"이 고민")+"에서 이번 주에 해본 걸 작게 이어가면서 달라진 것만 남겨.";
         return next
           ? "<b>다음 타이밍</b> — "+formatMonth(next,reasoning?.timing?.today||"")+"가 다음으로 힘이 붙는 구간이야. "+(CONCERN_WORD[s.concern]||"이 고민")+"에서 이번 주에 해본 걸 그때 한 단계 더 키워."
           : "<b>다음 타이밍</b> — 가까운 달 중엔 특별히 힘이 붙는 달보다 고르게 가는 달이 많아. "+(CONCERN_WORD[s.concern]||"이 고민")+"에서 7일 해보고 달라진 게 있으면 그대로 이어가면 돼.";
@@ -2008,7 +1897,7 @@
     mental:{burnout:"지금 쉬어야 할까",overthink:"생각을 멈추는 방법, 순서대로",low:"다시 움직이는 첫걸음",recover:"언제, 어떻게 회복될까"},
   };
   const ANSWER_HOOK={
-    money:{saving:"돈이 새는 구멍은 순서가 있어. 제일 큰 구멍부터 막으면 돼.",income:"수입을 늘리는 길은 여러 개인데, 네 사주에 맞는 순서가 있어.",side:"네 사주에서 돈 되는 부업과 안 되는 부업은 분명하게 갈려. 1순위부터 말할게.",flow:"네 돈 행동을 넓혀보기 좋은 때와 조심할 때는 정해져 있어. 날짜부터 말할게."},
+    money:{saving:"돈이 새는 구멍은 순서가 있어. 제일 큰 구멍부터 막으면 돼.",income:"수입을 늘리는 길은 여러 개인데, 네 사주에 맞는 순서가 있어.",side:"네 사주에서 돈 되는 부업과 안 되는 부업은 분명하게 갈려. 1순위부터 말할게.",flow:"네 돈이 잘 도는 때와 조심할 때는 정해져 있어. 날짜부터 말할게."},
     career:{exam:"시험은 공부량보다 언제 보느냐와 뭘 하나 바꾸느냐에서 갈려. 날짜부터 말할게.",jobsearch:"붙는 곳은 스펙보다 맞는 직무와 지원 타이밍에서 갈려. 맞는 직무 1순위부터 말할게.",move:"옮길지 말지, 네 사주 기준으로 결론부터 말할게. 옮긴다면 어디로 갈지도 같이 볼게.",current:"지금 자리에서 올라가는 방법은 하나로 정리돼. 인정받기 좋은 때까지 같이 말할게."},
     love:{crush:"이 썸은 기다리는 것보다 네가 어떻게 움직이느냐에서 갈려.",relationship:"이 연애가 오래 가는지는 서운함을 푸는 방식에서 갈려. 네 사주 쪽 결론부터 말할게.",breakup:"다시 이어질지, 네 사주 쪽에서 볼 수 있는 결론부터 말할게.",new:"인연은 때와 장소가 있어. 언제, 어디서, 어떤 사람인지 차례로 말할게."},
     path:{lost:"네 사주에서 맞는 분야는 순서가 있어. 1순위부터 말할게.",current:"지금 길이 맞는지는 네 사주 기준으로 가를 수 있어. 맞는 방향부터 말할게.",switch:"바꿔도 되는지, 바꾼다면 어디로인지 결론부터 말할게. 옮기기 좋은 때도 같이 볼게.",strength:"네 강점은 사주에 순서대로 쓰여 있어. 제일 센 것부터 약한 것까지 말할게."},
@@ -2151,16 +2040,25 @@
       .slice(0,2).sort((a,b)=>String(a.rows[0].startYmd).localeCompare(String(b.rows[0].startYmd)));
   }
   function goodRows(reasoning){ return goodRuns(reasoning).map(run=>run.rows[0]); }
+  // 오늘부터 1년 뒤 날짜. 이보다 늦게 시작하는 달은 "가까운 달"로 부르지 않는다.
+  function yearAheadYmd(reasoning){
+    const today=String(reasoning?.timing?.today||"");
+    return /^\d{4}-\d{2}-\d{2}$/.test(today)?(Number(today.slice(0,4))+1)+today.slice(4):"";
+  }
   function runText(reasoning,run){
     const today=String(reasoning?.timing?.today||"");
     const first=run.rows[0], last=run.rows[run.rows.length-1];
     const y=Number(today.slice(0,4));
+    const months=reasoning?.timing?.nearMonths||[];
+    // 계산 범위 끝까지 좋은 달이 이어지면, 범위 끝 날짜는 실제 끝이 아니라서 "쭉"으로 쓴다.
+    const toWindowEnd=months.length>0&&String(last.startYmd)===String(months[months.length-1]?.startYmd);
     const endYmd=String(last.endYmd||"");
     const ey=Number(endYmd.slice(0,4)), em=Number(endYmd.slice(5,7)), ed=Number(endYmd.slice(8,10));
     const sy=Number(String(first.startYmd).slice(0,4));
     const end=em&&ed?(ey&&ey!==y&&ey!==sy?ey+"년 ":"")+em+"월 "+ed+"일 전까지":"";
     const isNow=String(first.startYmd)<=today;
     const start=isNow?"지금부터":(sy&&sy!==y?sy+"년 ":"")+Number(first.startMonth)+"월 "+Number(first.startDay)+"일부터";
+    if(toWindowEnd) return isNow?"지금부터 1년 넘게 쭉":start+" 쭉";
     return end?start+" "+end:formatMonth(first,today);
   }
   function badRow(reasoning){
@@ -2216,6 +2114,9 @@
   }
   function whenLine(reasoning,label){
     const runs=goodRuns(reasoning);
+    const limit=yearAheadYmd(reasoning);
+    const allFar=runs.length>0&&!!limit&&runs.every(run=>String(run.rows[0].startYmd)>=limit);
+    if(allFar) return "<b>"+label+"</b> — 1년 안에는 뚜렷하게 힘이 붙는 달이 없고, 그다음은 "+runText(reasoning,runs[0])+". 그 전까지는 서두르지 말고 작게 준비해.";
     return runs.length?"<b>"+label+"</b> — "+runs.map(run=>runText(reasoning,run)).join(", 그리고 ")+".":"<b>"+label+"</b> — 가까운 달 중엔 특별히 튀는 달 없이 고르게 가. 준비되는 대로 시작해도 돼.";
   }
   function cautionLine(reasoning,label){
@@ -2239,32 +2140,32 @@
     const out=[lead(isT)+(ANSWER_HOOK[s.concern]?.[s.key]||"결론부터 말할게.")];
     const why1="이렇게 나온 건 네 사주에 제일 필요한 게 "+GROUP_NAME[N]+" 쪽이라서야.";
     if(k==="money/side"){
-      out.push("<b>먼저 볼 방향 — "+SIDE_OPTION[rank[0]][0]+"</b>. "+withJosa(SIDE_OPTION[rank[0]][1],"이야","야")+"."+(el?" 분야는 "+INDUSTRY[el]+" 같은 범주를 먼저 작게 시험해볼 만해.":"")+" "+why1);
-      out.push("<b>다음 후보 — "+SIDE_OPTION[rank[1]][0]+"</b>. "+withJosa(SIDE_OPTION[rank[1]][1],"이야","야")+".");
+      out.push("<b>1순위 — "+SIDE_OPTION[rank[0]][0]+"</b>. "+withJosa(SIDE_OPTION[rank[0]][1],"이야","야")+"."+(el?" 분야는 "+INDUSTRY[el]+" 쪽이면 더 잘 붙어.":"")+" "+why1);
+      out.push("<b>2순위 — "+SIDE_OPTION[rank[1]][0]+"</b>. "+withJosa(SIDE_OPTION[rank[1]][1],"이야","야")+".");
       out.push(signalWorkLine(sig));
-      out.push("<b>피할 것 — "+SIDE_AVOID[worst]+"</b>. 우선순위를 낮추고 작게 시험하면서 실제 반응부터 확인하는 게 좋아.");
+      out.push("<b>피할 것 — "+SIDE_AVOID[worst]+"</b>. 네 사주에선 들인 힘보다 새는 게 더 커.");
       out.push(whenLine(reasoning,"시작하기 좋은 때"));
     } else if(k==="money/income"){
-      out.push("<b>먼저 볼 방향 — "+INCOME_OPTION[rank[0]][0]+"</b>. "+withJosa(INCOME_OPTION[rank[0]][1],"이야","야")+". "+why1);
-      out.push("<b>다음 후보 — "+INCOME_OPTION[rank[1]][0]+"</b>. "+withJosa(INCOME_OPTION[rank[1]][1],"이야","야")+".");
-      out.push("<b>효과 적은 길 — "+INCOME_AVOID[worst]+"</b>. 이건 우선순위를 낮추고 실제 보상 반응부터 확인하는 게 좋아.");
+      out.push("<b>1순위 — "+INCOME_OPTION[rank[0]][0]+"</b>. "+withJosa(INCOME_OPTION[rank[0]][1],"이야","야")+". "+why1);
+      out.push("<b>2순위 — "+INCOME_OPTION[rank[1]][0]+"</b>. "+withJosa(INCOME_OPTION[rank[1]][1],"이야","야")+".");
+      out.push("<b>효과 적은 길 — "+INCOME_AVOID[worst]+"</b>. 이건 네 사주에서 힘만 들고 수입은 잘 안 늘어.");
       out.push(whenLine(reasoning,"수입 얘기를 꺼내기 좋은 때"));
     } else if(k==="money/saving"){
-      out.push("<b>먼저 점검할 지출 패턴 — "+LEAK_NAME[G1][0]+"</b>. "+LEAK_NAME[G1][1]+"이야. 네 사주에서 제일 큰 힘이 이쪽이라 돈도 제일 먼저 여기로 가.");
-      out.push("<b>다음으로 점검할 패턴 — "+LEAK_NAME[G2][0]+"</b>. "+LEAK_NAME[G2][1]+"이야.");
+      out.push("<b>1순위 구멍 — "+LEAK_NAME[G1][0]+"</b>. "+LEAK_NAME[G1][1]+"이야. 네 사주에서 제일 큰 힘이 이쪽이라 돈도 제일 먼저 여기로 가.");
+      out.push("<b>2순위 구멍 — "+LEAK_NAME[G2][0]+"</b>. "+LEAK_NAME[G2][1]+"이야.");
       out.push("<b>너한테 맞는 저축 방식</b> — "+SAVE_STYLE[N]+"이 제일 오래 가.");
       out.push(whenLine(reasoning,"모으기 시작하기 좋은 때"));
     } else if(k==="money/flow"){
-      out.push(whenLine(reasoning,"돈 행동을 넓혀보기 좋은 때"));
+      out.push(whenLine(reasoning,"돈이 잘 도는 때"));
       out.push(cautionLine(reasoning,"조심할 때"));
       out.push("<b>네 돈이 들어오는 길</b> — "+FLOW_WAY[G1]+"이 중심이야. 좋은 때엔 이 길을 넓히고, 조심할 때엔 나가는 돈부터 줄여.");
     } else if(k==="career/exam"){
       out.push(whenLine(reasoning,"실력이 잘 나오는 때"));
       out.push(cautionLine(reasoning,"긴장이 커지는 때"));
-      out.push("<b>점수를 바꿀 확인 포인트 — "+EXAM_KEY[G1]+"</b>. 공부량보다 이게 점수를 바꿔.");
+      out.push("<b>합격을 가르는 한 가지 — "+EXAM_KEY[G1]+"</b>. 공부량보다 이게 점수를 바꿔.");
     } else if(k==="career/jobsearch"){
-      out.push("<b>먼저 볼 방향 — "+JOB_OPTION[rank[0]][0]+"</b>. "+withJosa(JOB_OPTION[rank[0]][1],"이야","야")+". "+why1);
-      out.push("<b>다음 후보 — "+JOB_OPTION[rank[1]][0]+"</b>. "+withJosa(JOB_OPTION[rank[1]][1],"이야","야")+".");
+      out.push("<b>1순위 — "+JOB_OPTION[rank[0]][0]+"</b>. "+withJosa(JOB_OPTION[rank[0]][1],"이야","야")+". "+why1);
+      out.push("<b>2순위 — "+JOB_OPTION[rank[1]][0]+"</b>. "+withJosa(JOB_OPTION[rank[1]][1],"이야","야")+".");
       out.push(whenLine(reasoning,"지원하기 좋은 때"));
       out.push(cautionLine(reasoning,"결과가 늦게 오는 때"));
     } else if(k==="career/move"){
@@ -2275,7 +2176,7 @@
       out.push("<b>옮긴다면 이런 곳</b> — "+JOB_OPTION[N][1]+".");
       if(good.length) out.push(whenLine(reasoning,"움직이기 좋은 때"));
     } else if(k==="career/current"){
-      out.push("<b>먼저 볼 방향 — "+CURRENT_KEY[G1]+"</b>. 네 사주에서 제일 큰 힘이 이쪽이라, 여기만 바꿔도 평가가 달라져.");
+      out.push("<b>1순위 — "+CURRENT_KEY[G1]+"</b>. 네 사주에서 제일 큰 힘이 이쪽이라, 여기만 바꿔도 평가가 달라져.");
       out.push("<b>힘이 되는 사람</b> — "+HELPER[N]+". 네 사주에 부족한 걸 채워주는 쪽이야.");
       out.push(whenLine(reasoning,"인정받기 좋은 때"));
       out.push(cautionLine(reasoning,"평가가 흔들리기 쉬운 때"));
@@ -2289,7 +2190,7 @@
       out.push("<b>상대 마음</b> — 상대 마음은 상대 사주가 있어야 정확히 보여. 여기선 네 쪽에서 되는 방법만 볼게.");
     } else if(k==="love/relationship"){
       const clash=dayRelation(reasoning,sig,["clash","wonjin"]);
-      out.push("<b>"+(dayCombine(reasoning)?"한번 맺은 관계를 쉽게 놓지 않는 쪽으로 읽혀":clash?"큰 충돌 뒤에 어떻게 조정하느냐가 중요한 배치야":"큰 사건보다 작은 서운함이 쌓이지 않게 보는 게 중요한 배치야")+"</b>. "+(dayCombine(reasoning)?"배우자 자리가 다른 자리와 묶여 있어서, 쉽게 놓지 않아.":clash?"배우자 자리가 부딪히는 배치라, 생활 문제로 크게 싸운 뒤를 조심해야 해.":"배우자 자리가 조용해서, 쌓이는 서운함만 풀면 오래 가."));
+      out.push("<b>"+(dayCombine(reasoning)?"한번 맺은 인연을 오래 끌고 가는 사주야":clash?"큰 싸움 한 번이 고비가 되는 사주야":"큰 사건보다 작은 서운함 관리가 관건인 사주야")+"</b>. "+(dayCombine(reasoning)?"배우자 자리가 다른 자리와 묶여 있어서, 쉽게 놓지 않아.":clash?"배우자 자리가 부딪히는 배치라, 생활 문제로 크게 싸운 뒤를 조심해야 해.":"배우자 자리가 조용해서, 쌓이는 서운함만 풀면 오래 가."));
       out.push(whenLine(reasoning,"관계가 편해지는 때"));
       out.push(cautionLine(reasoning,"부딪히기 쉬운 때"));
     } else if(k==="love/breakup"){
@@ -2300,17 +2201,17 @@
       if(sg&&thisYearGroup(reasoning)===sg){ score++; why.push("올해 연인을 뜻하는 기운이 들어와"); }
       if(dayRelation(reasoning,sig,["clash"])){ score--; why.push("배우자 자리가 부딪히는 배치라 같은 이유로 또 헤어지기 쉬워"); }
       if(v==="신강"&&G1==="self"){ score--; why.push("자존심이 강해서 먼저 연락하기가 어려워"); }
-      out.push("<b>"+(score>=2?"네 쪽에서는 다시 생각이 커질 신호가 몇 개 겹쳐":score===1?"네 쪽 신호는 한쪽으로 확정하기 어려워":"네 쪽에서는 재회를 강하게 밀어주는 신호가 두드러지지 않아")+"</b>. "+(why.length?why.join(". ")+".":"사주에서 재회 쪽으로 강하게 끄는 신호도, 막는 신호도 두드러지지 않아."));
-      out.push(whenLine(reasoning,"연락을 고민해보기 쉬운 때"));
+      out.push("<b>"+(score>=2?"다시 이어질 여지가 있는 편이야":score===1?"반반이야":"다시 만나기보다 정리하는 쪽이 네 사주엔 더 편한 편이야")+"</b>. "+(why.length?why.join(". ")+".":"사주에서 재회 쪽으로 강하게 끄는 신호도, 막는 신호도 두드러지지 않아."));
+      out.push(whenLine(reasoning,"연락이 닿기 쉬운 때"));
       out.push("<b>한 가지만 기억해</b> — 상대 사주까지 봐야 확실해져. 여기선 네 쪽 사주로 보이는 것만 말했어.");
     } else if(k==="love/new"){
       const dz=dayBranchGod(reasoning);
       out.push(whenLine(reasoning,"인연이 들어오기 좋은 때"));
-      out.push("<b>만남 접점을 넓혀볼 곳</b> — "+(el?MEET_PLACE[el]:"지인 소개나 오래 다닌 모임")+(sinsalOf(sig,"역마")?", 그리고 여행이나 이동 중":"")+(sinsalOf(sig,"도화")?", 그리고 사람이 많이 모이는 자리":"")+".");
-      if(PARTNER_SHORT[dz]) out.push("<b>먼저 편하게 느낄 수 있는 사람</b> — "+PARTNER_SHORT[dz]+". 배우자 자리의 "+withJosa(dz,"이","가")+" 이런 성향을 편하게 느끼는 쪽으로 읽혀.");
+      out.push("<b>만나기 좋은 곳</b> — "+(el?MEET_PLACE[el]:"지인 소개나 오래 다닌 모임")+(sinsalOf(sig,"역마")?", 그리고 여행이나 이동 중":"")+(sinsalOf(sig,"도화")?", 그리고 사람이 많이 모이는 자리":"")+".");
+      if(PARTNER_SHORT[dz]) out.push("<b>잘 맞는 사람</b> — "+PARTNER_SHORT[dz]+". 배우자 자리에 "+withJosa(dz,"이","가")+" 있어서야.");
     } else if(k==="path/lost"){
-      out.push("<b>먼저 볼 방향 — "+PATH_OPTION[rank[0]][0]+"</b>. "+PATH_OPTION[rank[0]][1]+"이 맞아."+(el?" 그중에서도 "+INDUSTRY[el]+" 같은 범주를 먼저 시험해볼 만해.":"")+" "+why1);
-      out.push("<b>다음 후보 — "+PATH_OPTION[rank[1]][0]+"</b>. "+PATH_OPTION[rank[1]][1]+"도 잘 맞아.");
+      out.push("<b>1순위 — "+PATH_OPTION[rank[0]][0]+"</b>. "+PATH_OPTION[rank[0]][1]+"이 맞아."+(el?" 그중에서도 "+INDUSTRY[el]+" 쪽이면 더 잘 붙어.":"")+" "+why1);
+      out.push("<b>2순위 — "+PATH_OPTION[rank[1]][0]+"</b>. "+PATH_OPTION[rank[1]][1]+"도 잘 맞아.");
       out.push(signalWorkLine(sig));
       out.push("<b>피할 쪽 — "+PATH_OPTION[worst][0]+"</b>. 네 사주에선 힘이 가장 안 붙는 쪽이야.");
     } else if(k==="path/current"){
@@ -2321,16 +2222,15 @@
     } else if(k==="path/switch"){
       const m=momentumOf(reasoning);
       out.push("<b>"+(m>0?"바꿔도 되는 쪽이야":m<0?"바로 바꾸기보다 준비하고 옮기는 쪽이 유리해":"지금은 반반이야. 작게 시험해본 뒤 옮겨")+"</b>. "+(m>0?"가까운 달 흐름이 새 시작을 받쳐줘.":m<0?"가까운 달에 부담 신호가 먼저 잡혀.":"가까운 달에 도움과 부담이 섞여 있어."));
-      out.push("<b>옮긴다면 1순위 — "+PATH_OPTION[rank[0]][0]+"</b>, <b>다음 후보 — "+PATH_OPTION[rank[1]][0]+"</b>."+(el?" 분야로는 "+INDUSTRY[el]+" 같은 범주를 우선 검토해볼 만해.":""));
+      out.push("<b>옮긴다면 1순위 — "+PATH_OPTION[rank[0]][0]+"</b>, <b>2순위 — "+PATH_OPTION[rank[1]][0]+"</b>."+(el?" 분야로는 "+INDUSTRY[el]+" 쪽이 잘 맞아.":""));
       out.push(whenLine(reasoning,"옮기기 좋은 때"));
     } else if(k==="path/strength"){
-      out.push("<b>가장 먼저 보이는 강점 — "+STRENGTH_NAME[G1]+"</b>. 네 사주에서 제일 큰 힘이야.");
-      out.push("<b>그다음 강점 — "+STRENGTH_NAME[G2]+"</b>.");
+      out.push("<b>1순위 강점 — "+STRENGTH_NAME[G1]+"</b>. 네 사주에서 제일 큰 힘이야.");
+      out.push("<b>2순위 강점 — "+STRENGTH_NAME[G2]+"</b>.");
       const W=byShare[byShare.length-1];
       out.push("<b>상대적으로 약한 쪽 — "+STRENGTH_NAME[W]+"</b>. 이건 혼자 키우기보다 잘하는 사람과 같이 하는 게 빨라.");
     } else if(s.concern==="people"){
-      const pos={friend:[],work:["month"],family:["year","month"],distance:["year","month","day","hour"]}[s.key]||[];
-      const rel=relationRows(reasoning,sig).find(x=>pos.includes(x.aPos)||pos.includes(x.bPos))||null;
+      const rel=peopleAnswerRelation(reasoning,sig,s);
       if(s.key==="distance"){
         const hard=rel&&["clash","wonjin","punishment"].includes(rel.type);
         out.push("<b>"+(hard?"거리를 두는 쪽이 네 마음엔 더 편한 편이야":G1==="self"?"끊기보다 만나는 횟수만 줄이는 쪽이 맞아":G1==="officer"?"도리 때문에 붙잡고 있는 거라면 거리를 둬도 돼":"한 번은 할 말을 하고, 반응을 보고 정하는 쪽이 맞아")+"</b>.");
@@ -2346,11 +2246,11 @@
       out.push(whenLine(reasoning,"관계가 풀리기 좋은 때"));
     } else {
       if(s.key==="burnout") out.push("<b>"+(v==="신강"?"지금은 쌓인 걸 빼낼 때야":"지금은 더 버틸 때가 아니라 채울 때야")+"</b>. 지친 이유 1순위는 "+TIRE_NAME[G1]+"이야.");
-      else if(s.key==="overthink") out.push("<b>먼저 볼 방향 — "+THINK_STOP[G1]+"</b>. <b>다음 후보 — "+THINK_STOP[G2]+"</b>.");
+      else if(s.key==="overthink") out.push("<b>1순위 — "+THINK_STOP[G1]+"</b>. <b>2순위 — "+THINK_STOP[G2]+"</b>.");
       else if(s.key==="low") out.push("<b>첫걸음 — "+LOW_STEP[G1]+"</b>. 그다음은 "+LOW_STEP[N]+".");
       else out.push("<b>회복 1순위 — "+(el?QUICK_RECOVER[el]:"같은 시간에 자고 먹기")+"</b>. 네 사주에 제일 필요한 기운을 채우는 방법이야.");
       if(s.key!=="recover"&&el) out.push("<b>제일 빨리 효과 보는 것</b> — "+QUICK_RECOVER[el]+".");
-      out.push(whenLine(reasoning,s.key==="recover"?"생활 리듬을 다시 올리기 편한 때":"부담을 줄여보기 좋은 때"));
+      out.push(whenLine(reasoning,s.key==="recover"?"회복이 붙기 시작하는 때":"나아지기 시작하는 때"));
     }
     out.push(detailsBlock([
       "순위 기준: 네 사주에 제일 필요한 기운은 "+(el?elementName(el)+" 쪽 ":"")+GROUP_NAME[N]+", 가장 큰 힘은 "+(top?top.god:"고르게 나뉜 힘")+", 너 자신은 "+strengthPlain(reasoning)+"이야.",
@@ -2413,10 +2313,14 @@
       ? policy.filterTimingForProduct("basic_concern",timing)
       : {concernNearTerm:timing.concernNearTerm||null,longTermPivots:(timing.longTermPivots||[]).slice(0,2)};
     const near=disclosed.concernNearTerm||{};
-    const highlights=(near.highlights||[]).filter(row=>{
+    const signalRows=(near.highlights||[]).filter(row=>{
       const ms=row?.monthSpecific||{};
       return Number(ms.support||0)>0||Number(ms.caution||0)>0;
     });
+    // "가까운 달"에는 1년 안의 달을 먼저 쓴다. 1년 안에 뚜렷한 달이 없을 때만 그 뒤의 달 하나를 쓴다.
+    const yearAhead=yearAheadYmd(reasoning);
+    const withinYear=yearAhead?signalRows.filter(row=>String(row?.startYmd||"")<yearAhead):signalRows;
+    const highlights=withinYear.length?withinYear:signalRows.slice(0,1);
     const uniqueHighlights=[];
     const seen=new Set();
     for(const row of highlights){
@@ -2617,71 +2521,7 @@
     return "";
   }
 
-  function buildHumanEvidenceCoverage(reasoning,s,sig,notes){
-    const syn=synthesisFor(reasoning);
-    const facts=[];
-    const add=(id,category,value,target,noteNums,exclusionReason="")=>{
-      const isEmpty=value===null||value===undefined||value===""||
-        (Array.isArray(value)&&value.length===0)||
-        (value&&typeof value==="object"&&!Array.isArray(value)&&Object.keys(value).length===0);
-      if(isEmpty) return;
-      facts.push({id,category,value,target,noteNums:[...new Set(noteNums||[])],exclusionReason});
-    };
-    const rows=godRows(reasoning);
-    const strength=reasoning?.profile?.strength||{};
-    const structure=reasoning?.profile?.structure||{};
-    const ctx=reasoning?.context||{};
-    const st=syn.mechanisms?.structure||{};
-    const adjust=syn.mechanisms?.adjustment||{};
-    const relations=relationRows(reasoning,sig);
-    add("FACT_PILLARS","chart",pillarsOf(reasoning),"detail",[1,4]);
-    add("FACT_DAY_MASTER","chart",dayMasterName(reasoning),"main",[1,4]);
-    add("FACT_ELEMENT_RAW","elements",reasoning?.profile?.elements?.raw||{},"detail",[4]);
-    add("FACT_ELEMENT_WEIGHTED_RANK","elements",ctx.elementRanking||[],"detail",[4,5]);
-    add("FACT_STRENGTH","strength",verdictOf(reasoning),"main",[1,4]);
-    add("FACT_DEUKRYEONG","strength",strength.deukryeong||null,"detail",[4]);
-    add("FACT_DEUKJI","strength",strength.deukji||null,"detail",[4]);
-    add("FACT_DEUKSE","strength",strength.deukse||null,"detail",[4]);
-    add("FACT_ROOTS","strength",strength.roots||[],"main",[1,4]);
-    add("FACT_TENGOD_RANKING","tenGod",rows,"detail",[1,3,4]);
-    add("FACT_TOP_TENGOD","tenGod",rows[0]||null,"main",[1,3,4]);
-    add("FACT_SECOND_TENGOD","tenGod",rows[1]||null,"main",[1,3,4]);
-    add("FACT_GYEOK","structure",structure.gyeokName||"","main",[4]);
-    add("FACT_STRUCTURE_BASIS","structure",{basisGan:structure.basisGan,basis:structure.basis,saryeongGan:structure.saryeongGan,touchul:structure.touchul,hiddenGans:structure.hiddenGans},"detail",[4]);
-    add("FACT_ACTUAL_HELP_RESCUE","structure",{helpfulGods:st.helpfulGods||[],rescueGods:st.rescueGods||[]},"main",[5]);
-    add("FACT_ACTUAL_HARM","structure",st.harmfulGods||[],"main",[6]);
-    add("FACT_STRUCTURAL_CANDIDATES","structure",{support:st.structuralSupportGods||[],rescue:st.structuralRescueGods||[],harm:st.structuralHarmGods||[]},"detail",[5,6]);
-    add("FACT_ZIPING_STATE","structure",{state:st.state,path:st.path},"main",[4]);
-    add("FACT_PRESCRIPTION","adjustment",adjust.prescription||{},"main",[2,5]);
-    add("FACT_BRIDGE","adjustment",{element:adjust.bridgeElement,status:adjust.bridgeStatus},"detail",[4,5]);
-    add("FACT_RELATIONS","relations",relations,"main",[3,4,6]);
-    add("FACT_STEM_COMBINES","relations",ctx.stemCombines||[],"detail",[4]);
-    add("FACT_BRANCH_COMBINES","relations",ctx.branchCombines||[],"detail",[4]);
-    add("FACT_CLASSICAL_CLAIMS","claims",reasoning?.claims||[],"technicalOnly",[],"원문 규칙·예외·rule id는 사용자 본문 대신 provenance audit에서 보존");
-    add("FACT_TIMING","timing",{today:reasoning?.timing?.today,nearMonths:reasoning?.timing?.nearMonths||[],longTermPivots:reasoning?.timing?.longTermPivots||[]},"main",[7]);
-    add("FACT_SIGNALS","auxiliary",{dayStage:sig?.dayStage||null,sinsal:(sig?.sinsal||[]).map(x=>x.name),gongmang:sig?.gongmang?.positions||[],wonjin:sig?.wonjin?.positions||[]},"detail",[1,6]);
-    const validTarget=new Set(["main","detail","technicalOnly"]);
-    const dropped=facts.filter(f=>!validTarget.has(f.target)||(f.target==="technicalOnly"?!f.exclusionReason:!f.noteNums.length));
-    for(const fact of facts){
-      for(const n of fact.noteNums){
-        const note=notes?.[n-1];
-        if(!note) continue;
-        if(!Array.isArray(note.__factIds)) note.__factIds=[];
-        if(!note.__factIds.includes(fact.id)) note.__factIds.push(fact.id);
-      }
-    }
-    return {
-      meaningfulFacts:facts,
-      meaningfulFactIds:facts.map(f=>f.id),
-      mainNoteFactIds:facts.filter(f=>f.target==="main").map(f=>f.id),
-      detailFactIds:facts.filter(f=>f.target==="detail").map(f=>f.id),
-      technicalOnlyFactIds:facts.filter(f=>f.target==="technicalOnly").map(f=>f.id),
-      droppedFactIds:dropped.map(f=>f.id),
-      coverageRate:facts.length?Math.round(((facts.length-dropped.length)/facts.length)*1000)/1000:1,
-    };
-  }
-
-  const NOTE_BADGES=["핵심","질문에 대한 답","실제 반복 장면","왜 반복되는지","잘 맞는 조건","거를 신호","지금 흐름"];
+  const NOTE_BADGES=["핵심","질문에 대한 답","왜 그런지","어떻게 할지","가까운 흐름","조심할 것","이번 주 할 것"];
   function badgeFor(concern,idx){
     return NOTE_BADGES[idx]||"핵심";
   }
@@ -2691,17 +2531,17 @@
       const name=profile?.iljuName||"";
       const head=profile?.headline||"";
       if(name&&head) return name+" · "+head;
-      return (name||s.label)+" — 언니가 제일 먼저 본 너";
+      return (name||s.label)+" — 네 사주에서 제일 먼저 보이는 모습";
     }
-    if(idx===1) return ANSWER_TITLE[s.concern]?.[s.key]||"네 질문에 대한 답";
-    if(idx===2) return "‘"+s.label+"’에서 반복되는 순서";
-    if(idx===3) return "왜 이 패턴이 반복되냐면";
-    if(idx===4) return ((DOMAIN[s.concern]||DOMAIN.money).name||"이 고민")+"에서 너한테 잘 맞는 조건";
-    if(idx===5){
-      const titles={money:"돈이 꼬이기 시작하는 조건",career:"일이 꼬이기 시작하는 조건",love:"연애가 꼬이기 시작하는 조건",path:"진로가 꼬이기 시작하는 조건",people:"관계가 꼬이기 시작하는 조건",mental:"회복이 꼬이기 시작하는 조건"};
-      return titles[s.concern]||"여기서부터 꼬이기 시작하는 조건";
+    if(idx===1) return ANSWER_TITLE[s.concern]?.[s.key]||"질문에 대한 답";
+    if(idx===2) return CAUSE_TITLE[s.concern]?.[s.key]||"왜 그런지";
+    if(idx===3) return FIX_TITLE[s.concern]?.[s.key]||"어떻게 할지";
+    if(idx===4){
+      const rows={money:"올해와 가까운 달의 돈 흐름",career:"올해와 가까운 달의 일 흐름",love:"올해와 가까운 달의 연애 흐름",path:"올해와 가까운 달의 진로 흐름",people:"올해와 가까운 달의 관계 흐름",mental:"올해와 가까운 달의 회복 흐름"};
+      return rows[s.concern]||"올해와 가까운 달의 흐름";
     }
-    return "그래서 지금은 이렇게 보면 돼";
+    if(idx===5) return CAUTION_TITLE[s.concern]||"조심할 것";
+    return "이번 주에 해볼 것 하나";
   }
 
   function buildConcernDiagnosisV2(data) {
@@ -2739,13 +2579,13 @@
     const nowRow=(r.timing?.nearMonths||[])[0]||null;
     const signalFacts={ilju:sig?.ilju?.key||null,dayStage:sig?.dayStage||null,sinsal:(sig?.sinsal||[]).map(x=>x.name),gongmang:sig?.gongmang?.positions||[],wonjin:sig?.wonjin?.positions||[]};
     const spec=[
-      {desc:noteCoreV7(r,s,sig,isT),role:"core",facts:{...personalizationFactsForRole(r,"core",s),...signalFacts}},
+      {desc:noteCoreV6(r,s,sig,isT),role:"core",facts:{...personalizationFactsForRole(r,"core",s),...signalFacts}},
       {desc:noteAnswerV7(r,s,sig,data,isT),role:"fit",facts:{answerRank:rankGroups(r),needGroup:needGroupOf(r),bestMonths:goodRows(r).map(x=>x.startYmd),momentum:momentumOf(r),dayBranchGod:dayBranchGod(r),gender:data.gender||null}},
-      {desc:noteSceneV7(r,s,sig,isT),role:"pattern",facts:{...personalizationFactsForRole(r,"pattern",s),topGod:p.topGod||null,secondGod:signatureRows(r).second?.god||null}},
-      {desc:noteWhyV7(r,s,sig,isT),role:"pattern",facts:{...personalizationFactsForRole(r,"pattern",s),gyeok:r.profile?.structure?.gyeokName||null,rootCount:(r.profile?.strength?.roots||[]).length}},
-      {desc:noteFitV7(r,s,sig,data,isT),role:"fit",facts:{...personalizationFactsForRole(r,"fit",s),needGroup:needGroupOf(r),needElement:prescriptionElement(r)}},
-      {desc:noteCautionV7(r,s,sig,isT),role:"caution",facts:{...personalizationFactsForRole(r,"caution",s),burdenGroup:burdenGroupOf(r),relations:relationRows(r,sig).map(x=>x.type)}},
-      {desc:noteClosingV7(r,s,sig,isT,timing),role:"timing",facts:{...timing.personalizationFacts,metric:s.metric,needElement:prescriptionElement(r)},timing:true},
+      {desc:noteCauseV6(r,s,sig,data,isT),role:"pattern",facts:{...personalizationFactsForRole(r,"pattern",s),causeGroup:topGroupOf(r)}},
+      {desc:noteHowV7(r,s,sig,data,isT),role:"fit",facts:{...personalizationFactsForRole(r,"fit",s),needGroup:needGroupOf(r),needElement:prescriptionElement(r)}},
+      {desc:timing.desc,role:"timing",facts:timing.personalizationFacts||{},timing:true},
+      {desc:noteCautionV6(r,s,sig,isT),role:"caution",facts:{...personalizationFactsForRole(r,"caution",s),burdenGroup:burdenGroupOf(r),relations:relationRows(r,sig).map(x=>x.type)}},
+      {desc:noteActionV6(r,s,sig,isT,nowRow),role:"core",facts:{metric:s.metric,needElement:prescriptionElement(r),nowClass:nowRow?.class||null}},
     ];
     const notes=spec.map((x,idx)=>{
       const note={
@@ -2761,12 +2601,10 @@
     });
 
     // 노트 번호 → 내부 명리 근거(claim) 번호. 7번(이번 주 할 것)은 행동 제안이라 따로 묶지 않는다.
-    const claimMap=[0,3,1,2,4,4,5];
+    const claimMap=[0,4,1,3,5,2,null];
     (r.claims||[]).forEach(claim=>{
       if(claim){
         claim.userNoteIndex=null;
-        claim.userNoteIndices=[];
-        claim.noteSentences=[];
         if(Object.prototype.hasOwnProperty.call(claim,"noteSentence")) delete claim.noteSentence;
       }
     });
@@ -2779,14 +2617,10 @@
           : "<br><br>이 부분은 근거가 한쪽만 잡혀 있어서 언니도 확정해서 말하진 않을게.";
       }
       if(claim){
-        claim.userNoteIndices.push(idx+1);
-        claim.userNoteIndex=claim.userNoteIndices[0];
-        claim.noteSentences.push(stripHtml(note.desc));
-        claim.noteSentence=claim.noteSentences.join(" || ");
+        claim.userNoteIndex=idx+1;
+        claim.noteSentence=stripHtml(note.desc);
       }
     });
-
-    const humanEvidenceCoverage=buildHumanEvidenceCoverage(r,s,sig,notes);
 
     const paidValueAudit=typeof global.auditPaidValueNotes==="function"
       ? global.auditPaidValueNotes(notes,mode||"F")
@@ -2816,7 +2650,6 @@
       outputClaimMap:claimMap.map((claimIndex,noteIndex)=>claimIndex===null?null:({noteNum:noteIndex+1,claimNum:claimIndex+1})).filter(Boolean),
       noteEvidence:notes.map((note,index)=>({noteNum:index+1,ruleIds:note.__evidenceRuleIds||[]})),
       semanticEvidence:semanticRows,
-      humanEvidenceCoverage,
       semanticCoverage:{
         noteCountWithFacts:semanticCovered,
         totalNotes:notes.length,

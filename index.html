@@ -2898,7 +2898,7 @@
                     id="payBtnSubText"
                     class="text-[10.5px] font-bold text-white/88"
                   >
-                    질문에 대한 답 · 반복 장면 · 이유 · 조건 · 흐름까지
+                    질문에 대한 답 · 이유 · 방법까지
                   </span>
                 </button>
 
@@ -7503,7 +7503,7 @@ currentResultData = {
             : "언니, 그것도 봐줘";
         }
         if (payBtnSubText) {
-          payBtnSubText.textContent = "질문에 대한 답 · 반복 장면 · 이유 · 조건 · 흐름까지";
+          payBtnSubText.textContent = "질문에 대한 답 · 이유 · 방법까지";
         }
         if (paywallSisterHeader) paywallSisterHeader.style.display = "flex";
         if (paywallSisterAvatar) paywallSisterAvatar.src = isT ? "./서아.webp" : "./로아.webp";
@@ -7887,11 +7887,11 @@ currentResultData = {
         const noteRoleMeta = {
           "01": { className:"note-role-diagnosis" },
           "02": { className:"note-role-pattern" },
-          "03": { className:"note-role-pattern" },
-          "04": { className:"note-role-cause" },
-          "05": { className:"note-role-fit" },
+          "03": { className:"note-role-fit" },
+          "04": { className:"note-role-fit" },
+          "05": { className:"note-role-timing" },
           "06": { className:"note-role-cause" },
-          "07": { className:"note-role-timing" },
+          "07": { className:"note-role-action" },
         };
         const noteTotal = notesData.length || 7;
 
@@ -7904,7 +7904,7 @@ currentResultData = {
         const renderNoteBody = (item) => {
           const source = decorateSajuTerms(item.desc);
           const parts = splitNoteParagraphs(source);
-          if (String(item.themeNum) === "07") {
+          if (String(item.themeNum) === "05") {
             return `<div class="note-body note-body-timeline">${parts
               .map((part)=>`<div class="note-time-row"><span class="note-time-dot"></span><div>${part}</div></div>`)
               .join("")}</div>`;
@@ -7914,7 +7914,7 @@ currentResultData = {
               .map((part)=>`<div class="note-flow-row"><span class="note-flow-line"></span><div>${part}</div></div>`)
               .join("")}</div>`;
           }
-          if (["05","06"].includes(String(item.themeNum))) {
+          if (["03","04","06"].includes(String(item.themeNum))) {
             return `<div class="note-body note-body-fit">${parts
               .map((part)=>`<section class="note-fit-criterion"><div class="note-fit-copy">${part}</div></section>`)
               .join("")}</div>`;
@@ -10070,9 +10070,9 @@ currentResultData = {
     <script src="./rules/ziping-zhenquan-rules.js?v=1.1.0"></script>
     <script src="./integrated-saju-profile-v1.js?v=2.1.0"></script>
     <script src="./classical-reasoning-engine-v1.js?v=2.1.1"></script>
-    <script src="./paid-value-layer-v1.js?v=1.5.2"></script>
+    <script src="./paid-value-layer-v1.js?v=1.5.3"></script>
     <script src="./saju-signals-v1.js?v=1.0.0"></script>
-    <script src="./concern-note-engine-v2.js?v=6.2.0"></script>
+    <script src="./concern-note-engine-v2.js?v=6.2.1"></script>
     <script src="./ai-note-test-v1.js?v=2.2.0"></script>
     <script src="./product-content-policy-v1.js?v=1.1.0"></script>
     <script src="./product-entitlements-v1.js?v=1.0.1"></script>

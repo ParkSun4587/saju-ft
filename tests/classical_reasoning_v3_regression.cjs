@@ -11,7 +11,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load'});
   await page.waitForFunction(() =>
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.2.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.2.1' &&
     typeof buildClassicalReasoningV1==='function'
   );
 
@@ -162,7 +162,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         structure1:D1.audit.structureFingerprint,structure2:D2.audit.structureFingerprint,
         timing1:D1.audit.timingFingerprint,timing2:D2.audit.timingFingerprint,
         baseClaim1:D1.audit.claims[0].conclusion,baseClaim2:D2.audit.claims[0].conclusion,
-        timingText1:plain(D1.notes[6].desc),timingText2:plain(D2.notes[6].desc),
+        timingText1:plain(D1.notes[4].desc),timingText2:plain(D2.notes[4].desc),
       },
       E:{
         structure1:E1.audit.structureFingerprint,structure2:E2.audit.structureFingerprint,
@@ -191,9 +191,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
             ditianRuleIds:claim?.ditianRuleIds||[],
             zipingRuleIds:claim?.zipingRuleIds||[],
             noteSentence:claim?.noteSentence||"",
-            noteSentences:claim?.noteSentences||[],
             actualSentence:plain(A1.notes[link.noteNum-1]?.desc),
-            sentenceMatches:(claim?.noteSentences||[]).includes(plain(A1.notes[link.noteNum-1]?.desc)),
+            sentenceMatches:claim?.noteSentence===plain(A1.notes[link.noteNum-1]?.desc),
           };
         }),
       },
@@ -205,7 +204,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     };
   });
 
-  assert(r.versions.note==='6.2.0'&&r.versions.profile==='2.1.0'&&r.versions.reasoning==='2.1.1','v3 runtime versions missing');
+  assert(r.versions.note==='6.2.1'&&r.versions.profile==='2.1.0'&&r.versions.reasoning==='2.1.1','v3 runtime versions missing');
 
   const requiredKinds=['strength','root','flow','pressure'];
   for(const kind of requiredKinds){
@@ -214,7 +213,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   const bridgeFinding=r.runtimeIntegrity.bridgeChartKinds.find(x=>x.id==='DTS_BRIDGE_112');
   assert(bridgeFinding?.kind==='bridge','runtime bridge finding kind missing: '+JSON.stringify(r.runtimeIntegrity.bridgeChartKinds));
   assert(bridgeFinding?.facts?.bridge,'runtime bridge finding has no bridge facts: '+JSON.stringify(bridgeFinding));
-  assert(r.runtimeIntegrity.claims.length===7,'seven NOTE turns must map to classical claims');
+  assert(r.runtimeIntegrity.claims.length===6,'NOTE1-6 provenance map missing');
   for(const claim of r.runtimeIntegrity.claims){
     assert(claim.ditianRuleIds.filter(Boolean).length>0,'answer '+claim.noteNum+': no valid Ditian provenance');
     assert(claim.zipingRuleIds.filter(Boolean).length>0,'answer '+claim.noteNum+': no valid Ziping provenance');

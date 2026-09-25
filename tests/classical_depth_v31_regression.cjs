@@ -13,7 +13,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     globalThis.__CLASSICAL_ENGINE_V2__?.version==='2.2.0' &&
     globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version==='2.1.0' &&
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.2.0'
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.2.1'
   );
 
   const r=await page.evaluate(()=>{
@@ -130,7 +130,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           exceptionsMatch:JSON.stringify(sorted(claim.exceptions))===JSON.stringify(expectedExceptions),
           causalSteps:claim.causalSteps||[],
           evidenceStatus:claim.evidenceStatus,
-          sentenceMatches:(claim?.noteSentences||[]).includes(plain(run.notes[link.noteNum-1]?.desc)),
+          sentenceMatches:claim.noteSentence===plain(run.notes[link.noteNum-1]?.desc),
         };
       });
     }
@@ -317,7 +317,6 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
             evidenceStatus:c.evidenceStatus,
             certainty:c.certainty,
             noteSentence:c.noteSentence,
-            noteSentences:c.noteSentences||[],
             actual:plain(insufficientRun.notes[link.noteNum-1]?.desc),
           };
         }),
@@ -357,11 +356,10 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         longTermPivots:CANON.reasoning.timing.longTermPivots||[],
         scene:plain(CANON.notes[2].desc),
         answer:plain(CANON.notes[1].desc),
-        why:plain(CANON.notes[3].desc),
-        fit:plain(CANON.notes[4].desc),
-        caution:plain(CANON.notes[5].desc),
-        timingAnswer:plain(CANON.notes[6].desc),
-        timingMeta:CANON.notes[6].__timingQA,
+        fit:plain(CANON.notes[3].desc),
+        fix:plain(CANON.notes[3].desc),
+        timingAnswer:plain(CANON.notes[4].desc),
+        timingMeta:CANON.notes[4].__timingQA,
       },
       traces:[
         trace('canonical-weak-officer',CANON),
@@ -377,7 +375,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     };
   });
 
-  assert(r.versions.classical==='2.2.0'&&r.versions.integrated==='2.1.0'&&r.versions.reasoning==='2.1.1'&&r.versions.note==='6.2.0','depth runtime version mismatch');
+  assert(r.versions.classical==='2.2.0'&&r.versions.integrated==='2.1.0'&&r.versions.reasoning==='2.1.1'&&r.versions.note==='6.2.1','depth runtime version mismatch');
 
   assert(r.rawMonth.sameRaw,'same-visible-count month test setup drift');
   assert(r.rawMonth.monthA!==r.rawMonth.monthB,'month test must change month command');
@@ -448,7 +446,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     assert(c.zipingRuleIds.length>0,'insufficient fixture should retain the Ziping rules that actually fired');
     assert(c.evidenceStatus==='insufficient-evidence'&&c.certainty==='guarded','insufficient evidence did not lower certainty');
     assert(/근거가 한쪽/.test(c.actual),'guarded user wording missing when one classical side lacks evidence');
-    assert(c.noteSentences.includes(c.actual),'guarded noteSentence not bound to final rendered NOTE');
+    assert(c.noteSentence===c.actual,'guarded noteSentence not bound to final rendered NOTE');
   }
 
   assert(r.legacy.fpA===r.legacy.fpB,'legacy yongshin heuristic leaked into structural fingerprint');
@@ -479,14 +477,10 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   }),'NOTE6 selected a month without month-specific evidence');
   assert((r.canonicalTiming.longTermPivots||[]).every(x=>x.isStructuralPivot===true&&Array.isArray(x.pivotReasons)&&x.pivotReasons.length>0),'long-term teaser labeled a non-structural year as pivot');
   assert((r.canonicalTiming.longTermPivots||[]).every((x,i,a)=>i===0||x.year!==a[i-1].year),'duplicate long-term pivot year');
-  assert(/결론/.test(r.canonicalTiming.scene)&&/상황이 오면/.test(r.canonicalTiming.scene)&&/제일 먼저/.test(r.canonicalTiming.scene)&&/반복되면/.test(r.canonicalTiming.scene)&&/가장 큰 힘|두 번째 핵심/.test(r.canonicalTiming.scene),
-    'real-scene answer lost chart-derived multi-factor explanation');
-  assert(/결론/.test(r.canonicalTiming.answer)&&/먼저 볼 방향|다음 후보|때 —|검토|신호|순서대로|어떻게 할까/.test(r.canonicalTiming.answer),
-    'direct answer lost concrete direction');
-  assert(/결론/.test(r.canonicalTiming.why)&&/(격국|통근|신강|신약|중화)/.test(r.canonicalTiming.why)&&/그래서/.test(r.canonicalTiming.why),
-    'why answer lost classical causal chain');
-  assert(/결론/.test(r.canonicalTiming.fit)&&/잘 맞는|고를 때 기준/.test(r.canonicalTiming.fit),'fit answer lost chart-derived matching conditions');
-  assert(/결론/.test(r.canonicalTiming.caution)&&/현실 체크/.test(r.canonicalTiming.caution),'caution answer lost chart-derived risk condition');
+  assert(/결론/.test(r.canonicalTiming.scene)&&/(왜 그러냐면|근거) — 네 사주에서 가장 큰 힘은 [가-힣]{2}이고/.test(r.canonicalTiming.scene)&&/1순위 — /.test(r.canonicalTiming.answer),
+    'second answer lost chart-derived cause explanation');
+  assert(/결론/.test(r.canonicalTiming.fix)&&/네 사주에 제일 필요한 것/.test(r.canonicalTiming.fix)&&/사주 중심인 [가-힣]{2}/.test(r.canonicalTiming.fix),'fix answer lost chart-derived prescription and support condition');
+  assert(/결론/.test(r.canonicalTiming.fit)&&/맞아|맞는/.test(r.canonicalTiming.fit),'fit answer lost chart-derived matching conditions');
   assert(/지금 비교 기준/.test(r.canonicalTiming.timingAnswer),'timing answer lost chart-derived comparison criterion');
   assert(!/앞으로 5년 큰 흐름|이후 큰 흐름/.test(r.canonicalTiming.timingAnswer),'basic timing answer leaked full five-year annual disclosure');
   assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관|압박|구조)/.test(r.canonicalTiming.timingAnswer),'timing answer leaked internal jargon');

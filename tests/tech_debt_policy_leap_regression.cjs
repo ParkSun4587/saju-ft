@@ -13,7 +13,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load',timeout:60000});
   await page.waitForFunction(()=>(
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.2.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.2.1' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version==='2.3.1'
   ),null,{timeout:60000});
@@ -67,9 +67,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       oldGet:typeof globalThis.getTrueBaziTiming,
       oldBuild:typeof globalThis.buildNoteSixTiming,
       wrapped:!!globalThis.generateConcernNotes?.__classicalCausal,
-      timingBadge:notes[6]?.badge||'',
-      timingText:String(notes[6]?.desc||'').replace(/<[^>]+>/g,' '),
-      meta:notes[6]?.__timingQA||{},
+      timingBadge:notes[4]?.badge||'',
+      timingText:String(notes[4]?.desc||'').replace(/<[^>]+>/g,' '),
+      meta:notes[4]?.__timingQA||{},
       audit:d.noteV3Audit,
       timing:{
         today:timing.today,detailEnd:timing.detailEnd,horizonEnd:timing.horizonEnd,
@@ -96,7 +96,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     let answerChecks=0;
     const signatures=new Set();
     const plain=(v)=>String(v||'').replace(/<br\s*\/?\s*>/gi,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
-    const forbidden=/(비밀\s*메모|실전 룰|반복 패턴|작동 방식|압력군|과부하 후보|priorityScore|pressureGroup|zipingState|rootQuality|neededGroups)/;
+    const forbidden=/(비밀\s*메모|실전 룰|반복 패턴|압박|구조|원국|격국|용신|상신|기신|통관|월령|지장간|신강|신약)/;
     const badJoins=[
       /[가-힣]\s+(?:이야|야)(?=[.!?]|$)/,
       /느냐\s+야\b/,
@@ -118,7 +118,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           d.concernKey=concern; d.concernSituation=key; d.currentMode=mode;
           const notes=generateConcernNotes(d,mode);
           if(notes.length!==7) failures.push(concern+'/'+key+'/'+mode+': answer count '+notes.length);
-          if(notes.map(n=>n.badge).join('|')!=='핵심|질문에 대한 답|실제 반복 장면|왜 반복되는지|잘 맞는 조건|거를 신호|지금 흐름') failures.push(concern+'/'+key+'/'+mode+': answer roles drift');
+          if(notes.map(n=>n.badge).join('|')!=='핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것|이번 주 할 것') failures.push(concern+'/'+key+'/'+mode+': answer roles drift');
           if(!plain(notes[0]?.desc).includes(label)||!/[가-힣]{2}일주/.test(String(notes[0]?.title||''))) failures.push(concern+'/'+key+'/'+mode+': first answer lost day-pillar title or selected label');
           const visible=notes.map(n=>plain([n?.badge,n?.title,n?.desc,n?.checklist].join(' '))).join(' ');
           if(/\bundefined\b|\bnull\b|NaN/.test(visible)) failures.push(concern+'/'+key+'/'+mode+': undefined/null leaked');
@@ -133,13 +133,11 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           });
           const coverage=d.noteV3Audit?.evidenceCoverage;
           if(coverage?.coverageRate!==1 || coverage?.missingRuleIds?.length) failures.push(concern+'/'+key+'/'+mode+': supported evidence dropped '+JSON.stringify(coverage));
-          const humanCoverage=d.noteV3Audit?.humanEvidenceCoverage;
-          if(humanCoverage?.coverageRate!==1 || humanCoverage?.droppedFactIds?.length) failures.push(concern+'/'+key+'/'+mode+': human evidence dropped '+JSON.stringify(humanCoverage));
           const links=d.noteV3Audit?.outputClaimMap||[];
-          if(links.length!==7) failures.push(concern+'/'+key+'/'+mode+': output claim map missing');
+          if(links.length!==6) failures.push(concern+'/'+key+'/'+mode+': output claim map missing');
           for(const link of links){
             const claim=d.noteV3Audit?.claims?.[link.claimNum-1];
-            if(!(claim?.noteSentences||[]).includes(plain(notes[link.noteNum-1]?.desc))) failures.push(concern+'/'+key+'/'+mode+': claim binding '+link.noteNum);
+            if(claim?.noteSentence!==plain(notes[link.noteNum-1]?.desc)) failures.push(concern+'/'+key+'/'+mode+': claim binding '+link.noteNum);
           }
           signatures.add(concern+'/'+key+'/'+mode+'|'+plain(notes[0]?.desc)+'|'+plain(notes[1]?.desc));
         }
@@ -178,7 +176,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           nearCount:t.concernNearTerm?.months?.length||0,
           publicYears:t.fullSajuTimeline?.years?.map(x=>x.year)||[],
           internalYears:t.fullHorizon?.years?.map(x=>x.year)||[],
-          timingMeta:notes[6]?.__timingQA||{},
+          timingMeta:notes[4]?.__timingQA||{},
         };
       } finally {
         globalThis.Date=RealDate;

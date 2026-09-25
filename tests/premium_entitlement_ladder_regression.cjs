@@ -203,7 +203,7 @@ function loadServer(){
     const d=calculateAccurateManse(1998,2,21,'03:10','female');
     d.__testNowYmd='2026-09-20';d.concernKey='money';d.concernSituation='saving';d.currentMode='F';
     const notes=generateConcernNotes(d,'F');
-    const before={fp:d.classicalReasoningV1.structureFingerprint,claims:d.classicalReasoningV1.claims.map(x=>x.conclusion),timingAnswer:plain(notes[6]?.desc)};
+    const before={fp:d.classicalReasoningV1.structureFingerprint,claims:d.classicalReasoningV1.claims.map(x=>x.conclusion),timingAnswer:plain(notes[4]?.desc)};
     const sections=product.buildFullSajuSections(d,'F');
     const full=product.buildProductBody('full_saju',d,{});
     const allExtra={situations:{money:'saving',career:'current',love:'relationship',path:'current',people:'friend',mental:'burnout'}};

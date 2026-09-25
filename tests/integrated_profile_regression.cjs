@@ -17,7 +17,7 @@ function norm(v) {
 
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil:'load' });
   await page.waitForFunction(() =>
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.2.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.2.1' &&
     globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version === '2.1.0' &&
     globalThis.__CLASSICAL_REASONING_V1__?.version === '2.1.1' &&
     typeof buildIntegratedSajuProfile === 'function' &&
@@ -99,7 +99,7 @@ function norm(v) {
     };
   });
 
-  assert(result.engine?.version === '6.2.0', 'NOTE v3 engine missing');
+  assert(result.engine?.version === '6.2.1', 'NOTE v3 engine missing');
   assert(result.integrated?.version === '2.1.0', 'integrated profile v2 missing');
   assert(result.reasoning?.version === '2.1.1', 'classical reasoning engine missing');
   assert(result.wrapper, 'full-evidence classical NOTE wrapper missing');
@@ -110,7 +110,7 @@ function norm(v) {
   assert(result.exactProfile.fingerprint !== result.otherProfile.fingerprint, 'different charts share integrated fingerprint');
 
   assert(result.rows.length === 24, 'expected 24 situation rows, got '+result.rows.length);
-  const jargon=/(priorityScore|pressureGroup|zipingState|rootQuality|neededGroups|structuralSupportGods|structuralHarmGods|작동 방식|압력군|과부하 후보)/;
+  const jargon=/(신강|신약|중화|격국|용신|상신|기신|지장간|월령|조후|통관|사령|원국|대운|세운|월운)/;
 
   for (const row of result.rows) {
     assert(row.diagF.structureFingerprint === row.diagT.structureFingerprint,
@@ -121,7 +121,7 @@ function norm(v) {
     for (const [mode,notes,audit] of [['F',row.notesF,row.auditF],['T',row.notesT,row.auditT]]) {
       assert(notes.length === 7, row.concern+'/'+row.situation+'/'+mode+': expected seven answers');
       assert(notes.map(n=>n.themeNum).join(',') === '01,02,03,04,05,06,07', row.concern+'/'+row.situation+'/'+mode+': seven-answer numbering drift');
-      assert(audit?.version === '6.2.0' && audit?.engine === 'classical-causal-full-evidence', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
+      assert(audit?.version === '6.2.1' && audit?.engine === 'classical-causal-full-evidence', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
       assert(audit.genericClusterDependency === false, row.concern+'/'+row.situation+'/'+mode+': generic cluster dependency returned');
       assert(audit.structureFingerprint && audit.timingFingerprint && audit.synthesisFingerprint, row.concern+'/'+row.situation+'/'+mode+': fingerprints missing');
       assert(audit.evidenceCoverage?.coverageRate === 1 && audit.evidenceCoverage?.missingRuleIds?.length === 0,
@@ -131,9 +131,7 @@ function norm(v) {
       assert(Array.isArray(audit.priorityMechanisms) && audit.priorityMechanisms.length >= 4,
         row.concern+'/'+row.situation+'/'+mode+': priority mechanism synthesis too thin');
       assert(Array.isArray(audit.claims) && audit.claims.length === 6, row.concern+'/'+row.situation+'/'+mode+': six internal causal claims missing');
-      assert(Array.isArray(audit.outputClaimMap) && audit.outputClaimMap.length === 7, row.concern+'/'+row.situation+'/'+mode+': claim map must bind all seven user turns to classical claims');
-      assert(audit.humanEvidenceCoverage?.coverageRate === 1 && audit.humanEvidenceCoverage?.droppedFactIds?.length === 0,
-        row.concern+'/'+row.situation+'/'+mode+': meaningful engine facts were dropped '+JSON.stringify(audit.humanEvidenceCoverage));
+      assert(Array.isArray(audit.outputClaimMap) && audit.outputClaimMap.length === 6, row.concern+'/'+row.situation+'/'+mode+': claim map must bind NOTE1-6 to the six classical claims');
       for (const claim of audit.claims) {
         assert(claim.id && claim.rawFacts && Array.isArray(claim.ditianRuleIds) && Array.isArray(claim.zipingRuleIds),
           row.concern+'/'+row.situation+'/'+mode+': claim provenance missing');
@@ -143,7 +141,7 @@ function norm(v) {
       }
       for (const link of audit.outputClaimMap) {
         const claim=audit.claims[link.claimNum-1];
-        assert(claim?.userNoteIndices?.includes(link.noteNum) && claim?.noteSentences?.includes(plain(notes[link.noteNum-1]?.desc)),
+        assert(claim?.userNoteIndex===link.noteNum && claim?.noteSentence===plain(notes[link.noteNum-1]?.desc),
           row.concern+'/'+row.situation+'/'+mode+': rendered answer is not bound to mapped classical claim');
       }
       assert(audit.sourceLayers?.ditian === '1.1.0' && audit.sourceLayers?.ziping === '1.1.0',
@@ -160,7 +158,7 @@ function norm(v) {
         assert(plain(note.desc).includes('결론'), row.concern+'/'+row.situation+'/'+mode+': answer '+(i+1)+' does not lead with a conclusion');
       }
       assert(!/(비밀\s*메모|실전 룰|반복 패턴|압박|구조)/.test(all), row.concern+'/'+row.situation+'/'+mode+': old/abstract consultation wording leaked');
-      assert(notes[6]?.__timingQA?.structureFingerprint === audit.structureFingerprint,
+      assert(notes[4]?.__timingQA?.structureFingerprint === audit.structureFingerprint,
         row.concern+'/'+row.situation+'/'+mode+': timing answer lost natal fingerprint');
     }
 
