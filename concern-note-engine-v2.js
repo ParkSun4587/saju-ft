@@ -2228,7 +2228,16 @@
   function buildConcernGroundingPlan(reasoning,s,sig,data){
     const interpretations=concernInterpretations(reasoning,s,sig,data);
     const supported=interpretations.filter(x=>x.confidence!=="guarded");
-    const selected=(supported.length?supported:interpretations).slice(0,2);
+    const pool=supported.length?supported:interpretations;
+    const selected=[];
+    const seenAxes=new Set();
+    for(const row of pool){
+      const relKey=row?.rel?"rel:"+row.rel.type+":"+[row.rel.aPos,row.rel.bPos].sort().join("-"):"group:"+(row?.group||row?.safeTitle||"unknown");
+      if(seenAxes.has(relKey)) continue;
+      seenAxes.add(relKey);
+      selected.push(row);
+      if(selected.length===2) break;
+    }
     const byShare=groupsByShare(reasoning);
     const primaryGroup=selected.find(x=>x.group)?.group||byShare[0]||"self";
     const secondaryGroup=selected.find(x=>x.group&&x.group!==primaryGroup)?.group||byShare.find(g=>g!==primaryGroup)||primaryGroup;
