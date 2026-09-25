@@ -235,8 +235,20 @@ function norm(v) {
     }
   }
 
+  const moneyF=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='money'&&r.mode==='F').map(r=>[r.situation,r]));
+  const careerF=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='career'&&r.mode==='F').map(r=>[r.situation,r]));
   const loveF=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='love'&&r.mode==='F').map(r=>[r.situation,r]));
   const loveT=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='love'&&r.mode==='T').map(r=>[r.situation,r]));
+  assert(!/(제일 많이 새|1순위 구멍|2순위 구멍|배달.*돈|밥값.*돈)/.test(moneyF.saving?.allText||''),
+    'saving NOTE invented a concrete spending leak');
+  assert(!/(제일 돈이 되는 부업|제일 돈 안 되는 부업)/.test(moneyF.side?.allText||''),
+    'side-income NOTE invented a guaranteed profitability ranking');
+  assert(!/(붙을 확률이 제일 높은|합격 확률이 제일 높은)/.test(careerF.jobsearch?.allText||''),
+    'job-search NOTE invented an acceptance probability');
+  assert(!/(다시 이어질 여지가 있는 편|반반이야|정리하는 쪽이 네 사주엔 더 편)/.test(loveF.breakup?.allText||''),
+    'breakup NOTE converted one-person saju into a reunion probability');
+  assert(!/(그 사람 외모|그 사람은 .*일 가능성이 커|하는 일.*가능성이 커|만나기 좋은 곳)/.test(loveF.new?.allText||''),
+    'new-love NOTE invented partner appearance/job/place');
   assert(/연락|약속|관계|서운/.test(loveF.relationship?.allText||''), 'relationship path lost current-relationship answers');
   assert(/새 인연|새로운 사람|만남/.test(loveF.new?.allText||'') && !/재회|헤어진 사람/.test(loveF.new?.allText||''), 'new-person path mixed another love situation');
   assert(/이별|재회|헤어진/.test(loveF.breakup?.allText||''), 'breakup path lacks breakup context');
