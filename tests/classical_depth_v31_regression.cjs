@@ -467,8 +467,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   }),'NOTE6 selected a month without month-specific evidence');
   assert((r.canonicalTiming.longTermPivots||[]).every(x=>x.isStructuralPivot===true&&Array.isArray(x.pivotReasons)&&x.pivotReasons.length>0),'long-term teaser labeled a non-structural year as pivot');
   assert((r.canonicalTiming.longTermPivots||[]).every((x,i,a)=>i===0||x.year!==a[i-1].year),'duplicate long-term pivot year');
-  assert(/결론/.test(r.canonicalTiming.scene)&&/(왜 그러냐면|근거) — 네 사주에서 가장 큰 힘은 [가-힣]{2}이고/.test(r.canonicalTiming.scene)&&/1순위 — /.test(r.canonicalTiming.answer),
-    'second answer lost chart-derived cause explanation');
+  assert(/결론/.test(r.canonicalTiming.scene)&&/(왜 그러냐면|근거)/.test(r.canonicalTiming.scene)&&/교차검증 근거/.test(r.canonicalTiming.scene)&&/1순위 — /.test(r.canonicalTiming.answer),
+    'second answer lost cross-validated cause explanation');
   assert(/결론/.test(r.canonicalTiming.fix)&&/네 사주에 제일 필요한 것/.test(r.canonicalTiming.fix)&&/사주 중심인 [가-힣]{2}/.test(r.canonicalTiming.fix),'fix answer lost chart-derived prescription and support condition');
   assert(/결론/.test(r.canonicalTiming.fit)&&/맞아|맞는/.test(r.canonicalTiming.fit),'fit answer lost chart-derived matching conditions');
   assert(/잘 가고 있다는 신호/.test(r.canonicalTiming.timingAnswer),'timing answer lost chart-derived comparison criterion');
