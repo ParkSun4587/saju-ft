@@ -13,7 +13,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     globalThis.__CLASSICAL_ENGINE_V2__?.version==='2.2.0' &&
     globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version==='2.1.0' &&
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.0.0'
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.1.0'
   );
 
   const r=await page.evaluate(()=>{
@@ -266,7 +266,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       },
       sangsin:{
         ruleP:zmain(sangPresent),ruleA:zmain(sangAbsent),
-        fitP:plain(sangPresent.notes[2].desc),fitA:plain(sangAbsent.notes[2].desc),
+        fitP:plain(sangPresent.notes[3].desc),fitA:plain(sangAbsent.notes[3].desc),
       },
       gisin:{
         ruleP:zmain(gisinPresent),ruleA:zmain(gisinAbsent),
@@ -354,9 +354,10 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         turningPoints:CANON.reasoning.timing.turningPoints,
         nearHighlights:CANON.reasoning.timing.concernNearTerm?.highlights||[],
         longTermPivots:CANON.reasoning.timing.longTermPivots||[],
-        scene:plain(CANON.notes[1].desc),
+        scene:plain(CANON.notes[2].desc),
+        answer:plain(CANON.notes[1].desc),
         fit:plain(CANON.notes[3].desc),
-        fix:plain(CANON.notes[2].desc),
+        fix:plain(CANON.notes[3].desc),
         timingAnswer:plain(CANON.notes[4].desc),
         timingMeta:CANON.notes[4].__timingQA,
       },
@@ -374,7 +375,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     };
   });
 
-  assert(r.versions.classical==='2.2.0'&&r.versions.integrated==='2.1.0'&&r.versions.reasoning==='2.1.1'&&r.versions.note==='6.0.0','depth runtime version mismatch');
+  assert(r.versions.classical==='2.2.0'&&r.versions.integrated==='2.1.0'&&r.versions.reasoning==='2.1.1'&&r.versions.note==='6.1.0','depth runtime version mismatch');
 
   assert(r.rawMonth.sameRaw,'same-visible-count month test setup drift');
   assert(r.rawMonth.monthA!==r.rawMonth.monthB,'month test must change month command');
@@ -476,7 +477,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   }),'NOTE6 selected a month without month-specific evidence');
   assert((r.canonicalTiming.longTermPivots||[]).every(x=>x.isStructuralPivot===true&&Array.isArray(x.pivotReasons)&&x.pivotReasons.length>0),'long-term teaser labeled a non-structural year as pivot');
   assert((r.canonicalTiming.longTermPivots||[]).every((x,i,a)=>i===0||x.year!==a[i-1].year),'duplicate long-term pivot year');
-  assert(/결론/.test(r.canonicalTiming.scene)&&/(왜 그러냐면|근거) — 네 사주에서 가장 큰 힘은 [가-힣]{2}\(/.test(r.canonicalTiming.scene),
+  assert(/결론/.test(r.canonicalTiming.scene)&&/(왜 그러냐면|근거) — 네 사주에서 가장 큰 힘은 [가-힣]{2}이고/.test(r.canonicalTiming.scene)&&/1순위 구멍 — /.test(r.canonicalTiming.answer),
     'second answer lost chart-derived cause explanation');
   assert(/결론/.test(r.canonicalTiming.fix)&&/네 사주에 제일 필요한 것/.test(r.canonicalTiming.fix)&&/사주 중심인 [가-힣]{2}/.test(r.canonicalTiming.fix),'fix answer lost chart-derived prescription and support condition');
   assert(/결론/.test(r.canonicalTiming.fit)&&/맞아|맞는/.test(r.canonicalTiming.fit),'fit answer lost chart-derived matching conditions');

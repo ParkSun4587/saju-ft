@@ -2905,7 +2905,7 @@
                     id="payBtnSubText"
                     class="text-[10.5px] font-bold text-white/88"
                   >
-                    진짜 원인 · 푸는 법 · 올해 흐름까지
+                    질문에 대한 답 · 이유 · 방법까지
                   </span>
                 </button>
 
@@ -7449,12 +7449,12 @@ currentResultData = {
           fallbackByConcern[concernKey] ||
           fallbackByConcern.money;
         const lockedBenefits = {
-          money:["돈이 안 모이는·안 오르는 진짜 이유","푸는 법과 너한테 맞는 돈 버는 방식","올해·가까운 달 돈 흐름과 조심할 것"],
-          career:["일이 막히는 진짜 이유","푸는 법과 너한테 맞는 일·환경","올해·가까운 달 흐름과 조심할 것"],
-          love:["연애에서 반복되는 진짜 이유","푸는 법과 너랑 잘 맞는 사람","올해·가까운 달 연애 흐름과 조심할 것"],
-          path:["방향이 흔들리는 진짜 이유","푸는 법과 너한테 맞는 분야","올해·가까운 달 흐름과 조심할 선택"],
-          people:["사람 때문에 지치는 진짜 이유","푸는 법과 곁에 두면 좋은 사람","올해 관계 흐름과 조심할 사람"],
-          mental:["지금 지친 진짜 이유","다시 채우는 법과 너한테 맞는 회복법","올해 회복 흐름과 더 지치게 하는 것"],
+          money:["네 돈 고민에 대한 답, 순위까지","왜 그런지와 어떻게 할지","올해·가까운 달 돈 흐름과 조심할 것"],
+          career:["네 일 고민에 대한 답과 좋은 때","왜 그런지와 어떻게 할지","올해·가까운 달 흐름과 조심할 것"],
+          love:["네 연애 고민에 대한 답과 좋은 때","왜 그런지와 어떻게 할지","올해·가까운 달 연애 흐름과 조심할 것"],
+          path:["맞는 방향, 순위까지","왜 그런지와 어떻게 할지","올해·가까운 달 흐름과 조심할 선택"],
+          people:["이 관계를 어떻게 할지에 대한 답","왜 그런지와 어떻게 할지","올해 관계 흐름과 조심할 사람"],
+          mental:["지금 쉬어야 할지에 대한 답","왜 그런지와 어떻게 회복할지","올해 회복 흐름과 더 지치게 하는 것"],
         };
         return {
           label: picked.label,
@@ -7506,7 +7506,7 @@ currentResultData = {
             : "언니, 그것도 봐줘";
         }
         if (payBtnSubText) {
-          payBtnSubText.textContent = "진짜 원인 · 푸는 법 · 올해 흐름까지";
+          payBtnSubText.textContent = "질문에 대한 답 · 이유 · 방법까지";
         }
         if (paywallSisterHeader) paywallSisterHeader.style.display = "flex";
         if (paywallSisterAvatar) paywallSisterAvatar.src = isT ? "./서아.webp" : "./로아.webp";
@@ -7523,8 +7523,8 @@ currentResultData = {
             currentResultData?.concernKey === "mental" &&
             currentResultData?.concernSituation === "burnout";
           paywallSisterSub.textContent = isT
-            ? paywallCopy.label + "의 진짜 원인·푸는 법·올해 흐름까지"
-            : paywallCopy.label + " 얘기, 이제 진짜 원인이랑 푸는 법까지 이어서 보자";
+            ? paywallCopy.label + "에 대한 답·이유·방법까지"
+            : paywallCopy.label + " 얘기, 이제 답이랑 이유, 방법까지 이어서 보자";
         }
         if (paywallFeatureTitle) {
           paywallFeatureTitle.textContent = isT
@@ -7610,8 +7610,8 @@ currentResultData = {
         }
         if (vipSectionSubTitle) {
           vipSectionSubTitle.textContent = isT
-            ? "핵심 · 진짜 원인 · 푸는 법 · 잘 맞는 것 · 가까운 흐름 · 조심할 것 · 이번 주 할 것"
-            : "너는 어떤 사람인지부터 진짜 원인, 푸는 법, 올해 흐름까지 차례로 볼게";
+            ? "핵심 · 질문에 대한 답 · 왜 그런지 · 어떻게 할지 · 가까운 흐름 · 조심할 것 · 이번 주 할 것"
+            : "너는 어떤 사람인지부터 질문에 대한 답, 이유, 방법, 올해 흐름까지 차례로 볼게";
         }
         if (mainShareBtnText) {
           mainShareBtnText.textContent = isT
@@ -7889,9 +7889,9 @@ currentResultData = {
 
         const noteRoleMeta = {
           "01": { label:"핵심", className:"note-role-diagnosis" },
-          "02": { label:"진짜 원인", className:"note-role-pattern" },
-          "03": { label:"푸는 법", className:"note-role-fit" },
-          "04": { label:"잘 맞는 것", className:"note-role-fit" },
+          "02": { label:"질문에 대한 답", className:"note-role-pattern" },
+          "03": { label:"왜 그런지", className:"note-role-fit" },
+          "04": { label:"어떻게 할지", className:"note-role-fit" },
           "05": { label:"가까운 흐름", className:"note-role-timing" },
           "06": { label:"조심할 것", className:"note-role-cause" },
           "07": { label:"이번 주 할 것", className:"note-role-action" },
@@ -7979,8 +7979,8 @@ currentResultData = {
                   <div id="note2PreviewCard" class="note-editorial note-role-pattern ${isT ? "note-tone-t" : "note-tone-f"} relative overflow-hidden text-left">
                       <div class="note-editorial-head">
                           <span class="note-number">2/${noteTotal}</span>
-                          <span class="note-role-label">진짜 원인</span>
-                          ${String(nextNote.badge || "") !== "진짜 원인" ? `<span class="note-badge">${nextNote.badge}</span>` : ""}
+                          <span class="note-role-label">질문에 대한 답</span>
+                          ${String(nextNote.badge || "") !== "질문에 대한 답" ? `<span class="note-badge">${nextNote.badge}</span>` : ""}
                       </div>
                       <h4 class="note-editorial-title">
                           ${decorateSajuTerms(nextNote.title)}
@@ -7991,8 +7991,8 @@ currentResultData = {
                       <div class="note-preview-continuation">
                           <p>
                               ${isT
-                                ? "여기서부터 진짜 원인·푸는 법·올해 흐름·조심할 것이 이어져."
-                                : "여기서부터 진짜 원인이랑 푸는 법, 올해 흐름, 조심할 것까지 이어서 볼게."}
+                                ? "여기서부터 답의 나머지와 이유·방법·올해 흐름이 이어져."
+                                : "여기서부터 답의 나머지랑 이유, 방법, 올해 흐름까지 이어서 볼게."}
                           </p>
                       </div>
                   </div>
@@ -10085,7 +10085,7 @@ currentResultData = {
     <script src="./classical-reasoning-engine-v1.js?v=2.1.1"></script>
     <script src="./paid-value-layer-v1.js?v=1.5.1"></script>
     <script src="./saju-signals-v1.js?v=1.0.0"></script>
-    <script src="./concern-note-engine-v2.js?v=6.0.0"></script>
+    <script src="./concern-note-engine-v2.js?v=6.1.0"></script>
     <script src="./ai-note-test-v1.js?v=2.2.0"></script>
     <script src="./product-content-policy-v1.js?v=1.1.0"></script>
     <script src="./product-entitlements-v1.js?v=1.0.1"></script>

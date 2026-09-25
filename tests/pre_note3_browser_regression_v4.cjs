@@ -46,7 +46,7 @@ async function load(page) {
     typeof renderConcernNotesV2 === 'function' &&
     globalThis.generateConcernNotes?.__classicalCausal === true &&
     typeof buildConcernDiagnosisV2 === 'function' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.0.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.1.0' &&
     typeof analyzeDayMasterStrengthV2 === 'function' &&
     globalThis.__MANSE_KOREA_V2__?.version === '2.2.0',
     null, {timeout:60000}
@@ -593,7 +593,7 @@ async function load(page) {
     assert(report.note2Valid, `${c.id}: real-scene answer missing`);
     assert(report.note3Valid, `${c.id}: fit answer missing`);
     assert(report.note3Integrated, `${c.id}: classical diagnosis not integrated into five answers`);
-    assert(report.noteV2Version === '6.0.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
+    assert(report.noteV2Version === '6.1.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
     assert(report.note4Valid, `${c.id}: filter answer missing`);
     assert(report.note5Valid, `${c.id}: timing/action answer missing`);
     assert(!report.forbiddenVisible, `${c.id}: removed meta/explanation copy leaked into UI`);
@@ -606,7 +606,7 @@ async function load(page) {
       assert(report.paywallTeaser.includes(report.expectedPaywall.teaser), `${c.id}: paywall teaser not situation-specific`);
       assert(report.note2PreviewText.includes('결론') && norm(report.note2PreviewText).length >= 35, `${c.id}: second-answer preview lost the generated conclusion edge: ${JSON.stringify(report.note2PreviewText)}`);
       assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), `${c.id}: paid outcomes mismatch`);
-      assert(report.paywallSubcopy === '진짜 원인 · 푸는 법 · 올해 흐름까지', `${c.id}: paid scope copy drift`);
+      assert(report.paywallSubcopy === '질문에 대한 답 · 이유 · 방법까지', `${c.id}: paid scope copy drift`);
       assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
       assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
     }

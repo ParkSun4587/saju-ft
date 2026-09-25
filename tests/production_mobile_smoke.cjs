@@ -10,14 +10,14 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
-        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.0.0' &&
+        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.1.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.0' &&
         globalThis.__UNNI_AI_NOTE_V4__?.version === '2.2.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach seven-answer NOTE 6.0.0 / paid 1.5.1 / products 2.3.0');
+  throw new Error('production did not reach seven-answer NOTE 6.1.0 / paid 1.5.1 / products 2.3.0');
 }
 
 async function clickCatalogProduct(page, productId) {
@@ -353,7 +353,7 @@ async function inspect(page, mode) {
     const notes = generateConcernNotes(currentResultData,mode);
     const products=[...document.querySelectorAll('#unniProductLadder [data-unni-product]')];
     return {
-      n1:plain(notes[0]?.desc), n2:plain(notes[1]?.desc),
+      n1:plain(notes[0]?.desc), n2:plain(notes[2]?.desc), answer:plain(notes[1]?.desc),
       n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc),
       aiTranslated:notes.length===7 && notes.every(n=>n?.__aiTranslated===true),
       noteV2Audit:currentResultData?.noteV2Audit || null,
@@ -445,7 +445,7 @@ async function inspect(page, mode) {
   },mode);
   r.resultLayout=await resultLayoutSnapshot(page);
   assertResultLayout(r.resultLayout,mode+' primary result');
-  assert(r.noteV2Audit?.version==='6.0.0'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
+  assert(r.noteV2Audit?.version==='6.1.0'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
   assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
   assert(r.noteV2Audit?.evidenceCoverage?.coverageRate===1&&r.noteV2Audit?.evidenceCoverage?.missingRuleIds?.length===0,mode+' supported classical evidence dropped '+JSON.stringify(r.noteV2Audit?.evidenceCoverage));
   assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six internal causal claims missing');
@@ -471,6 +471,7 @@ async function inspect(page, mode) {
     assert(r.timingMeta?.aiTranslated===true,mode+' AI timing NOTE metadata missing');
   } else {
     assert(r.n2.includes('결론')&&/돈|일|연애|진로|관계|마음/.test(r.n2)&&/(왜 그러냐면|근거) — 네 사주에서 가장 큰 힘은/.test(r.n2),mode+' concern-grounded explanation missing '+r.n2);
+    assert(r.answer.includes('결론')&&/1순위|쪽이야|편이야|때 —|사주야/.test(r.answer),mode+' situation answer did not lead with a ranked pick, verdict or timing '+r.answer);
     assert(r.timingMeta?.concernSituation,mode+' timing answer metadata missing');
     assert(!norm(r.timingMeta?.firstBody)||!norm(r.timingMeta?.secondBody)||norm(r.timingMeta?.firstBody)!==norm(r.timingMeta?.secondBody),mode+' duplicate timing roles returned');
   }
@@ -482,9 +483,9 @@ async function inspect(page, mode) {
     assert(r.count===4&&r.visible===4&&!r.otherToggle&&r.otherVisible,'free-launch should show all four premium products immediately '+JSON.stringify(r));
   }else{
     assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
-    assert(r.note2Preview.includes('2/7')&&r.note2Preview.includes('진짜 원인')&&r.paywallVisible,'second-answer teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
-    if(mode==='F') assert(r.paywall.includes('로아 언니 · 이제 너한테 맞는 쪽을 보자')&&r.paywall.includes('진짜 원인')&&r.paywall.includes('푸는 법'),'live F conversion paywall drift '+r.paywall);
-    if(mode==='T') assert(r.paywall.includes('서아 언니 · 이제 구체적인 답만 보면 돼')&&r.paywall.includes('진짜 원인')&&r.paywall.includes('푸는 법'),'T basic paywall handoff drift '+r.paywall);
+    assert(r.note2Preview.includes('2/7')&&r.note2Preview.includes('질문에 대한 답')&&r.paywallVisible,'second-answer teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
+    if(mode==='F') assert(r.paywall.includes('로아 언니 · 이제 너한테 맞는 쪽을 보자')&&r.paywall.includes('질문에 대한 답')&&r.paywall.includes('이유'),'live F conversion paywall drift '+r.paywall);
+    if(mode==='T') assert(r.paywall.includes('서아 언니 · 이제 구체적인 답만 보면 돼')&&r.paywall.includes('질문에 대한 답')&&r.paywall.includes('이유'),'T basic paywall handoff drift '+r.paywall);
     assert(r.paywall.includes('100원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
     if(mode==='F') assert(r.paywallPrice.text==='100원'&&r.paywallPrice.badge.trim()==='shrink-0 text-right'&&!/rounded|bg-|border/.test(r.paywallPrice.badge)&&r.paywallPrice.amount.includes('rose-600'),'F 990 simple price display drift '+JSON.stringify(r.paywallPrice));
     if(mode==='T') assert(r.paywallPrice.text==='100원'&&r.paywallPrice.badge.trim()==='shrink-0 text-right'&&!/rounded|bg-|border/.test(r.paywallPrice.badge)&&r.paywallPrice.amount.includes('sky-600'),'T 990 simple price display drift '+JSON.stringify(r.paywallPrice));
@@ -494,11 +495,11 @@ async function inspect(page, mode) {
       r.paywallTurn.font>=12.5 &&
       (!r.paywallTurn.before || r.paywallTurn.before==='none' || r.paywallTurn.before==='normal') &&
       r.paywallTurn.text.includes('여기서부터') &&
-      r.paywallTurn.text.includes('진짜 원인') &&
-      r.paywallTurn.text.includes('푸는 법'),
+      r.paywallTurn.text.includes('답의 나머지') &&
+      r.paywallTurn.text.includes('이유'),
       'second-answer conversion turn should point to concrete locked value '+JSON.stringify(r.paywallTurn)
     );
-    assert(r.paywall.includes('진짜 원인 · 푸는 법 · 올해 흐름까지')&&!/오픈 체험가/.test(r.paywall),'basic unlock scope or stale sale copy drift '+r.paywall);
+    assert(r.paywall.includes('질문에 대한 답 · 이유 · 방법까지')&&!/오픈 체험가/.test(r.paywall),'basic unlock scope or stale sale copy drift '+r.paywall);
     assert(r.funExtrasDisplay==='none'&&r.shareActionsDisplay==='none','locked 990 flow should hide MBTI/share diversions '+JSON.stringify({fun:r.funExtrasDisplay,share:r.shareActionsDisplay}));
   }
   if(r.catalog){
@@ -757,10 +758,11 @@ async function inspect(page, mode) {
     })),
   }));
   assert(postUnlock.cards===7&&!postUnlock.preview&&postUnlock.catalogAfterNotes,'basic unlock must reveal all seven answers before post-report upsells '+JSON.stringify(postUnlock));
-  assert(postUnlock.roles.map(x=>x.label).join('|')==='핵심|진짜 원인|푸는 법|잘 맞는 것|가까운 흐름|조심할 것|이번 주 할 것',
+  assert(postUnlock.roles.map(x=>x.label).join('|')==='핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것|이번 주 할 것',
     'seven-answer presentation roles missing '+JSON.stringify(postUnlock.roles));
-  assert(postUnlock.roles.find(x=>x.role==='03')?.text.includes('푸는 법') &&
-         postUnlock.roles.find(x=>x.role==='04')?.text.includes('잘 맞는') &&
+  assert(postUnlock.roles.find(x=>x.role==='02')?.text.includes('질문에 대한 답') &&
+         postUnlock.roles.find(x=>x.role==='03')?.text.includes('왜 그런지') &&
+         postUnlock.roles.find(x=>x.role==='04')?.text.includes('어떻게 할지') &&
          postUnlock.roles.find(x=>x.role==='06')?.text.includes('조심') &&
          /(\d{1,2}월|\d{4}년|대운|세운|월운|가까운 흐름)/.test(postUnlock.roles.find(x=>x.role==='05')?.text||''),
     'fit/filter/timing answers are not concrete '+JSON.stringify(postUnlock.roles));
