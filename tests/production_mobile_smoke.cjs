@@ -471,8 +471,8 @@ async function inspect(page, mode) {
     assert(/돈|일|연애|진로|관계|회복/.test(r.n2),mode+' AI NOTE lost selected concern focus '+r.n2);
     assert(r.timingMeta?.aiTranslated===true,mode+' AI timing NOTE metadata missing');
   } else {
-    assert(r.n2.includes('결론')&&/돈|일|연애|진로|관계|마음/.test(r.n2)&&/(왜 그러냐면|근거) — 네 사주에서 가장 큰 힘은/.test(r.n2),mode+' concern-grounded explanation missing '+r.n2);
-    assert(r.answer.includes('결론')&&/1순위|쪽이야|편이야|때 —|사주야/.test(r.answer),mode+' situation answer did not lead with a ranked pick, verdict or timing '+r.answer);
+    assert(r.n2.includes('결론')&&/돈|일|연애|진로|관계|마음|회복/.test(r.n2)&&r.n2.includes('상황이 오면')&&r.n2.includes('제일 먼저')&&r.n2.includes('반복되면')&&/가장 큰 힘|두 번째 핵심/.test(r.n2),mode+' concern-grounded real-scene explanation missing '+r.n2);
+    assert(r.answer.includes('결론')&&/먼저 볼 방향|다음 후보|쪽이야|편이야|때 —|검토|신호|순서대로|어떻게 할까/.test(r.answer),mode+' situation answer did not lead with a concrete direction, verdict or timing '+r.answer);
     assert(r.timingMeta?.concernSituation,mode+' timing answer metadata missing');
     assert(!norm(r.timingMeta?.firstBody)||!norm(r.timingMeta?.secondBody)||norm(r.timingMeta?.firstBody)!==norm(r.timingMeta?.secondBody),mode+' duplicate timing roles returned');
   }
