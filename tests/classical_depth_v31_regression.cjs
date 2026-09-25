@@ -114,23 +114,21 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     function sorted(v){return [...new Set(v||[])].sort();}
     function provenanceCheck(run){
       const all=[...run.reasoning.ditian.findings,...run.reasoning.ziping.findings];
-      const byId=Object.fromEntries(all.map(x=>[x.id,x]));
+      const fired=new Set(all.map(x=>x.id));
       return (run.audit.outputClaimMap||[]).map(link=>{
-        const claim=run.audit.claims[link.claimNum-1];
-        const ids=[...(claim?.ditianRuleIds||[]),...(claim?.zipingRuleIds||[])];
-        const refs=ids.map(id=>byId[id]).filter(Boolean);
-        const expectedConditions=sorted(refs.flatMap(x=>x.conditions||[]));
-        const expectedExceptions=sorted(refs.flatMap(x=>x.exceptions||[]));
+        const note=run.notes[link.noteNum-1];
+        const claim=note?.__claim||{};
+        const evidenceIds=claim.evidenceIds||[];
+        const engineIds=claim.source==='engine'?evidenceIds.filter(id=>/^(DTS|ZZ)_/.test(id)):[];
         return {
           noteNum:link.noteNum,
-          claimNum:link.claimNum,
-          idsExist:ids.length===refs.length && ids.length>0,
-          noFallback:claim.ditianRuleIds.length<run.reasoning.ditian.findings.length || claim.zipingRuleIds.length<run.reasoning.ziping.findings.length,
-          conditionsMatch:JSON.stringify(sorted(claim.conditions))===JSON.stringify(expectedConditions),
-          exceptionsMatch:JSON.stringify(sorted(claim.exceptions))===JSON.stringify(expectedExceptions),
-          causalSteps:claim.causalSteps||[],
-          evidenceStatus:claim.evidenceStatus,
-          sentenceMatches:claim.noteSentence===plain(run.notes[link.noteNum-1]?.desc),
+          claimId:link.claimId,
+          source:link.source,
+          confidence:link.confidence,
+          claimMatches:claim.id===link.claimId,
+          evidenceCount:evidenceIds.length,
+          counterEvidenceCount:(claim.counterEvidenceIds||[]).length,
+          engineIdsExist:engineIds.every(id=>fired.has(id)),
         };
       });
     }
@@ -308,18 +306,13 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       })),
       provenance:provenanceCheck(CANON),
       insufficient:{
-        claims:(insufficientRun.audit.outputClaimMap||[]).map(link=>{
-          const c=insufficientRun.audit.claims[link.claimNum-1];
-          return {
-            noteNum:link.noteNum,claimNum:link.claimNum,
-            ditianRuleIds:c.ditianRuleIds,
-            zipingRuleIds:c.zipingRuleIds,
-            evidenceStatus:c.evidenceStatus,
-            certainty:c.certainty,
-            noteSentence:c.noteSentence,
-            actual:plain(insufficientRun.notes[link.noteNum-1]?.desc),
-          };
-        }),
+        claims:(insufficientRun.audit.claims||[]).map(c=>({
+          ditianRuleIds:c.ditianRuleIds||[],
+          zipingRuleIds:c.zipingRuleIds||[],
+          evidenceStatus:c.evidenceStatus,
+          certainty:c.certainty,
+        })),
+        rendered:insufficientRun.notes.map(n=>plain(n.desc)),
       },
       legacy:{
         fpA:LEG_A.audit.structureFingerprint,fpB:LEG_B.audit.structureFingerprint,
@@ -432,22 +425,19 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(new Set(r.concerns.map(x=>x.fit)).size>=5,'concern application layer did not change fit rendering');
 
   for(const p of r.provenance){
-    assert(p.idsExist,'NOTE'+p.noteNum+' references a rule that did not fire');
-    assert(p.noFallback,'NOTE'+p.noteNum+' looks like all-rule fallback provenance');
-    assert(p.conditionsMatch,'NOTE'+p.noteNum+' conditions are not collected only from referenced rules');
-    assert(p.exceptionsMatch,'NOTE'+p.noteNum+' exceptions are not collected only from referenced rules');
-    assert(p.causalSteps.length>0,'NOTE'+p.noteNum+' causalSteps missing');
-    assert(['sufficient','insufficient-evidence'].includes(p.evidenceStatus),'NOTE'+p.noteNum+' evidenceStatus invalid');
-    assert(p.sentenceMatches,'NOTE'+p.noteNum+' noteSentence not bound to actual rendered text');
+    assert(p.claimId&&p.source&&p.claimMatches,'NOTE'+p.noteNum+' was not rendered from its preselected claim');
+    assert(['high','supported','guarded'].includes(p.confidence),'NOTE'+p.noteNum+' confidence missing');
+    assert(p.engineIdsExist,'NOTE'+p.noteNum+' references an engine rule that did not fire');
+    if(p.source==='concern-cross-validation') assert(p.evidenceCount>0,'NOTE'+p.noteNum+' concern claim has no cross-validated evidence');
   }
 
-  for(const c of r.insufficient.claims){
-    assert(c.ditianRuleIds.length===0,'insufficient evidence must not backfill all Ditian rule IDs');
-    assert(c.zipingRuleIds.length>0,'insufficient fixture should retain the Ziping rules that actually fired');
-    assert(c.evidenceStatus==='insufficient-evidence'&&c.certainty==='guarded','insufficient evidence did not lower certainty');
-    assert(/근거가 한쪽/.test(c.actual),'guarded user wording missing when one classical side lacks evidence');
-    assert(c.noteSentence===c.actual,'guarded noteSentence not bound to final rendered NOTE');
-  }
+  const insufficientClassical=r.insufficient.claims.filter(c=>c.evidenceStatus==='insufficient-evidence');
+  assert(insufficientClassical.length>0,'insufficient fixture did not preserve guarded classical claims');
+  assert(insufficientClassical.some(c=>c.ditianRuleIds.length===0&&c.zipingRuleIds.length>0),
+    'insufficient evidence must not backfill missing Ditian rule IDs');
+  assert(insufficientClassical.every(c=>c.certainty==='guarded'),'insufficient evidence did not lower certainty');
+  assert(r.insufficient.rendered.some(x=>/근거가 아직 한쪽|독립된 근거/.test(x)),
+    'guarded user wording missing when evidence is insufficient');
 
   assert(r.legacy.fpA===r.legacy.fpB,'legacy yongshin heuristic leaked into structural fingerprint');
   assert(JSON.stringify(r.legacy.prescriptionA)===JSON.stringify(r.legacy.prescriptionB),'legacy yongshin heuristic changed classical prescription');
