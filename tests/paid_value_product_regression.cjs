@@ -805,8 +805,8 @@ function norm(v) {
          JSON.stringify(ftScreen.f.claims)===JSON.stringify(ftScreen.t.claims),
     'final F/T screen comparison changed factual judgment');
   assert(ftScreen.f.notes!==ftScreen.t.notes &&
-         ftScreen.f.notes.includes('1/5') &&
-         ftScreen.t.notes.includes('1/5') &&
+         ftScreen.f.notes.includes('1/7') &&
+         ftScreen.t.notes.includes('1/7') &&
          !ftScreen.f.notes.includes('실전 룰') &&
          !ftScreen.t.notes.includes('실전 룰') &&
          ftScreen.f.greeting.includes('언니가 보니까') &&

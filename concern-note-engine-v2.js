@@ -1706,7 +1706,9 @@
       bondSentence(reasoning),
       weakLinkSentence(reasoning).replace(/<[^>]+>/g,""),
     ]);
-    return [lead(isT)+hook,cause,why,modifier,details].filter(Boolean).join("<br><br>");
+    // 원인 첫 문장은 굵게 보여줘서 "그래서 이유가 뭔데?"에 바로 답이 보이게 한다.
+    const causeHtml=cause.replace(/^(.+?[.?!])(\s|$)/,"<b>$1</b>$2");
+    return [lead(isT)+hook,causeHtml,why,modifier,details].filter(Boolean).join("<br><br>");
   }
 
   // 3. 푸는 법
