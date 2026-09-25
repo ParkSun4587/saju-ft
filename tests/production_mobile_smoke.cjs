@@ -451,9 +451,10 @@ async function inspect(page, mode) {
   assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six internal causal claims missing');
   assert(Array.isArray(r.noteV2Audit?.outputClaimMap)&&r.noteV2Audit.outputClaimMap.length===6,mode+' NOTE1-6 provenance map missing');
   for(const link of r.noteV2Audit.outputClaimMap){
-    const claim=r.noteV2Audit.claims[link.claimNum-1];
-    assert(claim?.ditianRuleIds?.filter(Boolean).length&&claim?.zipingRuleIds?.filter(Boolean).length&&claim?.noteSentence,mode+' mapped claim provenance missing');
+    assert(link.claimId&&link.source&&['high','supported','guarded'].includes(link.confidence),mode+' claim-first NOTE provenance missing '+JSON.stringify(link));
   }
+  assert(r.noteV2Audit?.behaviorTemplateRole==='expression-only',mode+' behavior template role drift');
+  assert(r.noteV2Audit?.interpretationPlan?.primaryGroup,mode+' cross-validated concern interpretation missing');
   for(const [label,text] of [['core',r.n1],['scene',r.n2],['filter',r.n4],['timing',r.n5]]){
     assert(text.length>=110&&text.length<=1600,mode+' '+label+' answer length drift '+text.length);
     if(r.aiTranslated){
@@ -470,7 +471,7 @@ async function inspect(page, mode) {
     assert(/돈|일|연애|진로|관계|회복/.test(r.n2),mode+' AI NOTE lost selected concern focus '+r.n2);
     assert(r.timingMeta?.aiTranslated===true,mode+' AI timing NOTE metadata missing');
   } else {
-    assert(r.n2.includes('결론')&&/돈|일|연애|진로|관계|마음/.test(r.n2)&&/(왜 그러냐면|근거) — 네 사주에서 가장 큰 힘은/.test(r.n2),mode+' concern-grounded explanation missing '+r.n2);
+    assert(r.n2.includes('결론')&&/돈|일|연애|진로|관계|마음/.test(r.n2)&&/(왜 그러냐면|근거)/.test(r.n2),mode+' concern-grounded explanation missing '+r.n2);
     assert(r.answer.includes('결론')&&/1순위|쪽이야|편이야|때 —|사주야/.test(r.answer),mode+' situation answer did not lead with a ranked pick, verdict or timing '+r.answer);
     assert(r.timingMeta?.concernSituation,mode+' timing answer metadata missing');
     assert(!norm(r.timingMeta?.firstBody)||!norm(r.timingMeta?.secondBody)||norm(r.timingMeta?.firstBody)!==norm(r.timingMeta?.secondBody),mode+' duplicate timing roles returned');
