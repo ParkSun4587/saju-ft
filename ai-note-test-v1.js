@@ -640,6 +640,12 @@
       throw error;
     }
 
+    if (!payload.testEnabled) {
+      const error = new Error("서버의 OPENAI_AI_NOTE_TEST_ENABLED=1일 때만 AI NOTE 테스트를 실행할 수 있습니다.");
+      error.code = "AI_NOTE_TEST_DISABLED";
+      throw error;
+    }
+
     if (!payload.configured) {
       const error = new Error("Cloudflare의 OPENAI_API_KEY 설정을 확인해야 합니다.");
       error.code = "OPENAI_API_KEY_MISSING";
