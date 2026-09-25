@@ -2216,7 +2216,7 @@
     const independent=[...new Set(evidenceIds)];
     const score=independent.length*2-counterEvidenceIds.length*1.5+(row?.rel?1:0);
     const confidence=independent.length>=4&&counterEvidenceIds.length===0?"high":independent.length>=2?"supported":"guarded";
-    const safeTitle=row?.rel?"관계 자리 사이의 "+(REL_TYPE_NAME[row.rel.type]||"관계")+" 신호":(CONCERN_GROUP_SAFE_TITLE[s.concern]?.[group]||row?.title||"확인할 구조");
+    const safeTitle=row?.rel?"관계 자리 사이의 "+(REL_TYPE_NAME[row.rel.type]||"관계")+" 신호":(CONCERN_GROUP_SAFE_TITLE[s.concern]?.[group]||row?.title||"확인할 부분");
     const safeReading=row?.rel?"두 자리 사이에 실제 관계 신호가 있어. 다만 이 신호 하나만으로 특정 사건이나 상대 행동을 확정하지 않아.":(CONCERN_GROUP_SAFE_READING[s.concern]?.[group]||"이 힘이 현재 고민에서 어떻게 쓰이는지 다른 근거와 함께 봐야 해.");
     return {...row,evidenceIds:independent,counterEvidenceIds,score,confidence,safeTitle,safeReading};
   }
@@ -3047,7 +3047,7 @@
       out.push("<b>1순위 — 이렇게 해</b>. "+INCOME_HOW[g1]+" "+sideWhy(reasoning,g1,N,G1).replace("돈도 같이 붙어","수입도 같이 올라").replace("돈을 벌 수 있어","수입을 올릴 수 있어").replace("만든 게 그대로 돈이 돼","만든 게 그대로 수입이 돼").replace("실력만큼 돈이 돼","실력만큼 수입이 올라"));
       out.push("<b>2순위 방향 — "+INCOME_OPTION[g2][0]+"</b>. "+withJosa(INCOME_OPTION[g2][1],"이야","야")+". "+INCOME_HOW[g2]);
       out.push(moneyShapeLine(reasoning));
-      out.push("<b>덜 맞을 수 있는 길 — "+INCOME_AVOID[worst]+"</b>. 이건 소득을 예측한 게 아니라, 현재 사주 구조와의 적합도를 비교한 결과야.");
+      out.push("<b>덜 맞을 수 있는 길 — "+INCOME_AVOID[worst]+"</b>. 이건 소득을 예측한 게 아니라, 현재 사주 흐름과 얼마나 맞는지 비교한 결과야.");
       out.push(...T("수입 얘기를 꺼내기 좋은 달","큰 결정을 미룰 달").lines);
     } else if(k==="money/saving"){
       out.push(lead(isT)+"네 돈은 <b>"+LEAK_NAME[G1][0]+"</b>으로 제일 많이 새. 이것만 막아도 통장이 달라져.");
