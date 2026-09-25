@@ -2232,7 +2232,9 @@
     const byShare=groupsByShare(reasoning);
     const primaryGroup=selected.find(x=>x.group)?.group||byShare[0]||"self";
     const secondaryGroup=selected.find(x=>x.group&&x.group!==primaryGroup)?.group||byShare.find(g=>g!==primaryGroup)||primaryGroup;
-    return {interpretations,selectedInterpretations:selected,primaryGroup,secondaryGroup,rankedGroups:rankGroups(reasoning),needGroup:needGroupOf(reasoning),burdenGroup:burdenGroupOf(reasoning),groupShares:Object.fromEntries(["self","output","wealth","officer","print"].map(g=>[g,groupShare(reasoning,g)]))};
+    const rawRank=rankGroups(reasoning);
+    const rankedGroups=[primaryGroup,secondaryGroup,...rawRank.filter(g=>g!==primaryGroup&&g!==secondaryGroup)];
+    return {interpretations,selectedInterpretations:selected,primaryGroup,secondaryGroup,rankedGroups,needGroup:needGroupOf(reasoning),burdenGroup:burdenGroupOf(reasoning),groupShares:Object.fromEntries(["self","output","wealth","officer","print"].map(g=>[g,groupShare(reasoning,g)]))};
   }
   function engineClaimByShape(reasoning,shape){
     const claims=reasoning?.claims||[];
