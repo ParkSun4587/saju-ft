@@ -211,8 +211,11 @@ function norm(v) {
     assert(!/(작동 방식|압력군|과부하 후보|\b(mok|hwa|geum|officer|wealth|output)\b)/.test(row.allText),
       `${row.concern}/${row.situation}/${row.mode}: engine-internal wording leaked into NOTE`);
     const note1=String(row.notes[0]?.desc||'').replace(/<[^>]+>/g,' ');
-    assert(/일주 [가-힣]{2}의 윗글자/.test(note1) && /(비견|겁재|식신|상관|정재|편재|정관|편관|정인|편인)/.test(note1) && !/(규칙·책임·평가|배움·보호·회복|돈·현실 자원)\)/.test(row.allText) && /[가-힣]{2}일주/.test(row.notes[0]?.title||''),
-      `${row.concern}/${row.situation}/${row.mode}: core answer must name the day pillar and a ten-god with its meaning`);
+    assert(/[가-힣]{2}일주/.test(row.notes[0]?.title||'') &&
+      /(비견|겁재|식신|상관|정재|편재|정관|편관|정인|편인)/.test(note1) &&
+      /(규칙·책임·평가|배움·보호·회복|꾸준히 만들어내는 힘|기회·거래로 크게 움직이는 돈|나와 같지만 경쟁하는 힘|현실적으로 지키는 돈|빠르게 표현하고 바꾸는 힘|나와 같은 힘)/.test(note1) &&
+      !/(규칙·책임·평가|배움·보호·회복|돈·현실 자원)\)/.test(row.allText),
+      `${row.concern}/${row.situation}/${row.mode}: core answer must use the bold day-pillar title and explain a real ten-god`);
   }
 
   for (const concern of ['money','career','love','path','people','mental']) {
