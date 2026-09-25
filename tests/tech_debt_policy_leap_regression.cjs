@@ -134,11 +134,12 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           const coverage=d.noteV3Audit?.evidenceCoverage;
           if(coverage?.coverageRate!==1 || coverage?.missingRuleIds?.length) failures.push(concern+'/'+key+'/'+mode+': supported evidence dropped '+JSON.stringify(coverage));
           const links=d.noteV3Audit?.outputClaimMap||[];
-          if(links.length!==6) failures.push(concern+'/'+key+'/'+mode+': output claim map missing');
+          if(links.length!==6) failures.push(concern+'/'+key+'/'+mode+': output claim plan missing');
           for(const link of links){
-            const claim=d.noteV3Audit?.claims?.[link.claimNum-1];
-            if(claim?.noteSentence!==plain(notes[link.noteNum-1]?.desc)) failures.push(concern+'/'+key+'/'+mode+': claim binding '+link.noteNum);
+            const note=notes[link.noteNum-1];
+            if(!link.claimId || note?.__claim?.id!==link.claimId) failures.push(concern+'/'+key+'/'+mode+': claim-first binding '+link.noteNum);
           }
+          if(d.noteV3Audit?.behaviorTemplateRole!=='expression-only') failures.push(concern+'/'+key+'/'+mode+': behavior template role drift');
           signatures.add(concern+'/'+key+'/'+mode+'|'+plain(notes[0]?.desc)+'|'+plain(notes[1]?.desc));
         }
         const f={...calculateAccurateManse(1998,2,21,'03:10','female'),concernKey:concern,concernSituation:key,currentMode:'F',__testNowYmd:'2026-09-20'};
