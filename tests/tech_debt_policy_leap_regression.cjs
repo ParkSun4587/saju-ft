@@ -133,11 +133,13 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           });
           const coverage=d.noteV3Audit?.evidenceCoverage;
           if(coverage?.coverageRate!==1 || coverage?.missingRuleIds?.length) failures.push(concern+'/'+key+'/'+mode+': supported evidence dropped '+JSON.stringify(coverage));
+          const humanCoverage=d.noteV3Audit?.humanEvidenceCoverage;
+          if(humanCoverage?.coverageRate!==1 || humanCoverage?.droppedFactIds?.length) failures.push(concern+'/'+key+'/'+mode+': human evidence dropped '+JSON.stringify(humanCoverage));
           const links=d.noteV3Audit?.outputClaimMap||[];
-          if(links.length!==6) failures.push(concern+'/'+key+'/'+mode+': output claim map missing');
+          if(links.length!==7) failures.push(concern+'/'+key+'/'+mode+': output claim map missing');
           for(const link of links){
             const claim=d.noteV3Audit?.claims?.[link.claimNum-1];
-            if(claim?.noteSentence!==plain(notes[link.noteNum-1]?.desc)) failures.push(concern+'/'+key+'/'+mode+': claim binding '+link.noteNum);
+            if(!(claim?.noteSentences||[]).includes(plain(notes[link.noteNum-1]?.desc))) failures.push(concern+'/'+key+'/'+mode+': claim binding '+link.noteNum);
           }
           signatures.add(concern+'/'+key+'/'+mode+'|'+plain(notes[0]?.desc)+'|'+plain(notes[1]?.desc));
         }
