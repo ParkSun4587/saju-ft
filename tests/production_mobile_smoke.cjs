@@ -9,7 +9,7 @@ async function deployed(page) {
     try {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
-        globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
+        globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.2' &&
         globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.2.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
         globalThis.__UNNI_AI_NOTE_V4__?.version === '2.2.0' &&
@@ -17,7 +17,7 @@ async function deployed(page) {
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach seven-answer NOTE 6.2.0 / paid 1.5.1 / products 2.3.1');
+  throw new Error('production did not reach seven-answer NOTE 6.2.0 / paid 1.5.2 / products 2.3.1');
 }
 
 async function clickCatalogProduct(page, productId) {
