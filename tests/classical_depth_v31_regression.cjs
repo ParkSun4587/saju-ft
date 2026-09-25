@@ -130,7 +130,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           exceptionsMatch:JSON.stringify(sorted(claim.exceptions))===JSON.stringify(expectedExceptions),
           causalSteps:claim.causalSteps||[],
           evidenceStatus:claim.evidenceStatus,
-          sentenceMatches:claim.noteSentence===plain(run.notes[link.noteNum-1]?.desc),
+          sentenceMatches:(claim?.noteSentences||[]).includes(plain(run.notes[link.noteNum-1]?.desc)),
         };
       });
     }
