@@ -131,7 +131,9 @@ function norm(v) {
       assert(Array.isArray(audit.priorityMechanisms) && audit.priorityMechanisms.length >= 4,
         row.concern+'/'+row.situation+'/'+mode+': priority mechanism synthesis too thin');
       assert(Array.isArray(audit.claims) && audit.claims.length === 6, row.concern+'/'+row.situation+'/'+mode+': six internal causal claims missing');
-      assert(Array.isArray(audit.outputClaimMap) && audit.outputClaimMap.length === 6, row.concern+'/'+row.situation+'/'+mode+': claim map must bind NOTE1-6 to the six classical claims');
+      assert(Array.isArray(audit.outputClaimMap) && audit.outputClaimMap.length === 7, row.concern+'/'+row.situation+'/'+mode+': claim map must bind all seven user turns to classical claims');
+      assert(audit.humanEvidenceCoverage?.coverageRate === 1 && audit.humanEvidenceCoverage?.droppedFactIds?.length === 0,
+        row.concern+'/'+row.situation+'/'+mode+': meaningful engine facts were dropped '+JSON.stringify(audit.humanEvidenceCoverage));
       for (const claim of audit.claims) {
         assert(claim.id && claim.rawFacts && Array.isArray(claim.ditianRuleIds) && Array.isArray(claim.zipingRuleIds),
           row.concern+'/'+row.situation+'/'+mode+': claim provenance missing');
@@ -141,7 +143,7 @@ function norm(v) {
       }
       for (const link of audit.outputClaimMap) {
         const claim=audit.claims[link.claimNum-1];
-        assert(claim?.userNoteIndex===link.noteNum && claim?.noteSentence===plain(notes[link.noteNum-1]?.desc),
+        assert(claim?.userNoteIndices?.includes(link.noteNum) && claim?.noteSentences?.includes(plain(notes[link.noteNum-1]?.desc)),
           row.concern+'/'+row.situation+'/'+mode+': rendered answer is not bound to mapped classical claim');
       }
       assert(audit.sourceLayers?.ditian === '1.1.0' && audit.sourceLayers?.ziping === '1.1.0',
