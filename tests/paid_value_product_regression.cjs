@@ -170,6 +170,8 @@ function norm(v) {
       `${row.concern}/${row.situation}/${row.mode}: supported evidence dropped ${JSON.stringify(row.noteAudit?.evidenceCoverage)}`);
     assert(row.noteAudit?.semanticCoverage?.coverageRate === 1 && row.noteAudit?.semanticCoverage?.noteCountWithFacts === 7,
       `${row.concern}/${row.situation}/${row.mode}: semantic personalization facts did not reach every answer ${JSON.stringify(row.noteAudit?.semanticCoverage)}`);
+    assert(row.noteAudit?.humanEvidenceCoverage?.coverageRate === 1 && row.noteAudit?.humanEvidenceCoverage?.droppedFactIds?.length === 0,
+      `${row.concern}/${row.situation}/${row.mode}: human evidence coverage missing ${JSON.stringify(row.noteAudit?.humanEvidenceCoverage)}`);
     assert(Array.isArray(row.noteAudit?.noteEvidence) && row.noteAudit.noteEvidence.length === 7,
       `${row.concern}/${row.situation}/${row.mode}: note evidence plan missing`);
     assert(Array.isArray(row.noteAudit?.claims) && row.noteAudit.claims.length === 6, `${row.concern}/${row.situation}/${row.mode}: six internal causal claims missing`);
@@ -180,7 +182,7 @@ function norm(v) {
       const actual=String(row.notes[link.noteNum-1]?.desc||'').replace(/<br\s*\/?\s*>/gi,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
       assert(claim?.rawFacts && claim.ditianRuleIds?.filter(Boolean).length && claim.zipingRuleIds?.filter(Boolean).length,
         `${row.concern}/${row.situation}/${row.mode}: mapped rule provenance missing`);
-      assert(claim.noteSentence===actual,
+      assert((claim.noteSentences||[]).includes(actual),
         `${row.concern}/${row.situation}/${row.mode}: mapped claim is not bound to rendered answer ${link.noteNum}`);
     }
 
