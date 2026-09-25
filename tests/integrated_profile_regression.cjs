@@ -76,6 +76,26 @@ function norm(v) {
     const repeatA = generateConcernNotes(prep(exact,'love','relationship','F'),'F');
     const repeatB = generateConcernNotes(prep(exact,'love','relationship','F'),'F');
 
+    // 반사실 검사: 같은 사주에서 십신 그룹 세력만 강제로 바꾸면 대표 판단도 같이 바뀌어야 한다.
+    const cfData=prep(exact,'money','saving','F');
+    const cfDiag=buildConcernDiagnosisV2(cfData);
+    const cfRows=cfDiag.reasoning?.synthesis?.tenGodEvidence||[];
+    const cfGroups=[...new Set(cfRows.map(x=>x.group).filter(Boolean))].slice(0,2);
+    const forceGroup=(target)=>{
+      const cloned=JSON.parse(JSON.stringify(cfDiag.reasoning));
+      cloned.synthesis.tenGodEvidence=(cloned.synthesis.tenGodEvidence||[]).map(row=>({
+        ...row,
+        weight:row.group===target?100:1,
+        visibleWeight:row.group===target?100:1,
+        hiddenWeight:0,
+      }));
+      return cloned;
+    };
+    const cfA=forceGroup(cfGroups[0]);
+    const cfB=forceGroup(cfGroups[1]);
+    const planA=globalThis.__CONCERN_NOTE_ENGINE_V2__._testGrounding(cfA,cfDiag.situation,cfData);
+    const planB=globalThis.__CONCERN_NOTE_ENGINE_V2__._testGrounding(cfB,cfDiag.situation,cfData);
+
     return {
       engine:globalThis.__CONCERN_NOTE_ENGINE_V2__,
       integrated:globalThis.__INTEGRATED_SAJU_PROFILE_V1__,
@@ -96,6 +116,15 @@ function norm(v) {
         localNorm((n.title||'')+' '+(n.desc||'')+' '+(n.checklist||'')) ===
         localNorm((repeatB[i]?.title||'')+' '+(repeatB[i]?.desc||'')+' '+(repeatB[i]?.checklist||''))
       ),
+      counterfactual:{
+        groups:cfGroups,
+        topA:globalThis.__CONCERN_NOTE_ENGINE_V2__._testTopGroup(cfA),
+        topB:globalThis.__CONCERN_NOTE_ENGINE_V2__._testTopGroup(cfB),
+        primaryA:planA.primaryGroup,
+        primaryB:planB.primaryGroup,
+        selectedA:planA.selectedInterpretations.map(x=>x.safeTitle),
+        selectedB:planB.selectedInterpretations.map(x=>x.safeTitle),
+      },
     };
   });
 
@@ -131,7 +160,11 @@ function norm(v) {
       assert(Array.isArray(audit.priorityMechanisms) && audit.priorityMechanisms.length >= 4,
         row.concern+'/'+row.situation+'/'+mode+': priority mechanism synthesis too thin');
       assert(Array.isArray(audit.claims) && audit.claims.length === 6, row.concern+'/'+row.situation+'/'+mode+': six internal causal claims missing');
-      assert(Array.isArray(audit.outputClaimMap) && audit.outputClaimMap.length === 6, row.concern+'/'+row.situation+'/'+mode+': claim map must bind NOTE1-6 to the six classical claims');
+      assert(Array.isArray(audit.outputClaimMap) && audit.outputClaimMap.length === 6, row.concern+'/'+row.situation+'/'+mode+': claim-first NOTE plan missing');
+      assert(audit.behaviorTemplateRole === 'expression-only' && Array.isArray(audit.behaviorTemplateFieldsUsed),
+        row.concern+'/'+row.situation+'/'+mode+': behavior templates are still acting as evidence');
+      assert(audit.interpretationPlan?.primaryGroup && audit.interpretationPlan?.groupShares,
+        row.concern+'/'+row.situation+'/'+mode+': cross-validated interpretation plan missing');
       for (const claim of audit.claims) {
         assert(claim.id && claim.rawFacts && Array.isArray(claim.ditianRuleIds) && Array.isArray(claim.zipingRuleIds),
           row.concern+'/'+row.situation+'/'+mode+': claim provenance missing');
@@ -140,9 +173,13 @@ function norm(v) {
         assert(claim.conclusion, row.concern+'/'+row.situation+'/'+mode+': claim conclusion missing');
       }
       for (const link of audit.outputClaimMap) {
-        const claim=audit.claims[link.claimNum-1];
-        assert(claim?.userNoteIndex===link.noteNum && claim?.noteSentence===plain(notes[link.noteNum-1]?.desc),
-          row.concern+'/'+row.situation+'/'+mode+': rendered answer is not bound to mapped classical claim');
+        const note=notes[link.noteNum-1];
+        assert(link.claimId && note?.__claim?.id===link.claimId && note?.__claim?.source===link.source,
+          row.concern+'/'+row.situation+'/'+mode+': NOTE was rendered before its claim was selected');
+        if(link.source==='concern-cross-validation'){
+          assert(Array.isArray(note.__interpretationEvidenceIds) && note.__interpretationEvidenceIds.length>0,
+            row.concern+'/'+row.situation+'/'+mode+': concern claim has no interpretation evidence');
+        }
       }
       assert(audit.sourceLayers?.ditian === '1.1.0' && audit.sourceLayers?.ziping === '1.1.0',
         row.concern+'/'+row.situation+'/'+mode+': source layer versions missing');
@@ -173,8 +210,15 @@ function norm(v) {
     assert(sig.size===4, concern+': four situation applications are not distinct');
   }
 
-  assert(result.differentChartDiffs.filter(Boolean).length >= 3, 'different charts should change a majority of the five answers without forcing fake differences: '+JSON.stringify(result.differentChartDiffs));
+  assert(result.differentChartDiffs.filter(Boolean).length >= 3, 'different charts should change a majority of the six answers without forcing fake differences: '+JSON.stringify(result.differentChartDiffs));
   assert(result.deterministic, 'same saju facts and situation must be deterministic');
+  assert(result.counterfactual.groups.length===2 && result.counterfactual.topA===result.counterfactual.groups[0] && result.counterfactual.topB===result.counterfactual.groups[1],
+    'aggregate group counterfactual did not change topGroup '+JSON.stringify(result.counterfactual));
+  assert(
+    result.counterfactual.primaryA!==result.counterfactual.primaryB ||
+    JSON.stringify(result.counterfactual.selectedA)!==JSON.stringify(result.counterfactual.selectedB),
+    'changing engine ten-god forces did not change the concern interpretation '+JSON.stringify(result.counterfactual)
+  );
   assert(errors.length === 0, 'browser errors: '+errors.join(' | '));
 
   console.log('CLASSICAL_CAUSAL_NOTE_PASS', JSON.stringify({
