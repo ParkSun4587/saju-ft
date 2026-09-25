@@ -118,7 +118,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
           d.concernKey=concern; d.concernSituation=key; d.currentMode=mode;
           const notes=generateConcernNotes(d,mode);
           if(notes.length!==7) failures.push(concern+'/'+key+'/'+mode+': answer count '+notes.length);
-          if(notes.map(n=>n.badge).join('|')!=='핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것|이번 주 할 것') failures.push(concern+'/'+key+'/'+mode+': answer roles drift');
+          if(notes.map(n=>n.badge).join('|')!=='핵심|질문에 대한 답|실제 반복 장면|왜 반복되는지|잘 맞는 조건|거를 신호|지금 흐름') failures.push(concern+'/'+key+'/'+mode+': answer roles drift');
           if(!plain(notes[0]?.desc).includes(label)||!/[가-힣]{2}일주/.test(String(notes[0]?.title||''))) failures.push(concern+'/'+key+'/'+mode+': first answer lost day-pillar title or selected label');
           const visible=notes.map(n=>plain([n?.badge,n?.title,n?.desc,n?.checklist].join(' '))).join(' ');
           if(/\bundefined\b|\bnull\b|NaN/.test(visible)) failures.push(concern+'/'+key+'/'+mode+': undefined/null leaked');
