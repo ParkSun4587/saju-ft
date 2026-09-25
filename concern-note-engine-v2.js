@@ -1731,28 +1731,23 @@
 
   // 3. 푸는 법
   function noteFixV6(reasoning,s,sig,isT){
-    const G=topGroupOf(reasoning);
     const N=needGroupOf(reasoning);
     const el=prescriptionElement(reasoning);
-    const fix=FIX[s.concern]?.[s.key]?.[G]||"";
     const need=NEED_LINE[s.concern]?.[N]||"";
     const support=supportRows(reasoning,s)[0];
     const raw=el?Number(reasoning?.profile?.elements?.raw?.[el]||0):null;
-    // 보이는 "왜 그러냐면"은 필요한 기운이 왜 필요한지만 쉬운 말로 쓴다. 고전 명리식 "사주 중심을 살려주는 짝" 설명은 접힌 근거로 보낸다.
     const needPlain=(["career","path"].includes(s.concern)?NEED_POWER_WORK[N]:NEED_POWER[N])||"";
     const whyPlain=el
       ? (raw===0
-        ? "네 사주에는 "+EL_PLAIN[el]+" 기운이 겉으로 하나도 없어. 그래서 "+withJosa(needPlain,"을","를")+" 사람·습관·환경으로 밖에서 채워야 해."
-        : "네 사주에 "+EL_PLAIN[el]+" 기운이 조금 있어서, 그걸 살려 쓰면 "+withJosa(needPlain,"이","가")+" 바로 커져.")
-      : "네 사주에서 모자란 쪽을 채우는 방법이라서야.";
+        ? "네 사주에서 보완 우선순위가 "+EL_PLAIN[el]+" 쪽으로 잡혀 있어. 그래서 "+withJosa(needPlain,"을","를")+" 현실에서 확인할 수 있는 행동으로 보태는 게 맞아."
+        : "네 사주에서 "+EL_PLAIN[el]+" 쪽이 보완 후보로 잡혀 있어. 그래서 "+withJosa(needPlain,"을","를")+" 실제 행동으로 시험해보는 게 맞아.")
+      : "네 사주에서 부족한 쪽을 보완하는 방향이라서야.";
     const lines=[
-      lead(isT)+fix,
-      "<b>네 사주에 제일 필요한 것</b> — "+need+(el?" 기운으로는 "+withJosa(elementName(el),"이야","야")+".":""),
-      el?"<b>도움 되는 것</b> — "+ELEMENT_TIPS[el]+".":"",
-      "<b>구체적으로</b> — "+plainSentence(s.move),
+      lead(isT)+"<b>먼저 바꿀 기준</b> — "+need,
+      "<b>구체적으로 확인할 것</b> — "+plainSentence(s.move),
       whyLabel(isT)+whyPlain,
       detailsBlock([
-        el?withJosa(elementName(el),"은","는")+" 너한테 "+groupLabelJ(N,"이고","고")+", 겉 글자로는 "+raw+"개야.":"",
+        el?withJosa(elementName(el),"은","는")+" 보완 후보이고, 겉 글자로는 "+raw+"개야.":"",
         support?.why||"",
       ]),
     ];
