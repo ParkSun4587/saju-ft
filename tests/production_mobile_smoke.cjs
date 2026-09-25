@@ -765,7 +765,7 @@ async function inspect(page, mode) {
   assert(postUnlock.roles.find(x=>x.role==='03')?.title.includes('반복') &&
          postUnlock.roles.find(x=>x.role==='04')?.title.includes('왜') &&
          postUnlock.roles.find(x=>x.role==='05')?.title.includes('잘 맞는') &&
-         postUnlock.roles.find(x=>x.role==='06')?.title.includes('꼬여') &&
+         postUnlock.roles.find(x=>x.role==='06')?.title.includes('꼬이') &&
          /(\d{1,2}월|\d{4}년|대운|세운|월운|지금)/.test(postUnlock.roles.find(x=>x.role==='07')?.text||''),
     'scene/why/fit/caution/timing answers are not concrete '+JSON.stringify(postUnlock.roles));
   assert(postUnlock.reasonCount===1&&postUnlock.reasonText.length>=10,'premium recommendation should keep one compact reason '+JSON.stringify(postUnlock));
