@@ -46,7 +46,7 @@ async function load(page) {
     typeof renderConcernNotesV2 === 'function' &&
     globalThis.generateConcernNotes?.__classicalCausal === true &&
     typeof buildConcernDiagnosisV2 === 'function' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.1.1' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.2.0' &&
     typeof analyzeDayMasterStrengthV2 === 'function' &&
     globalThis.__MANSE_KOREA_V2__?.version === '2.2.0',
     null, {timeout:60000}
@@ -201,7 +201,7 @@ async function load(page) {
       '한국 만세력 기준',
       '시간 -30분 보정',
     ];
-    const jargon = ['십신','격국','용신','신강','신약','월령','지장간','상신','기신','세운'];
+    const jargon = ['priorityScore','pressureGroup','zipingState','rootQuality','neededGroups'];
     const fMarkers = ['언니','마음','같이','보자','해보자','덜','편','괜찮'];
     const tMarkers = ['먼저','확인','기준','바로','끊','결론','정리','하지'];
     let fText = '';
@@ -301,7 +301,7 @@ async function load(page) {
     });
     assert(middle, 'could not locate deterministic middle-strength sample');
     assert(middle.count===7,'middle-strength sample did not render seven answers');
-    assert(!/(신강|신약|중화|압박|구조|월령|지장간|격국|용신)/.test(middle.text), 'internal strength/classical jargon leaked into user copy');
+    assert(!/(priorityScore|pressureGroup|zipingState|rootQuality|neededGroups)/.test(middle.text), 'internal engine jargon leaked into user copy');
     assert(errs.length === 0, `middle-strength browser errors: ${errs.join(' | ')}`);
     console.log('MIDDLE_STRENGTH_PASS', JSON.stringify({date:middle.date, ratio:middle.ratio}));
     await page.close();
@@ -534,9 +534,11 @@ async function load(page) {
         note1Valid:!!(notes?.[0]?.title && notes?.[0]?.desc && notes?.[0]?.badge),
         note2Valid:!!(notes?.[1]?.title && notes?.[1]?.desc && notes?.[1]?.badge),
         note3Valid:!!(notes?.[2]?.title && notes?.[2]?.desc && notes?.[2]?.badge),
-        note3Integrated:!!(data.noteV3Audit?.structureFingerprint && data.noteV3Audit?.outputClaimMap?.length===6 && diagnosis?.structureFingerprint === data.noteV3Audit?.structureFingerprint),
+        note3Integrated:!!(data.noteV3Audit?.structureFingerprint && data.noteV3Audit?.outputClaimMap?.length===7 && diagnosis?.structureFingerprint === data.noteV3Audit?.structureFingerprint),
         note4Valid:!!(notes?.[3]?.title && notes?.[3]?.desc && notes?.[3]?.badge),
-        note5Valid:!!(notes?.[4]?.title && notes?.[4]?.desc && notes?.[4]?.badge && notes?.[4]?.__timingQA),
+        note5Valid:!!(notes?.[4]?.title && notes?.[4]?.desc && notes?.[4]?.badge),
+        note7Valid:!!(notes?.[6]?.title && notes?.[6]?.desc && notes?.[6]?.badge && notes?.[6]?.__timingQA),
+        humanCoverage:data.noteV3Audit?.humanEvidenceCoverage || null,
         noteV2Version:data.noteV3Audit?.version || '',
         noteV2Primary:data.noteV3Audit?.claims?.[0]?.ditianRuleIds?.[0] || '',
         noteV2Secondary:data.noteV3Audit?.claims?.[0]?.zipingRuleIds?.[0] || '',
@@ -593,9 +595,11 @@ async function load(page) {
     assert(report.note2Valid, `${c.id}: real-scene answer missing`);
     assert(report.note3Valid, `${c.id}: fit answer missing`);
     assert(report.note3Integrated, `${c.id}: classical diagnosis not integrated into five answers`);
-    assert(report.noteV2Version === '6.1.1' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
+    assert(report.noteV2Version === '6.2.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
     assert(report.note4Valid, `${c.id}: filter answer missing`);
-    assert(report.note5Valid, `${c.id}: timing/action answer missing`);
+    assert(report.note5Valid, `${c.id}: fit answer missing`);
+    assert(report.note7Valid, `${c.id}: timing/final answer missing`);
+    assert(report.humanCoverage?.coverageRate === 1 && report.humanCoverage?.droppedFactIds?.length === 0, `${c.id}: human evidence coverage missing ${JSON.stringify(report.humanCoverage)}`);
     assert(!report.forbiddenVisible, `${c.id}: removed meta/explanation copy leaked into UI`);
     assert(!report.badText, `${c.id}: undefined/NaN leaked into generated note text`);
     assert(!report.failureToast, `${c.id}: calculation failure toast visible`);
@@ -606,7 +610,7 @@ async function load(page) {
       assert(report.paywallTeaser.includes(report.expectedPaywall.teaser), `${c.id}: paywall teaser not situation-specific`);
       assert(report.note2PreviewText.includes('결론') && norm(report.note2PreviewText).length >= 35, `${c.id}: second-answer preview lost the generated conclusion edge: ${JSON.stringify(report.note2PreviewText)}`);
       assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), `${c.id}: paid outcomes mismatch`);
-      assert(report.paywallSubcopy === '질문에 대한 답 · 이유 · 방법까지', `${c.id}: paid scope copy drift`);
+      assert(report.paywallSubcopy === '질문에 대한 답 · 반복 장면 · 이유 · 조건 · 흐름까지', `${c.id}: paid scope copy drift`);
       assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
       assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
     }
