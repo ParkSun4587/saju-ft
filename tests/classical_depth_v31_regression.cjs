@@ -355,7 +355,8 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         nearHighlights:CANON.reasoning.timing.concernNearTerm?.highlights||[],
         longTermPivots:CANON.reasoning.timing.longTermPivots||[],
         scene:plain(CANON.notes[1].desc),
-        fit:plain(CANON.notes[2].desc),
+        fit:plain(CANON.notes[3].desc),
+        fix:plain(CANON.notes[2].desc),
         timingAnswer:plain(CANON.notes[4].desc),
         timingMeta:CANON.notes[4].__timingQA,
       },
@@ -475,9 +476,10 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   }),'NOTE6 selected a month without month-specific evidence');
   assert((r.canonicalTiming.longTermPivots||[]).every(x=>x.isStructuralPivot===true&&Array.isArray(x.pivotReasons)&&x.pivotReasons.length>0),'long-term teaser labeled a non-structural year as pivot');
   assert((r.canonicalTiming.longTermPivots||[]).every((x,i,a)=>i===0||x.year!==a[i-1].year),'duplicate long-term pivot year');
-  assert(/결론/.test(r.canonicalTiming.scene)&&/반복이 갈리는 첫 지점|네 반복은 마지막 결과보다/.test(r.canonicalTiming.scene),
-    'second answer lost chart-derived pattern explanation');
-  assert(/결론/.test(r.canonicalTiming.fit)&&/맞춰야 할 조건|맞는 조건|조건은/.test(r.canonicalTiming.fit),'fit answer lost chart-derived matching conditions');
+  assert(/결론/.test(r.canonicalTiming.scene)&&/(왜 그러냐면|근거) — 네 사주에서 가장 큰 힘은 [가-힣]{2}\(/.test(r.canonicalTiming.scene),
+    'second answer lost chart-derived cause explanation');
+  assert(/결론/.test(r.canonicalTiming.fix)&&/네 사주에 제일 필요한 것/.test(r.canonicalTiming.fix)&&/사주 중심인 [가-힣]{2}/.test(r.canonicalTiming.fix),'fix answer lost chart-derived prescription and support condition');
+  assert(/결론/.test(r.canonicalTiming.fit)&&/맞아|맞는/.test(r.canonicalTiming.fit),'fit answer lost chart-derived matching conditions');
   assert(/지금 비교 기준/.test(r.canonicalTiming.timingAnswer),'timing answer lost chart-derived comparison criterion');
   assert(!/앞으로 5년 큰 흐름|이후 큰 흐름/.test(r.canonicalTiming.timingAnswer),'basic timing answer leaked full five-year annual disclosure');
   assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관|압박|구조)/.test(r.canonicalTiming.timingAnswer),'timing answer leaked internal jargon');
