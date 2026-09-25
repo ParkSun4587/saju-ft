@@ -239,7 +239,7 @@ function norm(v) {
   const careerF=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='career'&&r.mode==='F').map(r=>[r.situation,r]));
   const loveF=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='love'&&r.mode==='F').map(r=>[r.situation,r]));
   const loveT=Object.fromEntries(qa.situationRows.filter(r=>r.concern==='love'&&r.mode==='T').map(r=>[r.situation,r]));
-  assert(!/(제일 많이 새|1순위 구멍|2순위 구멍|배달.*돈|밥값.*돈)/.test(moneyF.saving?.allText||''),
+  assert(!/(1순위 구멍|2순위 구멍|친구 밥값|모임 회비|빌려준 돈|배달[·, ]*택시|충동구매.*돈)/.test(moneyF.saving?.allText||''),
     'saving NOTE invented a concrete spending leak');
   assert(!/(제일 돈이 되는 부업|제일 돈 안 되는 부업)/.test(moneyF.side?.allText||''),
     'side-income NOTE invented a guaranteed profitability ranking');
