@@ -625,16 +625,31 @@ function buildTranslationInstruction(packet) {
   ].join("\n");
 }
 
+function aiNoteTestEnabled(env) {
+  return String(env?.OPENAI_AI_NOTE_TEST_ENABLED || "").trim() === "1";
+}
+
 export async function onRequestGet(context) {
   return reply(200, {
     ok: true,
     service: "unni-ai-notes-v4",
     configured: Boolean(context.env.OPENAI_API_KEY),
+    testEnabled: aiNoteTestEnabled(context.env),
     model: context.env.OPENAI_MODEL || "gpt-6-sol",
   });
 }
 
 async function handlePost(context) {
+  // 비용 안전장치: ?ai_notes_test=1만으로는 절대 OpenAI 유료 호출까지 가지 않는다.
+  // 운영에서는 비워두고, 명시적인 비용 테스트 때만 OPENAI_AI_NOTE_TEST_ENABLED=1로 켠다.
+  if (!aiNoteTestEnabled(context.env)) {
+    return reply(403, {
+      ok: false,
+      code: "AI_NOTE_TEST_DISABLED",
+      message: "AI NOTE 유료 호출이 서버에서 잠겨 있습니다.",
+    });
+  }
+
   if (!sameOrigin(context.request)) {
     return reply(403, {
       ok: false,
