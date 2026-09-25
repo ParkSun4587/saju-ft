@@ -162,7 +162,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         structure1:D1.audit.structureFingerprint,structure2:D2.audit.structureFingerprint,
         timing1:D1.audit.timingFingerprint,timing2:D2.audit.timingFingerprint,
         baseClaim1:D1.audit.claims[0].conclusion,baseClaim2:D2.audit.claims[0].conclusion,
-        timingText1:plain(D1.notes[4].desc),timingText2:plain(D2.notes[4].desc),
+        timingText1:plain(D1.notes[6].desc),timingText2:plain(D2.notes[6].desc),
       },
       E:{
         structure1:E1.audit.structureFingerprint,structure2:E2.audit.structureFingerprint,
@@ -213,7 +213,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   const bridgeFinding=r.runtimeIntegrity.bridgeChartKinds.find(x=>x.id==='DTS_BRIDGE_112');
   assert(bridgeFinding?.kind==='bridge','runtime bridge finding kind missing: '+JSON.stringify(r.runtimeIntegrity.bridgeChartKinds));
   assert(bridgeFinding?.facts?.bridge,'runtime bridge finding has no bridge facts: '+JSON.stringify(bridgeFinding));
-  assert(r.runtimeIntegrity.claims.length===6,'NOTE1-6 provenance map missing');
+  assert(r.runtimeIntegrity.claims.length===6,'six internal causal claims missing');
   for(const claim of r.runtimeIntegrity.claims){
     assert(claim.ditianRuleIds.filter(Boolean).length>0,'answer '+claim.noteNum+': no valid Ditian provenance');
     assert(claim.zipingRuleIds.filter(Boolean).length>0,'answer '+claim.noteNum+': no valid Ziping provenance');
