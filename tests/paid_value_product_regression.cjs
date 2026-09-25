@@ -20,7 +20,7 @@ function norm(v) {
   page.on('console', m => { if (m.type() === 'error') errors.push(`[console] ${m.text()}`); });
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
-    globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.1' &&
+    globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.2' &&
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.2.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.1.0' &&
@@ -137,7 +137,7 @@ function norm(v) {
     };
   });
 
-  assert(qa.paidVersion.version === '1.5.1', 'paid value layer missing');
+  assert(qa.paidVersion.version === '1.5.2', 'paid value layer missing');
   assert(qa.noteVersion.version === '6.2.0', 'NOTE v3 engine missing');
   assert(qa.productVersion.version === '2.3.1' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
@@ -1087,7 +1087,7 @@ function norm(v) {
   const paid = fs.readFileSync('paid-value-layer-v1.js','utf8');
   const aiServer = fs.readFileSync('functions/api/ai-notes.js','utf8');
   const aiClient = fs.readFileSync('ai-note-test-v1.js','utf8');
-  assert(html.includes('./paid-value-layer-v1.js?v=1.5.1'), 'paid value script include missing');
+  assert(html.includes('./paid-value-layer-v1.js?v=1.5.2'), 'paid value script include missing');
   assert(html.includes('./concern-note-engine-v2.js?v=6.2.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'seven-answer NOTE / saju signal script include missing');
   assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.1'), 'full-evidence reasoning script include missing');
   assert(aiServer.includes('OPENAI_AI_NOTE_TEST_ENABLED') && aiServer.includes('AI_NOTE_TEST_DISABLED') && aiClient.includes('payload.testEnabled'),
