@@ -839,7 +839,8 @@
     const seen = new Map();
     const duplicates = [];
     const hardTerms = [];
-    const banned = ["월령", "지장간", "상신", "기신", "격국", "용신", "세운", "십신", "신강", "신약", "사령", "득령", "득지", "득세", "통관", "중심 구조", "구조", "압박"];
+    // 실제 명리 용어는 쉬운 뜻과 함께 노출해도 된다. 사용자에게 보여선 안 되는 건 내부 구현 코드/추상 라벨이다.
+    const banned = ["priorityScore", "pressureGroup", "zipingState", "rootQuality", "neededGroups", "structuralSupportGods", "structuralHarmGods"];
     (notes || []).forEach((note, i) => {
       splitSentences(note?.desc).forEach((sentence) => {
         const key = normalizeSentence(sentence);
@@ -850,7 +851,7 @@
       const text = stripHtml(`${note?.title || ""} ${note?.desc || ""} ${note?.checklist || ""}`);
       banned.forEach((term) => { if (text.includes(term)) hardTerms.push([i + 1, term]); });
     });
-    const timingNote = notes?.[4]?.__timingQA;
+    const timingNote = notes?.[6]?.__timingQA;
     const timingDuplicate = !!timingNote && !!timingNote.firstBody && !!timingNote.secondBody &&
       normalizeSentence(timingNote.firstBody) === normalizeSentence(timingNote.secondBody);
     const tone = (notes || []).map((n) => stripHtml(`${n?.title || ""} ${n?.desc || ""}`)).join(" ");
@@ -875,7 +876,7 @@
   global.polishPaidValueNotes = polishPaidValueNotes;
   global.auditPaidValueNotes = auditNotes;
   global.__PAID_VALUE_LAYER_V1__ = {
-    version: "1.5.1",
+    version: "1.5.2",
     situationProfiles: SITUATION_PROFILES,
   };
 
