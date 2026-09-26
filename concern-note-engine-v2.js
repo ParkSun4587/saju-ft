@@ -1560,9 +1560,9 @@
     const partner=top?godRows(reasoning).find(r=>r.group===top.group&&r.god!==top.god):null;
     const details=detailsBlock([
       sig?.ilju?.name?"일주: "+sig.ilju.name+".":"",
-      top?"가장 큰 개별 십신: "+top.god+" "+godShare(reasoning,top.god)+"%"+(partner?", 같은 "+GROUP_NAME[top.group]+" 묶음 전체는 "+groupShare(reasoning,top.group)+"%":"")+".":"",
-      "가장 큰 십신 묶음: "+GROUP_NAME[G]+" "+groupShare(reasoning,G)+"%.",
-      weakest?.g?"가장 작은 십신 묶음: "+GROUP_NAME[weakest.g]+" "+weakest.v+"%.":"",
+      top?"가장 크게 잡힌 성향: "+top.god+" "+godShare(reasoning,top.god)+"%"+(partner?", 같은 "+GROUP_NAME[top.group]+" 묶음 전체는 "+groupShare(reasoning,top.group)+"%":"")+".":"",
+      "가장 크게 잡힌 묶음: "+GROUP_NAME[G]+" "+groupShare(reasoning,G)+"%.",
+      weakest?.g?"가장 작게 잡힌 묶음: "+GROUP_NAME[weakest.g]+" "+weakest.v+"%.":"",
       centerSentence(reasoning),
       rootSentence(reasoning),
     ]);
@@ -1669,11 +1669,11 @@
       rel?"<b>특히 이런 장면</b> — "+relationPlain(rel):"",
       whyLabel(isT)+whyText,
       detailsBlock([
-        harm?.god&&harm?.evidence?"방해 십신 근거: "+harm.evidence:"",
+        harm?.god&&harm?.evidence?"방해 쪽 근거: "+harm.evidence:"",
         rel?"관계 근거: "+relationWhere(reasoning,rel)+".":"",
         bad?"보조 신살: "+bad.name+" — "+SINSAL_CAUTION[bad.name]:"",
         gm?"공망 자리: "+pillarName(reasoning,gm)+".":"",
-        top?"가장 큰 개별 십신: "+top.god+" "+godShare(reasoning,top.god)+"%.":"",
+        top?"가장 크게 잡힌 성향: "+top.god+" "+godShare(reasoning,top.god)+"%.":"",
       ]),
     ];
     return lines.filter(Boolean).join("<br><br>");
