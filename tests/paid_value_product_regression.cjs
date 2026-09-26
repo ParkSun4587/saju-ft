@@ -110,6 +110,10 @@ function mockConsultation(question, mode='F') {
   await page.locator('#panelRoa').click();
   await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
   await page.waitForSelector('#analysisSubmitButton',{state:'visible',timeout:10000});
+  await page.waitForFunction(() =>
+    (document.getElementById('concernPickerPrompt')?.innerText || '').includes('그대로'),
+    null,{timeout:10000}
+  );
 
   const concernUx = await page.evaluate(() => {
     const question=document.getElementById('consultationQuestion');
