@@ -106,6 +106,11 @@ function mockConsultation(question, mode='F') {
   assert(aiOff.runtime==='undefined' && aiOff.scripts===0,
     'AI NOTE test client must not load on ordinary production-like pages '+JSON.stringify(aiOff));
 
+  // 실제 사용자 흐름처럼 언니를 먼저 선택한 뒤 자유질문 입력 상태를 검증한다.
+  await page.locator('#panelRoa').click();
+  await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
+  await page.waitForSelector('#analysisSubmitButton',{state:'visible',timeout:10000});
+
   const concernUx = await page.evaluate(() => {
     const question=document.getElementById('consultationQuestion');
     const examples=document.querySelectorAll('#consultationQuestionExamples button');
