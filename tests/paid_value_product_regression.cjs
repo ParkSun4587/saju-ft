@@ -109,7 +109,7 @@ function mockConsultation(question, mode='F') {
   // 실제 사용자 흐름처럼 언니를 먼저 선택한 뒤 자유질문 입력 상태를 검증한다.
   await page.locator('#panelRoa').click();
   await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
-  await page.waitForSelector('#analysisSubmitButton',{state:'visible',timeout:10000});
+  await page.waitForSelector('#consultationQuestionContinueButton',{state:'visible',timeout:10000});
   await page.waitForFunction(() =>
     (document.getElementById('concernPickerPrompt')?.innerText || '').includes('그대로'),
     null,{timeout:10000}
@@ -119,6 +119,8 @@ function mockConsultation(question, mode='F') {
     const question=document.getElementById('consultationQuestion');
     const examples=document.querySelectorAll('#consultationQuestionExamples button');
     const submit=document.getElementById('analysisSubmitButton');
+    const continueButton=document.getElementById('consultationQuestionContinueButton');
+    const identity=document.getElementById('sajuIdentityFields');
     const initial={
       question:question?.value||'',
       key:document.getElementById('selectedConcernKey')?.value||'',
@@ -126,19 +128,23 @@ function mockConsultation(question, mode='F') {
       oldGrid:!!document.getElementById('concernGrid'),
       oldSituation:!!document.getElementById('concernSituationBox'),
       examples:examples.length,
-      disabled:!!submit?.disabled,
+      analysisHidden:submit?.offsetParent===null,
+      identityHidden:identity?.offsetParent===null,
+      continueVisible:continueButton?.offsetParent!==null,
+      continueText:continueButton?.innerText||'',
       prompt:document.getElementById('concernPickerPrompt')?.innerText||'',
       hint:document.getElementById('consultationQuestionHint')?.innerText||'',
     };
     setConsultationQuestionExample('사업하면 AI 앱이랑 음식점 중 뭐가 더 맞아?');
     const after={
       question:question?.value||'',
-      disabled:!!submit?.disabled,
       key:document.getElementById('selectedConcernKey')?.value||'',
       situation:document.getElementById('selectedConcernSituation')?.value||'',
+      identityHidden:identity?.offsetParent===null,
+      continueVisible:continueButton?.offsetParent!==null,
     };
     clearConcernSelection();
-    const cleared={question:question?.value||'',disabled:!!submit?.disabled};
+    const cleared={question:question?.value||'',identityHidden:identity?.offsetParent===null};
     return {initial,after,cleared};
   });
   assert(
@@ -148,19 +154,23 @@ function mockConsultation(question, mode='F') {
     !concernUx.initial.oldGrid &&
     !concernUx.initial.oldSituation &&
     concernUx.initial.examples===4 &&
-    concernUx.initial.disabled &&
+    concernUx.initial.analysisHidden &&
+    concernUx.initial.identityHidden &&
+    concernUx.initial.continueVisible &&
     /그대로/.test(concernUx.initial.prompt) &&
     concernUx.initial.hint.includes('카테고리 고를 필요 없어'),
-    'free-question input must replace the old fixed concern picker '+JSON.stringify(concernUx)
+    'free-question must be the first step before birth data '+JSON.stringify(concernUx)
   );
   assert(
     concernUx.after.question.includes('AI 앱이랑 음식점') &&
-    !concernUx.after.disabled &&
     concernUx.after.key==='consultation' &&
-    concernUx.after.situation==='free',
-    'question example must populate and unlock the consultation CTA '+JSON.stringify(concernUx.after)
+    concernUx.after.situation==='free' &&
+    concernUx.after.identityHidden &&
+    concernUx.after.continueVisible,
+    'question example must populate while birth data stays hidden '+JSON.stringify(concernUx.after)
   );
-  assert(concernUx.cleared.question===''&&concernUx.cleared.disabled,'clearing a question must relock the CTA '+JSON.stringify(concernUx.cleared));
+  assert(concernUx.cleared.question===''&&concernUx.cleared.identityHidden,
+    'clearing a question must keep the flow at the concern-first stage '+JSON.stringify(concernUx.cleared));
 
   const qa = await page.evaluate(() => {
     window.gtag = () => {};
