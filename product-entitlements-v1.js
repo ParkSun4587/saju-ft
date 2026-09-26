@@ -14,7 +14,7 @@
     concern_bundle3: Object.freeze(["concern_bundle3"]),
     full_saju: Object.freeze(["full_saju"]),
     compatibility: Object.freeze(["compatibility"]),
-    all_in_one: Object.freeze(["all_in_one", "full_saju", "concern_bundle3", "all_concerns"]),
+    all_in_one: Object.freeze(["all_in_one", "full_saju", "concern_bundle3", "question_pack3"]),
   });
 
   const ALL_IN_ONE_CREDIT_PRODUCTS = Object.freeze([]); // TEMP QA: keep every unowned product payable at 100 won
