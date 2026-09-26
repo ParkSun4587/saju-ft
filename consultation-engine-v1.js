@@ -338,15 +338,15 @@
 
   function detailBlock(label, content, nested) {
     if (!content) return "";
-    return '<details class="consultation-evidence"><summary>'+escapeHtml(label)+'</summary><div class="consultation-evidence-copy">'+
+    return '<details class="note-detail consultation-evidence"><summary>'+escapeHtml(label)+'</summary><div class="note-detail-body consultation-evidence-copy">'+
       content + (nested || "") + '</div></details>';
   }
 
   function renderTechnicalBasis(text, evidenceIds) {
     const basis = escapeHtml(text || "").replace(/\n/g,"<br>");
-    const ids = unique(evidenceIds || []).map(escapeHtml).join(" · ");
-    const idLine = ids ? '<div class="consultation-evidence-ids">근거 '+ids+'</div>' : "";
-    return detailBlock("명리 근거까지 보기", basis + idLine);
+    if (!basis) return "";
+    // 내부 rule/evidence ID는 사용자에게 노출하지 않고 카드 메타데이터에만 보존한다.
+    return detailBlock("명리 근거까지 보기", basis);
   }
 
   function cardFromClaim(kind, claim, index, total) {
