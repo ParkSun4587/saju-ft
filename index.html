@@ -3604,7 +3604,7 @@
           c: data?.userCalendar || "solar",
           k: isConsultation ? "consultation" : (data?.concernKey || "money"),
           q: isConsultation
-            ? String(data?.userQuestion || "").replace(/\\s+/g," ").trim().slice(0,500)
+            ? String(data?.userQuestion || "").replace(/\s+/g," ").trim().slice(0,500)
             : (data?.concernSituation || ""),
           m: data?.currentMode === "T" ? "T" : "F",
           l: data?.userCalendar === "lunar" && data?.isLeapMonth === true,
@@ -3636,6 +3636,40 @@
           "sazu_last_result_data_" + key,
           JSON.stringify(currentResultData),
         );
+      }
+
+      function restoreSavedPaymentResult(restored) {
+        if (!restored) return restored;
+        try {
+          const key = getUserUniqueKey(restored);
+          const raw = readStore("sazu_last_result_data_" + key);
+          const saved = raw ? JSON.parse(raw) : null;
+          if (!saved || getUserUniqueKey(saved) !== key) return restored;
+          if (restored.concernKey === "consultation") {
+            const cards = saved?.__consultationV1?.cards;
+            if (!Array.isArray(cards) || !cards.length) return restored;
+          }
+          return saved;
+        } catch {
+          return restored;
+        }
+      }
+
+      async function ensurePaidConsultationReady(data) {
+        if (!data || data.concernKey !== "consultation") return true;
+        if (Array.isArray(data?.__consultationV1?.cards) && data.__consultationV1.cards.length) return true;
+        const api = globalThis.__UNNI_CONSULTATION_V1__;
+        if (!api?.generate) return false;
+        try {
+          await api.generate(data, data.currentMode || "F");
+          const ready =
+            Array.isArray(data?.__consultationV1?.cards) &&
+            data.__consultationV1.cards.length > 0;
+          if (ready && data === currentResultData) saveCurrentResult();
+          return ready;
+        } catch {
+          return false;
+        }
       }
 
       
@@ -3871,6 +3905,15 @@
         if (!visibleResult(key, version) || attempt !== accessVersion) return;
         if (open) open.disabled = false;
         if (state === "valid") {
+          const ready = await ensurePaidConsultationReady(data);
+          if (!visibleResult(key, version) || attempt !== accessVersion) return;
+          if (!ready) {
+            showVoiceToast({
+              F: "구매 확인은 됐어. 상담 내용만 다시 불러오지 못했어. 구매내역은 그대로니까 새로고침 후 다시 확인해줘.",
+              T: "구매 확인은 완료됐어. 상담 내용 복원만 실패했어. 구매내역은 유지되니 새로고침 후 다시 확인해줘.",
+            }, data.currentMode);
+            return;
+          }
           unlockFullReport(null, true);
           return;
         }
@@ -3953,7 +3996,17 @@
               currency: "KRW",
             });
           }
+
+          // Toss 승인과 구매권한 저장을 먼저 끝낸 뒤에만 AI 상담 복원을 시도한다.
+          const consultationReady = await ensurePaidConsultationReady(currentResultData);
           if (!visibleResult(context.userKey, version)) return;
+          if (!consultationReady) {
+            showVoiceToast({
+              F: "결제는 확인됐어. 상담 내용만 다시 불러오는 데 실패했어. 구매내역은 저장됐으니 새로고침 후 다시 확인해줘.",
+              T: "결제 확인은 완료됐어. 상담 내용 복원만 실패했어. 구매내역은 저장됐으니 새로고침 후 다시 확인해줘.",
+            }, currentResultData?.currentMode);
+            return;
+          }
           unlockFullReport(
             persisted
               ? voiceText({
@@ -4114,7 +4167,7 @@
         const draft = {
           name: document.getElementById("nameInput")?.value || "",
           userName: document.getElementById("nameInput")?.value || "",
-          userBirthStr: String(document.getElementById("birthDateInput")?.value || "").replace(/\\D/g, ""),
+          userBirthStr: String(document.getElementById("birthDateInput")?.value || "").replace(/\D/g, ""),
           userTimeKey: (() => {
             const exactEnabled=!!document.getElementById("birthTimeExactToggle")?.checked;
             const exact=exactEnabled
@@ -4857,7 +4910,7 @@
 
       function refreshAnalysisSubmitState() {
         const question = String(document.getElementById("consultationQuestion")?.value || "")
-          .replace(/\\s+/g, " ")
+          .replace(/\s+/g, " ")
           .trim();
         const button = document.getElementById("analysisSubmitButton");
         if (!button) return;
@@ -9044,16 +9097,9 @@ currentResultData = {
         try {
           const resume = await paymentAPI({ action: "resume", ticket });
           if (viewVersion !== versionBefore) return;
-          restored = resultFromSnapshot(resume.data);
-          if (
-            restored?.concernKey === "consultation" &&
-            globalThis.__UNNI_CONSULTATION_V1__?.generate
-          ) {
-            await globalThis.__UNNI_CONSULTATION_V1__.generate(
-              restored,
-              restored.currentMode || "F",
-            );
-          }
+          restored = restoreSavedPaymentResult(resultFromSnapshot(resume.data));
+          // 결제 복귀 직후에는 AI 네트워크 호출을 하지 않는다.
+          // Toss 승인/권한 저장을 먼저 끝낸 뒤 캐시가 없을 때만 상담 결과를 복원한다.
           renderResultView(restored, { resumeApproval: false });
           versionBefore = viewVersion;
           if (
