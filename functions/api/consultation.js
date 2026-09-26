@@ -3,7 +3,7 @@ const JSON_HEADERS = {
   "cache-control":"no-store",
 };
 
-const MODEL_DEFAULT = "gpt-5.6";
+const MODEL_DEFAULT = "gpt-6-sol";
 const MIN_SECTIONS = 2;
 const MAX_SECTIONS = 7;
 
@@ -215,7 +215,8 @@ function validateOutput(parsed, packet) {
     if (section.type === "timing") {
       timingCount++;
       const timingAllowed = new Set(unique(packet.timingEvidenceIds));
-      if (timingAllowed.size && !unique(section.evidenceIds).some((id) => timingAllowed.has(id))) {
+      if (!timingAllowed.size) throw new Error("TIMING_EVIDENCE_UNAVAILABLE");
+      if (!unique(section.evidenceIds).some((id) => timingAllowed.has(id))) {
         throw new Error("TIMING_EVIDENCE_MISSING");
       }
     }
@@ -229,6 +230,12 @@ function validateOutput(parsed, packet) {
 }
 
 function pricingFor(model) {
+  if (model === "gpt-6-sol") {
+    return {input:2,cachedInput:0.2,output:10};
+  }
+  if (model === "gpt-6-luna") {
+    return {input:0.1,cachedInput:0.01,output:0.5};
+  }
   if (model === "gpt-5.6" || model === "gpt-5.6-sol") {
     return {input:4,cachedInput:0.4,output:20};
   }
