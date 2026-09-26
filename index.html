@@ -4129,6 +4129,11 @@
           concernKey: "consultation",
           concernSituation: "free",
           userQuestion: String(document.getElementById("consultationQuestion")?.value || "").slice(0,500),
+          consultationHistory:
+            globalThis.__UNNI_CONSULTATION_V1__?.historyFrom?.(currentResultData) ||
+            (Array.isArray(currentResultData?.consultationHistory)
+              ? currentResultData.consultationHistory.slice(-4)
+              : []),
           currentMode: selectedSplitMode || "F",
           isLeapMonth: !!document.getElementById("leapMonthCheck")?.checked,
         };
@@ -6421,6 +6426,11 @@ function generateConcernNotes(data, mode) {
             .slice(0, 500);
           const concernKey = "consultation";
           const concernSituation = "free";
+          const consultationHistory =
+            globalThis.__UNNI_CONSULTATION_V1__?.historyFrom?.(currentResultData) ||
+            (Array.isArray(currentResultData?.consultationHistory)
+              ? currentResultData.consultationHistory.slice(-4)
+              : []);
           if (userQuestion.length < 4) {
             showVoiceToast({
               F: "궁금한 걸 네 말로 조금만 더 적어줘. 짧아도 괜찮아.",
@@ -6737,6 +6747,7 @@ currentResultData = {
                 concernKey: "consultation",
                 concernSituation: "free",
                 userQuestion: userQuestion,
+                consultationHistory,
                 ...sazuResult,
                 };
               const appendSisterMsg = (text, isFollowUp = false) => {
