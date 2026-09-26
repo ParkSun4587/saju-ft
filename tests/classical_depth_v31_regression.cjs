@@ -469,9 +469,9 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   }),'NOTE6 selected a month without month-specific evidence');
   assert((r.canonicalTiming.longTermPivots||[]).every(x=>x.isStructuralPivot===true&&Array.isArray(x.pivotReasons)&&x.pivotReasons.length>0),'long-term teaser labeled a non-structural year as pivot');
   assert((r.canonicalTiming.longTermPivots||[]).every((x,i,a)=>i===0||x.year!==a[i-1].year),'duplicate long-term pivot year');
-  assert(/결론/.test(r.canonicalTiming.scene)&&/(왜 그러냐면|근거)/.test(r.canonicalTiming.scene)&&/교차검증 근거/.test(r.canonicalTiming.scene)&&/1순위 — /.test(r.canonicalTiming.answer),
+  assert(/결론/.test(r.canonicalTiming.scene)&&/(왜 그러냐면|근거)/.test(r.canonicalTiming.scene)&&/독립 근거/.test(r.canonicalTiming.scene)&&/1순위 — /.test(r.canonicalTiming.answer),
     'second answer lost cross-validated cause explanation');
-  assert(/결론/.test(r.canonicalTiming.fix)&&/먼저 바꿀 기준/.test(r.canonicalTiming.fix)&&/구체적으로 확인할 것/.test(r.canonicalTiming.fix)&&/(왜 그러냐면|근거)/.test(r.canonicalTiming.fix)&&
+  assert(/결론/.test(r.canonicalTiming.fix)&&/먼저 바꿀 기준/.test(r.canonicalTiming.fix)&&/실제로 확인할 행동/.test(r.canonicalTiming.fix)&&/(왜 그러냐면|근거)/.test(r.canonicalTiming.fix)&&
     r.canonicalTiming.fixFacts?.needGroup&&r.canonicalTiming.fixFacts?.needElement&&r.canonicalTiming.fixClaim?.source==='engine',
     'fix answer lost chart-derived prescription or its preselected support claim');
   assert(r.canonicalTiming.fix===r.canonicalTiming.fit&&r.canonicalTiming.fixClaim?.id,
