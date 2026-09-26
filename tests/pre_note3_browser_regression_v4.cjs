@@ -389,7 +389,7 @@ async function load(page) {
       const errs = [];
       page.on('pageerror', e => errs.push(`[pageerror] ${e.stack || e.message}`));
       page.on('console', m => { if (m.type() === 'error') errs.push(`[console] ${m.text()}`); });
-      await page.route('**/api/consultation', async route => {
+      await page.route('**/api/consultation-preview', async route => {
         const req=route.request();
         let body={}; try { body=req.postDataJSON()||{}; } catch {}
         const q=body?.evidencePacket?.question?.text || '출생시간 검증 질문';
@@ -401,14 +401,22 @@ async function load(page) {
           evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
         });
         await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
-          ok:true,model:'ci-time-mock',
-          questionPlan:{primaryIntent:'검증',intentTags:['검증'],directQuestions:[q],decisionType:'확인',timeRange:'',needsClarification:false,clarifyingQuestion:''},
-          directAnswer:claim('출생시간을 반영한 직접 답','선택한 출생시간을 포함한 사주 계산 결과를 기준으로 답했어.'),
-          centralThesis:claim('이번 질문의 중심','사주의 계절과 뿌리, 십신 배치를 함께 보는 게 핵심이야.'),
-          sections:[
-            {id:'why',type:'explanation',label:'왜 그런지',title:'시간주까지 같이 확인했어',answer:'태어난 시간이 있으면 시주까지 포함해서 전체 구조를 다시 봐.',why:'시간에 따라 시주가 달라질 수 있기 때문이야.',technicalBasis:'시주와 일간의 관계를 원국 전체와 같이 확인했어.',nextAction:'',evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported'},
-            {id:'action',type:'action',label:'확인할 것',title:'입력한 시간이 결과까지 이어져야 해',answer:'입력한 시간값이 계산과 화면에 같은 값으로 이어지는지 확인하면 돼.',why:'입력값과 최종 사주가 어긋나면 상담 근거도 달라지기 때문이야.',technicalBasis:'입력 시진과 최종 시주를 대조했어.',nextAction:'',evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported'},
+          ok:true,model:'ci-time-preview',
+          directAnswer:claim('출생시간을 반영한 첫 판단','선택한 출생시간을 포함한 사주 계산 결과를 기준으로 첫 판단을 만들었어.'),
+          followUp:{
+            question:'출생시간까지 반영해서 지금 가장 먼저 확인할 건 뭐야?',
+            options:[
+              {label:'지금 선택',response:'지금 선택부터 보면 돼. 결제 전에는 첫 판단까지만 확인해.',focus:'선택 기준'},
+              {label:'움직일 시기',response:'시기는 깊은 상담에서 실제 흐름과 같이 확인해야 해.',focus:'이동 시기'},
+              {label:'반복되는 패턴',response:'반복 패턴은 사주 전체 구조를 더 연결해서 봐야 해.',focus:'반복 패턴'},
+            ],
+          },
+          paidScope:[
+            {title:'판단이 달라지는 조건'},
+            {title:'맞는 선택과 소모되는 조건'},
+            {title:'실제로 움직일 시기'},
           ],
+          handoff:'여기서부터는 결제 후에 사주 전체를 연결해서 깊게 볼게.',
         })});
       });
       await load(page);
@@ -434,7 +442,8 @@ async function load(page) {
       }, timeKey);
 
       await page.waitForFunction(() =>
-        !!currentResultData?.__consultationV1?.cards?.length &&
+        !!currentResultData?.__consultationPreviewV1?.directAnswer &&
+        !(currentResultData?.__consultationV1?.cards?.length) &&
         getComputedStyle(document.getElementById('resultSection')).display !== 'none',
         null,{timeout:10000}
       );
@@ -451,6 +460,8 @@ async function load(page) {
           resultVisible:getComputedStyle(document.getElementById('resultSection')).display !== 'none',
           firstNoteRendered:document.querySelectorAll('#notesListContainer .note-editorial').length >= 1,
           analysisReady:!!data?.analysisProfile && !!data?.gyeokguk && !!data?.yongshin,
+          previewReady:!!data?.__consultationPreviewV1?.directAnswer,
+          deepCardCount:data?.__consultationV1?.cards?.length || 0,
         };
       }, timeKey);
 
@@ -468,8 +479,8 @@ async function load(page) {
         assert(row.visibleHour.endsWith(visibleZhi[timeKey]),
           `${timeKey}: visible final hour pillar mismatch ${JSON.stringify(row)}`);
       }
-      assert(row.resultVisible && row.firstNoteRendered && row.analysisReady,
-        `${timeKey}: final result/notes/classical analysis did not render ${JSON.stringify(row)}`);
+      assert(row.resultVisible && row.firstNoteRendered && row.analysisReady && row.previewReady && row.deepCardCount===0,
+        `${timeKey}: final result/free preview/classical analysis did not render cleanly ${JSON.stringify(row)}`);
       const unexpected = errs.filter(x => !isExpectedBoundaryDiagnostic(x));
       assert(unexpected.length === 0, `${timeKey}: browser errors: ${unexpected.join(' | ')}`);
       mapped.push(row);
