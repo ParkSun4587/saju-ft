@@ -88,7 +88,7 @@
       compatibility: false,
       "daewoon-context": false,
       "selected-concern": false,
-      "additional-concerns": false,
+      "additional-concerns": true,
       "all-six-concerns": false,
     },
     full_saju: {
