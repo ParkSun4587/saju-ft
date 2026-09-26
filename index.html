@@ -2692,7 +2692,7 @@
               >
                 <span class="flex items-center gap-1">
                   <span class="text-amber-500 font-bold">‹</span>
-                  <span>지금 고민 결과</span>
+                  <span>이번 질문 상담</span>
                 </span>
                 <span class="text-[11px] text-amber-800/50 font-mono"
                   >1:1 맞춤 상담 기록</span
@@ -2706,12 +2706,12 @@
                     id="vipSectionMainTitle"
                     class="text-sm sm:text-base font-black text-slate-900 tracking-tight"
                   >
-                    지금 네 고민에서 보이는 것
+                    네 질문에서 먼저 보이는 것
                   </h3>
                 </div>
               </div>
 
-              <!-- 6개 NOTE가 들어가는 본문 컨테이너 -->
+              <!-- 질문에 따라 달라지는 상담 본문 -->
               <div id="notesListContainer" class="space-y-4 pt-1">
                 <!-- JS에서 첫 답 전체 + 두 번째 답 맛보기, 결제 후 나머지 답을 이어서 보여줍니다 -->
               </div>
@@ -2722,7 +2722,7 @@
               <div id="accordionContainer"></div>
             </div>
 
-            <!-- NOTE2 맛보기 직후 990원 이어보기 -->
+            <!-- 다음 상담 내용 맛보기 직후 990원 이어보기 -->
             <div id="lockedOverlay" class="relative z-20 pt-2.5">
               <div
                 id="paywallCard"
@@ -7134,8 +7134,8 @@ currentResultData = {
         }
         if (vipSectionMainTitle) {
           vipSectionMainTitle.textContent = isT
-            ? "지금 고민에서 핵심만 정리했어"
-            : "지금 네 고민에서 보이는 것";
+            ? "이번 질문에서 핵심만 정리했어"
+            : "네 질문에서 먼저 보이는 것";
         }
         if (vipSectionSubTitle) {
           vipSectionSubTitle.textContent = isT
@@ -7548,8 +7548,8 @@ currentResultData = {
                       <div class="note-preview-continuation">
                           <p>
                               ${isT
-                                ? "여기서부터 답의 나머지와 이유·방법·올해 흐름이 이어져."
-                                : "여기서부터 답의 나머지랑 이유, 방법, 올해 흐름까지 이어서 볼게."}
+                                ? "여기서부터 답의 나머지와 근거·조건·다음 판단 기준이 이어져."
+                                : "여기서부터 답의 나머지랑 왜 그런지, 조심할 조건, 다음에 볼 기준까지 이어서 볼게."}
                           </p>
                       </div>
                   </div>
@@ -7741,8 +7741,8 @@ currentResultData = {
           const maxSubjectJosa = attachJosa(maxOheng.name, "이/가").slice(maxOheng.name.length);
           const minTopicJosa = attachJosa(minNames, "은/는").slice(minNames.length);
           summaryTxt.innerHTML = isT
-            ? `💡 <b>${maxOheng.name}</b> 비중이 가장 커. 반대로 <b>${minNames}</b>${minTopicJosa} 겉으로 적게 보여. 이건 오행 개수만 보여주는 화면이고, 실제 판단은 계절·뿌리·위치까지 따로 계산해. <b>아래에서는 그걸 지금 네 고민에 맞는 말로만 짧게 정리했어.</b>`
-            : `💡 <b>${maxOheng.name}</b>${maxSubjectJosa} 겉으로 가장 많이 보여. 반대로 <b>${minNames}</b>${minTopicJosa} 적게 보이고. 이건 눈에 보이는 오행 분포야. 실제 힘은 계절·뿌리·위치까지 따로 계산한 다음, <b>아래에서는 지금 네 고민에 필요한 얘기만 짧게 풀어줄게.</b>`;
+            ? `💡 <b>${maxOheng.name}</b> 비중이 가장 커. 반대로 <b>${minNames}</b>${minTopicJosa} 겉으로 적게 보여. 이건 오행 개수만 보여주는 화면이고, 실제 판단은 계절·뿌리·위치까지 따로 계산해. <b>아래에서는 그걸 이번 질문에 필요한 말로만 짧게 정리했어.</b>`
+            : `💡 <b>${maxOheng.name}</b>${maxSubjectJosa} 겉으로 가장 많이 보여. 반대로 <b>${minNames}</b>${minTopicJosa} 적게 보이고. 이건 눈에 보이는 오행 분포야. 실제 힘은 계절·뿌리·위치까지 따로 계산한 다음, <b>아래에서는 이번 질문에 필요한 얘기만 짧게 풀어줄게.</b>`;
         }
       }
 
