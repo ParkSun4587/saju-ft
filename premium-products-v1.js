@@ -1409,7 +1409,7 @@
         </div>`;
     }
     if (productId === "all_in_one") {
-      return `<div style="padding:11px 0;font-size:11px;line-height:1.7;color:#64748b">추가로 6개 고민을 고를 필요 없어. 전체 사주 구조와 5년 흐름에 지금 질문까지 자동으로 연결해서 볼게.</div>`;
+      return `<div style="padding:11px 0;font-size:11px;line-height:1.7;color:#64748b">추가 선택은 없어. 전체 사주 구조와 5년 흐름에 지금 질문까지 자동으로 연결해서 볼게.</div>`;
     }
     if (productId === "compatibility") {
       const branchOpts = [
@@ -1835,22 +1835,7 @@
       root.querySelector("#unniProductPrice").textContent = "구매 완료";
       action.textContent = productActionLabel(productId,state);
       if (productId === "all_in_one") {
-        const savedSituations = directGrant?.extra?.situations || {};
-        for (const key of Object.keys(CONCERNS)) {
-          const select = root.querySelector(`[data-all-situation="${key}"]`);
-          if (select && situationRows(key).some(([value]) => value === savedSituations[key])) select.value = savedSituations[key];
-        }
-        action.onclick = () => {
-          try {
-            const extra = collectExtra(productId,data,root);
-            showReport(productId,data,extra);
-          } catch (e) {
-            productToast(data, e?.message || {
-              F: "6개 고민의 지금 상황을 한 번씩만 확인해줘. 빠진 것부터 같이 채우면 돼.",
-              T: "6개 고민의 지금 상황을 확인해줘. 빠진 항목을 채우면 돼.",
-            });
-          }
-        };
+        action.onclick = () => showReport(productId,data,{});
       } else if (productId === "compatibility") {
         const grants = verifiedCompatibilityGrants(data, verifiedState);
         const fallbackGrant = directGrant || grants[0] || null;
@@ -1962,22 +1947,18 @@
     const direct = api?.verifiedProductIds?.(entitlementState) || [];
     const has = (id) => direct.includes(id);
     const explicitIntent = data?.premiumIntent || "";
-    const concern = data?.concernKey || "money";
-    const situation = data?.concernSituation || "";
-    const relationshipIntent = explicitIntent === "relationship-person" || (concern === "love" && ["crush","relationship","breakup"].includes(situation));
+    const question = String(data?.userQuestion || "").toLowerCase();
+    const relationshipIntent =
+      explicitIntent === "relationship-person" ||
+      /(궁합|상대.*사주|둘.*관계|이 사람|연인|남자친구|여자친구)/.test(question);
 
     if (has("all_in_one")) return "compatibility";
     if (relationshipIntent && !has("compatibility")) return "compatibility";
     if (has("full_saju") && has("concern_bundle3")) return "all_in_one";
-    if (has("full_saju")) return "all_in_one";
-    if (has("concern_bundle3")) {
-      if (explicitIntent === "everything") return "all_in_one";
-      return "full_saju";
-    }
-
+    if (has("full_saju")) return "concern_bundle3";
+    if (has("concern_bundle3")) return "full_saju";
     if (explicitIntent === "everything") return "all_in_one";
-    if (explicitIntent === "other-concerns") return "concern_bundle3";
-    if (relationshipIntent && !has("compatibility")) return "compatibility";
+    if (explicitIntent === "more-questions" || explicitIntent === "other-concerns") return "concern_bundle3";
     return "full_saju";
   }
 
@@ -2003,7 +1984,7 @@
     all_in_one: {
       eyebrow:"나 한 사람 전체판",
       value:"전체 사주판 + 5년 흐름 + 현재 질문 연결",
-      difference:"고정된 6개 고민을 채우지 않고, 나 전체 구조와 장기 흐름 안에서 지금 질문이 어디에 연결되는지 한 번에 봐.",
+      difference:"나 전체 구조와 장기 흐름 안에서 지금 질문이 어디에 연결되는지 한 번에 봐.",
       cta:"내 사주 완전판 보기",
     },
   };
@@ -2029,33 +2010,32 @@
 
   function recommendationReason(productId, data, isT, entitlementState) {
     const direct = entitlementApi()?.verifiedProductIds?.(entitlementState) || [];
-    const situation = situationLabel(data?.concernKey, data?.concernSituation);
     if (productId === "compatibility") {
       return direct.includes("all_in_one")
-        ? "나 한 사람에 대한 건 완전판에 이미 들어 있어. 여기서 새로 열 수 있는 건 특정 상대와 두 사람을 같이 봐야 보이는 관계 흐름이야."
+        ? "나 한 사람에 대한 전체판은 이미 있어. 여기서 새로 볼 수 있는 건 특정 상대 사주를 같이 놓아야만 나오는 둘 사이의 관계 흐름이야."
         : isT
-          ? "지금 질문에는 네 사주만 더 보는 것보다 상대 사주까지 겹쳐야 새로 알 수 있는 정보가 많아."
-          : `${situation ? "방금 말한 ‘" + situation + "’라면 " : ""}상대 사주까지 같이 놓고 둘 사이가 왜 이렇게 흘러가는지 보는 게 완전히 다른 답을 줄 수 있어.`;
+          ? "상대가 있는 질문이라면 네 사주만 더 보는 것보다 상대 사주까지 겹쳐야 새로 알 수 있는 정보가 많아."
+          : "특정 상대가 마음에 걸린다면 상대 사주까지 같이 놓고 둘 사이가 왜 이렇게 흐르는지 보는 게 완전히 다른 답을 줄 수 있어.";
     }
     if (productId === "full_saju") {
       return direct.includes("concern_bundle3")
-        ? "추가 질문 3개는 이미 깊게 봤으니까, 이제 새로 볼 건 네 전체 구조와 5년 흐름이야."
+        ? "추가 질문은 이미 이어서 볼 수 있으니까, 이제 새로 볼 건 네 전체 구조와 5년 큰 흐름이야."
         : isT
-          ? "기본 NOTE에서 가까운 시기는 충분히 봤어. 다음엔 5년 전체 흐름과 여러 영역이 같이 바뀌는 이유를 보면 돼."
-          : "지금 고민 하나의 가까운 시기는 이미 충분히 봤으니까, 다음에는 네 인생 전체 구조와 5년 큰 흐름을 이어서 보는 게 새 정보가 제일 많아.";
+          ? "이번 질문 하나의 답보다 더 넓게, 네 전체 구조와 5년 흐름을 한 번에 보고 싶을 때 맞아."
+          : "이번 질문을 넘어 돈·일·관계가 왜 같이 움직이는지와 앞으로 5년 큰 흐름까지 보고 싶다면 이쪽이 새 정보가 가장 많아.";
     }
     if (productId === "concern_bundle3") {
       return isT
-        ? "지금 고민은 여기서 닫고, 새 질문 3개를 각각 사주 전체에서 다시 해석하는 게 중복이 적어."
-        : "지금 질문 하나는 충분히 풀었으니까, 아직 궁금한 질문 3개를 그대로 이어서 묻는 게 새 정보가 많아.";
+        ? "사주정보는 그대로 두고, 궁금한 질문 3개를 각각 새로 해석할 수 있어."
+        : "지금 질문 하나는 충분히 풀었으니까, 아직 궁금한 걸 세 가지 더 네 말로 그대로 물어보는 쪽이 새 정보가 많아.";
     }
     const quote = entitlementApi()?.calculateUpgradeQuote?.({ targetProduct:"all_in_one", verifiedEntitlements:direct });
     if (quote?.creditAmount > 0) {
       return `이미 산 1인 상품 ${quote.creditedProducts.map((id)=>PRODUCTS[id]?.name || id).join(" + ")} 금액을 인정해서, 중복 결제 없이 완전판으로 합칠 수 있어.`;
     }
     return isT
-      ? "한 사람 기준으로 전체 구조·5년 흐름·현재 질문 연결을 한 번에 보고 싶다면 완전판이 맞아."
-      : "내 전체 사주판과 5년 흐름, 지금 질문이 어디서 이어지는지까지 한 번에 보고 싶다면 완전판이 제일 편해.";
+      ? "전체 구조·5년 흐름·현재 질문 연결과 추가 질문까지 한 번에 보고 싶다면 완전판이 맞아."
+      : "내 전체 사주와 5년 흐름, 지금 질문이 어디서 이어지는지, 추가 질문까지 한 번에 보고 싶다면 완전판이 제일 편해.";
   }
 
   function productButtonHtml(p, { recommended = false, secondary = false, reason = "", state = null } = {}) {
