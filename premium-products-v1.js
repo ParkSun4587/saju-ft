@@ -2173,14 +2173,14 @@
       : (isT ? "이미 구매한 상품" : "전에 열어둔 건 여기 있어");
     const headline = unlocked
       ? (isT ? "다음으로 볼 거면 이게 가장 연결돼" : "지금 얘기 다음으로는 이게 제일 자연스러워")
-      : (isT ? "구매한 내용은 바로 다시 볼 수 있어" : "새 고민 결제와 상관없이 다시 볼 수 있어");
+      : (isT ? "구매한 내용은 바로 다시 볼 수 있어" : "새 질문 결제와 상관없이 다시 볼 수 있어");
     const sub = unlocked
       ? (isT
           ? "방금 본 내용과 겹치지 않게, 새로 볼 정보가 많은 걸 먼저 뒀어."
           : "아까 본 얘기는 빼고, 여기서 새로 볼 게 많은 걸 먼저 뒀어.")
       : (isT
-          ? "새 고민의 NOTE 잠금과 기존 구매내역은 별개야."
-          : "새 고민이 잠겨 있어도 전에 결제한 상품은 다시 결제할 필요 없어.");
+          ? "새 질문의 잠금과 기존 구매내역은 별개야."
+          : "새 질문이 잠겨 있어도 전에 결제한 상품은 다시 결제할 필요 없어.");
     const otherHtml = others.length
       ? `<div id="unniOtherProducts" style="display:grid;gap:14px;margin-top:10px">${foldedProductGroups(others,states)}</div>`
       : "";
