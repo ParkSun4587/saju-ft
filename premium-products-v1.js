@@ -568,12 +568,12 @@
     const reasoning = getReasoning(data);
     const contract = contentPolicy("full_saju");
     const intro = isT
-      ? "방금 본 고민 하나를 길게 반복하는 결과가 아니야. 한 사람의 전체 구조, 삶의 여러 영역이 이어지는 이유, 가까운 핵심 시기와 5년 큰 흐름까지 한 장으로 묶어."
-      : "이건 지금 고민 하나를 또 풀어쓰는 결과가 아니야. 언니가 네 사주 전체를 펼쳐놓고, 돈·일·관계·마음이 왜 같은 사주 구조에서 다르게 나타나는지와 앞으로 5년 큰 흐름까지 이어서 보는 전체 지도야.";
+      ? "방금 본 질문 하나를 길게 반복하는 결과가 아니야. 한 사람의 전체 구조, 삶의 여러 영역이 이어지는 이유, 가까운 핵심 시기와 5년 큰 흐름까지 한 장으로 묶어."
+      : "이건 지금 질문 하나를 또 풀어쓰는 결과가 아니야. 언니가 네 사주 전체를 펼쳐놓고, 돈·일·관계·마음이 왜 같은 사주 구조에서 다르게 나타나는지와 앞으로 5년 큰 흐름까지 이어서 보는 전체 지도야.";
     const sections = fullSajuSections(data, mode);
     const fp = reasoning?.structureFingerprint || "";
     const tfp = reasoning?.timingFingerprint || "";
-    return `<div data-product-contract="full_saju" data-structure-fingerprint="${esc(fp)}" data-timing-fingerprint="${esc(tfp)}" data-export-intro="full" style="padding:14px 15px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;font-size:12.5px;line-height:1.8;color:#7c2d12;margin-bottom:8px"><b>이 전체판에서 새로 열리는 것</b><br>${intro}<br><span style="font-size:10.5px;color:#9a3412">기본 고민에서는 가까운 시기를 중심으로 보고 · 이 전체판에서는 향후 5년의 큰 흐름까지 이어서 공개</span></div>${sections.map((row,index)=>`<section data-export-kind="full" data-full-saju-section="${row.claim?.section || index+1}" data-export-index="${index}" data-source-rules="${esc((row.claim?.sourceRuleIds || []).join(","))}" data-new-facts="${esc((row.claim?.newFacts || []).join("|"))}" data-section-conclusion="${esc(row.claim?.conclusion || "")}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:900;margin:0 0 8px">${row.title}</h4><div style="font-size:13px;line-height:1.85;color:#475569">${row.body}</div></section>`).join("")}`;
+    return `<div data-product-contract="full_saju" data-structure-fingerprint="${esc(fp)}" data-timing-fingerprint="${esc(tfp)}" data-export-intro="full" style="padding:14px 15px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;font-size:12.5px;line-height:1.8;color:#7c2d12;margin-bottom:8px"><b>이 전체판에서 새로 열리는 것</b><br>${intro}<br><span style="font-size:10.5px;color:#9a3412">기본 질문에서는 필요한 가까운 시기를 중심으로 보고 · 이 전체판에서는 향후 5년의 큰 흐름까지 이어서 공개</span></div>${sections.map((row,index)=>`<section data-export-kind="full" data-full-saju-section="${row.claim?.section || index+1}" data-export-index="${index}" data-source-rules="${esc((row.claim?.sourceRuleIds || []).join(","))}" data-new-facts="${esc((row.claim?.newFacts || []).join("|"))}" data-section-conclusion="${esc(row.claim?.conclusion || "")}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:900;margin:0 0 8px">${row.title}</h4><div style="font-size:13px;line-height:1.85;color:#475569">${row.body}</div></section>`).join("")}`;
   }
 
   function legacyBundleHtml(data, mode, extra) {
@@ -653,7 +653,9 @@
     const gate = policyGate("all_in_one", ["full-five-year","monthly-detail","cross-domain","daewoon-context"], { questionCount:1 });
     if (!gate.ok) return policyBlockedHtml("all_in_one", gate);
     const reasoning = getReasoning(data);
-    const consultationCards = global.__UNNI_CONSULTATION_V1__?.getCards?.(data,mode) || [];
+    const consultationCards =
+      global.__UNNI_CONSULTATION_V1__?.getCards?.(data,mode) ||
+      (Array.isArray(data?.__consultationV1?.cards) ? data.__consultationV1.cards : []);
     const currentQuestion = String(data?.userQuestion || "").trim();
     const currentLink = consultationCards.length
       ? `<section data-product-exclusive="all_in_one-question" style="margin:24px 0 8px;padding-top:18px;border-top:1px solid #e8e2dc">
@@ -1972,7 +1974,7 @@
     full_saju: {
       eyebrow:"내 사주 전체판",
       value:"나 전체 구조 · 영역 연결 · 5년 흐름",
-      difference:"방금 본 고민 하나를 반복하지 않고, 돈·일·연애·관계가 왜 같이 움직이는지 한 판으로 연결해.",
+      difference:"방금 본 질문 하나를 반복하지 않고, 돈·일·연애·관계가 왜 같이 움직이는지 한 판으로 연결해.",
       cta:"내 전체 사주판 보기",
     },
     compatibility: {
@@ -2145,7 +2147,7 @@
     const direct = entitlementApi()?.verifiedProductIds?.(state) || [];
     const allProducts = Object.values(PRODUCTS);
     const allStates = Object.fromEntries(allProducts.map((p)=>[p.id,productStateFor(p.id,state)]));
-    // 새 고민의 990원 잠금과 이미 구매한 프리미엄 권한은 별개다.
+    // 새 질문의 990원 잠금과 이미 구매한 프리미엄 권한은 별개다.
     // 잠긴 결과에서도 구매 완료/완전판 포함 상품은 평생 다시보기 진입점을 유지한다.
     const visibleProducts = unlocked
       ? allProducts
