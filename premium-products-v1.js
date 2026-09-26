@@ -1514,7 +1514,11 @@
       }];
       delete d.__consultationV1;
       try {
-        const generated = await runtime.generate(d,getMode(data));
+        const followupGrant = readGrant(data,"all_in_one");
+        const followupAccess = followupGrant?.userKey && followupGrant?.token
+          ? { userKey:followupGrant.userKey, token:followupGrant.token, purpose:"premium_all_in_one" }
+          : null;
+        const generated = await runtime.generate(d,getMode(data),followupAccess);
         result.innerHTML = noteCards(generated.cards || []);
         try { localStorage.setItem(followupKey,JSON.stringify({question,cards:generated.cards || [],savedAt:Date.now()})); } catch (_) {}
         input.disabled = true;
@@ -1543,7 +1547,14 @@
       return;
     }
     try {
-      const generated = await runtime.generate(premiumConsultationData(productId,data),getMode(data));
+      const grant = productId === "full_saju"
+        ? (readGrant(data,"full_saju") || readGrant(data,"all_in_one"))
+        : readGrant(data,"all_in_one");
+      const purpose = productId === "full_saju" ? "premium_full_saju" : "premium_all_in_one";
+      const access = grant?.userKey && grant?.token
+        ? { userKey:grant.userKey, token:grant.token, purpose }
+        : null;
+      const generated = await runtime.generate(premiumConsultationData(productId,data),getMode(data),access);
       slot.innerHTML = noteCards(generated.cards || []);
       savePremiumReportCache(data,productId,generated);
       if (productId === "all_in_one") bindDeepFollowup(root,data,generated);
