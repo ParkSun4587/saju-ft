@@ -48,10 +48,10 @@
     },
     full_saju: {
       id: "full_saju",
-      name: "내 전체 사주판",
+      name: "내 사주 전체상담",
       price: 100,
-      badge: "전체 구조 + 5년 흐름",
-      desc: "질문 하나를 넘어 내 사주 전체 구조, 여러 삶의 영역이 연결되는 이유, 가까운 핵심 시기와 향후 5년 큰 흐름을 한 장으로 이어서 봐.",
+      badge: "나를 이해하는 전체상담",
+      desc: "질문 하나를 더 길게 보는 게 아니라, 내 사주 전체에서 나를 이해하는 데 중요한 주제만 골라 반복 패턴·강점·소모 조건·맞는 환경과 가까운 흐름을 이어서 봐.",
     },
     compatibility: {
       id: "compatibility",
@@ -62,10 +62,10 @@
     },
     all_in_one: {
       id: "all_in_one",
-      name: "내 사주 완전판",
+      name: "내 인생 심층상담",
       price: 100,
-      badge: "나 한 사람 전체판",
-      desc: "내 사주 전체 구조와 5년 흐름, 지금 질문이 내 전체 사주에서 어디에 연결되는지까지 한 번에 열어. 두 사람 궁합은 포함하지 않아.",
+      badge: "앞으로 움직이는 기준까지",
+      desc: "내 사주 전체를 이해한 뒤 지금 질문과 반복되는 선택 패턴, 12~18개월 흐름, 실제 5년 변곡점, 앞으로의 판단 기준까지 연결해. 두 사람 궁합은 포함하지 않아.",
     },
   };
 
@@ -963,6 +963,20 @@
           fullTitles[i][2],
         ));
       }
+      if (!full.length) {
+        const dynamic = [...body.querySelectorAll('[data-premium-consultation-report] article')];
+        const dynamicIntro = body.querySelector('[data-premium-consultation-intro="1"]');
+        const title = productId === "all_in_one" ? "내 인생 심층상담" : "내 사주 전체상담";
+        for (let i = 0; i < dynamic.length; i += 3) {
+          const chunk = dynamic.slice(i,i+3);
+          groups.push(exportGroup(
+            title + " · " + (Math.floor(i/3)+1),
+            productId === "all_in_one" ? "지금 질문과 흐름을 연결한 판단 기준" : "내 사주에서 실제로 중요한 주제",
+            [...(i===0 && dynamicIntro ? [dynamicIntro] : []),...chunk],
+            String(Math.floor(i/3)+1).padStart(2,"0") + "_상담",
+          ));
+        }
+      }
     }
 
     if (productId === "compatibility") {
@@ -1363,13 +1377,189 @@
   }
 
 
+
+  function premiumConsultationPrompt(productId, data) {
+    const currentQuestion = String(data?.userQuestion || "").replace(/\s+/g," ").trim().slice(0,120);
+    if (productId === "full_saju") {
+      return "내 사주 전체를 먼저 읽고, 나를 이해하는 데 실제로 중요한 핵심 주제만 골라서 상담해줘. 돈·직장·연애 같은 고정 목차를 채우지 말고 사람마다 다른 주제를 골라. 전체 답이 5~7개 카드가 되도록 sections는 3~5개만 만들어. 전체 중심 인과, 반복 패턴, 강점, 소모 조건, 맞는 환경·사람·일 방식, 가까운 12~18개월 흐름 중 근거 있는 것만 연결해. 향후 5년 상세 흐름이나 장기 변곡점은 이 상담에 넣지 마.";
+    }
+    const questionLink = currentQuestion ? " 내가 방금 물은 질문은 '" + currentQuestion + "'이야." : "";
+    return "내 사주 전체를 읽고, 나를 이해하는 데서 끝내지 말고 앞으로 어떻게 움직일지까지 설계해줘." + questionLink + " 고정 목차 말고 사람마다 다른 핵심 주제를 골라. 전체 답이 5~7개 카드가 되도록 sections는 3~5개만 만들어. 전체 중심 인과, 현재 질문과 전체 사주의 연결, 반복되는 선택·실패 패턴, 강점과 소모 조건, 12~18개월 흐름, 실제 근거가 있는 향후 5년 변곡점, 앞으로의 판단 기준을 연결해. 시기 근거가 없으면 만들지 마.";
+  }
+
+  function premiumConsultationShell(productId) {
+    const isDeep = productId === "all_in_one";
+    const intro = isDeep
+      ? "이번엔 너를 이해하는 데서 끝내지 않고, 지금 질문과 앞으로의 흐름을 같이 놓고 실제 판단 기준까지 이어서 볼게."
+      : "이번엔 질문 하나를 더 길게 보는 게 아니라, 네 사주 전체에서 정말 중요한 주제부터 언니가 골라서 볼게.";
+    const sub = isDeep
+      ? "12~18개월은 실제 가까운 흐름으로 보고, 5년은 근거가 잡힌 변곡점만 짚어. 억지로 해마다 사건을 만들지는 않아."
+      : "사람마다 목차가 달라. 반복 패턴·강점·소모 조건·맞는 환경과 가까운 흐름 중 네 사주에서 중요한 것만 남겨.";
+    return '<div data-premium-consultation-shell="' + esc(productId) + '" data-product-contract="' + esc(productId) + '" style="margin-top:2px">' +
+      '<div data-premium-consultation-intro="1" style="padding:13px 0 14px;border-bottom:1px solid #ebe5df;margin-bottom:14px">' +
+        '<div style="font-size:13px;font-weight:900;color:#334155">' + esc(intro) + '</div>' +
+        '<div style="margin-top:5px;font-size:11px;line-height:1.65;color:#7b8491">' + esc(sub) + '</div>' +
+      '</div>' +
+      '<div data-premium-consultation-report="' + esc(productId) + '" style="font-size:11.5px;line-height:1.7;color:#7b8491">언니가 네 사주 전체에서 중요한 근거부터 다시 엮는 중이야…</div>' +
+      (isDeep ? '<div data-deep-followup-host="1"></div>' : '') +
+      '<div style="margin-top:16px;padding-top:12px;border-top:1px solid #ebe5df;font-size:10.5px;line-height:1.6;color:#969ba4">두 사람 궁합은 이 상담에 포함하지 않아.</div>' +
+    '</div>';
+  }
+
+  function premiumReportCacheKey(data, productId) {
+    return "unni_premium_consultation_v2_" + compactGrantKey(entitlementSubjectKey(data) + "|" + productId);
+  }
+
+  function loadPremiumReportCache(data, productId) {
+    try {
+      const cached = JSON.parse(localStorage.getItem(premiumReportCacheKey(data,productId)) || "null");
+      const reasoning = getReasoning(data);
+      if (!cached || cached.version !== "dynamic-v1" || !Array.isArray(cached.report?.cards)) return null;
+      if (cached.structureFingerprint !== String(reasoning?.structureFingerprint || "")) return null;
+      if (cached.timingFingerprint !== String(reasoning?.timingFingerprint || "")) return null;
+      return cached.report;
+    } catch (_) { return null; }
+  }
+
+  function savePremiumReportCache(data, productId, report) {
+    try {
+      const reasoning = getReasoning(data);
+      localStorage.setItem(premiumReportCacheKey(data,productId), JSON.stringify({
+        version:"dynamic-v1",
+        structureFingerprint:String(reasoning?.structureFingerprint || ""),
+        timingFingerprint:String(reasoning?.timingFingerprint || ""),
+        savedAt:Date.now(),
+        report:{
+          cards:Array.isArray(report?.cards) ? report.cards : [],
+          directAnswer:report?.directAnswer || null,
+          centralThesis:report?.centralThesis || null,
+          sections:Array.isArray(report?.sections) ? report.sections : [],
+        },
+      }));
+    } catch (_) {}
+  }
+
+  function premiumConsultationData(productId, data) {
+    const d = { ...data };
+    const current = data?.__consultationV1;
+    const history = Array.isArray(data?.consultationHistory) ? data.consultationHistory.slice(-3) : [];
+    if (current?.directAnswer || current?.centralThesis) {
+      history.push({
+        question:String(data?.userQuestion || "").replace(/\s+/g," ").trim().slice(0,500),
+        directAnswer:String(current?.directAnswer?.answer || "").replace(/\s+/g," ").trim().slice(0,500),
+        centralThesis:String(current?.centralThesis?.answer || "").replace(/\s+/g," ").trim().slice(0,500),
+      });
+    }
+    d.concernKey = "consultation";
+    d.concernSituation = "free";
+    d.userQuestion = premiumConsultationPrompt(productId,data);
+    d.consultationHistory = history.slice(-4);
+    delete d.__consultationV1;
+    const reasoning = getReasoning(data);
+    if (reasoning) {
+      try { d.classicalReasoningV1 = JSON.parse(JSON.stringify(reasoning)); }
+      catch (_) { d.classicalReasoningV1 = reasoning; }
+    }
+    if (productId === "full_saju" && d.classicalReasoningV1?.timing) {
+      d.classicalReasoningV1.timing.longTermPivots = [];
+    }
+    return d;
+  }
+
+  function deepFollowupHtml(data) {
+    const isT = getMode(data) === "T";
+    return '<div id="unniDeepFollowup" style="margin-top:22px;padding-top:16px;border-top:1px solid #e8e2dc">' +
+      '<div style="font-size:12px;font-weight:900;color:#334155">' + (isT ? "방금 답에서 하나만 더 확인할 게 있어?" : "방금 답에서 하나만 더 확인하고 싶은 게 있어?") + '</div>' +
+      '<div style="margin-top:4px;font-size:10.5px;line-height:1.6;color:#8a9099">새 주제를 여러 개 꺼내기보다, 방금 본 답에서 결정 전에 확인할 한 가지를 물어봐.</div>' +
+      '<textarea id="unniDeepFollowupQuestion" maxlength="500" rows="2" placeholder="예: 그럼 내가 지금 가장 먼저 확인해야 할 건 뭐야?" style="width:100%;box-sizing:border-box;resize:vertical;min-height:68px;margin-top:9px;padding:10px 11px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;font-size:16px;line-height:1.5;color:#334155"></textarea>' +
+      '<button id="unniDeepFollowupAction" type="button" style="width:100%;margin-top:8px;border:0;border-radius:13px;background:#f3f0ec;color:#475569;padding:12px 14px;font-size:12px;font-weight:850;cursor:pointer">이 답에서 하나 더 확인하기</button>' +
+      '<div id="unniDeepFollowupResult" style="margin-top:12px"></div>' +
+    '</div>';
+  }
+
+  function bindDeepFollowup(root, data, report) {
+    const host = root?.querySelector('[data-deep-followup-host="1"]');
+    if (!host || host.querySelector("#unniDeepFollowup")) return;
+    host.innerHTML = deepFollowupHtml(data);
+    const input = host.querySelector("#unniDeepFollowupQuestion");
+    const action = host.querySelector("#unniDeepFollowupAction");
+    const result = host.querySelector("#unniDeepFollowupResult");
+    const followupKey = premiumReportCacheKey(data,"all_in_one") + "__followup";
+    try {
+      const saved = JSON.parse(localStorage.getItem(followupKey) || "null");
+      if (saved?.question && Array.isArray(saved.cards) && saved.cards.length) {
+        input.value = saved.question;
+        input.disabled = true;
+        action.disabled = true;
+        action.textContent = "후속 확인 완료";
+        result.innerHTML = noteCards(saved.cards);
+        return;
+      }
+    } catch (_) {}
+    action.onclick = async () => {
+      const question = String(input?.value || "").replace(/\s+/g," ").trim();
+      if (question.length < 4) {
+        productToast(data, getMode(data) === "T" ? "확인할 질문을 4자 이상 적어줘." : "확인하고 싶은 걸 한 문장만 조금 더 적어줘.");
+        return;
+      }
+      const runtime = global.__UNNI_CONSULTATION_V1__;
+      if (!runtime?.generate) return;
+      action.disabled = true;
+      action.textContent = getMode(data) === "T" ? "근거 다시 확인 중…" : "응, 이 부분만 다시 확인해볼게…";
+      const d = { ...data, concernKey:"consultation", concernSituation:"free", userQuestion:question };
+      d.consultationHistory = [{
+        question:premiumConsultationPrompt("all_in_one",data),
+        directAnswer:String(report?.directAnswer?.answer || "").replace(/\s+/g," ").trim().slice(0,500),
+        centralThesis:String(report?.centralThesis?.answer || "").replace(/\s+/g," ").trim().slice(0,500),
+      }];
+      delete d.__consultationV1;
+      try {
+        const generated = await runtime.generate(d,getMode(data));
+        result.innerHTML = noteCards(generated.cards || []);
+        try { localStorage.setItem(followupKey,JSON.stringify({question,cards:generated.cards || [],savedAt:Date.now()})); } catch (_) {}
+        input.disabled = true;
+        action.disabled = true;
+        action.textContent = "후속 확인 완료";
+      } catch (_) {
+        result.innerHTML = '<div style="padding:11px 12px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:11px;line-height:1.65">이 확인 질문을 불러오지 못했어. 다시 결제할 필요는 없고, 잠시 뒤 이 버튼만 다시 눌러줘.</div>';
+        action.disabled = false;
+        action.textContent = "이 답에서 하나 더 확인하기";
+      }
+    };
+  }
+
+  async function hydratePremiumConsultation(root, productId, data) {
+    const slot = root?.querySelector('[data-premium-consultation-report="' + productId + '"]');
+    if (!slot) return;
+    const cached = loadPremiumReportCache(data,productId);
+    if (cached?.cards?.length) {
+      slot.innerHTML = noteCards(cached.cards);
+      if (productId === "all_in_one") bindDeepFollowup(root,data,cached);
+      return;
+    }
+    const runtime = global.__UNNI_CONSULTATION_V1__;
+    if (!runtime?.generate) {
+      slot.innerHTML = '<div style="padding:11px 12px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412">상담 엔진을 불러오지 못했어. 다시 결제하지 말고 창을 닫았다가 구매한 상담을 다시 열어줘.</div>';
+      return;
+    }
+    try {
+      const generated = await runtime.generate(premiumConsultationData(productId,data),getMode(data));
+      slot.innerHTML = noteCards(generated.cards || []);
+      savePremiumReportCache(data,productId,generated);
+      if (productId === "all_in_one") bindDeepFollowup(root,data,generated);
+    } catch (_) {
+      slot.innerHTML = '<div style="padding:11px 12px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412">상담을 불러오는 중 잠깐 꼬였어. 구매 내역은 그대로야. 다시 결제하지 말고 아래 버튼만 한 번 눌러줘.</div><button type="button" data-premium-consultation-retry="1" style="width:100%;margin-top:8px;padding:11px 12px;border:1px solid #fed7aa;border-radius:12px;background:#fff;color:#9a3412;font-size:11px;font-weight:850">상담 다시 불러오기</button>';
+      slot.querySelector('[data-premium-consultation-retry="1"]')?.addEventListener("click",()=>hydratePremiumConsultation(root,productId,data));
+    }
+  }
+
   function productBody(productId, data, extra) {
     const mode = getMode(data);
     const sanitized = productPolicyApi()?.sanitizeProductPayload?.(productId, { extra }) || { extra };
     const safeExtra = sanitized.extra || {};
     if (productId === "concern_bundle3") return bundleHtml(data, mode, safeExtra);
-    if (productId === "full_saju") return fullSajuHtml(data, mode);
-    if (productId === "all_in_one") return allInOneHtml(data, mode, safeExtra);
+    if (productId === "full_saju") return premiumConsultationShell(productId);
+    if (productId === "all_in_one") return premiumConsultationShell(productId);
     if (productId === "compatibility") return compatibilityHtml(data, mode, safeExtra);
     return "";
   }
@@ -1411,7 +1601,7 @@
         </div>`;
     }
     if (productId === "all_in_one") {
-      return `<div style="padding:11px 0;font-size:11px;line-height:1.7;color:#64748b">추가 선택은 없어. 전체 사주 구조와 5년 흐름에 지금 질문까지 자동으로 연결해서 볼게.</div>`;
+      return `<div style="padding:11px 0;font-size:11px;line-height:1.7;color:#64748b">추가 선택은 없어. 지금 질문과 전체 사주, 가까운 흐름과 실제 장기 변곡점을 자동으로 연결하고 마지막에 확인 질문 하나까지 이어갈 수 있어.</div>`;
     }
     if (productId === "compatibility") {
       const branchOpts = [
@@ -1617,9 +1807,13 @@
     root.scrollTop = 0;
     document.body.style.overflow = "hidden";
 
-    // 추가 질문 3개는 구매한 질문 각각을 새 상담 엔진으로 생성한다.
+    // 구형 질문 3개 구매는 재열람을 유지한다. 새 전체/심층상담은 같은 검증된 자유질문 엔진으로 동적 생성한다.
     if (productId === "concern_bundle3" && Array.isArray(extra?.questions)) {
       hydrateBundleQuestions(root, data, extra)
+        .then(() => prewarmPaidExport(root, productId))
+        .catch(() => {});
+    } else if (productId === "full_saju" || productId === "all_in_one") {
+      hydratePremiumConsultation(root, productId, data)
         .then(() => prewarmPaidExport(root, productId))
         .catch(() => {});
     } else {
@@ -1828,7 +2022,7 @@
     const state = forceNewCompatibility
       ? { kind:"unpurchased", productId, amount:product.price, label:`${won(product.price)}에 열기` }
       : directGrantVerified
-        ? { kind:"purchased", productId, amount:0, label:productId === "full_saju" ? "구매한 전체판 다시 보기" : "구매한 상품 다시 보기" }
+        ? { kind:"purchased", productId, amount:0, label:productId === "full_saju" ? "구매한 전체상담 다시 보기" : "구매한 상품 다시 보기" }
         : productStateFor(productId, verifiedState);
     const directGrant = directGrantVerified ? directStoredGrant : verifiedGrantFor(verifiedState, productId);
     action.disabled = false;
@@ -1892,7 +2086,7 @@
     }
 
     if (state.kind === "included") {
-      root.querySelector("#unniProductPrice").textContent = "완전판에 포함";
+      root.querySelector("#unniProductPrice").textContent = "심층상담에 포함";
       action.textContent = productActionLabel(productId,state);
       action.onclick = () => {
         try {
@@ -1910,7 +2104,7 @@
 
     if (state.kind === "upgrade") {
       root.querySelector("#unniProductPrice").textContent = `${won(product.price)} → ${won(state.amount)}`;
-      body.insertAdjacentHTML("beforeend", `<div data-upgrade-quote="all_in_one" style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff1f2;border:1px solid #fecdd3;font-size:11px;line-height:1.65;color:#9f1239"><b>이미 산 1인 상품 금액을 빼고 계산했어.</b><br>${esc((state.quote?.creditedProducts || []).map((id)=>PRODUCTS[id]?.name || id).join(" + "))} 구매가 서버에서 확인돼서 <b>${won(state.amount)}</b>만 결제하면 완전판으로 올라가.</div>`);
+      body.insertAdjacentHTML("beforeend", `<div data-upgrade-quote="all_in_one" style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff1f2;border:1px solid #fecdd3;font-size:11px;line-height:1.65;color:#9f1239"><b>이미 산 1인 상품 금액을 빼고 계산했어.</b><br>${esc((state.quote?.creditedProducts || []).map((id)=>PRODUCTS[id]?.name || id).join(" + "))} 구매가 서버에서 확인돼서 <b>${won(state.amount)}</b>만 결제하면 심층상담으로 올라가.</div>`);
       action.textContent = productActionLabel(productId,state);
       action.onclick = async () => {
         action.disabled = true;
@@ -1954,28 +2148,25 @@
       explicitIntent === "relationship-person" ||
       /(궁합|상대.*사주|둘.*관계|이 사람|연인|남자친구|여자친구)/.test(question);
 
-    if (has("all_in_one")) return "compatibility";
     if (relationshipIntent && !has("compatibility")) return "compatibility";
-    if (has("full_saju") && has("concern_bundle3")) return "all_in_one";
-    if (has("full_saju")) return "concern_bundle3";
-    if (has("concern_bundle3")) return "full_saju";
-    if (explicitIntent === "everything") return "all_in_one";
-    if (explicitIntent === "more-questions" || explicitIntent === "other-concerns") return "concern_bundle3";
+    if (has("full_saju") && !has("all_in_one")) return "all_in_one";
+    if (explicitIntent === "everything" && !has("all_in_one")) return "all_in_one";
+    if (has("all_in_one")) return has("compatibility") ? "all_in_one" : "compatibility";
     return "full_saju";
   }
 
   const PRODUCT_UX = {
     concern_bundle3: {
-      eyebrow:"추가 자유질문 3개",
-      value:"같은 사주로 질문 3개를 각각 새로 해석",
-      difference:"카테고리를 고르는 게 아니라 궁금한 질문을 그대로 적고, 질문마다 사주 전체 근거를 다시 연결해.",
-      cta:"질문 3개 더 이어서 보기",
+      eyebrow:"예전 구매 상담",
+      value:"예전에 구매한 질문 3개 상담 다시보기",
+      difference:"신규 판매는 종료됐지만 기존 구매 결과는 그대로 다시 볼 수 있어.",
+      cta:"구매한 질문 3개 다시 보기",
     },
     full_saju: {
-      eyebrow:"내 사주 전체판",
-      value:"나 전체 구조 · 영역 연결 · 5년 흐름",
-      difference:"방금 본 질문 하나를 반복하지 않고, 돈·일·연애·관계가 왜 같이 움직이는지 한 판으로 연결해.",
-      cta:"내 전체 사주판 보기",
+      eyebrow:"내 사주 전체상담",
+      value:"반복 패턴 · 강점 · 소모 조건 · 맞는 환경",
+      difference:"방금 본 질문 하나를 반복하지 않고, 네 사주 전체에서 너를 이해하는 데 중요한 주제를 언니가 직접 골라서 이어봐.",
+      cta:"내 사주 전체상담 보기",
     },
     compatibility: {
       eyebrow:"두 사람 사주 교차",
@@ -1984,10 +2175,10 @@
       cta:"우리 둘 궁합 보기",
     },
     all_in_one: {
-      eyebrow:"나 한 사람 전체판",
-      value:"전체 사주판 + 5년 흐름 + 현재 질문 연결",
-      difference:"나 전체 구조와 장기 흐름 안에서 지금 질문이 어디에 연결되는지 한 번에 봐.",
-      cta:"내 사주 완전판 보기",
+      eyebrow:"내 인생 심층상담",
+      value:"전체상담 + 지금 질문 + 12~18개월 + 5년 변곡점",
+      difference:"나를 이해하는 데서 끝내지 않고, 지금 질문과 실제 시기 근거를 연결해서 앞으로 어떻게 움직일지까지 설계해.",
+      cta:"내 인생 심층상담 보기",
     },
   };
 
@@ -1999,10 +2190,10 @@
     const ux = productUx(productId);
     const amount = Number(amountOverride ?? state?.amount ?? PRODUCTS[productId]?.price ?? 0);
     if (state?.kind === "purchased") {
-      return productId === "full_saju" ? "구매한 전체판 다시 보기" : productId === "all_in_one" ? "구매한 완전판 다시 보기" : "구매한 상품 다시 보기";
+      return productId === "full_saju" ? "구매한 전체상담 다시 보기" : productId === "all_in_one" ? "구매한 심층상담 다시 보기" : "구매한 상품 다시 보기";
     }
-    if (state?.kind === "included") return "완전판에 포함됨 · 바로 보기";
-    if (state?.kind === "upgrade") return `완전판으로 이어보기 · +${won(amount)}`;
+    if (state?.kind === "included") return "심층상담에 포함됨 · 바로 보기";
+    if (state?.kind === "upgrade") return `심층상담으로 이어보기 · +${won(amount)}`;
     return `${ux.cta} · ${won(amount)}`;
   }
 
@@ -2010,8 +2201,13 @@
     return productValueCopy(productId)?.short || PRODUCTS[productId]?.desc || "";
   }
 
+  function consultationThesisText(data) {
+    return String(data?.__consultationV1?.centralThesis?.answer || "").replace(/\s+/g," ").trim().slice(0,120);
+  }
+
   function recommendationReason(productId, data, isT, entitlementState) {
     const direct = entitlementApi()?.verifiedProductIds?.(entitlementState) || [];
+    const thesis = consultationThesisText(data);
     if (productId === "compatibility") {
       return direct.includes("all_in_one")
         ? "나 한 사람에 대한 전체판은 이미 있어. 여기서 새로 볼 수 있는 건 특정 상대 사주를 같이 놓아야만 나오는 둘 사이의 관계 흐름이야."
@@ -2020,24 +2216,22 @@
           : "특정 상대가 마음에 걸린다면 상대 사주까지 같이 놓고 둘 사이가 왜 이렇게 흐르는지 보는 게 완전히 다른 답을 줄 수 있어.";
     }
     if (productId === "full_saju") {
-      return direct.includes("concern_bundle3")
-        ? "추가 질문은 이미 이어서 볼 수 있으니까, 이제 새로 볼 건 네 전체 구조와 5년 큰 흐름이야."
-        : isT
-          ? "이번 질문 하나의 답보다 더 넓게, 네 전체 구조와 5년 흐름을 한 번에 보고 싶을 때 맞아."
-          : "이번 질문을 넘어 돈·일·관계가 왜 같이 움직이는지와 앞으로 5년 큰 흐름까지 보고 싶다면 이쪽이 새 정보가 가장 많아.";
+      if (thesis) return "방금 답의 중심이 “" + thesis + "”였어. 이 원인이 다른 선택에서도 어떻게 반복되는지, 네 사주 전체에서 중요한 주제만 다시 골라서 이어볼 수 있어.";
+      return isT
+        ? "이번 질문 하나보다 넓게, 네 사주 전체에서 반복되는 패턴과 맞는 조건을 보고 싶을 때 이어지는 상담이야."
+        : "이번 질문 하나를 넘어서 네 사주 전체에서 자꾸 반복되는 이유와 잘 맞는 조건을 알고 싶다면 이쪽이 자연스럽게 이어져.";
     }
     if (productId === "concern_bundle3") {
-      return isT
-        ? "사주정보는 그대로 두고, 궁금한 질문 3개를 각각 새로 해석할 수 있어."
-        : "지금 질문 하나는 충분히 풀었으니까, 아직 궁금한 걸 세 가지 더 네 말로 그대로 물어보는 쪽이 새 정보가 많아.";
+      return "이 상품은 신규 판매가 끝났고, 예전에 구매한 사람의 다시보기만 유지하고 있어.";
     }
     const quote = entitlementApi()?.calculateUpgradeQuote?.({ targetProduct:"all_in_one", verifiedEntitlements:direct });
     if (quote?.creditAmount > 0) {
-      return `이미 산 1인 상품 ${quote.creditedProducts.map((id)=>PRODUCTS[id]?.name || id).join(" + ")} 금액을 인정해서, 중복 결제 없이 완전판으로 합칠 수 있어.`;
+      return `이미 산 1인 상품 ${quote.creditedProducts.map((id)=>PRODUCTS[id]?.name || id).join(" + ")} 금액을 인정해서, 중복 결제 없이 심층상담으로 이어갈 수 있어.`;
     }
+    if (thesis) return "방금 답의 중심이 “" + thesis + "”였어. 여기서는 이 원인을 지금 질문, 가까운 12~18개월, 실제 5년 변곡점과 연결해서 앞으로의 판단 기준까지 잡아.";
     return isT
-      ? "전체 구조·5년 흐름·현재 질문 연결과 추가 질문까지 한 번에 보고 싶다면 완전판이 맞아."
-      : "내 전체 사주와 5년 흐름, 지금 질문이 어디서 이어지는지, 추가 질문까지 한 번에 보고 싶다면 완전판이 제일 편해.";
+      ? "나를 이해하는 데서 끝내지 않고, 지금 질문과 실제 시기 근거를 연결해 앞으로 움직일 기준까지 잡는 상담이야."
+      : "내 전체 사주를 이해한 다음, 지금 질문과 앞으로의 흐름까지 이어서 실제로 어떻게 움직일지 같이 정리하는 상담이야.";
   }
 
   function productButtonHtml(p, { recommended = false, secondary = false, reason = "", state = null } = {}) {
@@ -2053,15 +2247,15 @@
           : won(p.price);
     const stateCopy = resolvedState.kind === "purchased"
       ? (p.id === "compatibility" ? "구매내역 보기 · 다른 상대도 가능" : "구매한 내용 다시 이어보기")
-      : resolvedState.kind === "included" ? "완전판에 포함 · 바로 이어보기"
-        : resolvedState.kind === "upgrade" ? `완전판으로 이어보기 · +${won(resolvedState.amount)}`
+      : resolvedState.kind === "included" ? "심층상담에 포함 · 바로 이어보기"
+        : resolvedState.kind === "upgrade" ? `심층상담으로 이어보기 · +${won(resolvedState.amount)}`
           : "이어서 보기 →";
     const topLabel = ux.eyebrow;
     const description = productShort(p.id);
     const stateColor = ["purchased","included"].includes(resolvedState.kind) ? "#047857" : resolvedState.kind === "upgrade" ? "#b83e5c" : "#657080";
     const stateBg = ["purchased","included"].includes(resolvedState.kind) ? "#ecfdf5" : resolvedState.kind === "upgrade" ? "#fff2f5" : "#f7f5f2";
     const reasonLine = recommended && reason
-      ? `<div data-recommendation-reason="1" style="font-size:10.8px;line-height:1.55;font-weight:600;color:#7a7175;margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${reason}</div>`
+      ? `<div data-recommendation-reason="1" style="font-size:10.8px;line-height:1.55;font-weight:600;color:#7a7175;margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(reason)}</div>`
       : "";
     const labelLine = secondary
       ? `<div style="font-size:9.5px;font-weight:760;color:#969ba4;margin-bottom:4px">${topLabel}</div>`
@@ -2146,12 +2340,16 @@
 
     const direct = entitlementApi()?.verifiedProductIds?.(state) || [];
     const allProducts = Object.values(PRODUCTS);
+    const saleProducts = allProducts.filter((p) => p.id !== "concern_bundle3" || direct.includes("concern_bundle3"));
     const allStates = Object.fromEntries(allProducts.map((p)=>[p.id,productStateFor(p.id,state)]));
     // 새 질문의 990원 잠금과 이미 구매한 프리미엄 권한은 별개다.
     // 잠긴 결과에서도 구매 완료/완전판 포함 상품은 평생 다시보기 진입점을 유지한다.
     const visibleProducts = unlocked
-      ? allProducts
-      : allProducts.filter((p) => ["purchased","included"].includes(allStates[p.id]?.kind));
+      ? saleProducts
+      : allProducts.filter((p) =>
+          ["purchased","included"].includes(allStates[p.id]?.kind) &&
+          (p.id !== "concern_bundle3" || allStates[p.id]?.kind === "purchased")
+        );
     if (!visibleProducts.length) {
       existing?.remove();
       return;
@@ -2254,6 +2452,7 @@
     contracts:global.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.contracts || {},
     buildProductBody:productBody,
     buildFullSajuSections:fullSajuSections,
+    buildPremiumConsultationPrompt:premiumConsultationPrompt,
     recommendedProductId,
     resolveVerifiedEntitlements,
     productStateFor,

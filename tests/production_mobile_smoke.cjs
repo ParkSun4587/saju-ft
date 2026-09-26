@@ -636,6 +636,7 @@ async function inspect(page, mode) {
          postUnlock.roles.some(x=>x.title.includes('작은 검증')),
     'direct answer / caution / action flow is not visible '+JSON.stringify(postUnlock.roles));
   assert(postUnlock.reasonCount===1&&postUnlock.reasonText.length>=10,'premium recommendation should keep one compact reason '+JSON.stringify(postUnlock));
+  assert(!postUnlock.catalogText.includes('질문 3개 더 이어서'),'retired question-pack sale returned to the new catalog '+postUnlock.catalogText);
   assert(!postUnlock.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아')&&!postUnlock.catalogText.includes('다음으로 볼 가치는 이게 제일 커')&&!postUnlock.catalogText.includes('방금 같이 본 얘기는 반복하지 않고')&&!postUnlock.catalogText.includes('방금 본 내용과 겹치는 건 빼고'),
     'premium recommendation still renders marketing-style preamble '+postUnlock.catalogText);
 
@@ -666,7 +667,7 @@ async function inspect(page, mode) {
   assert(
     sourceFreeLaunch
       ? productActionText.includes('무료 이벤트')
-      : productActionText.includes('내 전체 사주판 보기 · 100원'),
+      : productActionText.includes('내 사주 전체상담 보기 · 100원'),
     'live free/paid product toggle mismatch: '+JSON.stringify({sourceFreeLaunch,productActionText})
   );
 
@@ -678,7 +679,11 @@ async function inspect(page, mode) {
     await page.waitForSelector('#unniProductModal',{state:'visible'});
   }
   await page.locator('#unniProductAction').click();
-  await page.waitForFunction(()=>document.querySelectorAll('#unniProductBody section').length===12,null,{timeout:10000});
+  await page.waitForFunction(()=>{
+    const slot=document.querySelector('[data-premium-consultation-report="full_saju"]');
+    const count=slot?.querySelectorAll('article').length||0;
+    return count>=4&&count<=9;
+  },null,{timeout:10000});
   assert(await page.locator('#unniProductStickyHead').evaluate(el=>getComputedStyle(el).position)==='sticky','sticky header broken');
   assert(await page.locator('#unniProductSavePdf').count()===0,'PDF save UI must be removed');
   assert(!(await page.locator('#unniProductModal').innerText()).includes('다른 브라우저'),'paid save should not tell users to switch browsers');

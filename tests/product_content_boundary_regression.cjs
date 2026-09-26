@@ -128,8 +128,8 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
           text:plain(fullHtml),
           sections:fullRoot.querySelectorAll('[data-export-kind="full"]').length,
           contract:fullRoot.querySelector('[data-product-contract="full_saju"]')?.getAttribute('data-product-contract')||'',
-          fp:fullRoot.querySelector('[data-structure-fingerprint]')?.getAttribute('data-structure-fingerprint')||'',
-          timingFp:fullRoot.querySelector('[data-timing-fingerprint]')?.getAttribute('data-timing-fingerprint')||'',
+          dynamic:!!fullRoot.querySelector('[data-premium-consultation-report="full_saju"]'),
+          prompt:product.buildPremiumConsultationPrompt('full_saju',consultData),
         },
         bundle:{
           text:plain(bundleHtml),
@@ -142,9 +142,9 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
           text:plain(allHtml),
           articles:allRoot.querySelectorAll('article').length,
           fullSections:allRoot.querySelectorAll('[data-export-kind="full"]').length,
-          questionArticles:allRoot.querySelectorAll('[data-product-exclusive="all_in_one-question"] article').length,
-          questionLink:!!allRoot.querySelector('[data-product-exclusive="all_in_one-question"]'),
-          exclusive:!!allRoot.querySelector('[data-product-exclusive="all_in_one"]'),
+          dynamic:!!allRoot.querySelector('[data-premium-consultation-report="all_in_one"]'),
+          followupHost:!!allRoot.querySelector('[data-deep-followup-host="1"]'),
+          prompt:product.buildPremiumConsultationPrompt('all_in_one',consultData),
           compatTiming:allRoot.querySelectorAll('[data-export-compat-timing]').length,
           compatExclusive:allRoot.querySelectorAll('[data-product-exclusive="compatibility"]').length,
         },
@@ -183,9 +183,9 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   const c=r.contracts;
   assert(c.basic_concern.longTermDetail==='teaser-only'&&c.basic_concern.questionCount===1&&!c.basic_concern.compatibilityAllowed,'basic free-question contract invalid');
   assert(c.concern_bundle3.questionCount===3&&c.concern_bundle3.allowedDomains==='three-free-questions'&&c.concern_bundle3.longTermDetail==='teaser-only','question pack contract invalid');
-  assert(c.full_saju.longTermDetail==='full-five-year'&&c.full_saju.secondPersonRequired===false,'full contract invalid');
+  assert(c.full_saju.longTermDetail==='near-term-only'&&c.full_saju.dynamicThemeSelection===true&&c.full_saju.secondPersonRequired===false,'full contract invalid');
   assert(c.compatibility.secondPersonRequired===true&&c.compatibility.compatibilityAllowed===true,'compat contract invalid');
-  assert(c.all_in_one.questionCount===1&&c.all_in_one.includesQuestionPack3===true&&c.all_in_one.compatibilityAllowed===false,'all-in-one free-question contract invalid');
+  assert(c.all_in_one.questionCount===1&&c.all_in_one.followUpQuestions===1&&c.all_in_one.legacyIncludesQuestionPack3===true&&c.all_in_one.compatibilityAllowed===false,'all-in-one deep-consultation contract invalid');
 
   for(const run of r.runs){
     assert(run.nearCount>=17,'basic timing should retain ~18 months: '+run.id+' '+run.nearCount);
@@ -205,11 +205,9 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     assert(!/(대운|세운|월운|원국|격국|용신|상신|기신|통관|압박|구조)/.test(run.timingAnswer),'basic timing answer leaked internal jargon: '+run.id+' '+run.timingAnswer);
   }
 
-  assert(r.products.full.sections===12&&r.products.full.contract==='full_saju','full_saju 12-section whole-chart report missing');
-  assert(r.products.full.fp===r.baseIntegrity.beforeFp&&r.products.full.timingFp,'full_saju did not reuse same reasoning result');
-  assert(r.products.full.text.includes('앞으로 5년 큰 흐름'),'full_saju does not disclose the long-term detail hidden from basic timing answer');
-  const fullYears=[...new Set((r.products.full.text.match(/20\d{2}년/g)||[]))];
-  assert(fullYears.length>=5,'full_saju must expose five annual flow rows, got '+JSON.stringify(fullYears));
+  assert(r.products.full.sections===0&&r.products.full.contract==='full_saju'&&r.products.full.dynamic,'full_saju must use the dynamic whole-chart consultation shell');
+  assert(r.products.full.prompt.includes('5~7개 카드')&&r.products.full.prompt.includes('장기 변곡점은 이 상담에 넣지 마'),'full_saju prompt boundary missing');
+  assert(!r.products.full.text.includes('앞으로 5년 큰 흐름'),'full_saju shell leaked the retired five-year annual report');
 
   assert(r.products.bundle.questions===3&&r.products.bundle.exclusive,'question pack must render exactly three free-question slots');
   assert(r.products.bundle.articles===0,'question pack must not prefill answers from the legacy fixed-concern engine');
@@ -222,9 +220,10 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   assert(r.products.compat.aFp&&r.products.compat.bFp&&r.products.compat.aFp!==r.products.compat.bFp&&r.products.compat.overlayFp,'compatibility does not prove two distinct charts + overlay');
   assert(!r.products.full.text.includes('둘이 같이 있을 때의 시기 흐름')&&!r.products.all.text.includes('둘이 같이 있을 때의 시기 흐름'),'one-person products leaked pair-specific result');
 
-  assert(r.products.all.fullSections===12&&r.products.all.questionLink&&r.products.all.questionArticles===4&&r.products.all.exclusive,'all_in_one must include whole chart + current free-question link + synthesis');
+  assert(r.products.all.fullSections===0&&r.products.all.articles===0&&r.products.all.dynamic&&r.products.all.followupHost,'all_in_one must use the dynamic deep-consultation shell with one follow-up host');
+  assert(r.products.all.prompt.includes('12~18개월')&&r.products.all.prompt.includes('5년 변곡점')&&r.products.all.prompt.includes('지금 질문'),'all_in_one deep prompt boundary missing');
   assert(r.products.all.compatTiming===0&&r.products.all.compatExclusive===0,'all_in_one swallowed compatibility');
-  assert(r.products.all.text.includes('두 사람 궁합은 이 상품에 포함하지 않아'),'all_in_one boundary not explicit');
+  assert(r.products.all.text.includes('두 사람 궁합은 이 상담에 포함하지 않아'),'all_in_one boundary not explicit');
 
   assert(r.baseIntegrity.beforeFp===r.baseIntegrity.afterFp,'rendering a product changed natal classical conclusion');
   assert(JSON.stringify(r.baseIntegrity.beforeClaims)===JSON.stringify(r.baseIntegrity.afterClaims),'rendering a product changed classical claim conclusions');

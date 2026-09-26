@@ -280,23 +280,23 @@ function loadServer(){
     };
   });
 
-  assert(report.sections.length===12&&report.renderedSections===12,'full_saju must have 12 sections');
+  assert(report.sections.length===12&&report.renderedSections===0,'legacy full-saju builder may remain, but the new product must not render its fixed 12-section report');
   assert(report.sections.every(x=>x.claim&&x.claim.newFacts?.length&&x.claim.conclusion),'every full_saju section needs a claim/new fact/conclusion');
   assert(new Set(report.sections.map(x=>JSON.stringify(x.claim.newFacts))).size===12,'full_saju sections repeat the same factual unit');
   assert(new Set(report.sections.map(x=>x.claim.conclusion)).size===12,'full_saju sections repeat the same conclusion');
   const fullSajuStructureWords=['핵심','먼저 보면','큰 흐름부터 보면','왜','왜냐면','실제','현실에서는','이렇게 써','그래서','언니가 마지막으로 남길 기준','활용','주의'];
   assert(report.sections.every(x=>fullSajuStructureWords.filter(k=>x.body.includes(k)).length>=2),'full_saju sections are too thin '+JSON.stringify(report.sections.map(x=>x.title)));
-  assert(report.annualYears.length===5&&report.annualYears.every(y=>report.section11.includes(String(y))),'full_saju five-year section not sourced from classical timing '+JSON.stringify(report.annualYears));
-  assert(!report.section10.includes(report.before.timingAnswer)&&report.section10!==report.before.timingAnswer,'full_saju near-term copied the basic timing answer verbatim');
+  assert(report.annualYears.length===5&&!report.fullText.includes('앞으로 5년 큰 흐름'),'4,900 full_saju must keep five-year detail out of its rendered product');
+  assert(report.fullText.includes('사주 전체')&&report.fullText.includes('중요한 주제'),'full_saju dynamic consultation shell missing');
   assert(report.before.fp===report.after.fp&&JSON.stringify(report.before.claims)===JSON.stringify(report.after.claims),'premium rendering changed classical reasoning');
-  assert(report.all.fullSections===12&&report.all.notes===4&&report.all.common===1&&report.all.questionLink===1&&report.all.timing===0&&report.all.strategy===0,'all_in_one is not full_saju + current free-question link + synthesis '+JSON.stringify(report.all));
+  assert(report.all.fullSections===0&&report.all.notes===0&&report.all.common===0&&report.all.questionLink===0&&report.all.timing===0&&report.all.strategy===0,'all_in_one should render a dynamic deep-consultation shell instead of duplicating full_saju '+JSON.stringify(report.all));
   assert(report.all.compat===0,'all_in_one contains compatibility data');
   assert(report.graph.allFull&&report.graph.allBundle&&!report.graph.allCompat,'client entitlement graph invalid');
   assert(JSON.stringify([report.graph.none,report.graph.full,report.graph.bundle,report.graph.both,report.graph.compat])===JSON.stringify([100,100,100,100,100]),'client upgrade quotes drift '+JSON.stringify(report.graph));
   assert(report.graph.states.fullOwned.kind==='purchased'&&report.graph.states.fullIncluded.kind==='included','purchased/included states drift');
   assert(report.graph.states.upgradeFull.kind==='unpurchased'&&report.graph.states.upgradeFull.amount===100&&report.graph.states.upgradeBoth.kind==='unpurchased'&&report.graph.states.upgradeBoth.amount===100,'upgrade UI states drift');
   assert(report.graph.recs.none==='full_saju','no-premium default recommendation must be full_saju');
-  assert(report.graph.recs.full==='concern_bundle3'&&report.graph.recs.bundle==='full_saju'&&report.graph.recs.both==='all_in_one'&&report.graph.recs.all==='compatibility'&&report.graph.recs.compat==='full_saju','entitlement-aware recommendations drift '+JSON.stringify(report.graph.recs));
+  assert(report.graph.recs.full==='all_in_one'&&report.graph.recs.bundle==='full_saju'&&report.graph.recs.both==='all_in_one'&&report.graph.recs.all==='compatibility'&&report.graph.recs.compat==='full_saju','retired question-pack must never be a new recommendation '+JSON.stringify(report.graph.recs));
 
   const freeGrant=await page.evaluate(async()=>{
     for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith('unni_product_grant_v1_'))localStorage.removeItem(k);}

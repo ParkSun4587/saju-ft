@@ -1,10 +1,10 @@
 // Cloudflare Pages Functions: 서버가 상품 가격·구매 권한·업그레이드 금액을 최종 확정합니다.
 const PRODUCTS = Object.freeze({
   concern_single: { amount: 100, name: "어떤언니 1:1 질문 심층상담" },
-  concern_bundle3: { amount: 100, name: "어떤언니 질문 3개 더 이어보기" },
-  full_saju: { amount: 100, name: "어떤언니 내 전체 사주판" },
+  concern_bundle3: { amount: 100, name: "어떤언니 기존 질문 3개 상담" },
+  full_saju: { amount: 100, name: "어떤언니 내 사주 전체상담" },
   compatibility: { amount: 100, name: "어떤언니 우리 둘 궁합" },
-  all_in_one: { amount: 100, name: "어떤언니 내 사주 완전판" },
+  all_in_one: { amount: 100, name: "어떤언니 내 인생 심층상담" },
 });
 const PREMIUM_IDS = Object.freeze(["concern_bundle3","full_saju","compatibility","all_in_one"]);
 const ALL_IN_ONE_CREDITS = Object.freeze([]); // TEMP QA: every unowned premium checkout stays at 100 won

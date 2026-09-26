@@ -251,15 +251,15 @@ function mockConsultation(question, mode='F') {
   const expectedPrices = { concern_bundle3:100, full_saju:100, compatibility:100, all_in_one:100 };
   for (const [id, price] of Object.entries(expectedPrices)) assert(qa.products[id]?.price === price, `${id} price drift`);
   assert(qa.products.concern_bundle3.badge === '추가 자유질문 3개' && qa.products.concern_bundle3.desc.includes('질문 3개'), 'question-pack unique-value copy missing');
-  assert(qa.products.full_saju.badge === '전체 구조 + 5년 흐름' && qa.products.full_saju.desc.includes('향후 5년'), 'full-saju long-horizon value copy missing');
+  assert(qa.products.full_saju.name === '내 사주 전체상담' && qa.products.full_saju.badge === '나를 이해하는 전체상담' && !qa.products.full_saju.desc.includes('향후 5년'), 'full-saju whole-consultation copy drift');
   assert(qa.products.compatibility.badge === '두 사람 사주 교차' && qa.products.compatibility.desc.includes('상대 사주'), 'compatibility two-person value copy missing');
-  assert(qa.products.all_in_one.name === '내 사주 완전판' && qa.products.all_in_one.badge === '나 한 사람 전체판' && qa.products.all_in_one.desc.includes('두 사람 궁합은 포함하지 않아'), 'all-in-one single-person boundary copy drift');
+  assert(qa.products.all_in_one.name === '내 인생 심층상담' && qa.products.all_in_one.badge === '앞으로 움직이는 기준까지' && qa.products.all_in_one.desc.includes('5년 변곡점') && qa.products.all_in_one.desc.includes('두 사람 궁합은 포함하지 않아'), 'all-in-one deep-consultation copy drift');
   for (const p of Object.values(qa.products)) assert(!/챕터|NOTE \d+/.test(`${p.badge} ${p.desc}`), 'technical product-volume wording remains');
   assert(qa.contracts.basic_concern?.questionCount === 1 && qa.contracts.basic_concern?.longTermDetail === 'teaser-only', 'basic free-question disclosure contract missing');
   assert(qa.contracts.concern_bundle3?.questionCount === 3 && qa.contracts.concern_bundle3?.allowedDomains === 'three-free-questions' && qa.contracts.concern_bundle3?.longTermDetail === 'teaser-only', 'question-pack contract drift');
-  assert(qa.contracts.full_saju?.longTermDetail === 'full-five-year' && qa.contracts.full_saju?.secondPersonRequired === false, 'full_saju contract drift');
+  assert(qa.contracts.full_saju?.longTermDetail === 'near-term-only' && qa.contracts.full_saju?.dynamicThemeSelection === true && qa.contracts.full_saju?.secondPersonRequired === false, 'full_saju contract drift');
   assert(qa.contracts.compatibility?.secondPersonRequired === true && qa.contracts.compatibility?.compatibilityAllowed === true, 'compatibility contract drift');
-  assert(qa.contracts.all_in_one?.questionCount === 1 && qa.contracts.all_in_one?.includesQuestionPack3 === true && qa.contracts.all_in_one?.compatibilityAllowed === false, 'all-in-one contract drift');
+  assert(qa.contracts.all_in_one?.questionCount === 1 && qa.contracts.all_in_one?.followUpQuestions === 1 && qa.contracts.all_in_one?.legacyIncludesQuestionPack3 === true && qa.contracts.all_in_one?.compatibilityAllowed === false, 'all-in-one contract drift');
 
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
@@ -617,8 +617,8 @@ function mockConsultation(question, mode='F') {
   assert(ui.unlockedNoteCards === 5 && !ui.previewAfterUnlock,
     `unlock must replace teaser with all dynamic consultation sections: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
-  assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
-  assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3 && !ui.otherToggle && ui.otherVisible, `premium catalog should show all four products immediately: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherVisible:ui.otherVisible})}`);
+  assert(ui.buttons === 3, `new-sale product catalog buttons ${ui.buttons}`);
+  assert(ui.visibleProducts === 3 && ui.secondaryProducts === 2 && !ui.otherToggle && ui.otherVisible, `new premium catalog should hide the retired question-pack sale: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherVisible:ui.otherVisible})}`);
   assert(
     !norm(ui.timingFirst) || !norm(ui.timingSecond) || norm(ui.timingFirst)!==norm(ui.timingSecond),
     'production-like timing answer must not invent duplicate month precision'
@@ -628,7 +628,8 @@ function mockConsultation(question, mode='F') {
   assert(
     ui.catalogReason.length >= 10 &&
     !ui.catalogText.includes('다른 방향 3개도 보기') &&
-    (ui.catalogText.includes('두 사람을 같이 봐야 보이는 관계 흐름') || ui.catalogText.includes('나 전체 구조 · 영역 연결 · 5년 흐름')) &&
+    (ui.catalogText.includes('두 사람을 같이 봐야 보이는 관계 흐름') || ui.catalogText.includes('반복 패턴 · 강점 · 소모 조건 · 맞는 환경')) &&
+    !ui.catalogText.includes('질문 3개 더 이어서') &&
     !ui.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아') &&
     !ui.catalogText.includes('다음으로 볼 가치는 이게 제일 커') &&
     !ui.catalogText.includes('방금 같이 본 얘기는 반복하지 않고') &&
