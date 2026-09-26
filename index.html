@@ -3824,6 +3824,7 @@
       }
 
       async function checkAllConcernsEntitlement(data, version = viewVersion) {
+        if (data?.concernKey === "consultation") return false;
         if (!hasStoredAllInOneGrant()) return false;
         const api = window.__UNNI_PRODUCTS_V1__;
         if (!api?.resolveVerifiedEntitlements) return false;
@@ -3834,12 +3835,16 @@
         try {
           const state = await api.resolveVerifiedEntitlements(data, { force:true });
           if (!visibleResult(key, version) || attempt !== accessVersion) return true;
-          if (Array.isArray(state?.effectiveEntitlements) && state.effectiveEntitlements.includes("all_concerns")) {
+          if (
+            data?.concernKey !== "consultation" &&
+            Array.isArray(state?.effectiveEntitlements) &&
+            state.effectiveEntitlements.includes("all_concerns")
+          ) {
             if (open) open.disabled = false;
             unlockFullReport(null, true);
             showVoiceToast({
-              F: "완전판에 포함된 고민이라 추가 결제 없이 바로 열었어.",
-              T: "완전판 권한 확인 완료. 추가 결제 없이 열었어.",
+              F: "예전에 구매한 완전판에 포함된 내용이라 추가 결제 없이 바로 열었어.",
+              T: "기존 완전판 권한 확인 완료. 추가 결제 없이 열었어.",
             }, data.currentMode);
             return true;
           }
@@ -4877,14 +4882,6 @@
         saveInputDraft();
       }
       window.setConsultationQuestionExample = setConsultationQuestionExample;
-
-      // 첫 화면은 6개 고민만 보여준다. 세부 상황은 고민을 누른 뒤에만 펼친다.
-      queueMicrotask(() => {
-        const box = document.getElementById("concernSituationBox");
-        const summary = document.getElementById("concernSituationSummary");
-        if (box) box.style.display = "none";
-        if (summary) summary.style.display = "none";
-      });
 
       // 선택된 칩에 모드별 스타일 적용 (서아=스카이블루, 로아=로즈)
       function applyConcernStyle(el, mode) {
@@ -9554,7 +9551,7 @@ currentResultData = {
         const target = event.target;
         if (
           !target.matches?.(
-            '#sazuForm input:not([type="hidden"]):not([type="checkbox"])',
+            '#sazuForm input:not([type="hidden"]):not([type="checkbox"]), #sazuForm textarea',
           )
         )
           return;
