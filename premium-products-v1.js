@@ -2230,11 +2230,12 @@
     // 프리미엄도 Toss 승인/권한 저장이 끝난 뒤에만 AI 상담 복원을 시도한다.
     if (
       restored?.concernKey === "consultation" &&
-      !Array.isArray(restored?.__consultationV1?.cards) &&
+      (!Array.isArray(restored?.__consultationV1?.cards) || !restored.__consultationV1.cards.length) &&
       global.__UNNI_CONSULTATION_V1__?.generate
     ) {
       try {
         await global.__UNNI_CONSULTATION_V1__.generate(restored, getMode(restored));
+        if (typeof saveCurrentResult === "function" && restored === getData()) saveCurrentResult();
       } catch (_) {}
     }
     showReport(productId, restored, resume.data?.x || {});
