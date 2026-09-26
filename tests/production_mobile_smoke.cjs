@@ -447,6 +447,31 @@ async function inspect(page, mode) {
   await deployed(page);
   await enter(page,'F','love','relationship');
 
+  if(!LOCAL){
+    const openPayment=page.locator('#directPaymentOpenButton');
+    assert(await openPayment.isVisible(),'basic payment open button is not visible on locked result');
+    await openPayment.click();
+    await page.waitForFunction(() =>
+      !!paymentWidget &&
+      !!paymentMethodsWidget &&
+      getComputedStyle(document.getElementById('paymentWidgetArea')).display !== 'none' &&
+      document.getElementById('paymentMethod')?.childElementCount > 0,
+      null,{timeout:15000}
+    );
+    const paymentWidgetProbe=await page.evaluate(()=>({
+      hasWidget:!!paymentWidget,
+      hasMethods:!!paymentMethodsWidget,
+      areaDisplay:getComputedStyle(document.getElementById('paymentWidgetArea')).display,
+      methodChildren:document.getElementById('paymentMethod')?.childElementCount||0,
+      agreementChildren:document.getElementById('paymentAgreement')?.childElementCount||0,
+      openDisplay:getComputedStyle(document.getElementById('directPaymentOpenButton')).display,
+    }));
+    assert(paymentWidgetProbe.hasWidget&&paymentWidgetProbe.hasMethods&&paymentWidgetProbe.methodChildren>0,
+      'live Toss payment widget did not render '+JSON.stringify(paymentWidgetProbe));
+    await page.evaluate(()=>resetPaymentWidgetUI());
+    console.log('LIVE_TOSS_WIDGET_RENDER_PASS',JSON.stringify(paymentWidgetProbe));
+  }
+
   const aiRuntimeOff = await page.evaluate(() => ({
     runtime:typeof globalThis.__UNNI_AI_NOTE_V4__,
     scripts:[...document.scripts].filter(x => (x.getAttribute('src')||'').includes('ai-note-test-v1.js')).length,
