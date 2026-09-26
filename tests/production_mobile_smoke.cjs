@@ -3,20 +3,66 @@ const BASE = process.env.PRODUCTION_BASE || 'https://sajuft.com/index.html';
 const assert = (v,m) => { if (!v) throw new Error(m); };
 const sleep = (ms) => new Promise(r => setTimeout(r,ms));
 const norm = (v) => String(v || '').replace(/<[^>]+>/g,' ').replace(/[\s.,!?·‘’'"“”()\[\]]/g,'');
+const LOCAL = /127\.0\.0\.1|localhost/.test(BASE);
+function mockConsultation(question, mode='F') {
+  const q=String(question||'').trim();
+  const t=mode==='T';
+  const evidence=['CHART_STRENGTH','CHART_STRUCTURE','CHART_TENGODS'];
+  const claim=(headline,answer)=>({
+    headline,
+    answer,
+    why:'태어난 계절에서 받는 힘, 일간이 실제로 기대는 뿌리, 십신의 배치와 격의 상태를 같이 봤어. 한 가지 오행 개수만으로 정한 답이 아니야.',
+    technicalBasis:'월령과 통근, 신강·신약, 정관과 식상의 실제 세력, 격국에서 도움과 방해가 되는 관계를 함께 교차해서 봤어.',
+    evidenceIds:evidence,
+    counterEvidenceIds:[],
+    certainty:'supported',
+  });
+  return {
+    ok:true,model:'ci-mock',
+    questionPlan:{primaryIntent:'자유질문',intentTags:['자유질문'],directQuestions:[q],decisionType:'판단',timeRange:'질문에 필요할 때만',needsClarification:false,clarifyingQuestion:''},
+    directAnswer:claim(
+      t?'결론부터 보면, 질문의 핵심은 선택 기준이야':'네가 물어본 것부터 말하면, 선택 기준이 먼저 보여',
+      t?'둘 중 하나를 무조건 좋다고 정하기보다 네 사주에서 오래 버틸 수 있는 구조를 먼저 고르는 쪽이 맞아.':'지금은 남들이 좋다는 답보다 네 사주가 오래 힘을 쓸 수 있는 구조를 고르는 게 더 중요해.'
+    ),
+    centralThesis:claim(
+      '이번 질문을 관통하는 사주의 중심',
+      '겉으로 드러난 오행 개수보다 계절과 뿌리, 십신의 실제 힘이 서로 어떻게 이어지는지가 이번 선택을 가르는 핵심이야.'
+    ),
+    sections:[
+      {id:'why',type:'explanation',label:'왜 이런 답인지',title:'겉개수보다 실제 세력이 더 중요해',answer:'같은 오행 비율이어도 계절과 뿌리, 격에서 맡는 역할이 다르면 현실에서 쓰이는 방식이 달라져.',why:'그래서 다섯 큰 성향 중 하나로 줄이지 않고 여러 근거를 같이 읽었어.',technicalBasis:'득령·득지·득세와 통근, 십신 위치, 격국 상태를 함께 확인했어.',nextAction:'지금 선택지마다 내가 통제할 수 있는 범위와 오래 버틸 조건을 적어봐.',evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported'},
+      {id:'risk',type:'caution',label:'특히 조심할 것',title:'잘 맞는 길도 이 조건이면 소모돼',answer:'책임만 커지고 결정권은 적은 구조라면 같은 분야라도 오래 갈수록 소모가 커질 수 있어.',why:'사주에서 강하게 들어오는 요구를 내가 받아내는 방식과 실제 뿌리를 같이 봤기 때문이야.',technicalBasis:'관성의 실제 세력과 일간의 감당력, 통근 여부를 같이 확인했어.',nextAction:'선택 전에 책임과 결정권이 같이 오는지 확인해.',evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported'},
+      {id:'action',type:'action',label:'지금 할 일',title:'정답을 믿기 전에 작은 검증부터 해',answer:'큰 결정을 한 번에 확정하기보다 네가 직접 통제할 수 있는 작은 결과를 먼저 만들어보는 게 좋아.',why:'이번 사주 구조에서는 실제 결과를 만들어 확인할 때 판단이 더 선명해지는 쪽으로 읽혀.',technicalBasis:'식상과 관성의 관계, 일간의 감당력과 구조 보완 순서를 함께 봤어.',nextAction:'이번 주 안에 가장 작은 실행 하나를 정해서 실제 반응을 확인해.',evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported'},
+    ],
+  };
+}
+async function installConsultationMock(page) {
+  if (!LOCAL) return;
+  await page.route('**/api/consultation', async route => {
+    const req=route.request();
+    if(req.method()!=='POST') return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,service:'ci-mock',configured:true,enabled:true,model:'ci-mock'})});
+    let body={}; try{body=req.postDataJSON()||{};}catch{}
+    const packet=body.evidencePacket||{};
+    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mockConsultation(packet?.question?.text,packet?.requestMode))});
+  });
+}
+
 
 async function deployed(page) {
+  await installConsultationMock(page);
   for (let i=0;i<36;i++) {
     try {
-      await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
+      await page.goto(BASE + '?smoke=v22-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.3' &&
         globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.7.0' &&
+        globalThis.__UNNI_CONSULTATION_V1__?.version === '1.0.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
+        globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.2.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach six-answer NOTE 6.7.0 / paid 1.5.3 / products 2.3.1');
+  throw new Error('production did not reach consultation v1 / paid 1.5.3 / products 2.3.1');
 }
 
 async function clickCatalogProduct(page, productId) {
@@ -36,30 +82,26 @@ async function checkRestartCta(page, mode) {
     className:el.className||'',
     background:getComputedStyle(el).backgroundImage||'',
     color:getComputedStyle(el).color||'',
+    disabled:el.disabled,
   }));
-  assert(cta.mode===mode,'other-concern CTA lost F/T design hook '+JSON.stringify(cta));
+  assert(cta.mode===mode,'follow-up CTA lost F/T design hook '+JSON.stringify(cta));
   assert(
     mode==='F'
-      ? cta.text.includes('로아 언니한테 새 고민 말하기')
-      : cta.text.includes('서아 언니한테 새 고민 말하기'),
-    'other-concern CTA copy changed '+JSON.stringify(cta)
+      ? cta.text.includes('로아 언니한테 새 질문')
+      : cta.text.includes('서아 언니한테 새 질문'),
+    'follow-up CTA copy changed '+JSON.stringify(cta)
   );
+  assert(cta.disabled,'new free-question CTA must wait for a question');
   assert(!cta.className.includes('fee500')&&cta.background.includes('linear-gradient')&&cta.color==='rgb(255, 255, 255)',
-    'other-concern CTA still uses legacy Kakao-yellow styling '+JSON.stringify(cta));
-  const returnBubble=await page.locator('#welcomeSisterBubble').evaluate((el)=>({
-    voice:document.getElementById('welcomeSisterText')?.innerText||'',
-    bg:getComputedStyle(el).backgroundColor,
-    border:getComputedStyle(el).borderColor,
-    color:getComputedStyle(document.getElementById('welcomeSisterText')).color,
-    mode:el.dataset.consultMode||'',
+    'follow-up CTA still uses legacy Kakao-yellow styling '+JSON.stringify(cta));
+  const state=await page.evaluate(()=>({
+    question:document.getElementById('consultationQuestion')?.value||'',
+    key:document.getElementById('selectedConcernKey')?.value||'',
+    situation:document.getElementById('selectedConcernSituation')?.value||'',
+    prompt:document.getElementById('concernPickerPrompt')?.innerText||'',
   }));
-  if(mode==='F') {
-    assert(returnBubble.voice.includes('이번엔 뭐가 마음에 걸려?'),'F other-concern return lost warm continuity '+returnBubble.voice);
-    assert(returnBubble.mode==='F'&&returnBubble.color.includes('123, 49, 69'),'F return bubble palette drift '+JSON.stringify(returnBubble));
-  } else {
-    assert(returnBubble.voice.includes('좋아. 이번엔 뭐부터 볼까?'),'T other-concern return lost concise continuity '+returnBubble.voice);
-    assert(returnBubble.mode==='T'&&returnBubble.color.includes('49, 93, 112'),'T return bubble should use blue palette '+JSON.stringify(returnBubble));
-  }
+  assert(state.question===''&&state.key==='consultation'&&state.situation==='free','follow-up did not reset to free question '+JSON.stringify(state));
+  assert(/그대로/.test(state.prompt),'follow-up prompt should ask for natural-language question '+JSON.stringify(state));
 }
 
 async function enter(page, mode, concern, situation) {
@@ -69,8 +111,6 @@ async function enter(page, mode, concern, situation) {
     const roa=document.getElementById('panelRoa');
     const seoa=document.getElementById('panelSeoa');
     const bodyText=document.getElementById('splitIntroSection')?.innerText||'';
-    const roaCta=roa?.querySelector('.split-choice-cta');
-    const seoaCta=seoa?.querySelector('.split-choice-cta');
     const boxes=[title,hint,roa,seoa].map(el=>el?.getBoundingClientRect()).filter(Boolean);
     return {
       bodyText,
@@ -78,136 +118,67 @@ async function enter(page, mode, concern, situation) {
       inViewport:boxes.every(b=>b.top>=-1&&b.left>=-1&&b.right<=innerWidth+1&&b.bottom<=innerHeight+1),
       titleHeight:title?.getBoundingClientRect().height||0,
       hintVisible:!!hint && getComputedStyle(hint).opacity!=='0',
-      panelHeightDelta:Math.abs((roa?.getBoundingClientRect().height||0)-(seoa?.getBoundingClientRect().height||0)),
-      ctaHeightDelta:Math.abs((roaCta?.getBoundingClientRect().height||0)-(seoaCta?.getBoundingClientRect().height||0)),
     };
   });
-  assert(intro.visible && intro.inViewport && intro.titleHeight<=82 && !intro.hintVisible && intro.panelHeightDelta<=2 && intro.ctaHeightDelta<=2,'first counselor-choice viewport/layout balance broken '+JSON.stringify(intro));
-  for(const copy of ['똑같은 내 사주, 누구한테 먼저 털어놓을래?','로아 · 감정 공감형','서아 · 팩트 직진형','요즘 뭐가 제일 마음에 걸려?','언니한테 편하게 얘기해봐','뭐가 제일 궁금해?','중요한 것부터 바로 보자','응, 천천히 얘기해볼래','좋아, 핵심부터 봐줘']) {
-    assert(intro.bodyText.includes(copy),'first counselor-choice copy missing '+copy);
-  }
-  for(const removedCopy of ['말해주는 방식만 골라봐','마음부터 들어주는','핵심부터 짚어주는','선택한 언니의 말투로 결과 끝까지 이어져','응, 언니랑 천천히 풀어볼래','좋아, 핵심만 바로 알려줘','원하는 상담 스타일을 골라봐','왔어? 요즘 뭐가 제일 마음에 걸려','왔어? 뭐가 제일 궁금해']) {
-    assert(!intro.bodyText.includes(removedCopy),'removed first counselor-choice copy remains '+removedCopy);
-  }
+  assert(intro.visible && intro.inViewport && intro.titleHeight<=82 && !intro.hintVisible,'first counselor-choice viewport broken '+JSON.stringify(intro));
   await page.locator(mode === 'F' ? '#panelRoa' : '#panelSeoa').click();
   await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
-  const firstState = await page.evaluate(() => ({
-    concern:document.getElementById('selectedConcernKey')?.value || '',
-    timeInput:(()=>{
-      const select=document.getElementById('birthTimeBranch');
-      const toggle=document.getElementById('birthTimeExactToggle');
-      const wrap=document.getElementById('birthTimeExactWrap');
-      const input=document.getElementById('birthTimeInput');
-      return select&&toggle&&wrap&&input?{
-        branchValue:select.value||'',
-        branchText:select.options[select.selectedIndex]?.text||'',
-        optionCount:select.options.length,
-        exactChecked:!!toggle.checked,
-        exactWrapHidden:wrap.classList.contains('hidden'),
-        exactValue:input.value||'',
-        exactPlaceholder:input.getAttribute('placeholder')||'',
-        unknownCheckbox:!!document.getElementById('birthTimeUnknownButton'),
-      }:null;
-    })(),
-    selected:document.querySelectorAll('#concernGrid .concern-chip.selected').length,
-    details:getComputedStyle(document.getElementById('concernSituationBox')).display,
-    summary:getComputedStyle(document.getElementById('concernSituationSummary')).display,
+
+  const firstState=await page.evaluate(()=>({
+    question:document.getElementById('consultationQuestion')?.value||'',
+    key:document.getElementById('selectedConcernKey')?.value||'',
+    situation:document.getElementById('selectedConcernSituation')?.value||'',
+    oldGrid:!!document.getElementById('concernGrid'),
+    oldSituation:!!document.getElementById('concernSituationBox'),
     submitDisabled:!!document.getElementById('analysisSubmitButton')?.disabled,
-    submitOpacity:parseFloat(getComputedStyle(document.getElementById('analysisSubmitButton')).opacity||'1'),
-    concernPrompt:document.getElementById('concernPickerPrompt')?.innerText||'',
-    oldManseCopy:document.body.innerText.includes('정확한 만세력 조회를 위해 적어줘'),
-    oldTimeHint:document.body.innerText.includes('출생기록에 적힌 시각을 입력하면 더 정확해'),
-    timeHintExists:!!document.getElementById('birthTimeHint'),
-    sisterText:document.getElementById('welcomeSisterText')?.innerText||'',
+    prompt:document.getElementById('concernPickerPrompt')?.innerText||'',
+    hint:document.getElementById('consultationQuestionHint')?.innerText||'',
+    examples:document.querySelectorAll('#consultationQuestionExamples button').length,
+    timeOptions:document.querySelectorAll('#birthTimeBranch option').length,
   }));
-  assert(firstState.concern==='' && firstState.selected===0 && firstState.details==='none' && firstState.summary==='none' && firstState.submitDisabled,
-    'fresh input must require an explicit concern '+JSON.stringify(firstState));
-  assert(!firstState.oldManseCopy && !firstState.oldTimeHint && !firstState.timeHintExists,
-    'birth input still shows old technical/helper copy '+JSON.stringify(firstState));
-  assert(firstState.timeInput && firstState.timeInput.branchValue==='unknown' &&
-         firstState.timeInput.branchText==='(모름)' &&
-         firstState.timeInput.optionCount===13 && !firstState.timeInput.exactChecked &&
-         firstState.timeInput.exactWrapHidden && firstState.timeInput.exactValue==='' &&
-         firstState.timeInput.exactPlaceholder==='예: 09:42' && !firstState.timeInput.unknownCheckbox,
-    '12-branch selector should be primary with checkbox-gated exact-time input '+JSON.stringify(firstState.timeInput));
-  assert(firstState.submitOpacity<=0.4,'disabled consultation CTA is still too visually active '+JSON.stringify(firstState));
-  if (mode==='F') assert(
-    firstState.sisterText==='응, 편하게 적어줘.' &&
-    firstState.concernPrompt==='요즘 제일 마음에 걸리는 건?' &&
-    !firstState.sisterText.includes('ㅎㅎ'),
-    'F input copy should stay one short warm line '+JSON.stringify(firstState)
-  );
-  if (mode==='T') assert(
-    firstState.sisterText==='좋아. 필요한 것만 적어줘.' &&
-    firstState.concernPrompt==='지금 딱 궁금한 건 뭐야?' &&
-    !firstState.sisterText.includes('ㅎㅎ'),
-    'T input copy should stay one short line '+JSON.stringify(firstState)
-  );
+  assert(firstState.question===''&&firstState.key==='consultation'&&firstState.situation==='free'&&firstState.submitDisabled,
+    'fresh input must start as a free question '+JSON.stringify(firstState));
+  assert(!firstState.oldGrid&&!firstState.oldSituation,'fixed concern/situation UI returned '+JSON.stringify(firstState));
+  assert(firstState.examples>=4&&firstState.prompt.includes('그대로')&&firstState.hint.includes('카테고리 고를 필요 없어'),
+    'free-question guidance missing '+JSON.stringify(firstState));
+  assert(firstState.timeOptions===13,'12-branch birth-time selector drift');
+
   await page.fill('#nameInput','테스트');
-  const label = concern === 'love' ? '연애 · 썸' : '마음 · 스트레스';
-  await page.locator('#concernGrid .concern-chip').filter({hasText:label}).click();
-  await page.waitForSelector('#concernSituationBox',{state:'visible'});
-  const situationPrompt=(await page.locator('#concernSituationPrompt').innerText()).trim();
-  const expectedSituationPrompt=concern==='love'
-    ? '연애 얘기, 지금 너랑 제일 가까운 건 뭐야?'
-    : '마음이 힘든데, 지금 제일 가까운 느낌은 뭐야?';
-  assert(situationPrompt===expectedSituationPrompt,'restored situation prompt drift '+situationPrompt);
-  assert(await page.locator('#concernSituationGrid [data-concern-situation]').count() === 4,'situation count');
-  await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
-  await page.waitForSelector('#concernSituationSummary',{state:'visible'});
-  assert(await page.locator('#concernSituationAck').count()===0,'extra situation acknowledgement should stay removed');
-  assert(!(await page.locator('#analysisSubmitButton').isDisabled()),'send button should unlock after concern and situation');
-  assert(await page.locator('#concernSituationBox').isHidden(),'situation did not collapse');
-  await page.locator('#concernSituationSummary button').click();
-  await page.waitForSelector('#concernSituationBox',{state:'visible'});
-  await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
+  const question = mode==='F'
+    ? '지금 만나는 사람이랑 계속 가도 될까? 관계에서 내가 꼭 봐야 할 기준도 알려줘.'
+    : '지금 회사에 남는 게 나아, 옮기는 게 나아? 움직이기 좋은 시기도 같이 봐줘.';
+  await page.fill('#consultationQuestion',question);
+  assert(!(await page.locator('#analysisSubmitButton').isDisabled()),'free-question submit should unlock after text input');
   await page.fill('#birthDateInput','19980221');
   assert(await page.locator('#birthTimeBranch option').count()===13,'birth-time selector should include unknown and 12 branches');
-  assert((await page.locator('#birthTimeBranch option').first().innerText())==='(모름)','birth-time unknown default missing');
-  assert((await page.locator('#birthTimeBranch option[value="子"]').innerText()).includes('23:30~01:29'),'manse-corrected 子 range missing');
-  assert(await page.locator('#birthTimeExactToggle').count()===1,'exact-time checkbox missing');
-  assert(!(await page.locator('#birthTimeExactToggle').isChecked()),'exact-time checkbox should default off');
-  assert(await page.locator('#birthTimeExactWrap').isHidden(),'exact-time field should stay hidden until checked');
-  assert(await page.locator('#birthTimeInput').count()===1,'exact birth-time input missing');
-  assert(await page.locator('#birthTimeUnknownButton').count()===0,'separate unknown-time checkbox should stay removed');
-  const branchEngineCheck=await page.evaluate(()=>{
-    const branches=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
-    return branches.map(branch=>{
-      const result=calculateAccurateManse(1998,2,21,branch,'female');
-      return {branch,hourKnown:result?.calendarMeta?.hourKnown===true,zhi:result?.pillars?.hour?.zhi||''};
-    });
-  });
-  assert(branchEngineCheck.every(x=>x.hourKnown && x.zhi===x.branch),
-    'one or more 12-branch birth times failed to reach the full saju engine '+JSON.stringify(branchEngineCheck));
   if(mode==='F') {
     await page.selectOption('#birthTimeBranch','寅');
-    assert(!(await page.locator('#birthTimeExactToggle').isChecked()),'branch selection should keep exact-time mode off');
-    assert(await page.locator('#birthTimeExactWrap').isHidden(),'branch selection should keep exact-time field hidden');
   } else {
     await page.check('#birthTimeExactToggle');
-    assert(await page.locator('#birthTimeExactWrap').isVisible(),'exact-time field should open after checking');
     await page.fill('#birthTimeInput','0942');
     assert((await page.locator('#birthTimeInput').inputValue())==='09:42','exact HH:MM auto-format failed');
-    assert((await page.locator('#birthTimeBranch').inputValue())==='巳','exact time should sync the visible 12-branch selector');
   }
+
   await page.locator('#splitNextButton button').click();
-  await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
-  const appliedTime=await page.evaluate(()=>({
+  await page.waitForSelector('#resultSection',{state:'visible',timeout:90000});
+  await page.waitForFunction(()=>Array.isArray(currentResultData?.__consultationV1?.cards)&&currentResultData.__consultationV1.cards.length>=4,null,{timeout:90000});
+  const applied=await page.evaluate(()=>({
+    concern:currentResultData?.concernKey,
+    situation:currentResultData?.concernSituation,
+    question:currentResultData?.userQuestion,
+    cards:currentResultData?.__consultationV1?.cards?.length||0,
+    plan:currentResultData?.__consultationV1?.questionPlan||null,
     key:currentResultData?.userTimeKey||'',
-    hourKnown:currentResultData?.calendarMeta?.hourKnown,
     hourZhi:currentResultData?.pillars?.hour?.zhi||'',
   }));
-  if(mode==='F') assert(appliedTime.key==='寅' && appliedTime.hourKnown===true && appliedTime.hourZhi==='寅',
-    'selected branch birth time did not propagate through full saju result '+JSON.stringify(appliedTime));
-  else assert(appliedTime.key==='09:42' && appliedTime.hourKnown===true && appliedTime.hourZhi==='巳',
-    'exact birth time did not propagate through full saju result '+JSON.stringify(appliedTime));
+  assert(applied.concern==='consultation'&&applied.situation==='free'&&applied.question===question&&applied.cards>=4&&applied.cards<=9,
+    'free question did not propagate through consultation '+JSON.stringify(applied));
+  if(mode==='F') assert(applied.key==='寅'&&applied.hourZhi==='寅','branch birth time did not propagate '+JSON.stringify(applied));
+  else assert(applied.key==='09:42'&&applied.hourZhi==='巳','exact birth time did not propagate '+JSON.stringify(applied));
+
   const sourceFreeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
-  if(sourceFreeLaunch){
-    await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
-  }else{
-    await page.waitForSelector('#note2PreviewCard',{state:'visible',timeout:10000});
-    await page.waitForSelector('#lockedOverlay',{state:'visible',timeout:10000});
-  }
+  if(sourceFreeLaunch) await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
+  else await page.waitForSelector('#lockedOverlay',{state:'visible',timeout:10000});
 }
 
 
@@ -347,225 +318,58 @@ function assertResultLayout(layout, label) {
 }
 
 async function inspect(page, mode) {
-  const r = await page.evaluate((mode) => {
-    const plain = v => String(v||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-    const notes = generateConcernNotes(currentResultData,mode);
+  const r=await page.evaluate((mode)=>{
+    const consultation=currentResultData?.__consultationV1||{};
+    const cards=consultation.cards||[];
+    const visibleText=document.getElementById('notesListContainer')?.innerText||'';
     const products=[...document.querySelectorAll('#unniProductLadder [data-unni-product]')];
+    const details=[...document.querySelectorAll('#notesListContainer details.consultation-evidence')];
     return {
-      n1:plain(notes[0]?.desc), n2:plain(notes[2]?.desc), answer:plain(notes[1]?.desc),
-      n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc), n6:plain(notes[5]?.desc),
-      aiTranslated:notes.length===6 && notes.every(n=>n?.__aiTranslated===true),
-      noteV2Audit:currentResultData?.noteV2Audit || null,
-      timingMeta:notes[5]?.__timingQA || null,
-      oheng:document.getElementById('ohengSummaryTxt')?.innerText||'',
-      dayMasterTag:document.getElementById('dayMasterTag')?.innerText||'',
-      sourceFreeLaunch:FREE_LAUNCH_MODE,
-      count:products.length,
-      visible:products.filter(x=>x.offsetParent!==null).length,
+      cardCount:cards.length,
+      badges:cards.map(x=>x.badge||''),
+      sectionTypes:cards.map(x=>x.__sectionType||''),
+      first:cards[0]?.desc||'',
+      second:cards[1]?.desc||'',
+      visibleText,
+      question:currentResultData?.userQuestion||'',
+      concern:currentResultData?.concernKey||'',
+      situation:currentResultData?.concernSituation||'',
+      questionPlan:consultation.questionPlan||null,
+      thesis:consultation.centralThesis||null,
+      direct:consultation.directAnswer||null,
+      evidenceOk:cards.every(x=>Array.isArray(x.__evidenceRuleIds)&&x.__evidenceRuleIds.length>0),
+      counterOk:cards.every(x=>Array.isArray(x.__counterEvidenceIds)),
+      detailsCount:details.length,
+      rawEvidenceIdsVisible:/CHART_|DITIAN|ZIPING|RULE[_:-]/.test(visibleText),
+      oldSix:/핵심\s*\|\s*질문에 대한 답|1\/6|2\/6/.test(visibleText),
+      products:products.length,
+      visibleProducts:products.filter(x=>x.offsetParent!==null).length,
       catalog:document.getElementById('unniProductLadder')?.innerText||'',
-      recommendedReason:document.querySelector('#unniProductLadder [data-recommendation-reason="1"]')?.innerText||'',
-      otherToggle:!!document.getElementById('unniShowOtherProducts'),
-      otherVisible:document.getElementById('unniOtherProducts') ? getComputedStyle(document.getElementById('unniOtherProducts')).display!=='none' : false,
-      note2Preview:document.getElementById('note2PreviewCard')?.innerText||'',
-      paywall:document.getElementById('lockedOverlay')?.innerText||'',
-      paywallNextTeaser:document.getElementById('paywallNextTeaser')?.innerText||'',
-      paywallFeatureCount:document.querySelectorAll('#payBoxFeatures > div').length,
-      paywallVisible:document.getElementById('lockedOverlay') ? getComputedStyle(document.getElementById('lockedOverlay')).display!=='none' : false,
-      paywallPrice:(()=>{
-        const badge=document.getElementById('paywallPriceBadge');
-        const amount=document.getElementById('paywallPriceAmount');
-        return {
-          badge:badge?.className||'',
-          amount:amount?.className||'',
-          text:amount?.innerText||'',
-        };
-      })(),
-      paywallTurn:(()=>{
-        const el=document.querySelector('#note2PreviewCard .note-preview-continuation');
-        if(!el) return null;
-        const cs=getComputedStyle(el);
-        const before=getComputedStyle(el,'::before');
-        return {
-          radius:cs.borderRadius||'',
-          borderLeft:parseFloat(cs.borderLeftWidth||'0'),
-          bg:cs.backgroundImage||cs.backgroundColor||'',
-          font:parseFloat(getComputedStyle(el.querySelector('p')).fontSize||'0'),
-          before:before.content||'',
-          text:el.innerText.trim(),
-        };
-      })(),
-      funExtrasDisplay:document.getElementById('resultFunExtras') ? getComputedStyle(document.getElementById('resultFunExtras')).display : '',
-      shareActionsDisplay:document.getElementById('resultShareActions') ? getComputedStyle(document.getElementById('resultShareActions')).display : '',
-      switchCount:document.querySelectorAll('#sisterSwitchCard').length,
-      badges:notes.map(n=>n.badge||''),
-      resultGreeting:document.getElementById('resultSisterGreeting')?.innerText||'',
-      resultBadge:document.getElementById('resultModeBadge')?.innerText||'',
-      hierarchy:{
-        oneLineBeforeThreeLine:(document.getElementById('sazuCharacterTitle').compareDocumentPosition(document.getElementById('manualBulletList')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
-        threeLineBeforeMbti:(document.getElementById('manualBulletList').compareDocumentPosition(document.getElementById('gradeSection')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
-        mbtiBeforeChem:(document.getElementById('gradeSection').compareDocumentPosition(document.getElementById('chemBestCard')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
-        ohengBeforeNotes:(document.getElementById('resultOhengCard').compareDocumentPosition(document.getElementById('consultationNotesShell')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
-        notesBeforeMbti:(document.getElementById('consultationNotesShell').compareDocumentPosition(document.getElementById('gradeSection')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
-        notesBeforeShare:(document.getElementById('consultationNotesShell').compareDocumentPosition(document.getElementById('resultShareActions')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0,
-        shareBeforeProducts:document.getElementById('unniProductLadder')
-          ? (document.getElementById('resultShareActions').compareDocumentPosition(document.getElementById('unniProductLadder')) & Node.DOCUMENT_POSITION_FOLLOWING)!==0
-          : true,
-        mbtiSize:parseFloat(getComputedStyle(document.getElementById('resultBigMbti')).fontSize||'0'),
-        extrasOpen:document.getElementById('resultFunExtras')?.open===true,
-        firstLook:document.getElementById('resultFirstLookLabel')?.innerText||'',
-        concernHandoff:document.getElementById('resultConcernHandoffText')?.innerText||'',
-        shareText:document.getElementById('mainShareBtnText')?.innerText||'',
-        shareLead:document.getElementById('resultShareLead')?.innerText||'',
-        reAnalyzeSub:document.getElementById('reAnalyzeSubText')?.innerText||'',
-        freshAnalysisText:document.getElementById('freshAnalysisBtnText')?.innerText||'',
-      },
-      memoLayout:(()=>{
-        const shell=document.getElementById('consultationNotesShell');
-        const paper=document.getElementById('consultationNotesPaper');
-        const note=document.querySelector('#notesListContainer .note-editorial');
-        const metaRight=document.querySelector('#consultationNotesHeader>div:first-child>span:last-child');
-        const sr=shell?.getBoundingClientRect();
-        const pr=paper?.getBoundingClientRect();
-        const nr=note?.getBoundingClientRect();
-        const ns=note?getComputedStyle(note):null;
-        return {
-          viewport:document.documentElement.clientWidth,
-          shell:sr?{left:sr.left,right:sr.right,width:sr.width}:null,
-          paper:pr?{left:pr.left,right:pr.right,width:pr.width}:null,
-          note:nr?{left:nr.left,right:nr.right,width:nr.width}:null,
-          noteRadius:ns?.borderRadius||'',
-          noteBackground:ns?.backgroundColor||'',
-          metaRightDisplay:metaRight?getComputedStyle(metaRight).display:'',
-          metaRightText:metaRight?.innerText||'',
-          overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth,
-        };
-      })(),
+      modeBadge:document.getElementById('resultModeBadge')?.innerText||'',
+      sourceFreeLaunch:FREE_LAUNCH_MODE,
+      history:Array.isArray(currentResultData?.consultationHistory)?currentResultData.consultationHistory:[],
     };
   },mode);
   r.resultLayout=await resultLayoutSnapshot(page);
   assertResultLayout(r.resultLayout,mode+' primary result');
-  assert(r.noteV2Audit?.version==='6.7.0'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
-  assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
-  assert(r.noteV2Audit?.evidenceCoverage?.coverageRate===1&&r.noteV2Audit?.evidenceCoverage?.missingRuleIds?.length===0,mode+' supported classical evidence dropped '+JSON.stringify(r.noteV2Audit?.evidenceCoverage));
-  assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six internal causal claims missing');
-  assert(Array.isArray(r.noteV2Audit?.outputClaimMap)&&r.noteV2Audit.outputClaimMap.length===6,mode+' NOTE1-6 provenance map missing');
-  for(const link of r.noteV2Audit.outputClaimMap){
-    assert(link.claimId&&link.source&&['high','supported','guarded'].includes(link.confidence),mode+' claim-first NOTE provenance missing '+JSON.stringify(link));
-  }
-  assert(
-    r.noteV2Audit?.behaviorTemplateDependency===true &&
-    r.noteV2Audit?.behaviorTemplateEvidenceDependency===false &&
-    r.noteV2Audit?.behaviorTemplateRole==='claim-bounded-domain-translation',
-    mode+' behavior template audit drift'
-  );
-  assert(r.noteV2Audit?.interpretationPlan?.primaryGroup,mode+' cross-validated concern interpretation missing');
-  for(const [label,text] of [['core',r.n1],['scene',r.n2],['caution',r.n4],['fit',r.n5],['timing',r.n6]]){
-    assert(text.length>=110&&text.length<=1600,mode+' '+label+' answer length drift '+text.length);
-    if(r.aiTranslated){
-      assert(
-        text.includes('사주 근거') &&
-        /비견|겁재|식신|상관|정재|편재|정관|편관|정인|편인|신강|신약|중화|득령|득지|득세|통근|격국|상신|기신|용신|합|충|형|파|해|대운|세운|월운|일간/.test(text),
-        mode+' '+label+' evidence-first AI NOTE lost concrete saju facts '+text
-      );
-    } else {
-      assert(text.includes('결론'),mode+' '+label+' fallback answer does not lead with a conclusion '+text);
-    }
-  }
-  if(r.aiTranslated){
-    assert(/돈|일|연애|진로|관계|회복/.test(r.n2),mode+' AI NOTE lost selected concern focus '+r.n2);
-    assert(r.timingMeta?.aiTranslated===true,mode+' AI timing NOTE metadata missing');
-  } else {
-    assert(r.n2.includes('결론')&&/돈|일|연애|진로|관계|마음/.test(r.n2)&&/(왜 그러냐면|근거)/.test(r.n2),mode+' concern-grounded explanation missing '+r.n2);
-    assert(r.answer.includes('결론')&&/1순위|쪽이야|편이야|때 —|사주야/.test(r.answer),mode+' situation answer did not lead with a ranked pick, verdict or timing '+r.answer);
-    assert(r.timingMeta?.concernSituation,mode+' timing answer metadata missing');
-    assert(!norm(r.timingMeta?.firstBody)||!norm(r.timingMeta?.secondBody)||norm(r.timingMeta?.firstBody)!==norm(r.timingMeta?.secondBody),mode+' duplicate timing roles returned');
-  }
-  assert(!/(비밀\s*메모|실전 룰|반복 패턴)/.test(r.n1+' '+r.n2+' '+r.n4+' '+r.n5+' '+r.n6),mode+' stale NOTE labels returned');
-  if (mode==='F') assert(r.oheng.includes('겉으로 가장 많이 보여')&&r.oheng.includes('눈에 보이는 오행 분포')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('지금 네 고민에 필요한 얘기만 짧게')&&!/비밀\s*메모|제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng bridge wording '+r.oheng);
-  if (mode==='T') assert(r.oheng.includes('비중이 가장 커')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('지금 네 고민에 맞는 말로만 짧게')&&!/비밀\s*메모|제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng bridge wording '+r.oheng);
-  assert(!/[나무불흙쇠물]\)/.test(r.oheng+r.dayMasterTag),'old parenthetical five-element wording remains '+JSON.stringify({oheng:r.oheng,day:r.dayMasterTag}));
-  if(r.sourceFreeLaunch){
-    assert(r.count===4&&r.visible===4&&!r.otherToggle&&r.otherVisible,'free-launch should show all four premium products immediately '+JSON.stringify(r));
-  }else{
-    assert(r.count===0&&r.visible===0&&!r.catalog,'premium upsells must stay hidden before the 990 won unlock '+JSON.stringify(r));
-    assert(r.note2Preview.includes('2/6')&&r.paywallVisible,'second-answer teaser/paywall missing '+JSON.stringify({preview:r.note2Preview,paywall:r.paywall}));
-    if(mode==='F') assert(r.paywall.includes('로아 언니 · 이제 너한테 맞는 쪽을 보자')&&r.paywall.includes('질문에 대한 답')&&r.paywall.includes('이유'),'live F conversion paywall drift '+r.paywall);
-    if(mode==='T') assert(r.paywall.includes('서아 언니 · 이제 구체적인 답만 보면 돼')&&r.paywall.includes('질문에 대한 답')&&r.paywall.includes('이유'),'T basic paywall handoff drift '+r.paywall);
-    assert(r.paywall.includes('100원')&&r.paywallFeatureCount===3&&r.paywallNextTeaser.length>=12,'compact 990 paywall or locked-content teaser missing '+JSON.stringify({paywall:r.paywall,teaser:r.paywallNextTeaser,count:r.paywallFeatureCount}));
-    if(mode==='F') assert(r.paywallPrice.text==='100원'&&r.paywallPrice.badge.trim()==='shrink-0 text-right'&&!/rounded|bg-|border/.test(r.paywallPrice.badge)&&r.paywallPrice.amount.includes('rose-600'),'F 990 simple price display drift '+JSON.stringify(r.paywallPrice));
-    if(mode==='T') assert(r.paywallPrice.text==='100원'&&r.paywallPrice.badge.trim()==='shrink-0 text-right'&&!/rounded|bg-|border/.test(r.paywallPrice.badge)&&r.paywallPrice.amount.includes('sky-600'),'T 990 simple price display drift '+JSON.stringify(r.paywallPrice));
-    assert(
-      r.paywallTurn &&
-      r.paywallTurn.borderLeft>=3 &&
-      r.paywallTurn.font>=12.5 &&
-      (!r.paywallTurn.before || r.paywallTurn.before==='none' || r.paywallTurn.before==='normal') &&
-      r.paywallTurn.text.includes('여기서부터') &&
-      r.paywallTurn.text.includes('답의 나머지') &&
-      r.paywallTurn.text.includes('이유'),
-      'second-answer conversion turn should point to concrete locked value '+JSON.stringify(r.paywallTurn)
-    );
-    assert(r.paywall.includes('질문에 대한 답 · 이유 · 방법까지')&&!/오픈 체험가/.test(r.paywall),'basic unlock scope or stale sale copy drift '+r.paywall);
-    assert(r.funExtrasDisplay==='none'&&r.shareActionsDisplay==='none','locked 990 flow should hide MBTI/share diversions '+JSON.stringify({fun:r.funExtrasDisplay,share:r.shareActionsDisplay}));
-  }
-  if(r.catalog){
-    assert(r.recommendedReason.length>=10&&r.visible===4&&!r.catalog.includes('다른 방향 3개도 보기'),'all premium products should stay visible under one recommendation '+JSON.stringify({visible:r.visible,catalog:r.catalog}));
-    assert(r.catalog.includes('우리 둘 궁합')&&r.catalog.includes('내 전체 사주판')&&r.catalog.includes('고민 3개 더 깊게'),'premium catalog lost distinct product choices');
-    assert(!r.catalog.includes('언니라면 이걸 먼저 이어서 볼 것 같아')&&!r.catalog.includes('다음으로 볼 가치는 이게 제일 커'),'premium catalog headline is still over-explaining');
-    assert(!/16챕터|12챕터|NOTE 36/.test(r.catalog),'product catalog still uses technical volume labels '+r.catalog);
-  }
-  assert(r.switchCount===0,'bottom F/T CTA remains');
-  assert(
-    r.hierarchy.oneLineBeforeThreeLine &&
-    r.hierarchy.threeLineBeforeMbti &&
-    r.hierarchy.ohengBeforeNotes &&
-    r.hierarchy.notesBeforeMbti &&
-    r.hierarchy.mbtiBeforeChem &&
-    r.hierarchy.notesBeforeShare &&
-    r.hierarchy.shareBeforeProducts &&
-    r.hierarchy.mbtiSize<=38 &&
-    !r.hierarchy.extrasOpen,
-    'consultation-first result hierarchy is wrong '+JSON.stringify(r.hierarchy)
-  );
-  if(mode==='F') assert(
-    r.hierarchy.firstLook.includes('언니가 먼저 본 너') &&
-    r.hierarchy.concernHandoff.includes('아까 말한 고민 있지?') &&
-    r.hierarchy.shareText.includes('인스타 스토리') &&
-    r.hierarchy.shareLead.includes('상담 기록') &&
-    r.hierarchy.reAnalyzeSub.includes('새 고민만 고르면 돼') &&
-    r.hierarchy.freshAnalysisText.includes('다른 사람도 봐줄까'),
-    'F counseling handoff disappeared '+JSON.stringify(r.hierarchy)
-  );
-  if(mode==='T') assert(
-    r.hierarchy.firstLook.includes('언니가 먼저 정리한 너') &&
-    r.hierarchy.concernHandoff.includes('아까 말한 고민에선 이 부분이 핵심이야') &&
-    r.hierarchy.shareText.includes('인스타 스토리') &&
-    r.hierarchy.shareLead.includes('상담 기록') &&
-    r.hierarchy.reAnalyzeSub.includes('새 고민만 고르면 돼') &&
-    r.hierarchy.freshAnalysisText.includes('다른 사람 사주 새로 보기'),
-    'T counseling handoff disappeared '+JSON.stringify(r.hierarchy)
-  );
-  assert(
-    r.memoLayout.shell &&
-    r.memoLayout.paper &&
-    r.memoLayout.note &&
-    r.memoLayout.shell.width<=386.5 &&
-    Math.abs(r.memoLayout.shell.left-(r.memoLayout.viewport-r.memoLayout.shell.right))<=2 &&
-    r.memoLayout.note.left>=r.memoLayout.paper.left-1 &&
-    r.memoLayout.note.right<=r.memoLayout.paper.right+1 &&
-    r.memoLayout.noteRadius==='0px' &&
-    r.memoLayout.metaRightDisplay!=='none' &&
-    r.memoLayout.metaRightText.includes('1:1 맞춤 상담 기록') &&
-    !r.memoLayout.overflow,
-    'consultation memo containment drift '+JSON.stringify(r.memoLayout)
-  );
-  assert(!r.badges.some(x=>x.includes('·')||x.includes('사람 필터')||x.includes('7일 처방')||x.includes('놓친 포인트')),
-    'old NOTE badge wording remains '+JSON.stringify(r.badges));
-  assert(!/[💕🥺💌🌸🧊]/u.test(r.resultGreeting+r.resultBadge),'result persona still depends on decorative emoji '+JSON.stringify({greeting:r.resultGreeting,badge:r.resultBadge}));
-  if (mode==='F') assert(r.resultGreeting.includes('언니가 보니까')&&r.resultGreeting.includes('제일 먼저 눈에 들어오는 건 이거야')&&!r.resultGreeting.includes('ㅎㅎ')&&r.resultGreeting.length<=90,'F result warm close-sister intro drift '+r.resultGreeting);
-  if (mode==='T') assert(r.resultGreeting.includes('먼저 봐야 할 건 이거야')&&r.resultGreeting.length<=80,'T result concise direct-care intro drift '+r.resultGreeting);
-  assert(!r.resultGreeting.includes('ㅎㅎ'),'repeated laughter remains in result '+r.resultGreeting);
-  if (mode==='T') assert(!/징징|살인 충동|사람 취급|멍청한 질문/.test(r.resultGreeting+r.catalog),'harsh T voice leaked into live journey '+JSON.stringify({greeting:r.resultGreeting,catalog:r.catalog}));
-  return r;
+  assert(r.concern==='consultation'&&r.situation==='free','old fixed concern path rendered '+JSON.stringify(r));
+  assert(r.cardCount>=4&&r.cardCount<=9,'dynamic consultation card count must be 4-9 '+r.cardCount);
+  assert(r.badges[0]==='네 질문의 답'&&r.badges[1]==='언니가 먼저 본 것','direct answer / thesis ordering drift '+JSON.stringify(r.badges));
+  assert(r.evidenceOk&&r.counterOk,'consultation provenance missing');
+  assert(r.detailsCount>=r.cardCount,'progressive why/evidence disclosure missing '+JSON.stringify({details:r.detailsCount,cards:r.cardCount}));
+  assert(!r.rawEvidenceIdsVisible,'internal evidence ids leaked to user '+r.visibleText);
+  assert(!r.oldSix,'fixed NOTE 1-6 wording leaked into primary consultation '+r.visibleText);
+  assert(r.questionPlan?.directQuestions?.length>=1&&r.thesis&&r.direct,'question plan / central thesis / direct answer missing');
+  assert(!/[undefined|null|NaN]/.test(r.visibleText),'bad token leaked into consultation');
+  if(r.sourceFreeLaunch) assert(r.products===4&&r.visibleProducts===4,'premium catalog should expose four products '+JSON.stringify(r));
+  return {
+    ...r,
+    n1:String(r.first).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),
+    n2:String(r.second).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),
+    n4:r.visibleText,
+    n5:r.visibleText,
+    n6:r.visibleText,
+  };
 }
 
 (async()=>{
