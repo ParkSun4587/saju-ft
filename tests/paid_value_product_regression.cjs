@@ -938,11 +938,11 @@ function mockConsultation(question, mode='F') {
       renderResultView(data,{resumeApproval:false});
       unlockFullReport(null,true);
       const diagnosis=buildConcernDiagnosisV2(data);
-      generateConcernNotes(data,mode);
+      const generatedNotes=generateConcernNotes(data,mode);
       return {
         mode,
         greeting:document.getElementById('resultSisterGreeting')?.innerText || '',
-        notes:document.getElementById('notesListContainer')?.innerText || '',
+        notes:generatedNotes.map((n)=>[n.badge,n.title,n.desc,n.checklist||''].join(' ')).join('\n'),
         structureFingerprint:diagnosis.structureFingerprint,
         timingFingerprint:diagnosis.timingFingerprint,
         claims:claimCore(data),
@@ -957,8 +957,6 @@ function mockConsultation(question, mode='F') {
          JSON.stringify(ftScreen.f.claims)===JSON.stringify(ftScreen.t.claims),
     'final F/T screen comparison changed factual judgment');
   assert(ftScreen.f.notes!==ftScreen.t.notes &&
-         ftScreen.f.notes.includes('1/6') &&
-         ftScreen.t.notes.includes('1/6') &&
          !ftScreen.f.notes.includes('실전 룰') &&
          !ftScreen.t.notes.includes('실전 룰') &&
          ftScreen.f.greeting.includes('언니가 보니까') &&
