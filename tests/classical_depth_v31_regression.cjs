@@ -13,7 +13,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     globalThis.__CLASSICAL_ENGINE_V2__?.version==='2.2.0' &&
     globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version==='2.1.0' &&
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.6.0'
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.6.1'
   );
 
   const r=await page.evaluate(()=>{
@@ -349,12 +349,12 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         longTermPivots:CANON.reasoning.timing.longTermPivots||[],
         scene:plain(CANON.notes[2].desc),
         answer:plain(CANON.notes[1].desc),
-        fit:plain(CANON.notes[3].desc),
-        fix:plain(CANON.notes[3].desc),
-        fixClaim:CANON.notes[3].__claim||null,
-        fixFacts:CANON.notes[3].__personalizationFacts||null,
-        timingAnswer:plain(CANON.notes[4].desc),
-        timingMeta:CANON.notes[4].__timingQA,
+        fit:plain(CANON.notes[4].desc),
+        fix:plain(CANON.notes[4].desc),
+        fixClaim:CANON.notes[4].__claim||null,
+        fixFacts:CANON.notes[4].__personalizationFacts||null,
+        timingAnswer:plain(CANON.notes[5].desc),
+        timingMeta:CANON.notes[5].__timingQA,
       },
       traces:[
         trace('canonical-weak-officer',CANON),
@@ -370,7 +370,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     };
   });
 
-  assert(r.versions.classical==='2.2.0'&&r.versions.integrated==='2.1.0'&&r.versions.reasoning==='2.1.1'&&r.versions.note==='6.6.0','depth runtime version mismatch');
+  assert(r.versions.classical==='2.2.0'&&r.versions.integrated==='2.1.0'&&r.versions.reasoning==='2.1.1'&&r.versions.note==='6.6.1','depth runtime version mismatch');
 
   assert(r.rawMonth.sameRaw,'same-visible-count month test setup drift');
   assert(r.rawMonth.monthA!==r.rawMonth.monthB,'month test must change month command');
