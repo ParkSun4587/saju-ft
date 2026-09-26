@@ -13,7 +13,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load',timeout:60000});
   await page.waitForFunction(()=>(
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.5.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.6.0' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version==='2.3.1'
   ),null,{timeout:60000});
@@ -139,7 +139,11 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
             const note=notes[link.noteNum-1];
             if(!link.claimId || note?.__claim?.id!==link.claimId) failures.push(concern+'/'+key+'/'+mode+': claim-first binding '+link.noteNum);
           }
-          if(d.noteV3Audit?.behaviorTemplateRole!=='expression-only') failures.push(concern+'/'+key+'/'+mode+': behavior template role drift');
+          if(
+            d.noteV3Audit?.behaviorTemplateDependency!==true ||
+            d.noteV3Audit?.behaviorTemplateEvidenceDependency!==false ||
+            d.noteV3Audit?.behaviorTemplateRole!=='claim-bounded-domain-translation'
+          ) failures.push(concern+'/'+key+'/'+mode+': behavior template audit drift');
           signatures.add(concern+'/'+key+'/'+mode+'|'+plain(notes[0]?.desc)+'|'+plain(notes[1]?.desc));
         }
         const f={...calculateAccurateManse(1998,2,21,'03:10','female'),concernKey:concern,concernSituation:key,currentMode:'F',__testNowYmd:'2026-09-20'};
