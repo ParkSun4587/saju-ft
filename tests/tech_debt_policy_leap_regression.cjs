@@ -14,7 +14,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.waitForFunction(()=>(
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.7.0' &&
-    globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
+    globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.2.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version==='2.3.1'
   ),null,{timeout:60000});
 
@@ -208,11 +208,11 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       bundleFull:p.canRenderFeature('concern_bundle3','full-five-year'),
       fullCompat:p.canRenderFeature('full_saju','compatibility',{secondPersonPresent:true}),
       allCompat:p.canRenderFeature('all_in_one','compatibility',{secondPersonPresent:true}),
-      compatMissing:p.validateProductPayload('compatibility',{features:['compatibility','second-person','monthly-detail'],months:18,secondPersonPresent:false,concernCount:0}),
-      compatPresent:p.validateProductPayload('compatibility',{features:['compatibility','second-person','monthly-detail'],months:18,secondPersonPresent:true,concernCount:0}),
-      bundleLeak:p.validateProductPayload('concern_bundle3',{features:['additional-concerns','full-five-year'],months:18,concernCount:3}),
-      fullLeak:p.validateProductPayload('full_saju',{features:['full-five-year','compatibility'],months:18,secondPersonPresent:true,concernCount:0}),
-      allLeak:p.validateProductPayload('all_in_one',{features:['all-six-concerns','compatibility'],months:18,secondPersonPresent:true,concernCount:6}),
+      compatMissing:p.validateProductPayload('compatibility',{features:['compatibility','second-person','monthly-detail'],months:18,secondPersonPresent:false}),
+      compatPresent:p.validateProductPayload('compatibility',{features:['compatibility','second-person','monthly-detail'],months:18,secondPersonPresent:true}),
+      bundleLeak:p.validateProductPayload('concern_bundle3',{features:['additional-questions','full-five-year'],months:18,questionCount:3}),
+      fullLeak:p.validateProductPayload('full_saju',{features:['full-five-year','compatibility'],months:18,secondPersonPresent:true}),
+      allLeak:p.validateProductPayload('all_in_one',{features:['current-question-link','compatibility'],months:18,secondPersonPresent:true,questionCount:1}),
       basicFiltered:(()=>{
         const d=calculateAccurateManse(1998,2,21,'03:10','female');
         d.__testNowYmd='2026-09-20'; d.concernKey='career'; d.concernSituation='current';
@@ -240,23 +240,35 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     d.__testNowYmd='2026-09-20'; d.concernKey='money'; d.concernSituation='saving'; d.currentMode='F';
     generateConcernNotes(d,'F');
     const dom=(html)=>{const root=document.createElement('div');root.innerHTML=html;return root;};
-    const bundle=dom(product.buildProductBody('concern_bundle3',d,{concerns:['career','love','mental'],situations:{career:'current',love:'relationship',mental:'burnout'},fullSajuTimeline:{leak:true}}));
-    const full=dom(product.buildProductBody('full_saju',d,{partner:{b:'19990511',c:'solar',l:false}}));
-    const all=dom(product.buildProductBody('all_in_one',d,{partner:{b:'19990511',c:'solar',l:false},situations:{money:'saving',career:'current',love:'relationship',path:'current',people:'friend',mental:'burnout'}}));
+    const consultationData={
+      ...d,
+      concernKey:'consultation',
+      concernSituation:'free',
+      userQuestion:'사업을 시작하면 어떤 방식이 맞고 언제 움직이는 게 좋아?',
+      __consultationV1:{cards:[
+        {badge:'네 질문의 답',title:'직접 답',desc:'현재 질문에 대한 답'},
+        {badge:'왜 그런지',title:'근거',desc:'사주 근거'},
+        {badge:'조심할 것',title:'주의',desc:'주의 조건'},
+        {badge:'지금 할 일',title:'행동',desc:'실행 기준'},
+      ]},
+    };
+    const bundle=dom(product.buildProductBody('concern_bundle3',consultationData,{questions:['질문 하나를 자세히 봐줘','질문 둘을 자세히 봐줘','질문 셋을 자세히 봐줘'],fullSajuTimeline:{leak:true}}));
+    const full=dom(product.buildProductBody('full_saju',consultationData,{partner:{b:'19990511',c:'solar',l:false}}));
+    const all=dom(product.buildProductBody('all_in_one',consultationData,{partner:{b:'19990511',c:'solar',l:false}}));
     const blocked=dom(product.buildProductBody('compatibility',d,{}));
     const compat=dom(product.buildProductBody('compatibility',d,{partner:{n:'상대',b:'19990511',t:'12:00',g:'female',c:'solar',l:false}}));
     return {
-      bundle:{full:bundle.querySelectorAll('[data-export-kind="full"]').length,blocked:!!bundle.querySelector('[data-policy-blocked]')},
+      bundle:{full:bundle.querySelectorAll('[data-export-kind="full"]').length,questions:bundle.querySelectorAll('[data-export-kind="question"]').length,blocked:!!bundle.querySelector('[data-policy-blocked]')},
       full:{compat:full.querySelectorAll('[data-export-compat-timing]').length,blocked:!!full.querySelector('[data-policy-blocked]')},
-      all:{compat:all.querySelectorAll('[data-export-compat-timing]').length,compatExclusive:all.querySelectorAll('[data-product-exclusive="compatibility"]').length,blocked:!!all.querySelector('[data-policy-blocked]')},
+      all:{compat:all.querySelectorAll('[data-export-compat-timing]').length,compatExclusive:all.querySelectorAll('[data-product-exclusive="compatibility"]').length,questionLink:!!all.querySelector('[data-product-exclusive="all_in_one-question"]'),blocked:!!all.querySelector('[data-policy-blocked]')},
       blockedCompat:{blocked:!!blocked.querySelector('[data-content-blocked="compatibility"]'),policy:!!blocked.querySelector('[data-policy-blocked]')},
       compat:{sections:compat.querySelectorAll('[data-export-kind="compat"]').length,blocked:!!compat.querySelector('[data-policy-blocked]')},
     };
   });
 
-  assert(render.bundle.full===0&&!render.bundle.blocked,'bundle render leaked/blocked unexpectedly '+JSON.stringify(render.bundle));
+  assert(render.bundle.full===0&&render.bundle.questions===3&&!render.bundle.blocked,'question bundle render leaked/blocked unexpectedly '+JSON.stringify(render.bundle));
   assert(render.full.compat===0&&!render.full.blocked,'full_saju compatibility leak '+JSON.stringify(render.full));
-  assert(render.all.compat===0&&render.all.compatExclusive===0&&!render.all.blocked,'all_in_one compatibility leak '+JSON.stringify(render.all));
+  assert(render.all.compat===0&&render.all.compatExclusive===0&&render.all.questionLink&&!render.all.blocked,'all_in_one compatibility/current-question boundary drift '+JSON.stringify(render.all));
   assert(render.blockedCompat.blocked&&render.blockedCompat.policy,'compatibility without second person was not blocked by central policy');
   assert(render.compat.sections===16&&!render.compat.blocked,'compatibility with second person did not render');
 
