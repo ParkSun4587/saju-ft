@@ -4,7 +4,40 @@ const BASE = process.env.PRODUCTION_BASE || 'https://sajuft.com/index.html';
 const assert = (v,m) => { if (!v) throw new Error(m); };
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
+function mockConsultation(question, mode='F') {
+  const evidence=['CHART_STRENGTH','CHART_STRUCTURE','CHART_TENGODS'];
+  const claim=(headline,answer)=>({
+    headline,answer,
+    why:'태어난 계절에서 받는 힘, 일간이 기대는 뿌리, 십신의 실제 배치를 같이 봤어.',
+    technicalBasis:'월령과 통근, 신강·신약, 격국의 상태와 십신 위치를 함께 확인했어.',
+    evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
+  });
+  const q=String(question||'').trim();
+  return {
+    ok:true,model:'ci-longshot-mock',
+    questionPlan:{primaryIntent:'자유질문',intentTags:['자유질문'],directQuestions:[q],decisionType:'판단',timeRange:'질문에 필요할 때만',needsClarification:false,clarifyingQuestion:''},
+    directAnswer:claim(mode==='T'?'결론부터 보면 선택 기준이 먼저야':'네가 물어본 것부터 말하면 기준이 먼저 보여','한 가지 오행 개수보다 사주 전체에서 오래 버틸 수 있는 조건을 먼저 보는 게 맞아.'),
+    centralThesis:claim('이번 질문을 관통하는 사주의 중심','계절과 뿌리, 십신의 실제 힘이 어떻게 이어지는지가 이번 질문을 가르는 핵심이야.'),
+    sections:[
+      {id:'why',type:'explanation',label:'왜 이런 답인지',title:'겉개수보다 실제 세력이 더 중요해',answer:'같은 오행 비율이어도 계절과 뿌리, 격에서 맡는 역할이 다르면 현실에서 쓰이는 방식이 달라져.',why:'그래서 한 가지 성향으로 줄이지 않고 여러 근거를 같이 읽었어.',technicalBasis:'득령·득지·득세와 통근, 십신 위치, 격국 상태를 함께 확인했어.',nextAction:'선택지마다 오래 버틸 조건을 적어봐.',evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported'},
+      {id:'risk',type:'caution',label:'특히 조심할 것',title:'잘 맞는 길도 이 조건이면 소모돼',answer:'책임만 커지고 결정권은 적은 구조라면 같은 분야라도 오래 갈수록 소모가 커질 수 있어.',why:'강하게 들어오는 요구를 내가 받아내는 방식과 실제 뿌리를 같이 봤기 때문이야.',technicalBasis:'관성의 실제 세력과 일간의 감당력, 통근 여부를 같이 확인했어.',nextAction:'책임과 결정권이 같이 오는지 확인해.',evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported'},
+      {id:'action',type:'action',label:'지금 할 일',title:'정답을 믿기 전에 작은 검증부터 해',answer:'큰 결정을 한 번에 확정하기보다 작은 결과를 먼저 만들어보는 게 좋아.',why:'좋은 구조도 현실 조건이 맞지 않으면 소모가 커질 수 있어서야.',technicalBasis:'사주의 도움·방해 관계와 감당력을 함께 확인했어.',nextAction:'이번 주에 가장 작은 검증 한 가지를 정해.',evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported'},
+    ],
+  };
+}
+
+async function installConsultationMock(page) {
+  await page.route('**/api/consultation', async route => {
+    const req=route.request();
+    if(req.method()!=='POST') return route.continue();
+    let body={}; try{body=req.postDataJSON()||{};}catch{}
+    const packet=body.evidencePacket||{};
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mockConsultation(packet?.question?.text,packet?.requestMode))});
+  });
+}
+
 async function deployed(page) {
+  await installConsultationMock(page);
   for (let i=0;i<36;i++) {
     try {
       await page.goto(BASE + '?longshot=v3-' + i, {waitUntil:'domcontentloaded',timeout:30000});
