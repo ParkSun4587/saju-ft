@@ -950,11 +950,11 @@ function mockConsultation(question, mode='F') {
   let modal = await page.locator('#unniProductModal').innerText();
   const sourceFreeLaunch = await page.evaluate(() => FREE_LAUNCH_MODE);
   const initialActionText = await page.locator('#unniProductAction').innerText();
-  assert(modal.includes('내 전체 사주판'), 'full_saju modal setup missing');
+  assert(modal.includes('내 사주 전체상담'), 'full_saju modal setup missing');
   assert(
     sourceFreeLaunch
       ? initialActionText.includes('무료 이벤트')
-      : initialActionText.includes('내 전체 사주판 보기 · 100원'),
+      : initialActionText.includes('내 사주 전체상담 보기 · 100원'),
     `free/paid toggle UI mismatch: sourceFreeLaunch=${sourceFreeLaunch}, action=${initialActionText}`
   );
 
@@ -986,7 +986,7 @@ function mockConsultation(question, mode='F') {
   const oppositeActionText = await page.locator('#unniProductAction').innerText();
   assert(
     sourceFreeLaunch
-      ? oppositeActionText.includes('내 전체 사주판 보기 · 100원')
+      ? oppositeActionText.includes('내 사주 전체상담 보기 · 100원')
       : oppositeActionText.includes('무료 이벤트'),
     `opposite free/paid toggle UI mismatch: sourceFreeLaunch=${sourceFreeLaunch}, action=${oppositeActionText}`
   );
@@ -1067,13 +1067,18 @@ function mockConsultation(question, mode='F') {
   await page.evaluate(() => openUnniProduct('full_saju'));
   await page.waitForSelector('#unniProductModal', { state:'visible' });
   await page.locator('#unniProductAction').click();
+  await page.waitForFunction(()=>{
+    const slot=document.querySelector('[data-premium-consultation-report="full_saju"]');
+    const count=slot?.querySelectorAll('article').length||0;
+    return count>=4&&count<=9;
+  },null,{timeout:10000});
   modal = await page.locator('#unniProductModal').innerText();
-  const fullSections = await page.locator('#unniProductBody section').count();
-  assert(fullSections === 12, `full_saju section count ${fullSections}`);
-  assert(modal.includes('내 사주 전체 핵심') && modal.includes('큰 흐름 전환 + 평생 사용법'), 'full_saju preview content missing');
-  assert((modal.includes('방금 본 질문 하나를 길게 반복하는 결과가 아니야') || modal.includes('지금 질문 하나를 또 풀어쓰는 결과가 아니야')) && modal.includes('앞으로 5년 큰 흐름'), 'full_saju differentiation/long-term content missing');
+  const fullArticles = await page.locator('[data-premium-consultation-report="full_saju"] article').count();
+  assert(fullArticles>=4&&fullArticles<=9, `full_saju dynamic card count ${fullArticles}`);
+  assert(modal.includes('네 사주 전체에서 정말 중요한 주제') && modal.includes('사람마다 목차가 달라'), 'full_saju dynamic consultation framing missing');
+  assert(!modal.includes('앞으로 5년 큰 흐름') && !modal.includes('큰 흐름 전환 + 평생 사용법'), '4,900 full_saju leaked retired five-year report content');
   assert(await page.locator('#unniProductBody [data-product-contract="full_saju"]').count()===1,'full_saju contract marker missing');
-  assert(await page.locator('#unniProductBody [data-structure-fingerprint]').getAttribute('data-structure-fingerprint'),'full_saju reasoning fingerprint missing');
+  assert(await page.locator('#unniProductBody [data-premium-consultation-report="full_saju"]').count()===1,'full_saju dynamic report host missing');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'full_saju full-report save button missing');
   assert((await page.locator('#unniProductSaveAll').innerText()).includes('사진으로 한 번에 저장하기'), 'one-action paid save CTA missing');
   assert(await page.locator('#unniProductSavePdf').count() === 0, 'PDF save UI must be removed');
@@ -1084,7 +1089,7 @@ function mockConsultation(question, mode='F') {
     page.waitForEvent('download', { timeout: 20000 }),
     page.locator('#unniProductSaveAll').click(),
   ]).then(([download]) => download);
-  assert(fullReportDownload.suggestedFilename().includes('01_나를_이해하는_법') && fullReportDownload.suggestedFilename().endsWith('.png'), `semantic full report filename ${fullReportDownload.suggestedFilename()}`);
+  assert(fullReportDownload.suggestedFilename().includes('01_상담') && fullReportDownload.suggestedFilename().endsWith('.png'), `semantic dynamic consultation filename ${fullReportDownload.suggestedFilename()}`);
 
   await page.evaluate(() => {
     const e = window.__UNNI_IMAGE_EXPORT_V2__;
@@ -1115,7 +1120,7 @@ function mockConsultation(question, mode='F') {
     Object.assign(e, window.__paidShareTest.originals);
     return count;
   });
-  assert(mobilePaidShareCount === 4, `mobile full-saju should share four prepared images in one action, got ${mobilePaidShareCount}`);
+  assert(mobilePaidShareCount >= 2 && mobilePaidShareCount <= 3, `mobile dynamic full-saju should share its prepared consultation pages in one action, got ${mobilePaidShareCount}`);
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('concern_bundle3'));
@@ -1172,14 +1177,19 @@ function mockConsultation(question, mode='F') {
   assert(await page.locator('[data-all-situation]').count()===0,'all-in-one must not ask for old fixed concern situations');
   assert((await page.locator('#unniProductSetup').innerText()).includes('추가 선택은 없어'),'all-in-one should connect the current question automatically');
   await page.locator('#unniProductAction').click();
+  await page.waitForFunction(()=>{
+    const slot=document.querySelector('[data-premium-consultation-report="all_in_one"]');
+    const count=slot?.querySelectorAll('article').length||0;
+    return count>=4&&count<=9;
+  },null,{timeout:10000});
   modal = await page.locator('#unniProductModal').innerText();
   const allFullSections = await page.locator('#unniProductBody [data-export-kind="full"]').count();
-  const allInOneArticles = await page.locator('#unniProductBody [data-product-exclusive="all_in_one-question"] article').count();
-  assert(allFullSections===12, `all-in-one full-saju section count ${allFullSections}`);
-  assert(allInOneArticles===5, `all-in-one current-question card count ${allInOneArticles}`);
-  assert(await page.locator('#unniProductBody [data-product-exclusive="all_in_one-question"]').count()===1,'all-in-one current-question link missing');
-  assert(await page.locator('#unniProductBody [data-product-exclusive="all_in_one"]').count()===1,'all-in-one synthesis block missing');
-  assert(modal.includes('지금 질문과 전체 사주 연결') && modal.includes('완전판에서 마지막으로 연결한 것'),'all-in-one question/full-chart synthesis copy missing');
+  const allInOneArticles = await page.locator('[data-premium-consultation-report="all_in_one"] article').count();
+  assert(allFullSections===0, `all-in-one must not duplicate full_saju fixed sections, got ${allFullSections}`);
+  assert(allInOneArticles>=4&&allInOneArticles<=9, `all-in-one dynamic card count ${allInOneArticles}`);
+  assert(await page.locator('#unniProductBody [data-premium-consultation-report="all_in_one"]').count()===1,'all-in-one dynamic report host missing');
+  assert(await page.locator('#unniDeepFollowupQuestion').count()===1&&await page.locator('#unniDeepFollowupAction').count()===1,'all-in-one one-time follow-up UI missing');
+  assert(modal.includes('12~18개월') && modal.includes('5년은 근거가 잡힌 변곡점만') && modal.includes('실제 판단 기준'),'all-in-one deep consultation framing missing');
   assert(await page.locator('#unniProductBody [data-export-compat-timing]').count()===0,'all-in-one must not include compatibility timeline');
   assert(await page.locator('#unniProductBody [data-product-exclusive="compatibility"]').count()===0,'all-in-one swallowed compatibility content');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'all-in-one full-report save missing');
@@ -1199,11 +1209,15 @@ function mockConsultation(question, mode='F') {
     const freeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
     if(!freeLaunch) await page.evaluate(()=>{FREE_LAUNCH_MODE=true;});
     await page.locator('#unniProductAction').click();
-    await page.waitForFunction(()=>document.querySelectorAll('#unniProductBody [data-export-kind="full"]').length===12,null,{timeout:10000});
+    await page.waitForFunction(()=>{
+      const slot=document.querySelector('[data-premium-consultation-report="full_saju"]');
+      const count=slot?.querySelectorAll('article').length||0;
+      return count>=4&&count<=9;
+    },null,{timeout:10000});
   }
   const fullFText=await page.locator('#unniProductModal').innerText();
-  assert(fullFText.includes('삶 전체에 영향을 주는 가까운 구간까지 같이 볼게') && !fullFText.includes('삶 전체에 영향을 주는 가까운 구간을 본다'),
-    'F full_saju report voice returned to report-form ending');
+  assert(fullFText.includes('이번엔 질문 하나를 더 길게 보는 게 아니라') && fullFText.includes('네 사주 전체에서 정말 중요한 주제부터 언니가 골라서 볼게'),
+    'F full_saju dynamic consultation voice missing');
   await page.locator('#unniProductClose').click();
 
   const html = fs.readFileSync('index.html','utf8');
@@ -1221,8 +1235,8 @@ function mockConsultation(question, mode='F') {
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.3'), 'paid value script include missing');
   assert(html.includes('./concern-note-engine-v2.js?v=6.7.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'six-answer NOTE / saju signal script include missing');
   assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.1'), 'full-evidence reasoning script include missing');
-  assert(html.includes('./product-content-policy-v1.js?v=1.2.0'),'product content policy script include missing');
-  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.1'), 'entitlement/product script include missing');
+  assert(html.includes('./product-content-policy-v1.js?v=1.2.1'),'product content policy script include missing');
+  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.2'), 'entitlement/product script include missing');
   assert(
     html.includes('./consultation-engine-v1.js?v=1.0.0') &&
     html.includes('if (data?.concernKey === "consultation") return false;') &&
@@ -1265,13 +1279,14 @@ function mockConsultation(question, mode='F') {
     premium.includes('const unlocked = typeof isUnlocked') &&
     premium.includes('["purchased","included"].includes(allStates[p.id]?.kind)') &&
     premium.includes('owned-reaccess') &&
-    premium.includes('data-secondary-product'),
-    'premium purchased-product reaccess/catalog policy missing'
+    premium.includes('data-secondary-product') &&
+    premium.includes('p.id !== "concern_bundle3" || direct.includes("concern_bundle3")'),
+    'premium purchased-product reaccess/new-sale catalog policy missing'
   );
   assert(!premium.includes('unniShowOtherProducts') && premium.includes('unniOtherProducts') && premium.includes('display:grid;gap:14px;margin-top:10px'), 'premium alternatives should stay fully open under the recommendation');
   assert(!premium.includes('unniProductSavePdf') && !premium.includes('printPaidReport') && !premium.includes('unniPaidPrintHost') && !premium.includes('PDF로 한 파일 보관하기'), 'PDF save code must be fully removed');
-  assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="question"'), 'semantic paid-report grouping missing');
-  assert(premium.includes('나를 이해하는 법') && premium.includes('대화하고 싸우고 화해하는 법') && premium.includes('현재 질문과 전체 사주 연결'), 'human-readable export group titles missing');
+  assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="question"') && premium.includes('[data-premium-consultation-report] article'), 'semantic paid-report grouping missing');
+  assert(premium.includes('내 사주 전체상담') && premium.includes('내 인생 심층상담') && premium.includes('대화하고 싸우고 화해하는 법'), 'human-readable dynamic export group titles missing');
   assert(html.includes('showImagePagesFallback'), 'multi-image mobile fallback missing');
   assert(!html.includes('id="storyShareBtn"') && !html.includes('인스타에 올릴 사진 열기'), 'duplicate Instagram save/share UI remains');
   assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
@@ -1543,17 +1558,18 @@ function mockConsultation(question, mode='F') {
   assert(premium.includes('<option value="solar">양력</option><option value="lunar">음력</option>') && !premium.includes('양력 생일') && !premium.includes('음력 생일'), 'compatibility calendar labels should be simple');
   assert(!premium.includes('예: 오후 3시 20분이면'), 'compatibility birth-time helper should be removed');
   assert(
-    contentPolicySource.includes('사주정보 그대로, 궁금한 질문 3개를 각각 새로 풀어보기') &&
-    contentPolicySource.includes('내 사주 전체 구조와 앞으로 5년의 큰 흐름 보기') &&
+    contentPolicySource.includes('예전에 구매한 질문 3개 상담 다시보기') &&
+    contentPolicySource.includes('내 사주 전체에서 나를 이해하는 데 중요한 주제만 골라 보기') &&
     contentPolicySource.includes('두 사람 사주를 겹쳐 관계의 이유와 시기 보기') &&
-    contentPolicySource.includes('나 한 사람의 전체 사주판과 현재 질문, 5년 흐름을 한 번에 연결') &&
+    contentPolicySource.includes('나를 이해하고, 지금 질문과 실제 흐름을 연결해 앞으로 움직일 기준까지 설계') &&
     premium.includes('data-recommendation-reason="1"') &&
     premium.includes('data-product-catalog-copy') &&
     premium.includes('productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})') &&
+    premium.includes('saleProducts') &&
     !premium.includes('왜 이걸 먼저 보냐면</span>') &&
-    premium.includes('내 전체 사주판 보기') &&
-    premium.includes('완전판으로 이어보기'),
-    'young-user outcome-led product copy missing'
+    premium.includes('내 사주 전체상담 보기') &&
+    premium.includes('심층상담으로 이어보기'),
+    'young-user outcome-led dynamic product copy missing'
   );
   assert(fs.readFileSync('paid-value-layer-v1.js','utf8').includes('SITUATION_PROFILES'), 'situation-aware paid copy layer missing');
   for (const staleCopy of ['내 본캐 스탯','내 사주 본캐 카드 저장하기','본캐 카드 저장']) assert(!html.includes(staleCopy), `stale share copy remains: ${staleCopy}`);
@@ -1567,7 +1583,7 @@ function mockConsultation(question, mode='F') {
   for (const [id, price] of Object.entries({concern_single:100, ...expectedPrices})) {
     assert(server.includes(`${id}: { amount: ${price}`), `server product price missing ${id}/${price}`);
   }
-  assert(server.includes('all_in_one: { amount: 100, name: "어떤언니 내 사주 완전판" }'), 'Toss all-in-one order name is stale');
+  assert(server.includes('all_in_one: { amount: 100, name: "어떤언니 내 인생 심층상담" }'), 'Toss all-in-one order name is stale');
   assert(!server.includes('어떤언니 올인원'), 'old all-in-one order name remains in Toss server');
   assert(server.includes('const product = productFor(order.data);'), 'server does not resolve signed product price');
   assert(server.includes('const expectedAmount = Number(order.amount ?? product.amount)') && server.includes('Number(body.amount) !== expectedAmount'), 'server does not reject client amount against signed server quote');
