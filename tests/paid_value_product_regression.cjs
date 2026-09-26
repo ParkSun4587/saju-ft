@@ -1110,18 +1110,27 @@ function mockConsultation(question, mode='F') {
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('concern_bundle3'));
-  const bundleChecked = await page.locator('#unniBundleChecks input:checked').evaluateAll((els) => els.map((el) => el.value));
-  for (const key of bundleChecked) {
-    const select = page.locator(`[data-bundle-situation="${key}"]`);
-    const firstValue = await select.locator('option').nth(1).getAttribute('value');
-    await select.selectOption(firstValue);
+  const bundleQuestions = [
+    '사업하면 AI 앱이랑 콘텐츠 서비스 중 어떤 방식이 더 맞아?',
+    '지금 회사에 남는 게 나아, 옮기는 게 나아?',
+    '올해 새로운 인연은 언제쯤 들어오고 어떤 기준으로 사람을 봐야 해?',
+  ];
+  for (let i=0;i<bundleQuestions.length;i++) {
+    await page.fill(`[data-bundle-question="${i}"]`, bundleQuestions[i]);
   }
   await page.locator('#unniProductAction').click();
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll('[data-bundle-question-report]')].length === 3 &&
+    [...document.querySelectorAll('[data-bundle-question-report]')].every((el) => el.querySelectorAll('article').length >= 4),
+    null,{timeout:10000}
+  );
   modal = await page.locator('#unniProductModal').innerText();
   const bundleArticles = await page.locator('#unniProductBody article').count();
-  assert(bundleArticles === 18, `bundle3 six-answer card count ${bundleArticles}`);
-  assert(await page.locator('#unniProductBody [data-product-exclusive="concern_bundle3"]').count()===1,'bundle3 shared-structure exclusive block missing');
+  assert(bundleArticles === 15, `bundle3 dynamic consultation card count ${bundleArticles}`);
+  assert(await page.locator('#unniProductBody [data-product-exclusive="concern_bundle3"]').count()===1,'bundle3 free-question exclusive block missing');
+  assert(await page.locator('#unniProductBody [data-export-kind="question"]').count()===3,'bundle3 must render three independent free-question reports');
   assert(await page.locator('#unniProductBody [data-export-kind="full"]').count()===0,'bundle3 leaked full_saju chapters');
+  assert(bundleQuestions.every((q)=>modal.includes(q)), 'bundle3 did not preserve the three user questions');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'bundle3 full-report save missing');
   await page.locator('#unniProductClose').click();
 
@@ -1151,20 +1160,17 @@ function mockConsultation(question, mode='F') {
   await page.locator('#unniProductClose').click();
 
   await page.evaluate(() => openUnniProduct('all_in_one'));
-  for (const key of ['money','career','love','path','people','mental']) {
-    const select = page.locator(`[data-all-situation="${key}"]`);
-    if (!(await select.inputValue())) {
-      const firstValue = await select.locator('option').nth(1).getAttribute('value');
-      await select.selectOption(firstValue);
-    }
-  }
+  assert(await page.locator('[data-all-situation]').count()===0,'all-in-one must not ask for old fixed concern situations');
+  assert((await page.locator('#unniProductSetup').innerText()).includes('추가 선택은 없어'),'all-in-one should connect the current question automatically');
   await page.locator('#unniProductAction').click();
   modal = await page.locator('#unniProductModal').innerText();
-  for (const label of ['돈·재물','학업·직장','연애·썸','진로·적성','사람·관계','마음·스트레스']) assert(modal.includes(label), `all-in-one missing ${label}`);
-  const allInOneArticles = await page.locator('#unniProductBody article').count();
-  assert(allInOneArticles === 36, `all-in-one six-answer card count ${allInOneArticles}`);
-  assert(await page.locator('#unniProductBody [data-product-exclusive="all_in_one"]').count()===1,'all-in-one cross-domain exclusive block missing');
-  assert(!modal.includes('마음·스트레스은') && modal.includes('이 6개 고민은 서로 다른 문제처럼 보여도'), 'all-in-one dynamic domain join is unnatural');
+  const allFullSections = await page.locator('#unniProductBody [data-export-kind="full"]').count();
+  const allInOneArticles = await page.locator('#unniProductBody [data-product-exclusive="all_in_one-question"] article').count();
+  assert(allFullSections===12, `all-in-one full-saju section count ${allFullSections}`);
+  assert(allInOneArticles===5, `all-in-one current-question card count ${allInOneArticles}`);
+  assert(await page.locator('#unniProductBody [data-product-exclusive="all_in_one-question"]').count()===1,'all-in-one current-question link missing');
+  assert(await page.locator('#unniProductBody [data-product-exclusive="all_in_one"]').count()===1,'all-in-one synthesis block missing');
+  assert(modal.includes('지금 질문과 전체 사주 연결') && modal.includes('완전판에서 마지막으로 연결한 것'),'all-in-one question/full-chart synthesis copy missing');
   assert(await page.locator('#unniProductBody [data-export-compat-timing]').count()===0,'all-in-one must not include compatibility timeline');
   assert(await page.locator('#unniProductBody [data-product-exclusive="compatibility"]').count()===0,'all-in-one swallowed compatibility content');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'all-in-one full-report save missing');
@@ -1258,8 +1264,8 @@ function mockConsultation(question, mode='F') {
   assert(!html.includes('showKakaoCardQualityGuide') && !html.includes('saveInstaCardImage') && !html.includes('prepareStoryCardAsset'), 'obsolete rendered story-card save path remains');
   assert(html.includes('__UNNI_IMAGE_EXPORT_V2__') && html.includes('version: "2.8.0"'), 'image export behavior version missing');
   assert(html.includes('history.pushState') && html.includes('shareModal: true'), 'share modal history guard missing');
-  assert(html.includes('CONCERN_SITUATIONS') && html.includes('selectedConcernSituation'), 'concern situation picker missing');
-  assert(html.includes('concernSituationSummary') && html.includes('editConcernSituation'), 'progressive mobile concern summary/edit flow missing');
+  assert(html.includes('id="consultationQuestionBlock"') && html.includes('id="consultationQuestion"') && html.includes('value="consultation"') && html.includes('value="free"'), 'free-question input contract missing');
+  assert(!html.includes('id="concernGrid"') && !html.includes('id="concernSituationBox"') && !html.includes('id="concernSituationSummary"'), 'old fixed concern/situation UI returned');
   assert(!html.includes('정확한 만세력 조회를 위해 적어줘') && !html.includes('출생기록에 적힌 시각을 입력하면 더 정확해'), 'old birth-time helper copy remains');
   assert(!html.includes('🥺') && !html.includes('💕') && !html.includes('💌') && !html.includes('ㅠㅠ'), 'excessive F emoticon copy remains in the main journey');
   assert(!html.includes('id="sisterSwitchCard"') && !html.includes('switchSisterMode()'), 'bottom F/T mode-switch CTA code remains');
@@ -1280,7 +1286,7 @@ function mockConsultation(question, mode='F') {
     html.includes('응, 이대로 봐줘') &&
     html.includes('좋아, 바로 봐줘') &&
     !html.includes('서아 언니, 핵심만 봐줘') &&
-    html.includes('prompt.textContent = config.prompt;') &&
+    html.includes('function setConsultationQuestionExample(') &&
     !html.includes('CONCERN_CONVERSATION_PROMPTS') &&
     !html.includes('concernSituationAck') &&
     html.includes('응 봤어. 잠깐만') &&
@@ -1384,9 +1390,9 @@ function mockConsultation(question, mode='F') {
     html.includes('"05": { className:"note-role-timing"') &&
     !html.includes('note-role-action') &&
     !html.includes('<span class="note-role-label">') &&
-    html.includes('지금 네 고민에서 보이는 것') &&
+    html.includes('네 질문에서 먼저 보이는 것') &&
     !/비밀\s*메모|NOTE2 다음부터 NOTE6까지|실전 룰|반복 패턴/.test(html),
-    'six-answer consultation/paywall contract drift'
+    'dynamic consultation/paywall contract drift'
   );
   assert(html.includes('analysisErrorText(') && !html.includes('calcErr.message || {'), 'raw analysis-engine errors can still leak into user copy');
   assert(
