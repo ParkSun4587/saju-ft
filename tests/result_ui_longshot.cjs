@@ -93,7 +93,7 @@ async function unlockForQa(page) {
     preview:!!document.getElementById('note2PreviewCard') && getComputedStyle(document.getElementById('note2PreviewCard')).display!=='none',
     products:document.querySelectorAll('#unniProductLadder [data-unni-product]').length,
   }));
-  assert(state.generated>=4&&state.generated<=9&&state.rendered>=state.generated&&!state.preview&&state.products===4,
+  assert(state.generated>=4&&state.generated<=9&&state.rendered>=state.generated&&!state.preview&&state.products===3,
     'unlocked dynamic longshot state drift '+JSON.stringify(state));
 }
 

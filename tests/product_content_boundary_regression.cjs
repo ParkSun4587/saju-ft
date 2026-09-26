@@ -221,7 +221,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   assert(!r.products.full.text.includes('둘이 같이 있을 때의 시기 흐름')&&!r.products.all.text.includes('둘이 같이 있을 때의 시기 흐름'),'one-person products leaked pair-specific result');
 
   assert(r.products.all.fullSections===0&&r.products.all.articles===0&&r.products.all.dynamic&&r.products.all.followupHost,'all_in_one must use the dynamic deep-consultation shell with one follow-up host');
-  assert(r.products.all.prompt.includes('12~18개월')&&r.products.all.prompt.includes('5년 변곡점')&&r.products.all.prompt.includes('지금 질문'),'all_in_one deep prompt boundary missing');
+  assert(r.products.all.prompt.includes('12~18개월')&&r.products.all.prompt.includes('5년 변곡점')&&r.products.all.prompt.includes('현재 질문'),'all_in_one deep prompt boundary missing');
   assert(r.products.all.compatTiming===0&&r.products.all.compatExclusive===0,'all_in_one swallowed compatibility');
   assert(r.products.all.text.includes('두 사람 궁합은 이 상담에 포함하지 않아'),'all_in_one boundary not explicit');
 

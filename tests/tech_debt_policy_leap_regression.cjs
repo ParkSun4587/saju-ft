@@ -207,6 +207,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
       basicFull:p.canRenderFeature('basic_concern','full-five-year'),
       bundleFull:p.canRenderFeature('concern_bundle3','full-five-year'),
       fullCompat:p.canRenderFeature('full_saju','compatibility',{secondPersonPresent:true}),
+      fullFive:p.canRenderFeature('full_saju','full-five-year'),
       allCompat:p.canRenderFeature('all_in_one','compatibility',{secondPersonPresent:true}),
       compatMissing:p.validateProductPayload('compatibility',{features:['compatibility','second-person','monthly-detail'],months:18,secondPersonPresent:false}),
       compatPresent:p.validateProductPayload('compatibility',{features:['compatibility','second-person','monthly-detail'],months:18,secondPersonPresent:true}),
@@ -226,6 +227,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   assert(policy.basicFull===false,'basic_concern centrally allows full-five-year');
   assert(policy.bundleFull===false,'concern_bundle3 centrally allows full-five-year');
   assert(policy.fullCompat===false,'full_saju centrally allows compatibility');
+  assert(policy.fullFive===false,'full_saju must not expose the deep five-year product surface');
   assert(policy.allCompat===false,'all_in_one centrally allows compatibility');
   assert(!policy.compatMissing.ok&&policy.compatMissing.errors.includes('second-person-required'),'compatibility did not enforce second person');
   assert(policy.compatPresent.ok,'compatibility blocked with valid second person '+JSON.stringify(policy.compatPresent));
@@ -260,7 +262,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     return {
       bundle:{full:bundle.querySelectorAll('[data-export-kind="full"]').length,questions:bundle.querySelectorAll('[data-export-kind="question"]').length,blocked:!!bundle.querySelector('[data-policy-blocked]')},
       full:{compat:full.querySelectorAll('[data-export-compat-timing]').length,blocked:!!full.querySelector('[data-policy-blocked]')},
-      all:{compat:all.querySelectorAll('[data-export-compat-timing]').length,compatExclusive:all.querySelectorAll('[data-product-exclusive="compatibility"]').length,questionLink:!!all.querySelector('[data-product-exclusive="all_in_one-question"]'),blocked:!!all.querySelector('[data-policy-blocked]')},
+      all:{compat:all.querySelectorAll('[data-export-compat-timing]').length,compatExclusive:all.querySelectorAll('[data-product-exclusive="compatibility"]').length,dynamic:!!all.querySelector('[data-premium-consultation-report="all_in_one"]'),followupHost:!!all.querySelector('[data-deep-followup-host="1"]'),blocked:!!all.querySelector('[data-policy-blocked]')},
       blockedCompat:{blocked:!!blocked.querySelector('[data-content-blocked="compatibility"]'),policy:!!blocked.querySelector('[data-policy-blocked]')},
       compat:{sections:compat.querySelectorAll('[data-export-kind="compat"]').length,blocked:!!compat.querySelector('[data-policy-blocked]')},
     };
@@ -268,7 +270,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
 
   assert(render.bundle.full===0&&render.bundle.questions===3&&!render.bundle.blocked,'question bundle render leaked/blocked unexpectedly '+JSON.stringify(render.bundle));
   assert(render.full.compat===0&&!render.full.blocked,'full_saju compatibility leak '+JSON.stringify(render.full));
-  assert(render.all.compat===0&&render.all.compatExclusive===0&&render.all.questionLink&&!render.all.blocked,'all_in_one compatibility/current-question boundary drift '+JSON.stringify(render.all));
+  assert(render.all.compat===0&&render.all.compatExclusive===0&&render.all.dynamic&&render.all.followupHost&&!render.all.blocked,'all_in_one dynamic deep-consultation boundary drift '+JSON.stringify(render.all));
   assert(render.blockedCompat.blocked&&render.blockedCompat.policy,'compatibility without second person was not blocked by central policy');
   assert(render.compat.sections===16&&!render.compat.blocked,'compatibility with second person did not render');
 
