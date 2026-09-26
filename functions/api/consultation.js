@@ -73,6 +73,52 @@ function sameOrigin(request) {
   if (!referer) return false;
   try { return new URL(referer).origin === requestUrl.origin; } catch { return false; }
 }
+
+const enc = new TextEncoder();
+function base64(bytes) {
+  return btoa(String.fromCharCode(...new Uint8Array(bytes)));
+}
+function bytes64(value) {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((value.length + 3) % 4);
+  return Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
+}
+async function hmac(value, secret) {
+  const key = await crypto.subtle.importKey("raw",enc.encode(secret),{name:"HMAC",hash:"SHA-256"},false,["sign"]);
+  return base64(await crypto.subtle.sign("HMAC",key,enc.encode(value)));
+}
+function equal(a,b) {
+  if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) return false;
+  let diff=0;
+  for (let i=0;i<a.length;i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff===0;
+}
+async function parseSignedGrant(token, signing) {
+  if (typeof token !== "string" || token.length > 8192) return null;
+  const version = token.startsWith("v3.") ? "v3" : token.startsWith("v2.") ? "v2" : "";
+  if (!version) return null;
+  const parts=token.split(".");
+  if (parts.length!==3 || !equal(parts[2],await hmac(version+"."+parts[1],signing))) return null;
+  let grant;
+  try { grant=JSON.parse(new TextDecoder().decode(bytes64(parts[1]))); }
+  catch { return null; }
+  if (!grant || typeof grant !== "object") return null;
+  if (Number.isFinite(grant.exp) && grant.exp < Date.now()) return null;
+  return grant;
+}
+async function verifyPaidAccess(access, signing) {
+  if (!signing || !access || typeof access !== "object") return false;
+  const userKey=typeof access.userKey === "string" ? access.userKey : "";
+  const token=typeof access.token === "string" ? access.token : "";
+  if (!userKey || userKey.length > 3000 || !token || token.length > 8192) return false;
+
+  if (!token.startsWith("v2.") && !token.startsWith("v3.")) {
+    return equal(token,await hmac(userKey,signing));
+  }
+
+  const grant=await parseSignedGrant(token,signing);
+  if (!grant || grant.userKey !== userKey) return false;
+  return grant.productId === "concern_single";
+}
 function extractOutputText(payload) {
   for (const item of Array.isArray(payload?.output) ? payload.output : []) {
     if (item?.type !== "message") continue;
@@ -286,6 +332,14 @@ export async function onRequestPost(context) {
     } catch {
       return reply(400,{ok:false,code:"INVALID_JSON",message:"상담 요청을 읽지 못했어."});
     }
+    if (!context.env.TOKEN_SIGNING_SECRET) {
+      return reply(500,{ok:false,code:"TOKEN_SIGNING_SECRET_MISSING",message:"상담 권한 서버 설정을 확인해야 해."});
+    }
+    const paidAccess = await verifyPaidAccess(body?.access,context.env.TOKEN_SIGNING_SECRET);
+    if (!paidAccess) {
+      return reply(403,{ok:false,code:"PAID_ACCESS_REQUIRED",message:"결제가 확인된 상담만 깊게 이어볼 수 있어."});
+    }
+
     const packet = body?.evidencePacket;
     const question = normalizeText(packet?.question?.text);
     if (!packet || typeof packet !== "object" || question.length < 4 || question.length > 500) {
