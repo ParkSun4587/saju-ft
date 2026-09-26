@@ -11,7 +11,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
   await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'load'});
   await page.waitForFunction(() =>
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.6.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.6.1' &&
     typeof buildClassicalReasoningV1==='function'
   );
 
@@ -162,7 +162,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
         structure1:D1.audit.structureFingerprint,structure2:D2.audit.structureFingerprint,
         timing1:D1.audit.timingFingerprint,timing2:D2.audit.timingFingerprint,
         baseClaim1:D1.audit.claims[0].conclusion,baseClaim2:D2.audit.claims[0].conclusion,
-        timingText1:plain(D1.notes[4].desc),timingText2:plain(D2.notes[4].desc),
+        timingText1:plain(D1.notes[5].desc),timingText2:plain(D2.notes[5].desc),
       },
       E:{
         structure1:E1.audit.structureFingerprint,structure2:E2.audit.structureFingerprint,
@@ -204,7 +204,7 @@ function assert(cond,msg){ if(!cond) throw new Error(msg); }
     };
   });
 
-  assert(r.versions.note==='6.6.0'&&r.versions.profile==='2.1.0'&&r.versions.reasoning==='2.1.1','v3 runtime versions missing');
+  assert(r.versions.note==='6.6.1'&&r.versions.profile==='2.1.0'&&r.versions.reasoning==='2.1.1','v3 runtime versions missing');
 
   const requiredKinds=['strength','root','flow','pressure'];
   for(const kind of requiredKinds){
