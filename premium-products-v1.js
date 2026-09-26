@@ -2301,11 +2301,6 @@
       return;
     }
     const desiredCatalogMode = unlocked ? "upsell" : "owned-reaccess";
-    if (existing) {
-      if (existing.dataset.catalogMode === desiredCatalogMode || existing.querySelector("[data-entitlement-status]")) return;
-      existing.remove();
-    }
-
     const isFreeLaunch = typeof FREE_LAUNCH_MODE !== "undefined" && FREE_LAUNCH_MODE;
     if (!unlocked && !isFreeLaunch && collectStoredPremiumGrants().length === 0) {
       existing?.remove();
@@ -2370,6 +2365,20 @@
       return;
     }
     const states = Object.fromEntries(visibleProducts.map((p)=>[p.id,allStates[p.id]]));
+    const catalogSignature = [
+      desiredCatalogMode,
+      isFreeLaunch ? "free-launch" : "verified",
+      data?.currentMode === "T" ? "T" : "F",
+      direct.slice().sort().join(","),
+      visibleProducts.map((p) => {
+        const row = states[p.id] || {};
+        return [p.id,row.kind || "",Number(row.amount || 0)].join(":");
+      }).join(","),
+    ].join("|");
+    if (existing) {
+      if (!existing.querySelector("[data-entitlement-status]") && existing.dataset.catalogSignature === catalogSignature) return;
+      existing.remove();
+    }
     const isT = data?.currentMode === "T";
     let recommendedId = unlocked ? recommendedProductId(data,state) : visibleProducts[0]?.id;
     if (!visibleProducts.some((p)=>p.id === recommendedId)) recommendedId = visibleProducts[0]?.id;
@@ -2382,6 +2391,7 @@
     wrap.id = "unniProductLadder";
     wrap.dataset.verifiedPremium = isFreeLaunch ? "free-launch" : "server";
     wrap.dataset.catalogMode = unlocked ? "upsell" : "owned-reaccess";
+    wrap.dataset.catalogSignature = catalogSignature;
     wrap.style.cssText = "margin-top:20px;padding:16px 2px 0;border-top:1px solid #e8e1db;background:transparent;box-shadow:none";
     const eyebrow = unlocked
       ? (isT ? "더 볼 거면, 다음 정보는 여기야" : "더 궁금한 게 남았다면")
