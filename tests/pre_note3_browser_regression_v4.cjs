@@ -366,7 +366,7 @@ async function load(page) {
       assert(row.hook.length>=18,row.mode+': hook too weak/missing');
       assert(row.sub.length>=14,row.mode+': sub missing');
       assert(row.preview.includes('왜 같은 선택도 오래 버티는 정도가 다른지'),row.mode+': preview must come from this consultation '+row.preview);
-      assert(row.teaser.includes(row.preview)&&row.teaser.includes('…'),row.mode+': dynamic cliffhanger missing '+row.teaser);
+      assert(row.teaser===row.preview,row.mode+': paid scope teaser must name the next analysis area without fake locked-content cliffhanger '+row.teaser);
       assert(row.priceTitle.length>=8,row.mode+': price title missing');
       assert(row.features.length===3&&row.features.every(Boolean),row.mode+': paid outcomes must be exactly 3');
       assert(row.features[0].includes('왜 같은 선택도 오래 버티는 정도가 다른지'),row.mode+': feature 1 did not follow dynamic section');
