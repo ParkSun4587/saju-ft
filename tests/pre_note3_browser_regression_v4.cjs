@@ -718,9 +718,10 @@ async function load(page) {
       assert(report.pillarText.join(',') === '무인,갑인,기해,을축',
         `${c.id}: pillar UI drift ${report.pillarText.join(',')}`);
       assert(!report.pillarBasisExists, `${c.id}: hidden manse-basis label leaked back into UI`);
-      assert(report.ohengText.includes('목\\n(4개)') || report.ohengText.includes('목 (4개)') || report.ohengText.includes('목(4개)'),
+      const normalizedOheng = report.ohengText.replace(/\s+/g,' ').trim();
+      assert(normalizedOheng.includes('목 (4개)'),
         `${c.id}: mok raw count missing ${report.ohengText}`);
-      assert(report.ohengText.includes('화\\n(0개)') || report.ohengText.includes('화 (0개)') || report.ohengText.includes('화(0개)'),
+      assert(normalizedOheng.includes('화 (0개)'),
         `${c.id}: hwa raw count should be zero ${report.ohengText}`);
     }
     const unexpected = errs.filter(x => !isExpectedBoundaryDiagnostic(x));
