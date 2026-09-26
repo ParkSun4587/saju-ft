@@ -1,7 +1,7 @@
 // Cloudflare Pages Functions: 서버가 상품 가격·구매 권한·업그레이드 금액을 최종 확정합니다.
 const PRODUCTS = Object.freeze({
-  concern_single: { amount: 100, name: "어떤언니 고민 심층 분석" },
-  concern_bundle3: { amount: 100, name: "어떤언니 고민 3개 더 깊게" },
+  concern_single: { amount: 100, name: "어떤언니 1:1 질문 심층상담" },
+  concern_bundle3: { amount: 100, name: "어떤언니 질문 3개 더 이어보기" },
   full_saju: { amount: 100, name: "어떤언니 내 전체 사주판" },
   compatibility: { amount: 100, name: "어떤언니 우리 둘 궁합" },
   all_in_one: { amount: 100, name: "어떤언니 내 사주 완전판" },
@@ -11,6 +11,15 @@ const ALL_IN_ONE_CREDITS = Object.freeze([]); // TEMP QA: every unowned premium 
 const TTL = 7 * 24 * 60 * 60 * 1000;
 const enc = new TextEncoder();
 const concerns = ["money", "career", "love", "path", "people", "mental"];
+const CONSULTATION_KEY = "consultation";
+const QUESTION_MIN = 4;
+const QUESTION_MAX = 500;
+function cleanQuestion(value) {
+  if (typeof value !== "string") throw new Error("INPUT");
+  const out = value.replace(/\s+/g, " ").trim();
+  if (out.length < QUESTION_MIN || out.length > QUESTION_MAX || /[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(out)) throw new Error("INPUT");
+  return out;
+}
 const situations = Object.freeze({
   money:["saving","income","side","flow"],
   career:["exam","jobsearch","move","current"],
@@ -80,13 +89,25 @@ function validateSituationMap(input, keys) {
 function validateExtra(productId, input) {
   const x = input && typeof input === "object" ? input : {};
   if (productId === "concern_bundle3") {
+    // v2 자유질문형. 이미 발급된 구형 주문 ticket 복원을 위해 기존 3개 고민 형식도 계속 허용한다.
+    if (Array.isArray(x.questions)) {
+      const questions = x.questions.map(cleanQuestion);
+      if (questions.length !== 3) throw new Error("INPUT");
+      return { questions };
+    }
     if (!Array.isArray(x.concerns)) throw new Error("INPUT");
     const picked = [...new Set(x.concerns.filter((v) => concerns.includes(v)))];
     if (picked.length !== 3) throw new Error("INPUT");
-    return { concerns:picked, situations:validateSituationMap(x.situations, picked) };
+    return { concerns:picked, situations:validateSituationMap(x.situations, picked), legacy:true };
   }
   if (productId === "all_in_one") {
-    return { situations:validateSituationMap(x.situations, concerns) };
+    if (Array.isArray(x.questions)) {
+      const questions = x.questions.slice(0,6).map(cleanQuestion);
+      return { questions };
+    }
+    // 구형 완전판 ticket 호환
+    if (x.situations) return { situations:validateSituationMap(x.situations, concerns), legacy:true };
+    return {};
   }
   if (productId === "compatibility") return { partner:validatePartner(x.partner) };
   return {};
@@ -94,18 +115,21 @@ function validateExtra(productId, input) {
 function snapshot(input) {
   if (!input || typeof input !== "object") throw new Error("INPUT");
   const productId = typeof input.p === "string" && PRODUCTS[input.p] ? input.p : "concern_single";
+  const isConsultation = input.k === CONSULTATION_KEY;
+  const question = isConsultation ? cleanQuestion(input.q || "") : (input.q || "");
   const d = {
-    n:input.n, b:input.b, t:input.t, g:input.g, c:input.c, k:input.k, q:input.q || "", m:input.m,
+    n:input.n, b:input.b, t:input.t, g:input.g, c:input.c, k:input.k, q:question, m:input.m,
     l:input.l === true, p:productId, x:validateExtra(productId,input.x),
   };
+  const legacyQuestionValid = concerns.includes(d.k) && (!d.q || situations[d.k]?.includes(d.q));
+  const consultationValid = d.k === CONSULTATION_KEY && typeof d.q === "string" && d.q.length >= QUESTION_MIN;
   if (
     typeof d.n !== "string" || !d.n.trim() || d.n.length > 40 || /[\x00-\x1f]/.test(d.n) ||
     !/^\d{8}$/.test(d.b) ||
     !validBirthTime(d.t) ||
     !["female","male"].includes(d.g) ||
     !["solar","lunar"].includes(d.c) ||
-    !concerns.includes(d.k) ||
-    (d.q && !situations[d.k]?.includes(d.q)) ||
+    !(legacyQuestionValid || consultationValid) ||
     !["F","T"].includes(d.m) ||
     (d.c === "solar" && d.l)
   ) throw new Error("INPUT");
@@ -115,7 +139,11 @@ function productFor(d) {
   return PRODUCTS[d?.p] || PRODUCTS.concern_single;
 }
 function resultKey(d) {
-  const legacy = "sazu_v2_" + JSON.stringify([d.n,d.b,d.t,d.g,d.c,d.l,d.k]);
+  // 예전 6개 고민은 기존 키를 그대로 유지한다. 자유질문은 질문 문자열까지 scope에 넣어 질문별 구매권한을 분리한다.
+  const scope = d.k === CONSULTATION_KEY
+    ? [d.n,d.b,d.t,d.g,d.c,d.l,d.k,d.q]
+    : [d.n,d.b,d.t,d.g,d.c,d.l,d.k];
+  const legacy = "sazu_v2_" + JSON.stringify(scope);
   if (!d.p || d.p === "concern_single") return legacy;
   return legacy + "::" + d.p + "::" + JSON.stringify(d.x || {});
 }
