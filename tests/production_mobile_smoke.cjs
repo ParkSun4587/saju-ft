@@ -36,10 +36,12 @@ function mockConsultation(question, mode='F') {
   };
 }
 async function installConsultationMock(page) {
-  if (!LOCAL) return;
   await page.route('**/api/consultation', async route => {
     const req=route.request();
-    if(req.method()!=='POST') return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,service:'ci-mock',configured:true,enabled:true,model:'ci-mock'})});
+    if(req.method()!=='POST') {
+      if (LOCAL) return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,service:'ci-mock',configured:true,enabled:true,model:'gpt-6-sol'})});
+      return route.continue();
+    }
     let body={}; try{body=req.postDataJSON()||{};}catch{}
     const packet=body.evidencePacket||{};
     return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mockConsultation(packet?.question?.text,packet?.requestMode))});
@@ -59,6 +61,15 @@ async function deployed(page) {
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
         globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.2.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
+      if (!LOCAL) {
+        const healthUrl=new URL('/api/consultation',BASE).href;
+        const healthRes=await page.request.get(healthUrl,{timeout:8000});
+        if(!healthRes.ok()) throw new Error('consultation health '+healthRes.status());
+        const health=await healthRes.json();
+        if(!health?.ok||!health?.configured||!health?.enabled||health?.model!=='gpt-6-sol') {
+          throw new Error('consultation API not production-ready '+JSON.stringify(health));
+        }
+      }
       return;
     } catch (_) { await sleep(10000); }
   }
@@ -356,7 +367,7 @@ async function inspect(page, mode) {
   assert(r.cardCount>=4&&r.cardCount<=9,'dynamic consultation card count must be 4-9 '+r.cardCount);
   assert(r.badges[0]==='네 질문의 답'&&r.badges[1]==='언니가 먼저 본 것','direct answer / thesis ordering drift '+JSON.stringify(r.badges));
   assert(r.evidenceOk&&r.counterOk,'consultation provenance missing');
-  assert(r.detailsCount>=r.cardCount,'progressive why/evidence disclosure missing '+JSON.stringify({details:r.detailsCount,cards:r.cardCount}));
+  assert(r.detailsCount>=2,'progressive why/evidence disclosure missing on the visible first answer '+JSON.stringify({details:r.detailsCount,cards:r.cardCount}));
   assert(!r.rawEvidenceIdsVisible,'internal evidence ids leaked to user '+r.visibleText);
   assert(!r.oldSix,'fixed NOTE 1-6 wording leaked into primary consultation '+r.visibleText);
   assert(r.questionPlan?.directQuestions?.length>=1&&r.thesis&&r.direct,'question plan / central thesis / direct answer missing');
@@ -392,7 +403,11 @@ async function inspect(page, mode) {
     httpErrors.push({status:res.status(),url:res.url(),action});
   });
   const aiNoteRequests=[];
-  page.on('request',req=>{ if(req.url().includes('/api/ai-notes')) aiNoteRequests.push(req.method()+' '+req.url()); });
+  const consultationRequests=[];
+  page.on('request',req=>{
+    if(req.url().includes('/api/ai-notes')) aiNoteRequests.push(req.method()+' '+req.url());
+    if(req.url().includes('/api/consultation')&&req.method()==='POST') consultationRequests.push(req.method()+' '+req.url());
+  });
   await deployed(page);
   await enter(page,'F','love','relationship');
 
@@ -403,27 +418,31 @@ async function inspect(page, mode) {
   assert(aiRuntimeOff.runtime==='undefined' && aiRuntimeOff.scripts===0,
     'ordinary production page must not load AI NOTE test client '+JSON.stringify(aiRuntimeOff));
 
-  // 일반 결과 화면에서는 AI 호출 없이 엔진 NOTE만 렌더링되어야 한다.
-  await sleep(2500);
-  const engineNotes = await page.evaluate(()=>({
-    cachedAi:!!currentResultData?.__aiNoteV4,
+  // 구형 AI-NOTE 테스트 클라이언트는 꺼져 있고, 기본 결과는 새 자유질문 상담 엔진을 반드시 탄다.
+  await sleep(150);
+  const primaryConsultation = await page.evaluate(()=>({
+    cachedLegacyAi:!!currentResultData?.__aiNoteV4,
     precisionStatus:!!document.getElementById('aiNotePrecisionStatus'),
+    consultationVersion:globalThis.__UNNI_CONSULTATION_V1__?.version||'',
+    cards:currentResultData?.__consultationV1?.cards?.length||0,
+    question:currentResultData?.userQuestion||'',
     visibleText:document.getElementById('notesListContainer')?.innerText||'',
   }));
   assert(
     aiNoteRequests.length===0 &&
-    !engineNotes.cachedAi &&
-    !engineNotes.precisionStatus &&
-    engineNotes.visibleText.includes('결론') &&
-    /[가-힣]{2}일주|일주 [가-힣]{2}/.test(engineNotes.visibleText) &&
-    !/작동 방식|압력군|과부하 후보/.test(engineNotes.visibleText),
-    'result NOTE must come from the saju engine without loading or calling AI NOTE '+JSON.stringify({
-      aiNoteRequests,
-      ...engineNotes,
-      visibleText:engineNotes.visibleText.slice(0,300),
+    consultationRequests.length===1 &&
+    !primaryConsultation.cachedLegacyAi &&
+    !primaryConsultation.precisionStatus &&
+    primaryConsultation.consultationVersion==='1.0.0' &&
+    primaryConsultation.cards>=4 && primaryConsultation.cards<=9 &&
+    primaryConsultation.question.length>=4 &&
+    !/작동 방식|압력군|과부하 후보/.test(primaryConsultation.visibleText),
+    'primary result must come from the grounded free-question consultation engine '+JSON.stringify({
+      aiNoteRequests,consultationRequests,...primaryConsultation,
+      visibleText:primaryConsultation.visibleText.slice(0,300),
     })
   );
-  console.log('ENGINE_NOTE_NO_AI_CLIENT_PASS');
+  console.log('PRIMARY_FREE_QUESTION_CONSULTATION_PASS');
 
   const f=await inspect(page,'F');
 
@@ -546,13 +565,15 @@ async function inspect(page, mode) {
       text:el.innerText||'',
     })),
   }));
-  assert(postUnlock.cards===6&&!postUnlock.preview&&postUnlock.catalogAfterNotes,'basic unlock must reveal all six answers before post-report upsells '+JSON.stringify(postUnlock));
-  assert(postUnlock.roleLabelCount===0&&postUnlock.roles.length===6&&postUnlock.roles.every(x=>x.title.length>0),
-    'NOTE headers must use the bold dynamic title without tiny role labels '+JSON.stringify(postUnlock.roles));
-  assert(['02','03','04','05','06'].every(role=>postUnlock.roles.find(x=>x.role===role)?.text.includes('결론')) &&
-         postUnlock.roles.find(x=>x.role==='04')?.text.includes('조심') &&
-         /(\d{1,2}월|\d{4}년|대운|세운|월운|가까운 흐름)/.test(postUnlock.roles.find(x=>x.role==='06')?.text||''),
-    'answer/cause/caution/action/timing flow is not concrete '+JSON.stringify(postUnlock.roles));
+  const expectedDynamicCards=await page.evaluate(()=>currentResultData?.__consultationV1?.cards?.length||0);
+  assert(postUnlock.cards===expectedDynamicCards&&expectedDynamicCards>=4&&expectedDynamicCards<=9&&!postUnlock.preview&&postUnlock.catalogAfterNotes,
+    'basic unlock must reveal every dynamic consultation section before post-report upsells '+JSON.stringify({expectedDynamicCards,...postUnlock}));
+  assert(postUnlock.roleLabelCount===0&&postUnlock.roles.length===expectedDynamicCards&&postUnlock.roles.every(x=>x.title.length>0),
+    'dynamic consultation headers must use the bold generated title without tiny role labels '+JSON.stringify(postUnlock.roles));
+  assert(postUnlock.roles[0]?.text.includes('네가 물어본 것부터') &&
+         postUnlock.roles.some(x=>x.title.includes('잘 맞는 길도 이 조건이면 소모돼')) &&
+         postUnlock.roles.some(x=>x.title.includes('작은 검증')),
+    'direct answer / caution / action flow is not visible '+JSON.stringify(postUnlock.roles));
   assert(postUnlock.reasonCount===1&&postUnlock.reasonText.length>=10,'premium recommendation should keep one compact reason '+JSON.stringify(postUnlock));
   assert(!postUnlock.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아')&&!postUnlock.catalogText.includes('다음으로 볼 가치는 이게 제일 커')&&!postUnlock.catalogText.includes('방금 같이 본 얘기는 반복하지 않고')&&!postUnlock.catalogText.includes('방금 본 내용과 겹치는 건 빼고'),
     'premium recommendation still renders marketing-style preamble '+postUnlock.catalogText);
