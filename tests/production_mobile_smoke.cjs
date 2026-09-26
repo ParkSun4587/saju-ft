@@ -10,13 +10,13 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.3' &&
-        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.6.0' &&
+        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.6.1' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach six-answer NOTE 6.6.0 / paid 1.5.3 / products 2.3.1');
+  throw new Error('production did not reach six-answer NOTE 6.6.1 / paid 1.5.3 / products 2.3.1');
 }
 
 async function clickCatalogProduct(page, productId) {
@@ -353,10 +353,10 @@ async function inspect(page, mode) {
     const products=[...document.querySelectorAll('#unniProductLadder [data-unni-product]')];
     return {
       n1:plain(notes[0]?.desc), n2:plain(notes[2]?.desc), answer:plain(notes[1]?.desc),
-      n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc),
+      n4:plain(notes[3]?.desc), n5:plain(notes[4]?.desc), n6:plain(notes[5]?.desc),
       aiTranslated:notes.length===6 && notes.every(n=>n?.__aiTranslated===true),
       noteV2Audit:currentResultData?.noteV2Audit || null,
-      timingMeta:notes[4]?.__timingQA || null,
+      timingMeta:notes[5]?.__timingQA || null,
       oheng:document.getElementById('ohengSummaryTxt')?.innerText||'',
       dayMasterTag:document.getElementById('dayMasterTag')?.innerText||'',
       sourceFreeLaunch:FREE_LAUNCH_MODE,
@@ -444,7 +444,7 @@ async function inspect(page, mode) {
   },mode);
   r.resultLayout=await resultLayoutSnapshot(page);
   assertResultLayout(r.resultLayout,mode+' primary result');
-  assert(r.noteV2Audit?.version==='6.6.0'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
+  assert(r.noteV2Audit?.version==='6.6.1'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
   assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
   assert(r.noteV2Audit?.evidenceCoverage?.coverageRate===1&&r.noteV2Audit?.evidenceCoverage?.missingRuleIds?.length===0,mode+' supported classical evidence dropped '+JSON.stringify(r.noteV2Audit?.evidenceCoverage));
   assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six internal causal claims missing');
@@ -459,7 +459,7 @@ async function inspect(page, mode) {
     mode+' behavior template audit drift'
   );
   assert(r.noteV2Audit?.interpretationPlan?.primaryGroup,mode+' cross-validated concern interpretation missing');
-  for(const [label,text] of [['core',r.n1],['scene',r.n2],['filter',r.n4],['timing',r.n5]]){
+  for(const [label,text] of [['core',r.n1],['scene',r.n2],['caution',r.n4],['fit',r.n5],['timing',r.n6]]){
     assert(text.length>=110&&text.length<=1600,mode+' '+label+' answer length drift '+text.length);
     if(r.aiTranslated){
       assert(
@@ -480,7 +480,7 @@ async function inspect(page, mode) {
     assert(r.timingMeta?.concernSituation,mode+' timing answer metadata missing');
     assert(!norm(r.timingMeta?.firstBody)||!norm(r.timingMeta?.secondBody)||norm(r.timingMeta?.firstBody)!==norm(r.timingMeta?.secondBody),mode+' duplicate timing roles returned');
   }
-  assert(!/(비밀\s*메모|실전 룰|반복 패턴)/.test(r.n1+' '+r.n2+' '+r.n4+' '+r.n5),mode+' stale NOTE labels returned');
+  assert(!/(비밀\s*메모|실전 룰|반복 패턴)/.test(r.n1+' '+r.n2+' '+r.n4+' '+r.n5+' '+r.n6),mode+' stale NOTE labels returned');
   if (mode==='F') assert(r.oheng.includes('겉으로 가장 많이 보여')&&r.oheng.includes('눈에 보이는 오행 분포')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('지금 네 고민에 필요한 얘기만 짧게')&&!/비밀\s*메모|제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=260,'F oheng bridge wording '+r.oheng);
   if (mode==='T') assert(r.oheng.includes('비중이 가장 커')&&r.oheng.includes('계절·뿌리·위치')&&r.oheng.includes('지금 네 고민에 맞는 말로만 짧게')&&!/비밀\s*메모|제일 강해|약한 편/.test(r.oheng)&&!/\d+%/.test(r.oheng)&&r.oheng.length<=235,'T oheng bridge wording '+r.oheng);
   assert(!/[나무불흙쇠물]\)/.test(r.oheng+r.dayMasterTag),'old parenthetical five-element wording remains '+JSON.stringify({oheng:r.oheng,day:r.dayMasterTag}));
@@ -745,10 +745,10 @@ async function inspect(page, mode) {
   assert(postUnlock.cards===6&&!postUnlock.preview&&postUnlock.catalogAfterNotes,'basic unlock must reveal all six answers before post-report upsells '+JSON.stringify(postUnlock));
   assert(postUnlock.roleLabelCount===0&&postUnlock.roles.length===6&&postUnlock.roles.every(x=>x.title.length>0),
     'NOTE headers must use the bold dynamic title without tiny role labels '+JSON.stringify(postUnlock.roles));
-  assert(['02','03','04','06'].every(role=>postUnlock.roles.find(x=>x.role===role)?.text.includes('결론')) &&
-         postUnlock.roles.find(x=>x.role==='06')?.text.includes('조심') &&
-         /(\d{1,2}월|\d{4}년|대운|세운|월운|가까운 흐름)/.test(postUnlock.roles.find(x=>x.role==='05')?.text||''),
-    'fit/filter/timing answers are not concrete '+JSON.stringify(postUnlock.roles));
+  assert(['02','03','04','05','06'].every(role=>postUnlock.roles.find(x=>x.role===role)?.text.includes('결론')) &&
+         postUnlock.roles.find(x=>x.role==='04')?.text.includes('조심') &&
+         /(\d{1,2}월|\d{4}년|대운|세운|월운|가까운 흐름)/.test(postUnlock.roles.find(x=>x.role==='06')?.text||''),
+    'answer/cause/caution/action/timing flow is not concrete '+JSON.stringify(postUnlock.roles));
   assert(postUnlock.reasonCount===1&&postUnlock.reasonText.length>=10,'premium recommendation should keep one compact reason '+JSON.stringify(postUnlock));
   assert(!postUnlock.catalogText.includes('언니라면 이걸 먼저 이어서 볼 것 같아')&&!postUnlock.catalogText.includes('다음으로 볼 가치는 이게 제일 커')&&!postUnlock.catalogText.includes('방금 같이 본 얘기는 반복하지 않고')&&!postUnlock.catalogText.includes('방금 본 내용과 겹치는 건 빼고'),
     'premium recommendation still renders marketing-style preamble '+postUnlock.catalogText);
@@ -887,8 +887,8 @@ async function inspect(page, mode) {
   assert(httpErrors.every(expectedEntitlementFailure),'F unexpected HTTP errors '+JSON.stringify(httpErrors));
   assert(thttpErrors.every(expectedEntitlementFailure),'T unexpected HTTP errors '+JSON.stringify(thttpErrors));
   console.log('PRODUCTION_MOBILE_SMOKE_PASS',JSON.stringify({
-    f:[f.n1.length,f.n2.length,f.n4.length,f.n5.length],
-    t:[tr.n1.length,tr.n2.length,tr.n4.length,tr.n5.length],
+    f:[f.n1.length,f.n2.length,f.n4.length,f.n5.length,f.n6.length],
+    t:[tr.n1.length,tr.n2.length,tr.n4.length,tr.n5.length,tr.n6.length],
     expectedEntitlement400s:httpErrors.filter(expectedEntitlementFailure).length+thttpErrors.filter(expectedEntitlementFailure).length,
     pdfRemoved:true
   }));
