@@ -109,15 +109,23 @@ async function verifyPaidAccess(access, signing) {
   if (!signing || !access || typeof access !== "object") return false;
   const userKey=typeof access.userKey === "string" ? access.userKey : "";
   const token=typeof access.token === "string" ? access.token : "";
+  const purpose=typeof access.purpose === "string" ? access.purpose : "concern_single";
   if (!userKey || userKey.length > 3000 || !token || token.length > 8192) return false;
 
+  // Legacy raw-HMAC access existed only for the single-question product.
   if (!token.startsWith("v2.") && !token.startsWith("v3.")) {
-    return equal(token,await hmac(userKey,signing));
+    return purpose === "concern_single" && equal(token,await hmac(userKey,signing));
   }
 
   const grant=await parseSignedGrant(token,signing);
   if (!grant || grant.userKey !== userKey) return false;
-  return grant.productId === "concern_single";
+  const allowedProducts = {
+    concern_single:["concern_single"],
+    premium_full_saju:["full_saju","all_in_one"],
+    premium_all_in_one:["all_in_one"],
+  };
+  const allowed=allowedProducts[purpose];
+  return Array.isArray(allowed) && allowed.includes(grant.productId);
 }
 function extractOutputText(payload) {
   for (const item of Array.isArray(payload?.output) ? payload.output : []) {
