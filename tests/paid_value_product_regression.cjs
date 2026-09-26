@@ -635,13 +635,13 @@ function mockConsultation(question, mode='F') {
   assert(ui.mbtiInfo.fontSize <= 38 && ui.mbtiInfo.oneLineBeforeThreeLine && ui.mbtiInfo.threeLineBeforeMbti && ui.mbtiInfo.mbtiBeforeChem, `result hierarchy must preserve one-line → 3-line and optional MBTI → chemistry order: ${JSON.stringify(ui.mbtiInfo)}`);
   assert(ui.fChem.best.includes('rose') && ui.fChem.worst.includes('violet') && ui.fChem.bestTitle === '환상의 찰떡 깐부' && ui.fChem.worstTitle === '기 빨리는 상극', `F chemistry theme drift: ${JSON.stringify(ui.fChem)}`);
   assert(ui.tChem.best.includes('sky') && ui.tChem.worst.includes('slate') && ui.tChem.bestTitle === '최강 시너지' && ui.tChem.worstTitle === '충돌 많은 상극', `T chemistry theme drift: ${JSON.stringify(ui.tChem)}`);
-  assert(ui.fOheng.includes('겉으로 가장 많이 보여') && ui.fOheng.includes('눈에 보이는 오행 분포') && ui.fOheng.includes('계절·뿌리·위치') && ui.fOheng.includes('지금 네 고민에 필요한 얘기만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.fOheng) && !/\d+%/.test(ui.fOheng) && ui.fOheng.length <= 260, `F five-element bridge wording drift: ${ui.fOheng}`);
-  assert(ui.tOheng.includes('비중이 가장 커') && ui.tOheng.includes('계절·뿌리·위치') && ui.tOheng.includes('지금 네 고민에 맞는 말로만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.tOheng) && !/\d+%/.test(ui.tOheng) && ui.tOheng.length <= 235, `T five-element bridge wording drift: ${ui.tOheng}`);
+  assert(ui.fOheng.includes('겉으로 가장 많이 보여') && ui.fOheng.includes('눈에 보이는 오행 분포') && ui.fOheng.includes('계절·뿌리·위치') && ui.fOheng.includes('이번 질문에 필요한 얘기만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.fOheng) && !/\d+%/.test(ui.fOheng) && ui.fOheng.length <= 260, `F five-element bridge wording drift: ${ui.fOheng}`);
+  assert(ui.tOheng.includes('비중이 가장 커') && ui.tOheng.includes('계절·뿌리·위치') && ui.tOheng.includes('이번 질문에 필요한 말로만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.tOheng) && !/\d+%/.test(ui.tOheng) && ui.tOheng.length <= 235, `T five-element bridge wording drift: ${ui.tOheng}`);
   assert(await page.locator('#sisterSwitchCard').count() === 0, 'bottom F/T mode-switch CTA must be removed');
-  assert(ui.noteBadges.join('|')==='핵심|질문에 대한 답|왜 그런지|조심할 것|어떻게 할지|가까운 흐름',
-    `five-answer badges drift: ${JSON.stringify(ui.noteBadges)}`);
-  assert(ui.noteRoleLabelCount===0 && ui.noteTitles.length===6 && ui.noteTitles.every(Boolean),
-    `dynamic NOTE titles must replace tiny role labels: ${JSON.stringify(ui.noteTitles)}`);
+  assert(ui.noteBadges.join('|')==='네 질문의 답|언니가 먼저 본 것|왜 이런 답인지|특히 조심할 것|언제 움직일지',
+    `dynamic consultation badges drift: ${JSON.stringify(ui.noteBadges)}`);
+  assert(ui.noteRoleLabelCount===0 && ui.noteTitles.length===5 && ui.noteTitles.every(Boolean),
+    `dynamic consultation titles must replace fixed NOTE roles: ${JSON.stringify(ui.noteTitles)}`);
   assert(ui.share.version === '5', `story card version ${ui.share.version}`);
   assert(ui.share.text.includes('사주 성향을 MBTI로 번역하면') && ui.share.text.includes('나를 설명하는 3문장') && ui.share.text.includes('너는 뭐 나왔어?') && ui.share.text.includes('나도 내 결과 보기') && ui.share.text.includes('sajuft.com'), 'story card viral/share copy missing');
   assert(ui.share.core && ui.share.strong && ui.share.need, `story card element strip missing: ${JSON.stringify(ui.share)}`);
