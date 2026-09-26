@@ -240,6 +240,8 @@ function loadServer(){
       before,after,
       sections:sections.map(x=>({title:x.title,body:plain(x.body),claim:x.claim})),
       renderedSections:root.querySelectorAll('[data-full-saju-section]').length,
+      fullPrompt:product.buildPremiumConsultationPrompt('full_saju',consultationData),
+      deepPrompt:product.buildPremiumConsultationPrompt('all_in_one',consultationData),
       annualYears,
       fullText,
       section10:plain(root.querySelector('[data-full-saju-section="10"]')?.innerText||''),
@@ -281,11 +283,8 @@ function loadServer(){
   });
 
   assert(report.sections.length===12&&report.renderedSections===0,'legacy full-saju builder may remain, but the new product must not render its fixed 12-section report');
-  assert(report.sections.every(x=>x.claim&&x.claim.newFacts?.length&&x.claim.conclusion),'every full_saju section needs a claim/new fact/conclusion');
-  assert(new Set(report.sections.map(x=>JSON.stringify(x.claim.newFacts))).size===12,'full_saju sections repeat the same factual unit');
-  assert(new Set(report.sections.map(x=>x.claim.conclusion)).size===12,'full_saju sections repeat the same conclusion');
-  const fullSajuStructureWords=['핵심','먼저 보면','큰 흐름부터 보면','왜','왜냐면','실제','현실에서는','이렇게 써','그래서','언니가 마지막으로 남길 기준','활용','주의'];
-  assert(report.sections.every(x=>fullSajuStructureWords.filter(k=>x.body.includes(k)).length>=2),'full_saju sections are too thin '+JSON.stringify(report.sections.map(x=>x.title)));
+  assert(report.fullPrompt.includes('5~7개 카드')&&report.fullPrompt.includes('장기 변곡점은 이 상담에 넣지 마'),'4,900 dynamic whole-consultation contract drift');
+  assert(report.deepPrompt.includes('현재 질문')&&report.deepPrompt.includes('12~18개월')&&report.deepPrompt.includes('5년 변곡점'),'9,900 deep-consultation contract drift');
   assert(report.annualYears.length===5&&!report.fullText.includes('앞으로 5년 큰 흐름'),'4,900 full_saju must keep five-year detail out of its rendered product');
   assert(report.fullText.includes('사주 전체')&&report.fullText.includes('중요한 주제'),'full_saju dynamic consultation shell missing');
   assert(report.before.fp===report.after.fp&&JSON.stringify(report.before.claims)===JSON.stringify(report.after.claims),'premium rendering changed classical reasoning');
