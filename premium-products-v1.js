@@ -640,7 +640,11 @@
       };
       delete d.__consultationV1;
       try {
-        const generated = await runtime.generate(d, getMode(data));
+        const grant = readGrant(data,"concern_bundle3") || readGrant(data,"all_in_one");
+        const access = grant?.userKey && grant?.token
+          ? { userKey:grant.userKey, token:grant.token, purpose:"premium_bundle3" }
+          : null;
+        const generated = await runtime.generate(d, getMode(data), access);
         slot.innerHTML = noteCards(generated.cards || []);
       } catch (error) {
         slot.innerHTML = `<div style="padding:12px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412">이 질문 상담을 불러오지 못했어. 다시 결제할 필요는 없고, 창을 닫았다가 구매한 상품 다시보기를 눌러줘.</div>`;
