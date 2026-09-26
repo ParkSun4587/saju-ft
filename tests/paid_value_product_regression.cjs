@@ -80,6 +80,35 @@ function mockConsultation(question, mode='F') {
   const errors = [];
   page.on('pageerror', e => errors.push(`[pageerror] ${e.stack || e.message}`));
   page.on('console', m => { if (m.type() === 'error') errors.push(`[console] ${m.text()}`); });
+  await page.route('**/api/consultation-preview', async route => {
+    const req=route.request();
+    let body={}; try { body=req.postDataJSON()||{}; } catch {}
+    const packet=body.evidencePacket||{};
+    const full=mockConsultation(packet?.question?.text,packet?.requestMode);
+    await route.fulfill({
+      status:200,
+      contentType:'application/json',
+      body:JSON.stringify({
+        ok:true,
+        model:'ci-preview-mock',
+        directAnswer:full.directAnswer,
+        followUp:{
+          question:packet?.requestMode==='T' ? '지금 판단을 가장 흔드는 건 뭐야?' : '그중에서도 지금 제일 신경 쓰이는 건 뭐야?',
+          options:[
+            {label:'지금 너무 지쳤어',response:'그럼 소모 조건과 회복 순서를 먼저 봐야 해.',focus:'소모 조건과 회복 순서'},
+            {label:'다음 방향이 안 보여',response:'그럼 다음 방향과 움직일 시기를 같이 봐야 해.',focus:'다음 방향과 이동 시기'},
+            {label:'결정이 후회될까 봐',response:'그럼 판단이 달라지는 조건과 위험 신호를 먼저 봐야 해.',focus:'판단 기준과 위험 조건'},
+          ],
+        },
+        paidScope:[
+          {title:'이 판단이 달라지는 조건'},
+          {title:'너한테 맞는 선택과 소모되는 조건'},
+          {title:'실제로 움직일 시기와 지금 할 행동'},
+        ],
+        handoff:'여기서부터는 결제 후에 이번 질문에 필요한 부분을 깊게 연결해서 볼게.',
+      }),
+    });
+  });
   await page.route('**/api/consultation', async route => {
     const req=route.request();
     let body={}; try { body=req.postDataJSON()||{}; } catch {}
@@ -429,10 +458,13 @@ function mockConsultation(question, mode='F') {
     document.getElementById('genderValue').value = 'female';
     document.getElementById('birthTimeBranch').value = '丑';
     startAnalysis('F');
-    for (let i=0; i<120 && !currentResultData?.__consultationV1?.cards?.length; i++) {
+    for (let i=0; i<120 && !currentResultData?.__consultationPreviewV1?.directAnswer; i++) {
       await new Promise((resolve) => requestAnimationFrame(resolve));
     }
-    if (!currentResultData?.__consultationV1?.cards?.length) throw new Error('CONSULTATION_MOCK_DID_NOT_RENDER');
+    if (!currentResultData?.__consultationPreviewV1?.directAnswer) throw new Error('CONSULTATION_PREVIEW_MOCK_DID_NOT_RENDER');
+    if (currentResultData?.__consultationV1?.cards?.length) throw new Error('DEEP_CONSULTATION_GENERATED_BEFORE_PAYMENT');
+    globalThis.__UNNI_CONSULTATION_V1__?.selectPreviewOption?.(currentResultData,0);
+    updateResultContentByMode('F');
 
     history.replaceState({},'',location.pathname+'?payment=fail&state=fake');
     preparePaymentFailureRetry(currentResultData,'F');
@@ -462,16 +494,12 @@ function mockConsultation(question, mode='F') {
     removeStore('unni_payment_retry_after_refresh',true);
 
     renderUnniProductCatalog();
-    const notes = currentResultData?.__consultationV1?.cards || [];
-    const timingAnswer = notes.find((n) => n.__sectionType === 'timing') || notes.at(-1);
 
     const lockedCatalog = document.getElementById('unniProductLadder');
-    const note2Preview = document.getElementById('note2PreviewCard');
+    const followUpCard = document.getElementById('freeConsultationFollowUp');
     const fPaywallText = document.getElementById('lockedOverlay')?.innerText || '';
     const fNextTeaser = document.getElementById('paywallNextTeaser')?.innerText || '';
     const fFeatureCount = document.querySelectorAll('#payBoxFeatures > div').length;
-    const previewPlain = note2Preview?.innerText || '';
-    const previewBodyPlain = document.getElementById('note2PreviewBody')?.innerText || '';
     updateResultContentByMode('T');
     const tPaywallText = document.getElementById('lockedOverlay')?.innerText || '';
     const tPaywallSisterSub = document.getElementById('paywallSisterSub')?.innerText || '';
@@ -480,6 +508,12 @@ function mockConsultation(question, mode='F') {
     const tFeatureCount = document.querySelectorAll('#payBoxFeatures > div').length;
     updateResultContentByMode('F');
 
+    const userKey=getUserUniqueKey(currentResultData);
+    writeStore('tok_'+userKey,'ci-paid-token');
+    const paidReady=await ensurePaidConsultationReady(currentResultData);
+    if(!paidReady || !currentResultData?.__consultationV1?.cards?.length) throw new Error('PAID_CONSULTATION_MOCK_DID_NOT_RENDER');
+    const notes = currentResultData.__consultationV1.cards;
+    const timingAnswer = notes.find((n) => n.__sectionType === 'timing') || notes.at(-1);
     unlockFullReport(null, true);
     renderUnniProductCatalog();
     if (!FREE_LAUNCH_MODE) {
@@ -489,7 +523,7 @@ function mockConsultation(question, mode='F') {
     }
     const catalog = document.getElementById('unniProductLadder');
     const unlockedNoteCards = document.querySelectorAll('#notesListContainer > div').length;
-    const previewAfterUnlock = !!document.getElementById('note2PreviewCard');
+    const previewAfterUnlock = !!document.getElementById('freeConsultationFollowUp');
     const fChem = {
       best:document.getElementById('chemBestCard')?.className || '',
       worst:document.getElementById('chemWorstCard')?.className || '',
@@ -537,14 +571,14 @@ function mockConsultation(question, mode='F') {
     };
     return {
       sourceFreeLaunch:FREE_LAUNCH_MODE,
-      previewVisible:!!note2Preview && getComputedStyle(note2Preview).display !== 'none',
+      previewVisible:!!followUpCard && getComputedStyle(followUpCard).display !== 'none',
       paywallVisible:!!document.getElementById('lockedOverlay') && getComputedStyle(document.getElementById('lockedOverlay')).display !== 'none',
       result:!!currentResultData,
       paymentRetryRecovery,
       definitivePaymentFailure,
       lockedCatalog:!!lockedCatalog,
-      previewPlain,
-      previewBodyPlain,
+      previewPlain:currentResultData?.__consultationPreviewV1?.directAnswer?.answer || '',
+      previewBodyPlain:currentResultData?.__consultationPreviewV1?.selectedResponse || '',
       fullNote2Plain:String(notes[1]?.desc || '').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),
       fPaywallText,
       tPaywallText,
@@ -606,24 +640,22 @@ function mockConsultation(question, mode='F') {
     ui.definitivePaymentFailure.retryFlag==='1',
     'definitive payment decline must show a clear fresh-retry path '+JSON.stringify(ui.definitivePaymentFailure)
   );
-  if (ui.sourceFreeLaunch) {
-    assert(ui.lockedCatalog, 'free-launch mode should expose the post-report product catalog');
-    assert(!ui.previewVisible && !ui.paywallVisible, 'free-launch mode must keep the basic lock UI hidden');
-  } else {
-    assert(!ui.lockedCatalog, 'premium upsells must not appear before the basic unlock');
-    assert(ui.previewPlain && ui.previewPlain.includes('2/5'), 'second dynamic consultation teaser missing before paywall');
-    assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length,
-      `second-answer teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-    assert(ui.fPaywallText.includes('네가 물어본 답은 잡혔어') && ui.fPaywallText.includes('이번 질문') && ui.fPaywallText.includes('100원'),
-      `F free-question conversion handoff missing: ${ui.fPaywallText}`);
-    assert(ui.tPaywallText.includes('핵심 답은 잡았어') && ui.tPaywallText.includes('이번 질문') && ui.tPaywallText.includes('100원'),
-      `T free-question conversion handoff missing: ${ui.tPaywallText}`);
-    assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three concrete benefits: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
-    assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser === ui.tNextTeaser,
-      `locked-content teaser must keep the same factual next section across F/T: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
-    assert(ui.fPaywallText.includes('이 질문 끝까지') && ui.tPaywallText.includes('이 질문 끝까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText),
-      'free-question unlock scope or stale sale copy drift');
-  }
+  assert(ui.sourceFreeLaunch===false, 'paid consultation UX must keep free-launch bypass disabled');
+  assert(!ui.lockedCatalog, 'premium upsells must not appear before the basic unlock');
+  assert(ui.previewVisible && ui.paywallVisible, 'free preview follow-up and paywall must be visible after the user answers');
+  assert(ui.previewPlain.length >= 20 && ui.previewBodyPlain.length >= 8,
+    'free preview must contain a useful direct answer and contextual follow-up response');
+  assert(ui.fPaywallText.includes('이 질문 끝까지') && ui.fPaywallText.includes('100원') && ui.fPaywallText.includes('결제 후 분석'),
+    `F consultation handoff missing: ${ui.fPaywallText}`);
+  assert(ui.tPaywallText.includes('이 질문 끝까지') && ui.tPaywallText.includes('100원') && ui.tPaywallText.includes('결제 후 분석'),
+    `T consultation handoff missing: ${ui.tPaywallText}`);
+  assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3,
+    `paywall should stay compact with three concrete analysis areas: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
+  assert(ui.fNextTeaser.length >= 8 && ui.tNextTeaser.length >= 8 && ui.fNextTeaser === ui.tNextTeaser,
+    `next-analysis scope must keep the same factual area across F/T: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
+  assert(!/오픈 체험가|잠긴 내용/.test(ui.fPaywallText + ui.tPaywallText),
+    'stale sale/locked-content copy returned');
+
   assert(ui.unlockedNoteCards === 5 && !ui.previewAfterUnlock,
     `unlock must replace teaser with all dynamic consultation sections: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
