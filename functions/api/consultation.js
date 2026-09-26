@@ -121,6 +121,7 @@ async function verifyPaidAccess(access, signing) {
   if (!grant || grant.userKey !== userKey) return false;
   const allowedProducts = {
     concern_single:["concern_single"],
+    premium_bundle3:["concern_bundle3","all_in_one"],
     premium_full_saju:["full_saju","all_in_one"],
     premium_all_in_one:["all_in_one"],
   };
