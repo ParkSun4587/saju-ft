@@ -1486,7 +1486,12 @@ function mockConsultation(question, mode='F') {
   const finalNotePaymentAt = html.indexOf('id="finalNotePaymentButton"');
   const finalNotePaymentSlice = finalNotePaymentAt >= 0 ? html.slice(finalNotePaymentAt, finalNotePaymentAt + 900) : '';
   assert(finalNotePaymentAt >= 0 && finalNotePaymentSlice.includes('방금 보던 내용 이어보기') && !finalNotePaymentSlice.includes('이어보기 · 990원') && html.includes('선택한 결제수단으로 결제돼') && html.includes('id="paywallPriceSummary"') && html.includes('priceSummary.style.display = "none"') && !finalNotePaymentSlice.includes('bg-[#fee500]') && !finalNotePaymentSlice.includes('bg-gradient-to-r'), '990 won final payment CTA must use brand-primary copy/style instead of Kakao-like yellow');
-  assert(premium.includes('data-bundle-situation') && premium.includes('data-all-situation'), 'premium situation selectors missing');
+  assert(
+    premium.includes('data-bundle-question') &&
+    !premium.includes('data-bundle-situation') &&
+    !premium.includes('data-all-situation'),
+    'premium products must use free-question inputs instead of old fixed situation selectors'
+  );
   assert(premium.includes('<option value="solar">양력</option><option value="lunar">음력</option>') && !premium.includes('양력 생일') && !premium.includes('음력 생일'), 'compatibility calendar labels should be simple');
   assert(!premium.includes('예: 오후 3시 20분이면'), 'compatibility birth-time helper should be removed');
   assert(
