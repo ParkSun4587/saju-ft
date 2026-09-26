@@ -3047,7 +3047,15 @@
 
   global.buildConcernDiagnosisV2=buildConcernDiagnosisV2;
   global.renderConcernNotesV2=renderConcernNotesV2;
-  global.__CONCERN_NOTE_ENGINE_V2__={version:VERSION,situations:SITUATIONS,describeTerm:describeTermForData,facts:chartFactsForData,_testTopGroup:topGroupOf,_testGrounding:(reasoning,situation,data)=>buildConcernGroundingPlan(reasoning,situation,signalsOf(reasoning),data||{})};
+  global.__CONCERN_NOTE_ENGINE_V2__={
+    version:VERSION,
+    situations:SITUATIONS,
+    describeTerm:describeTermForData,
+    facts:chartFactsForData,
+    _testTopGroup:topGroupOf,
+    _testGrounding:(reasoning,situation,data)=>buildConcernGroundingPlan(reasoning,situation,signalsOf(reasoning),data||{}),
+    _testNoteFix:(reasoning,situation,data,mode)=>noteHowV7(reasoning,situation,signalsOf(reasoning),data||{},mode==="T"),
+  };
 
   const legacy=global.generateConcernNotes;
   const wrapped=function(data,mode){
