@@ -375,9 +375,12 @@
     return { ...payload, evidencePacket:packet };
   }
 
-  async function requestConsultation(data, mode) {
+  async function requestConsultation(data, mode, accessOverride = null) {
     const packet = buildEvidencePacket(data, mode);
-    const access = consultationAccess(data);
+    const access = accessOverride && typeof accessOverride === "object"
+      ? { ...accessOverride }
+      : { ...consultationAccess(data), purpose:"concern_single" };
+    if (!access.purpose) access.purpose = "concern_single";
     if (!access.userKey || !access.token) {
       const error = new Error("PAID_ACCESS_REQUIRED");
       error.code = "PAID_ACCESS_REQUIRED";
@@ -521,7 +524,7 @@
     return chosen;
   }
 
-  async function generate(data, mode) {
+  async function generate(data, mode, accessOverride = null) {
     const normalizedMode = mode === "T" ? "T" : "F";
     const packet = buildEvidencePacket(data, normalizedMode);
     const key = runtimeKey(packet, normalizedMode);
@@ -529,7 +532,7 @@
       return data.__consultationV1;
     }
     if (inflight.has(key)) return inflight.get(key);
-    const promise = requestConsultation(data, normalizedMode)
+    const promise = requestConsultation(data, normalizedMode, accessOverride)
       .then((result) => {
         if (result?.questionPlan?.needsClarification && result?.questionPlan?.clarifyingQuestion) {
           const error = new Error(result.questionPlan.clarifyingQuestion);
