@@ -1342,6 +1342,42 @@ function mockConsultation(question, mode='F') {
   );
   assert(/(?:const|let) FREE_LAUNCH_MODE\s*=\s*false/.test(html), 'FREE_LAUNCH_MODE must stay false for paid launch');
   assert(
+    !html.includes('replace(/\\\\s+/g') &&
+    !html.includes('replace(/\\\\D/g'),
+    'free-question/payment input normalization contains double-escaped regexes'
+  );
+
+  const paymentReturnSource = html.slice(
+    html.indexOf('async function handlePaymentReturn'),
+    html.indexOf('// [추가] 승인 실패 시 재시도 박스')
+  );
+  assert(
+    paymentReturnSource.includes('restoreSavedPaymentResult(resultFromSnapshot(resume.data))') &&
+    !paymentReturnSource.includes('__UNNI_CONSULTATION_V1__.generate'),
+    'payment return must not wait for AI before Toss confirmation'
+  );
+
+  const approveSource = html.slice(
+    html.indexOf('async function approveCurrentOrder'),
+    html.indexOf('function showReturnRecovery')
+  );
+  assert(
+    approveSource.indexOf('confirmPaymentOnServer(') >= 0 &&
+    approveSource.indexOf('ensurePaidConsultationReady(') > approveSource.indexOf('confirmPaymentOnServer('),
+    'basic payment must confirm Toss before consultation recovery'
+  );
+
+  const premiumReturnSource = premium.slice(
+    premium.indexOf('global.handleUnniProductPaymentReturn = async function'),
+    premium.indexOf('global.openUnniProduct = openProduct')
+  );
+  assert(
+    premiumReturnSource.indexOf('confirmPaymentOnServer(') >= 0 &&
+    premiumReturnSource.indexOf('__UNNI_CONSULTATION_V1__.generate') > premiumReturnSource.indexOf('confirmPaymentOnServer('),
+    'premium payment must confirm Toss before consultation recovery'
+  );
+
+  assert(
     html.includes('궁금한 걸 네 말로 조금만 더 적어줘. 짧아도 괜찮아.') &&
     html.includes('질문을 조금만 더 구체적으로 적어줘.') &&
     html.includes('이름도 같이 적어줘. 그래야 언니가 편하게 불러주지') &&
