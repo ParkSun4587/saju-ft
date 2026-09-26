@@ -2774,11 +2774,11 @@
                     <span
                       id="paywallNextLabel"
                       class="text-[10px] font-black text-rose-500"
-                    >다음 내용</span>
+                    >언니가 이어서 볼 것</span>
                     <span
                       id="paywallLockedBadge"
                       class="rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-black text-rose-500"
-                    >잠김</span>
+                    >결제 후 분석</span>
                   </div>
                   <p
                     id="paywallNextTeaser"
@@ -2824,7 +2824,7 @@
                         id="paywallUnlockHint"
                         class="mt-0.5 text-[10px] font-bold text-slate-500"
                       >
-                        잠긴 내용 바로 이어서 보기
+                        결제 확인 후 심층 상담을 새로 생성
                       </div>
                     </div>
                     <div id="paywallPriceBadge" class="shrink-0 text-right">
@@ -2857,7 +2857,7 @@
                   id="paywallTrustLine"
                   class="mt-2.5 text-center text-[10px] font-bold text-slate-400 leading-relaxed break-keep"
                 >
-                  결제 후 이 브라우저에서 계속 다시보기
+                  1회 결제 · 자동결제 없음 · 구매 후 다시보기
                 </div>
 
                 <div class="mt-1.5 text-center">
@@ -2881,7 +2881,7 @@
                   <div class="flex items-center justify-between gap-3">
                     <div>
                       <div id="paymentContinueTitle" class="text-[12px] font-black text-slate-800">응, 확인되면 아까 얘기부터 계속 볼게</div>
-                      <div id="paymentContinueSub" class="mt-0.5 text-[10px] font-bold text-slate-400">결제수단만 고르면 방금 보던 데서 그대로 이어져</div>
+                      <div id="paymentContinueSub" class="mt-0.5 text-[10px] font-bold text-slate-400">결제가 확인되면 그때부터 깊은 개인 상담을 만들기 시작해</div>
                     </div>
                     <div class="shrink-0 text-[12px] font-black text-rose-600">100원</div>
                   </div>
@@ -2894,7 +2894,7 @@
                     onclick="requestWidgetPayment()"
                     class="w-full py-3.5 px-4 mt-3 bg-[#e85d7f] text-white font-black text-sm rounded-2xl shadow-none active:scale-[0.98] transition-all"
                   >
-                    방금 보던 내용 이어보기
+                    결제하고 상담 계속하기
                   </button>
                   <div
                     id="finalNotePaymentHint"
@@ -3647,7 +3647,8 @@
           if (!saved || getUserUniqueKey(saved) !== key) return restored;
           if (restored.concernKey === "consultation") {
             const cards = saved?.__consultationV1?.cards;
-            if (!Array.isArray(cards) || !cards.length) return restored;
+            const preview = saved?.__consultationPreviewV1?.directAnswer;
+            if ((!Array.isArray(cards) || !cards.length) && !preview) return restored;
           }
           return saved;
         } catch {
@@ -7173,11 +7174,11 @@ currentResultData = {
         if (payBoxSubMsg) payBoxSubMsg.textContent = paywallCopy.sub;
         if (payBtnActionText) {
           payBtnActionText.textContent = isT
-            ? "응, 끝까지 봐줘"
-            : "언니, 그것도 봐줘";
+            ? "결제하고 서아랑 계속 보기"
+            : "결제하고 로아랑 계속 보기";
         }
         if (payBtnSubText) {
-          payBtnSubText.textContent = "질문에 대한 답 · 이유 · 방법까지";
+          payBtnSubText.textContent = "1회 결제 · 결제 후 깊은 개인 상담 생성";
         }
         if (paywallSisterHeader) paywallSisterHeader.style.display = "flex";
         if (paywallSisterAvatar) paywallSisterAvatar.src = isT ? "./서아.webp" : "./로아.webp";
@@ -7203,7 +7204,7 @@ currentResultData = {
             : "이어보면 알게 되는 것";
         }
         if (paywallNextLabel) {
-          paywallNextLabel.textContent = "다음 내용";
+          paywallNextLabel.textContent = "언니가 이어서 볼 것";
         }
         if (paywallNextTeaser) {
           paywallNextTeaser.textContent = "“" + paywallCopy.teaser + "”";
@@ -7215,15 +7216,16 @@ currentResultData = {
           paywallPriceBadge.className = "shrink-0 text-right";
         }
         if (paywallPriceAmount) {
+          paywallPriceAmount.textContent = Number(PAY_AMOUNT).toLocaleString("ko-KR") + "원";
           paywallPriceAmount.className = isT
             ? "text-[18px] font-black tracking-tight text-sky-600"
             : "text-[18px] font-black tracking-tight text-rose-600";
         }
         if (paywallUnlockHint) {
-          paywallUnlockHint.textContent = "잠긴 내용 바로 이어서 보기";
+          paywallUnlockHint.textContent = "결제 확인 후 심층 상담을 새로 생성";
         }
         if (paywallTrustLine) {
-          paywallTrustLine.textContent = "결제 후 이 브라우저에서 계속 다시보기";
+          paywallTrustLine.textContent = "1회 결제 · 자동결제 없음 · 구매 후 다시보기";
         }
         if (paymentContinueTitle) {
           paymentContinueTitle.textContent = isT
@@ -7232,8 +7234,8 @@ currentResultData = {
         }
         if (paymentContinueSub) {
           paymentContinueSub.textContent = isT
-            ? "결제수단만 선택하면 다음 내용이 바로 열려"
-            : "결제수단만 고르면 다음 내용이 바로 열려";
+            ? "결제 확인이 끝난 뒤 깊은 상담 생성을 시작해"
+            : "결제가 확인되면 그때부터 네 깊은 상담을 만들기 시작해";
         }
         if (paywallCard) {
           paywallCard.className = isT
@@ -7257,6 +7259,7 @@ currentResultData = {
             : "text-[10px] font-black text-rose-500";
         }
         if (paywallLockedBadge) {
+          paywallLockedBadge.textContent = "결제 후 분석";
           paywallLockedBadge.className = isT
             ? "rounded-full bg-sky-50 px-2 py-0.5 text-[9px] font-black text-sky-500"
             : "rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-black text-rose-500";
@@ -7290,6 +7293,10 @@ currentResultData = {
             : "이 상담 기록, 인스타 스토리로 간직하기";
         }
         const data = currentResultData;
+        const resultConsultationFlow = document.getElementById("resultConsultationFlow");
+        if (resultConsultationFlow && data?.concernKey === "consultation") {
+          resultConsultationFlow.style.display = "none";
+        }
         const mKey = data && data.mbtiKey;
 
         if (!mKey || !SAZU_CHARACTER_PROFILES[mKey]) {
