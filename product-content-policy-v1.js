@@ -1,29 +1,29 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.1.0";
+  const VERSION = "1.2.0";
 
   const CONTRACTS = {
     basic_concern: {
       id: "basic_concern",
-      allowedDomains: "selected-concern-only",
-      timelineDepth: "near-term-plus-long-pivot-teaser",
+      allowedDomains: "single-free-question",
+      timelineDepth: "question-relevant-near-term-plus-long-pivot-teaser",
       monthlyDetailRange: 18,
-      crossDomainAnalysis: false,
+      crossDomainAnalysis: "question-relevant-only",
       secondPersonRequired: false,
       longTermDetail: "teaser-only",
-      concernCount: 1,
+      questionCount: 1,
       compatibilityAllowed: false,
     },
     concern_bundle3: {
       id: "concern_bundle3",
-      allowedDomains: "three-selected-concerns",
-      timelineDepth: "near-term-per-concern-plus-long-pivot-teaser",
+      allowedDomains: "three-free-questions",
+      timelineDepth: "question-relevant-near-term-per-question-plus-long-pivot-teaser",
       monthlyDetailRange: 18,
-      crossDomainAnalysis: "shared-structure-summary-only",
+      crossDomainAnalysis: "per-question-full-chart-synthesis",
       secondPersonRequired: false,
       longTermDetail: "teaser-only",
-      concernCount: 3,
+      questionCount: 3,
       compatibilityAllowed: false,
     },
     full_saju: {
@@ -50,80 +50,96 @@
     },
     all_in_one: {
       id: "all_in_one",
-      allowedDomains: "single-person-all-life-domains-plus-all-six-concerns",
-      timelineDepth: "full-single-person-five-year-plus-all-concerns",
+      allowedDomains: "single-person-full-chart-plus-current-question",
+      timelineDepth: "full-single-person-five-year-plus-question-link",
       monthlyDetailRange: 18,
       crossDomainAnalysis: true,
       secondPersonRequired: false,
       longTermDetail: "full-five-year",
-      concernCount: 6,
+      questionCount: 1,
+      includesQuestionPack3: true,
       compatibilityAllowed: false,
     },
   };
 
   const FEATURE_MATRIX = {
     basic_concern: {
-      "selected-concern": true,
-      "additional-concerns": false,
+      "selected-question": true,
+      "additional-questions": false,
+      "current-question-link": true,
       "full-five-year": false,
       "monthly-detail": true,
-      "cross-domain": false,
+      "cross-domain": true,
       "second-person": false,
       compatibility: false,
-      "all-six-concerns": false,
       "daewoon-context": false,
+      "selected-concern": false,
+      "additional-concerns": false,
+      "all-six-concerns": false,
     },
     concern_bundle3: {
-      "selected-concern": false,
-      "additional-concerns": true,
+      "selected-question": false,
+      "additional-questions": true,
+      "current-question-link": false,
       "full-five-year": false,
       "monthly-detail": true,
-      "cross-domain": false,
+      "cross-domain": true,
       "second-person": false,
       compatibility: false,
-      "all-six-concerns": false,
       "daewoon-context": false,
-    },
-    full_saju: {
       "selected-concern": false,
       "additional-concerns": false,
+      "all-six-concerns": false,
+    },
+    full_saju: {
+      "selected-question": false,
+      "additional-questions": false,
+      "current-question-link": false,
       "full-five-year": true,
       "monthly-detail": true,
       "cross-domain": true,
       "second-person": false,
       compatibility: false,
-      "all-six-concerns": false,
       "daewoon-context": true,
-    },
-    compatibility: {
       "selected-concern": false,
       "additional-concerns": false,
+      "all-six-concerns": false,
+    },
+    compatibility: {
+      "selected-question": false,
+      "additional-questions": false,
+      "current-question-link": false,
       "full-five-year": false,
       "monthly-detail": true,
       "cross-domain": false,
       "second-person": true,
       compatibility: true,
-      "all-six-concerns": false,
       "daewoon-context": false,
-    },
-    all_in_one: {
       "selected-concern": false,
       "additional-concerns": false,
+      "all-six-concerns": false,
+    },
+    all_in_one: {
+      "selected-question": false,
+      "additional-questions": true,
+      "current-question-link": true,
       "full-five-year": true,
       "monthly-detail": true,
       "cross-domain": true,
       "second-person": false,
       compatibility: false,
-      "all-six-concerns": true,
       "daewoon-context": true,
+      "selected-concern": false,
+      "additional-concerns": false,
+      "all-six-concerns": false,
     },
   };
 
   const VALUE_COPY = {
     concern_bundle3: {
-      short: "다른 고민 3개도 같은 사주로 각각 깊게 풀어보기",
-      cta: "다른 고민 3개도 같은 사주로 풀어보기",
-      unlocks: "지금 고민 말고 남은 고민 3개 · 각 고민의 반복패턴·원인·행동·가까운 시기 · 세 고민의 공통 구조",
+      short: "사주정보 그대로, 궁금한 질문 3개를 각각 새로 풀어보기",
+      cta: "질문 3개 더 이어서 보기",
+      unlocks: "자유질문 3개 · 질문마다 사주 전체 근거 재선택 · 답·이유·주의조건·필요한 시기",
     },
     full_saju: {
       short: "내 사주 전체 구조와 앞으로 5년의 큰 흐름 보기",
@@ -136,9 +152,9 @@
       unlocks: "상대 사주가 있어야만 계산되는 끌림·오해·갈등·보완·관계 전용 시기",
     },
     all_in_one: {
-      short: "나 한 사람의 전체 사주판과 6개 고민을 한 번에 열기",
-      cta: "내 전체 사주판과 6개 고민 한 번에 보기",
-      unlocks: "전체 사주판 · 6개 고민 · 고민 간 공통패턴 · 5년 전체 흐름 · 영역 간 동시 변곡점 · 종합 행동 전략",
+      short: "나 한 사람의 전체 사주판과 현재 질문, 5년 흐름을 한 번에 연결",
+      cta: "내 사주 완전판 보기",
+      unlocks: "전체 사주판 · 현재 질문과 전체 구조 연결 · 추가 자유질문 3개 · 5년 전체 흐름 · 영역 간 변곡점 · 종합 행동 전략",
     },
   };
 
@@ -212,11 +228,17 @@
       errors.push("second-person-required");
     }
 
-    const count = Number(input.concernCount);
-    if (Number.isFinite(count) && count >= 0) {
-      if (productId === "concern_bundle3" && count !== contract.concernCount) errors.push("concern-count-mismatch");
-      if (productId === "all_in_one" && count !== contract.concernCount) errors.push("concern-count-mismatch");
-      if (productId === "basic_concern" && count !== 1) errors.push("concern-count-mismatch");
+    const questionCount = Number(input.questionCount);
+    if (Number.isFinite(questionCount) && questionCount >= 0 && Number.isFinite(Number(contract.questionCount))) {
+      if (questionCount !== Number(contract.questionCount)) errors.push("question-count-mismatch");
+    }
+
+    // 구형 저장 결과/주문 복원만 허용하기 위한 호환 검증. 새 렌더러는 concernCount를 사용하지 않는다.
+    const legacyConcernCount = Number(input.concernCount);
+    if (Number.isFinite(legacyConcernCount) && legacyConcernCount >= 0) {
+      if (productId === "concern_bundle3" && legacyConcernCount !== 3) errors.push("legacy-concern-count-mismatch");
+      if (productId === "all_in_one" && legacyConcernCount !== 6) errors.push("legacy-concern-count-mismatch");
+      if (productId === "basic_concern" && legacyConcernCount !== 1) errors.push("legacy-concern-count-mismatch");
     }
 
     return {
