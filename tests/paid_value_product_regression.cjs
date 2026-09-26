@@ -21,11 +21,18 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.3' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.5.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.6.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.1.0' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
+
+  const aiOff = await page.evaluate(() => ({
+    runtime:typeof globalThis.__UNNI_AI_NOTE_V4__,
+    scripts:[...document.scripts].filter(x => (x.getAttribute('src')||'').includes('ai-note-test-v1.js')).length,
+  }));
+  assert(aiOff.runtime==='undefined' && aiOff.scripts===0,
+    'AI NOTE test client must not load on ordinary production-like pages '+JSON.stringify(aiOff));
 
   const concernUx = await page.evaluate(() => {
     const initial = {
@@ -141,7 +148,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.5.3', 'paid value layer missing');
-  assert(qa.noteVersion.version === '6.5.0', 'NOTE v3 engine missing');
+  assert(qa.noteVersion.version === '6.6.0', 'NOTE v3 engine missing');
   assert(qa.productVersion.version === '2.3.1' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
@@ -163,13 +170,15 @@ function norm(v) {
     assert(row.notes.length === 6, `${row.concern}/${row.situation}/${row.mode}: answer count ${row.notes.length}`);
     assert(row.notes.map(n=>n.badge).join('|') === '핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것',
       `${row.concern}/${row.situation}/${row.mode}: six-answer roles drift ${JSON.stringify(row.notes.map(n=>n.badge))}`);
-    assert(row.noteAudit?.version === '6.5.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
+    assert(row.noteAudit?.version === '6.6.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
       `${row.concern}/${row.situation}/${row.mode}: full-evidence audit missing`);
     assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
-    assert(row.noteAudit?.genericSituationDependency === false && row.noteAudit?.behaviorTemplateDependency === false &&
-      row.noteAudit?.behaviorTemplateRole === 'expression-only' &&
+    assert(row.noteAudit?.genericSituationDependency === false &&
+      row.noteAudit?.behaviorTemplateDependency === true &&
+      row.noteAudit?.behaviorTemplateEvidenceDependency === false &&
+      row.noteAudit?.behaviorTemplateRole === 'claim-bounded-domain-translation' &&
       Array.isArray(row.noteAudit?.behaviorTemplateFieldsUsed) && row.noteAudit.behaviorTemplateFieldsUsed.length>0,
-      `${row.concern}/${row.situation}/${row.mode}: behavior templates are not limited to expression-only use`);
+      `${row.concern}/${row.situation}/${row.mode}: domain translation templates are misreported as engine evidence`);
     assert(row.noteAudit?.evidenceCoverage?.coverageRate === 1 && row.noteAudit?.evidenceCoverage?.missingRuleIds?.length === 0,
       `${row.concern}/${row.situation}/${row.mode}: supported evidence dropped ${JSON.stringify(row.noteAudit?.evidenceCoverage)}`);
     assert(row.noteAudit?.semanticCoverage?.coverageRate === 1 && row.noteAudit?.semanticCoverage?.noteCountWithFacts === 6,
@@ -1106,8 +1115,14 @@ function norm(v) {
   const aiClient = fs.readFileSync('ai-note-test-v1.js','utf8');
   assert(aiServer.includes('OPENAI_AI_NOTE_TEST_ENABLED') && aiServer.includes('AI_NOTE_TEST_DISABLED') && aiClient.includes('payload.testEnabled'),
     'AI NOTE paid-call server lock missing');
+  assert(
+    !html.includes('<script src="./ai-note-test-v1.js?v=2.2.0"></script>') &&
+    html.includes('live.get("ai_notes_test") !== "1"') &&
+    html.includes('script.dataset.aiNotesTest = "1"'),
+    'AI NOTE client must be conditionally loaded only for ?ai_notes_test=1'
+  );
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.3'), 'paid value script include missing');
-  assert(html.includes('./concern-note-engine-v2.js?v=6.5.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'six-answer NOTE / saju signal script include missing');
+  assert(html.includes('./concern-note-engine-v2.js?v=6.6.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'six-answer NOTE / saju signal script include missing');
   assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.1'), 'full-evidence reasoning script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.1'), 'entitlement/product script include missing');
@@ -1117,6 +1132,12 @@ function norm(v) {
     html.includes('state.effectiveEntitlements.includes("all_concerns")'),
     'all-in-one to basic concern entitlement bridge missing'
   );
+
+  const noteSource = fs.readFileSync('concern-note-engine-v2.js','utf8');
+  for (const stale of ['function noteCauseV6','function noteAnswerV7','PARTNER_LOOK','PARTNER_STYLE','PARTNER_CHAR','MEET_ROUTE','MEET_PLACE_LONG','LEAK_NAME','plainSentence(s.move)','function fitMainLine']) {
+    assert(!noteSource.includes(stale), 'stale or unsupported NOTE code returned: '+stale);
+  }
+  assert(!noteSource.includes('GROUP_EXTREME:'), 'one group share is still duplicated as an independent evidence item');
 
   assert(html.indexOf('integrated-saju-profile-v1.js') < html.indexOf('paid-value-layer-v1.js'), 'script wrapper order wrong');
   assert(!paid.includes('__paidValueWrapped') && !paid.includes('global.generateConcernNotes = wrapped'), 'stale paid-value NOTE rewrite wrapper returned');
@@ -1415,6 +1436,18 @@ function norm(v) {
   );
   assert(server.includes('resolveVerifiedEntitlements(data,body.entitlementTokens,secret,signing)') && server.includes('calculateUpgradeQuote(data.p,entitlementState.verifiedPurchases)'), 'server-side verified entitlement upgrade quote missing');
   assert(server.includes('if (!d.p || d.p === "concern_single") return legacy;'), 'legacy 990 result key compatibility missing');
+
+  const aiPage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await aiPage.goto('http://127.0.0.1:4173/index.html?ai_notes_test=1', { waitUntil:'load', timeout:60000 });
+  await aiPage.waitForFunction(() => globalThis.__UNNI_AI_NOTE_V4__?.version === '2.2.0', null, { timeout:10000 });
+  const aiOn = await aiPage.evaluate(() => ({
+    enabled:globalThis.__UNNI_AI_NOTE_V4__?.enabled?.(),
+    auto:globalThis.__UNNI_AI_NOTE_V4__?.autoProductionEnabled?.(),
+    scripts:[...document.scripts].filter(x => (x.getAttribute('src')||'').includes('ai-note-test-v1.js') && x.dataset.aiNotesTest==='1').length,
+  }));
+  assert(aiOn.enabled===true && aiOn.auto===false && aiOn.scripts===1,
+    'AI NOTE test client did not load exclusively behind ?ai_notes_test=1 '+JSON.stringify(aiOn));
+  await aiPage.close();
 
   assert(errors.length === 0, `browser errors: ${errors.join(' | ')}`);
   console.log('PAID_VALUE_PRODUCT_PASS', JSON.stringify({
