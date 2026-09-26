@@ -17,7 +17,7 @@ function norm(v) {
 
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil:'load' });
   await page.waitForFunction(() =>
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.5.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.6.0' &&
     globalThis.__INTEGRATED_SAJU_PROFILE_V1__?.version === '2.1.0' &&
     globalThis.__CLASSICAL_REASONING_V1__?.version === '2.1.1' &&
     typeof buildIntegratedSajuProfile === 'function' &&
@@ -128,7 +128,7 @@ function norm(v) {
     };
   });
 
-  assert(result.engine?.version === '6.5.0', 'NOTE v3 engine missing');
+  assert(result.engine?.version === '6.6.0', 'NOTE v3 engine missing');
   assert(result.integrated?.version === '2.1.0', 'integrated profile v2 missing');
   assert(result.reasoning?.version === '2.1.1', 'classical reasoning engine missing');
   assert(result.wrapper, 'full-evidence classical NOTE wrapper missing');
@@ -150,7 +150,7 @@ function norm(v) {
     for (const [mode,notes,audit] of [['F',row.notesF,row.auditF],['T',row.notesT,row.auditT]]) {
       assert(notes.length === 6, row.concern+'/'+row.situation+'/'+mode+': expected six answers');
       assert(notes.map(n=>n.themeNum).join(',') === '01,02,03,04,05,06', row.concern+'/'+row.situation+'/'+mode+': six-answer numbering drift');
-      assert(audit?.version === '6.5.0' && audit?.engine === 'classical-causal-full-evidence', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
+      assert(audit?.version === '6.6.0' && audit?.engine === 'classical-causal-full-evidence', row.concern+'/'+row.situation+'/'+mode+': causal audit missing');
       assert(audit.genericClusterDependency === false, row.concern+'/'+row.situation+'/'+mode+': generic cluster dependency returned');
       assert(audit.structureFingerprint && audit.timingFingerprint && audit.synthesisFingerprint, row.concern+'/'+row.situation+'/'+mode+': fingerprints missing');
       assert(audit.evidenceCoverage?.coverageRate === 1 && audit.evidenceCoverage?.missingRuleIds?.length === 0,
@@ -161,10 +161,21 @@ function norm(v) {
         row.concern+'/'+row.situation+'/'+mode+': priority mechanism synthesis too thin');
       assert(Array.isArray(audit.claims) && audit.claims.length === 6, row.concern+'/'+row.situation+'/'+mode+': six internal causal claims missing');
       assert(Array.isArray(audit.outputClaimMap) && audit.outputClaimMap.length === 6, row.concern+'/'+row.situation+'/'+mode+': claim-first NOTE plan missing');
-      assert(audit.behaviorTemplateRole === 'expression-only' && Array.isArray(audit.behaviorTemplateFieldsUsed),
-        row.concern+'/'+row.situation+'/'+mode+': behavior templates are still acting as evidence');
+      assert(
+        audit.behaviorTemplateDependency === true &&
+        audit.behaviorTemplateEvidenceDependency === false &&
+        audit.behaviorTemplateRole === 'claim-bounded-domain-translation' &&
+        Array.isArray(audit.behaviorTemplateFieldsUsed),
+        row.concern+'/'+row.situation+'/'+mode+': domain translation templates are misreported as evidence-free copy'
+      );
       assert(audit.interpretationPlan?.primaryGroup && audit.interpretationPlan?.groupShares,
         row.concern+'/'+row.situation+'/'+mode+': cross-validated interpretation plan missing');
+      for (const item of audit.interpretationPlan.selected || []) {
+        assert(item.independentEvidenceCount === new Set(item.evidenceAxes || []).size,
+          row.concern+'/'+row.situation+'/'+mode+': independent evidence axes are double-counted '+JSON.stringify(item));
+        assert(!(item.evidenceIds || []).some(id => String(id).startsWith('GROUP_EXTREME:')),
+          row.concern+'/'+row.situation+'/'+mode+': one group share is counted twice as independent evidence '+JSON.stringify(item));
+      }
       for (const claim of audit.claims) {
         assert(claim.id && claim.rawFacts && Array.isArray(claim.ditianRuleIds) && Array.isArray(claim.zipingRuleIds),
           row.concern+'/'+row.situation+'/'+mode+': claim provenance missing');
