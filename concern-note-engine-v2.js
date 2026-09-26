@@ -2252,7 +2252,11 @@
       ?"앞달에 이어 "+withJosa(first.n,"이","가")+" 다시 들어와."
       :withJosa(first.n,"이","가")+" 들어오는 달이야.";
     const effect=first.e?" "+first.e+".":"";
-    const extra=second?.e&&second.e!==first.e?" 여기에 "+second.e+"도 같이 보여.":"";
+    const extra=second
+      ? (prevItem
+        ?" 보조로 "+second.n+"도 이어져."
+        :" 여기에 "+second.n+"도 같이 들어와.")
+      :"";
     return lead+effect+extra;
   }
   function badMonthText(item){
