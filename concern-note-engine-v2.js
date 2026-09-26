@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "6.6.0";
+  const VERSION = "6.6.1";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   function hasBatchim(value) {
@@ -1829,7 +1829,7 @@
     const secondary=grounding?.selectedInterpretations?.[1]||null;
     const concernClaim={id:"CONCERN:"+s.concern+"/"+s.key,source:"concern-cross-validation",confidence:primary?.confidence||"guarded",evidenceIds:primary?.evidenceIds||[],counterEvidenceIds:primary?.counterEvidenceIds||[],conclusion:primary?.safeTitle||""};
     const causeClaim={id:"CAUSE:"+s.concern+"/"+s.key,source:"concern-cross-validation",confidence:primary?.confidence||"guarded",evidenceIds:[...new Set([...(primary?.evidenceIds||[]),...(secondary?.evidenceIds||[])])],counterEvidenceIds:[...new Set([...(primary?.counterEvidenceIds||[]),...(secondary?.counterEvidenceIds||[])])],conclusion:[primary?.safeTitle,secondary?.safeTitle].filter(Boolean).join(" / ")};
-    return [engineClaimDigest(engineClaimByShape(reasoning,"core"),"ENGINE:core"),concernClaim,causeClaim,engineClaimDigest(engineClaimByShape(reasoning,"support"),"ENGINE:support"),engineClaimDigest(engineClaimByShape(reasoning,"timing"),"ENGINE:timing"),engineClaimDigest(engineClaimByShape(reasoning,"caution"),"ENGINE:caution")];
+    return [engineClaimDigest(engineClaimByShape(reasoning,"core"),"ENGINE:core"),concernClaim,causeClaim,engineClaimDigest(engineClaimByShape(reasoning,"caution"),"ENGINE:caution"),engineClaimDigest(engineClaimByShape(reasoning,"support"),"ENGINE:support"),engineClaimDigest(engineClaimByShape(reasoning,"timing"),"ENGINE:timing")];
   }
   function signalWorkLine(sig){
     const hit=(sig?.sinsal||[]).find(x=>SIGNAL_WORK[x.name]);
@@ -2867,7 +2867,7 @@
     return "";
   }
 
-  const NOTE_BADGES=["핵심","질문에 대한 답","왜 그런지","어떻게 할지","가까운 흐름","조심할 것"];
+  const NOTE_BADGES=["핵심","질문에 대한 답","왜 그런지","조심할 것","어떻게 할지","가까운 흐름"];
   function badgeFor(concern,idx){
     return NOTE_BADGES[idx]||"핵심";
   }
@@ -2881,12 +2881,13 @@
     }
     if(idx===1) return ANSWER_TITLE[s.concern]?.[s.key]||"질문에 대한 답";
     if(idx===2) return CAUSE_TITLE[s.concern]?.[s.key]||"왜 그런지";
-    if(idx===3) return FIX_TITLE[s.concern]?.[s.key]||"어떻게 할지";
-    if(idx===4){
+    if(idx===3) return CAUTION_TITLE[s.concern]||"조심할 것";
+    if(idx===4) return FIX_TITLE[s.concern]?.[s.key]||"어떻게 할지";
+    if(idx===5){
       const rows={money:"올해와 가까운 달의 돈 흐름",career:"올해와 가까운 달의 일 흐름",love:"올해와 가까운 달의 연애 흐름",path:"올해와 가까운 달의 진로 흐름",people:"올해와 가까운 달의 관계 흐름",mental:"올해와 가까운 달의 회복 흐름"};
       return rows[s.concern]||"올해와 가까운 달의 흐름";
     }
-    return CAUTION_TITLE[s.concern]||"조심할 것";
+    return "조심할 것";
   }
 
   function buildConcernDiagnosisV2(data) {
@@ -2928,9 +2929,9 @@
       {desc:noteCoreV6(r,s,sig,isT),role:"core",facts:{...personalizationFactsForRole(r,"core",s),...signalFacts},claim:claimPlan[0]},
       {desc:noteAnswerV8(r,s,sig,data,isT,grounding),role:"fit",facts:{answerRank:grounding.rankedGroups,needGroup:grounding.needGroup,bestMonths:concernTimingPlan(r,s,data).best.map(x=>x.row.startYmd),dayBranchGod:dayBranchGod(r),gender:data.gender||null},claim:claimPlan[1]},
       {desc:noteCauseV8(r,s,sig,data,isT,grounding),role:"pattern",facts:{...personalizationFactsForRole(r,"pattern",s),causeGroup:grounding.primaryGroup,diagnoses:grounding.selectedInterpretations.map(x=>x.safeTitle)},claim:claimPlan[2]},
-      {desc:noteHowV7(r,s,sig,data,isT),role:"fit",facts:{...personalizationFactsForRole(r,"fit",s),needGroup:grounding.needGroup,needElement:prescriptionElement(r)},claim:claimPlan[3]},
-      {desc:timing.desc,role:"timing",facts:timing.personalizationFacts||{},timing:true,claim:claimPlan[4]},
-      {desc:noteCautionV6(r,s,sig,isT,data,grounding),role:"caution",facts:{...personalizationFactsForRole(r,"caution",s),burdenGroup:grounding.burdenGroup,relations:relationRows(r,sig).map(x=>x.type)},claim:claimPlan[5]},
+      {desc:noteCautionV6(r,s,sig,isT,data,grounding),role:"caution",facts:{...personalizationFactsForRole(r,"caution",s),burdenGroup:grounding.burdenGroup,relations:relationRows(r,sig).map(x=>x.type)},claim:claimPlan[3]},
+      {desc:noteHowV7(r,s,sig,data,isT),role:"fit",facts:{...personalizationFactsForRole(r,"fit",s),needGroup:grounding.needGroup,needElement:prescriptionElement(r)},claim:claimPlan[4]},
+      {desc:timing.desc,role:"timing",facts:timing.personalizationFacts||{},timing:true,claim:claimPlan[5]},
     ];
     const notes=spec.map((x,idx)=>{
       const note={
