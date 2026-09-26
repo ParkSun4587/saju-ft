@@ -142,6 +142,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
           text:plain(allHtml),
           articles:allRoot.querySelectorAll('article').length,
           fullSections:allRoot.querySelectorAll('[data-export-kind="full"]').length,
+          questionArticles:allRoot.querySelectorAll('[data-product-exclusive="all_in_one-question"] article').length,
           questionLink:!!allRoot.querySelector('[data-product-exclusive="all_in_one-question"]'),
           exclusive:!!allRoot.querySelector('[data-product-exclusive="all_in_one"]'),
           compatTiming:allRoot.querySelectorAll('[data-export-compat-timing]').length,
@@ -221,7 +222,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   assert(r.products.compat.aFp&&r.products.compat.bFp&&r.products.compat.aFp!==r.products.compat.bFp&&r.products.compat.overlayFp,'compatibility does not prove two distinct charts + overlay');
   assert(!r.products.full.text.includes('둘이 같이 있을 때의 시기 흐름')&&!r.products.all.text.includes('둘이 같이 있을 때의 시기 흐름'),'one-person products leaked pair-specific result');
 
-  assert(r.products.all.articles===4&&r.products.all.fullSections===12&&r.products.all.questionLink&&r.products.all.exclusive,'all_in_one must include whole chart + current free-question link + synthesis');
+  assert(r.products.all.fullSections===12&&r.products.all.questionLink&&r.products.all.questionArticles===4&&r.products.all.exclusive,'all_in_one must include whole chart + current free-question link + synthesis');
   assert(r.products.all.compatTiming===0&&r.products.all.compatExclusive===0,'all_in_one swallowed compatibility');
   assert(r.products.all.text.includes('두 사람 궁합은 이 상품에 포함하지 않아'),'all_in_one boundary not explicit');
 
