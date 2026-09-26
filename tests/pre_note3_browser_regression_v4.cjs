@@ -525,72 +525,42 @@ async function load(page) {
     page.on('pageerror', e => errs.push(`[pageerror] ${e.stack || e.message}`));
     page.on('console', m => { if (m.type() === 'error') errs.push(`[console] ${m.text()}`); });
 
-    await page.route('**/api/consultation', async route => {
+    await page.route('**/api/consultation-preview', async route => {
       const req = route.request();
       let body = {};
       try { body = req.postDataJSON() || {}; } catch {}
       const packet = body.evidencePacket || {};
-      const q = packet?.question?.text || '내 사주를 자세히 봐줘';
       const mode = packet?.requestMode || 'F';
       const evidence = ['CHART_STRENGTH','CHART_STRUCTURE','CHART_TENGODS'];
-      const claim = (headline, answer) => ({
-        headline,
-        answer,
-        why:'태어난 계절에서 받는 힘, 일간이 기대는 뿌리, 십신의 실제 배치를 같이 봤어.',
-        technicalBasis:'월령과 통근, 신강·신약, 격국의 상태와 십신 위치를 함께 교차해서 확인했어.',
-        evidenceIds:evidence,
-        counterEvidenceIds:[],
-        certainty:'supported',
-      });
       await route.fulfill({
         status:200,
         contentType:'application/json',
         body:JSON.stringify({
           ok:true,
-          model:'ci-free-question-mock',
-          questionPlan:{
-            primaryIntent:'자유질문',
-            intentTags:['자유질문'],
-            directQuestions:[q],
-            decisionType:'판단',
-            timeRange:'질문에 필요할 때만',
-            needsClarification:false,
-            clarifyingQuestion:'',
+          model:'ci-free-preview-mock',
+          directAnswer:{
+            headline:mode==='T' ? '결론부터 보면 질문의 기준이 먼저야' : '네가 물어본 것부터 말하면 기준이 먼저 보여',
+            answer:'한 가지 오행 개수로 정하지 않고, 네 사주 전체에서 실제로 오래 버틸 수 있는 조건을 먼저 보는 게 맞아.',
+            why:'태어난 계절에서 받는 힘, 일간이 기대는 뿌리, 십신의 실제 배치를 같이 봤어.',
+            technicalBasis:'월령과 통근, 신강·신약, 격국의 상태와 십신 위치를 함께 교차해서 확인했어.',
+            evidenceIds:evidence,
+            counterEvidenceIds:[],
+            certainty:'supported',
           },
-          directAnswer:claim(
-            mode==='T' ? '결론부터 보면 질문의 기준이 먼저야' : '네가 물어본 것부터 말하면 기준이 먼저 보여',
-            '한 가지 오행 개수로 정하지 않고, 네 사주 전체에서 실제로 오래 버틸 수 있는 조건을 먼저 보는 게 맞아.'
-          ),
-          centralThesis:claim(
-            '이번 질문을 관통하는 사주의 중심',
-            '계절과 뿌리, 십신의 실제 힘이 어떻게 이어지는지가 이번 질문을 가르는 핵심이야.'
-          ),
-          sections:[
-            {
-              id:'why',type:'explanation',label:'왜 이런 답인지',title:'겉개수보다 실제 세력이 더 중요해',
-              answer:'같은 오행 비율이어도 계절과 뿌리, 격에서 맡는 역할이 다르면 현실에서 쓰이는 방식이 달라져.',
-              why:'그래서 한 가지 성향으로 줄이지 않고 여러 근거를 같이 읽었어.',
-              technicalBasis:'득령·득지·득세와 통근, 십신 위치, 격국 상태를 함께 확인했어.',
-              nextAction:'선택지마다 오래 버틸 조건을 적어봐.',
-              evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
-            },
-            {
-              id:'risk',type:'caution',label:'특히 조심할 것',title:'잘 맞는 길도 이 조건이면 소모돼',
-              answer:'책임만 커지고 결정권은 적은 구조라면 같은 분야라도 오래 갈수록 소모가 커질 수 있어.',
-              why:'강하게 들어오는 요구를 내가 받아내는 방식과 실제 뿌리를 같이 봤기 때문이야.',
-              technicalBasis:'관성의 실제 세력과 일간의 감당력, 통근 여부를 같이 확인했어.',
-              nextAction:'책임과 결정권이 같이 오는지 확인해.',
-              evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
-            },
-            {
-              id:'action',type:'action',label:'지금 할 일',title:'결론을 행동 기준으로 바꿔',
-              answer:'큰 결정을 한 번에 확정하기보다 작은 실행에서 실제 반응을 먼저 확인하는 편이 좋아.',
-              why:'좋은 구조도 현실 조건이 맞지 않으면 소모가 커질 수 있어서야.',
-              technicalBasis:'사주의 도움·방해 관계와 감당력을 함께 확인해서 행동 강도를 정했어.',
-              nextAction:'이번 주에 가장 작은 검증 한 가지를 정해.',
-              evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
-            },
+          followUp:{
+            question:mode==='T' ? '지금 판단을 가장 흔드는 건 뭐야?' : '그중에서도 지금 네 마음을 제일 흔드는 건 뭐야?',
+            options:[
+              {label:'지금 상황이 너무 버거워',response:'그럼 먼저 소모되는 조건부터 봐야 해. 여기서부터는 버티는 게 이득인 시점도 같이 확인해야 해.',focus:'소모 조건과 시기'},
+              {label:'다음 선택이 안 보여',response:'그럼 끊는 것보다 다음 방향을 먼저 잡는 게 핵심이야. 맞는 환경과 움직일 순서를 더 봐야 해.',focus:'맞는 환경과 다음 방향'},
+              {label:'결정했다가 후회할까 봐',response:'그럼 결론보다 판단이 바뀌는 조건부터 확인해야 해. 어떤 신호가 오면 움직여도 되는지까지 볼게.',focus:'판단 기준과 위험 조건'},
+            ],
+          },
+          paidScope:[
+            {title:'이 판단이 달라지는 조건'},
+            {title:'너한테 맞는 선택과 소모되는 조건'},
+            {title:'실제로 움직일 시기와 지금 할 행동'},
           ],
+          handoff:'여기서부터는 결제 후에 네 사주 전체에서 이번 질문에 필요한 부분을 더 깊게 연결해서 볼게.',
         }),
       });
     });
@@ -620,7 +590,7 @@ async function load(page) {
       const exactToggle = document.getElementById('birthTimeExactToggle');
       const exactWrap = document.getElementById('birthTimeExactWrap');
       const exactInput = document.getElementById('birthTimeInput');
-      if (/^([01]\d|2[0-3]):[0-5]\d$/.test(c.time)) {
+      if (/^([01]\\d|2[0-3]):[0-5]\\d$/.test(c.time)) {
         exactToggle.checked = true;
         exactWrap.classList.remove('hidden');
         exactInput.value = c.time;
@@ -637,15 +607,21 @@ async function load(page) {
     }, {c,question});
 
     await page.waitForFunction(() =>
-      !!currentResultData?.__consultationV1?.cards?.length &&
+      !!currentResultData?.__consultationPreviewV1?.directAnswer &&
+      !(currentResultData?.__consultationV1?.cards?.length) &&
       getComputedStyle(document.getElementById('resultSection')).display !== 'none',
       null, {timeout:10000}
     );
 
+    await page.evaluate(() => {
+      globalThis.__UNNI_CONSULTATION_V1__?.selectPreviewOption?.(currentResultData,0);
+      updateResultContentByMode(currentResultData.currentMode || 'F');
+    });
+
     const report = await page.evaluate((c) => {
       const data = currentResultData;
-      const cards = data?.__consultationV1?.cards || [];
-      const generated = JSON.stringify([cards,data?.__consultationV1?.questionPlan,data?.classicalReasoningV1]);
+      const preview = data?.__consultationPreviewV1 || {};
+      const generated = JSON.stringify([preview,data?.classicalReasoningV1]);
       const visible = document.body.innerText;
       const payCopy = getPaywallConversionCopy(data, c.mode === 'T');
       const notesText = document.getElementById('notesListContainer')?.innerText || '';
@@ -671,11 +647,12 @@ async function load(page) {
           !!data?.analysisProfile?.classical?.yongshin,
           !('qiongtong' in (data?.analysisProfile?.classical || {})),
         ],
-        cardCount:cards.length,
-        badges:cards.map(x=>x.badge || ''),
-        evidenceOk:cards.every(x=>Array.isArray(x.__evidenceRuleIds) && x.__evidenceRuleIds.length > 0),
-        counterOk:cards.every(x=>Array.isArray(x.__counterEvidenceIds)),
-        questionPlanOk:(data?.__consultationV1?.questionPlan?.directQuestions || []).includes(data?.userQuestion),
+        previewReady:!!preview.directAnswer,
+        selected:Number.isInteger(preview.selectedOption),
+        deepCardCount:data?.__consultationV1?.cards?.length || 0,
+        evidenceOk:Array.isArray(preview.directAnswer?.evidenceIds) && preview.directAnswer.evidenceIds.length > 0,
+        followUpCount:Array.isArray(preview.followUp?.options) ? preview.followUp.options.length : 0,
+        paidScopeCount:Array.isArray(preview.paidScope) ? preview.paidScope.length : 0,
         forbiddenVisible:[
           '언니가 잡은 사주 근거','언니가 잡은 계산 근거','왜 이 처방이 너한테 맞나','왜 이런 필터가 맞나','타이밍 읽는 법',
           '개수는 원국 겉글자 기준','한국 만세력 기준','시간 -30분 보정'
@@ -683,14 +660,13 @@ async function load(page) {
         badText:/(^|[^가-힣a-zA-Z])(undefined|NaN)([^가-힣a-zA-Z]|$)/.test(generated),
         failureToast:visible.includes('만세력 연산에 실패했습니다') || visible.includes('연산 중 오류가 발생했습니다'),
         resultVisible:getComputedStyle(document.getElementById('resultSection')).display !== 'none',
-        firstRendered:notesText.includes('1/5'),
-        oldSix:/1\/6|2\/6|3\/6|4\/6|5\/6|6\/6/.test(notesText),
-        sourceFreeLaunch:FREE_LAUNCH_MODE,
+        firstRendered:document.querySelectorAll('#notesListContainer .note-editorial').length >= 1,
+        oldSix:/1\\/6|2\\/6|3\\/6|4\\/6|5\\/6|6\\/6/.test(notesText),
+        paywallVisible:document.getElementById('lockedOverlay')?.offsetParent !== null,
         paywallHook:document.getElementById('payBoxHookMsg')?.innerText || '',
         paywallTeaser:document.getElementById('paywallNextTeaser')?.innerText || '',
         paywallFeatures:[...document.querySelectorAll('#payBoxFeatures > div')].map(x => x.querySelector('span:last-child')?.innerText.trim() || ''),
         paywallSubcopy:document.getElementById('payBtnSubText')?.innerText || '',
-        previewText:document.getElementById('note2PreviewBody')?.innerText || '',
         expectedPaywall:payCopy,
         funExtrasDisplay:document.getElementById('resultFunExtras')?.style.display || '',
         shareActionsDisplay:document.getElementById('resultShareActions')?.style.display || '',
@@ -723,30 +699,28 @@ async function load(page) {
     assert(Number.isFinite(report.ratio), `${c.id}: bad support ratio ${report.ratio}`);
     assert(!!report.gyeok && !!report.yongshin, `${c.id}: classical result missing`);
     assert(report.classical.every(Boolean), `${c.id}: classical layer missing ${report.classical}`);
-    assert(report.cardCount === 5, `${c.id}: dynamic consultation card count ${report.cardCount}`);
-    assert(report.badges[0] === '네 질문의 답' && report.badges[1] === '언니가 먼저 본 것',
-      `${c.id}: direct answer / thesis order drift ${JSON.stringify(report.badges)}`);
-    assert(report.evidenceOk && report.counterOk && report.questionPlanOk,
-      `${c.id}: consultation evidence/question plan missing`);
+    assert(report.previewReady && report.selected && report.deepCardCount === 0,
+      `${c.id}: free stage created deep consultation before payment ${JSON.stringify(report)}`);
+    assert(report.evidenceOk && report.followUpCount === 3 && report.paidScopeCount === 3,
+      `${c.id}: preview evidence/follow-up/paid scope missing`);
     assert(!report.forbiddenVisible && !report.badText && !report.failureToast,
       `${c.id}: forbidden/error content leaked`);
-    assert(report.resultVisible && report.firstRendered && !report.oldSix,
-      `${c.id}: dynamic result did not render cleanly ${JSON.stringify({visible:report.resultVisible,first:report.firstRendered,oldSix:report.oldSix})}`);
-    if (!report.sourceFreeLaunch) {
-      assert(report.paywallHook === report.expectedPaywall.hook, `${c.id}: dynamic paywall hook drift`);
-      assert(report.paywallTeaser.includes(report.expectedPaywall.preview), `${c.id}: dynamic paywall teaser drift`);
-      assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), `${c.id}: paid outcomes mismatch`);
-      assert(report.paywallSubcopy.includes('이 질문') || report.paywallSubcopy.includes('질문'), `${c.id}: paid scope copy drift`);
-      assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
-      assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
-    }
+    assert(report.resultVisible && report.firstRendered && !report.oldSix && report.paywallVisible,
+      `${c.id}: preview/paywall did not render cleanly ${JSON.stringify({visible:report.resultVisible,first:report.firstRendered,oldSix:report.oldSix,paywall:report.paywallVisible})}`);
+    assert(report.paywallHook === report.expectedPaywall.hook, `${c.id}: dynamic paywall hook drift`);
+    assert(report.paywallTeaser.includes(report.expectedPaywall.preview), `${c.id}: dynamic paywall teaser drift`);
+    assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), `${c.id}: paid outcomes mismatch`);
+    assert(report.paywallSubcopy.includes('결제 후'), `${c.id}: payment/generation boundary copy drift`);
+    assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
+    assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
+
     if (c.id === 'user-branch-love-F') {
       assert(report.pillarText.join(',') === '무인,갑인,기해,을축',
         `${c.id}: pillar UI drift ${report.pillarText.join(',')}`);
       assert(!report.pillarBasisExists, `${c.id}: hidden manse-basis label leaked back into UI`);
-      assert(report.ohengText.includes('목\n(4개)') || report.ohengText.includes('목 (4개)') || report.ohengText.includes('목(4개)'),
+      assert(report.ohengText.includes('목\\n(4개)') || report.ohengText.includes('목 (4개)') || report.ohengText.includes('목(4개)'),
         `${c.id}: mok raw count missing ${report.ohengText}`);
-      assert(report.ohengText.includes('화\n(0개)') || report.ohengText.includes('화 (0개)') || report.ohengText.includes('화(0개)'),
+      assert(report.ohengText.includes('화\\n(0개)') || report.ohengText.includes('화 (0개)') || report.ohengText.includes('화(0개)'),
         `${c.id}: hwa raw count should be zero ${report.ohengText}`);
     }
     const unexpected = errs.filter(x => !isExpectedBoundaryDiagnostic(x));
@@ -754,7 +728,7 @@ async function load(page) {
     reports.push({id:c.id,strength:report.strength,gyeok:report.gyeok,yongshin:report.yongshin});
     await page.close();
   }
-  console.log('FREE_QUESTION_UI_PASS', JSON.stringify(reports));
+  console.log('FREE_QUESTION_PREVIEW_UI_PASS', JSON.stringify(reports));
 
   // E. Invalid leap-month input must fail cleanly, not crash or create a result.
   {
