@@ -647,9 +647,9 @@ function mockConsultation(question, mode='F') {
   assert(ui.previewVisible && ui.paywallVisible, 'free preview follow-up and paywall must be visible after the user answers');
   assert(ui.previewPlain.length >= 20 && ui.previewBodyPlain.length >= 8,
     'free preview must contain a useful direct answer and contextual follow-up response');
-  assert(ui.fPaywallText.includes('이 질문 끝까지') && ui.fPaywallText.includes('100원') && ui.fPaywallText.includes('결제 후 분석'),
+  assert(ui.fPaywallText.includes('이 질문 끝까지') && ui.fPaywallText.includes('100원') && ui.fPaywallText.includes('결제 확인 후 심층 상담'),
     `F consultation handoff missing: ${ui.fPaywallText}`);
-  assert(ui.tPaywallText.includes('이 질문 끝까지') && ui.tPaywallText.includes('100원') && ui.tPaywallText.includes('결제 후 분석'),
+  assert(ui.tPaywallText.includes('이 질문 끝까지') && ui.tPaywallText.includes('100원') && ui.tPaywallText.includes('결제 확인 후 심층 상담'),
     `T consultation handoff missing: ${ui.tPaywallText}`);
   assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3,
     `paywall should stay compact with three concrete analysis areas: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
