@@ -511,8 +511,8 @@ async function load(page) {
     const page = await context.newPage();
     await page.setViewportSize(c.viewport);
     const errs = [];
-    page.on('pageerror', e => errs.push(\`[pageerror] \${e.stack || e.message}\`));
-    page.on('console', m => { if (m.type() === 'error') errs.push(\`[console] \${m.text()}\`); });
+    page.on('pageerror', e => errs.push(`[pageerror] ${e.stack || e.message}`));
+    page.on('console', m => { if (m.type() === 'error') errs.push(`[console] ${m.text()}`); });
 
     await page.route('**/api/consultation', async route => {
       const req = route.request();
@@ -694,52 +694,52 @@ async function load(page) {
       };
     }, c);
 
-    assert(report.ok, \`\${c.id}: UI failed\`);
+    assert(report.ok, `${c.id}: UI failed`);
     assert(report.concern === 'consultation' && report.situation === 'free',
-      \`\${c.id}: old fixed concern path returned \${JSON.stringify({concern:report.concern,situation:report.situation})}\`);
-    assert(report.question === question, \`\${c.id}: free question drift \${report.question}\`);
-    assert(report.mode === c.mode, \`\${c.id}: mode drift \${report.mode}\`);
-    assert(report.calendar === c.calendar, \`\${c.id}: calendar drift \${report.calendar}\`);
-    assert(report.tz === 'Asia/Seoul', \`\${c.id}: timezone missing\`);
+      `${c.id}: old fixed concern path returned ${JSON.stringify({concern:report.concern,situation:report.situation})}`);
+    assert(report.question === question, `${c.id}: free question drift ${report.question}`);
+    assert(report.mode === c.mode, `${c.id}: mode drift ${report.mode}`);
+    assert(report.calendar === c.calendar, `${c.id}: calendar drift ${report.calendar}`);
+    assert(report.tz === 'Asia/Seoul', `${c.id}: timezone missing`);
     if (c.time === 'unknown') {
       assert(report.timeKey === 'unknown' && report.hourKnown === false,
-        \`\${c.id}: unknown time leaked into saju \${JSON.stringify(report)}\`);
+        `${c.id}: unknown time leaked into saju ${JSON.stringify(report)}`);
     } else {
       assert(report.timeKey === c.time && report.hourKnown === true && report.hourZhi,
-        \`\${c.id}: selected birth time did not propagate \${JSON.stringify(report)}\`);
+        `${c.id}: selected birth time did not propagate ${JSON.stringify(report)}`);
     }
-    assert(['신강','중화','신약'].includes(report.strength), \`\${c.id}: bad strength \${report.strength}\`);
-    assert(Number.isFinite(report.ratio), \`\${c.id}: bad support ratio \${report.ratio}\`);
-    assert(!!report.gyeok && !!report.yongshin, \`\${c.id}: classical result missing\`);
-    assert(report.classical.every(Boolean), \`\${c.id}: classical layer missing \${report.classical}\`);
-    assert(report.cardCount === 5, \`\${c.id}: dynamic consultation card count \${report.cardCount}\`);
+    assert(['신강','중화','신약'].includes(report.strength), `${c.id}: bad strength ${report.strength}`);
+    assert(Number.isFinite(report.ratio), `${c.id}: bad support ratio ${report.ratio}`);
+    assert(!!report.gyeok && !!report.yongshin, `${c.id}: classical result missing`);
+    assert(report.classical.every(Boolean), `${c.id}: classical layer missing ${report.classical}`);
+    assert(report.cardCount === 5, `${c.id}: dynamic consultation card count ${report.cardCount}`);
     assert(report.badges[0] === '네 질문의 답' && report.badges[1] === '언니가 먼저 본 것',
-      \`\${c.id}: direct answer / thesis order drift \${JSON.stringify(report.badges)}\`);
+      `${c.id}: direct answer / thesis order drift ${JSON.stringify(report.badges)}`);
     assert(report.evidenceOk && report.counterOk && report.questionPlanOk,
-      \`\${c.id}: consultation evidence/question plan missing\`);
+      `${c.id}: consultation evidence/question plan missing`);
     assert(!report.forbiddenVisible && !report.badText && !report.failureToast,
-      \`\${c.id}: forbidden/error content leaked\`);
+      `${c.id}: forbidden/error content leaked`);
     assert(report.resultVisible && report.firstRendered && !report.oldSix,
-      \`\${c.id}: dynamic result did not render cleanly \${JSON.stringify({visible:report.resultVisible,first:report.firstRendered,oldSix:report.oldSix})}\`);
+      `${c.id}: dynamic result did not render cleanly ${JSON.stringify({visible:report.resultVisible,first:report.firstRendered,oldSix:report.oldSix})}`);
     if (!report.sourceFreeLaunch) {
-      assert(report.paywallHook === report.expectedPaywall.hook, \`\${c.id}: dynamic paywall hook drift\`);
-      assert(report.paywallTeaser.includes(report.expectedPaywall.preview), \`\${c.id}: dynamic paywall teaser drift\`);
-      assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), \`\${c.id}: paid outcomes mismatch\`);
-      assert(report.paywallSubcopy.includes('이 질문') || report.paywallSubcopy.includes('질문'), \`\${c.id}: paid scope copy drift\`);
-      assert(report.funExtrasDisplay === 'none', \`\${c.id}: MBTI/fun extras must not divert locked users\`);
-      assert(report.shareActionsDisplay === 'none', \`\${c.id}: share action must not divert locked users\`);
+      assert(report.paywallHook === report.expectedPaywall.hook, `${c.id}: dynamic paywall hook drift`);
+      assert(report.paywallTeaser.includes(report.expectedPaywall.preview), `${c.id}: dynamic paywall teaser drift`);
+      assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), `${c.id}: paid outcomes mismatch`);
+      assert(report.paywallSubcopy.includes('이 질문') || report.paywallSubcopy.includes('질문'), `${c.id}: paid scope copy drift`);
+      assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
+      assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
     }
     if (c.id === 'user-branch-love-F') {
       assert(report.pillarText.join(',') === '무인,갑인,기해,을축',
-        \`\${c.id}: pillar UI drift \${report.pillarText.join(',')}\`);
-      assert(!report.pillarBasisExists, \`\${c.id}: hidden manse-basis label leaked back into UI\`);
+        `${c.id}: pillar UI drift ${report.pillarText.join(',')}`);
+      assert(!report.pillarBasisExists, `${c.id}: hidden manse-basis label leaked back into UI`);
       assert(report.ohengText.includes('목\n(4개)') || report.ohengText.includes('목 (4개)') || report.ohengText.includes('목(4개)'),
-        \`\${c.id}: mok raw count missing \${report.ohengText}\`);
+        `${c.id}: mok raw count missing ${report.ohengText}`);
       assert(report.ohengText.includes('화\n(0개)') || report.ohengText.includes('화 (0개)') || report.ohengText.includes('화(0개)'),
-        \`\${c.id}: hwa raw count should be zero \${report.ohengText}\`);
+        `${c.id}: hwa raw count should be zero ${report.ohengText}`);
     }
     const unexpected = errs.filter(x => !isExpectedBoundaryDiagnostic(x));
-    assert(unexpected.length === 0, \`\${c.id}: browser errors: \${unexpected.join(' | ')}\`);
+    assert(unexpected.length === 0, `${c.id}: browser errors: ${unexpected.join(' | ')}`);
     reports.push({id:c.id,strength:report.strength,gyeok:report.gyeok,yongshin:report.yongshin});
     await page.close();
   }
