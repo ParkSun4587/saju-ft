@@ -35,7 +35,50 @@ function mockConsultation(question, mode='F') {
     ],
   };
 }
+function mockConsultationPreview(question, mode='F') {
+  const q=String(question||'').trim();
+  const t=mode==='T';
+  const evidence=['CHART_STRENGTH','CHART_STRUCTURE','CHART_TENGODS'];
+  return {
+    ok:true,
+    model:'ci-preview-mock',
+    directAnswer:{
+      headline:t?'결론부터 보면 지금은 선택 기준부터 잡아야 해':'네가 물어본 것부터 보면, 지금은 선택 기준이 먼저 보여',
+      answer:t?'당장 하나를 끊기보다 네가 오래 버틸 수 있는 조건을 먼저 확인하는 쪽이 맞아.':'지금은 남들이 좋다는 답보다 네가 오래 힘을 쓸 수 있는 조건부터 확인하는 게 더 중요해.',
+      why:'태어난 계절에서 받는 힘, 실제 뿌리, 십신의 배치와 격의 상태를 같이 봤어. 오행 개수 하나만으로 정한 답은 아니야.',
+      technicalBasis:'월령과 통근, 신강·신약, 정관과 식상의 실제 세력을 함께 교차했어.',
+      evidenceIds:evidence,
+      counterEvidenceIds:[],
+      certainty:'supported',
+    },
+    followUp:{
+      question:t?'지금 판단을 가장 흔드는 건 뭐야?':'그중에서도 지금 네 마음을 제일 흔드는 건 뭐야?',
+      options:[
+        {label:'지금 자리가 너무 힘들어',response:'그럼 버티는 힘보다 소모 조건을 먼저 봐야 해. 여기서부터는 언제까지 버티는 게 유리한지도 같이 확인해야 해.',focus:'소모 조건과 이동 시기'},
+        {label:'다음 선택이 안 보여',response:'그럼 지금 자리를 끊는 것보다 다음 방향을 먼저 잡는 게 핵심이야. 네 사주에서 맞는 환경과 움직일 순서를 더 봐야 해.',focus:'맞는 환경과 다음 방향'},
+        {label:'결정했다가 후회할까 봐',response:'그럼 결론보다 판단이 바뀌는 조건부터 확인해야 해. 어떤 신호가 오면 움직여도 되는지까지 연결해볼게.',focus:'판단 기준과 위험 조건'},
+      ],
+    },
+    paidScope:[
+      {title:'이 판단이 달라지는 조건'},
+      {title:'너한테 맞는 선택과 소모되는 조건'},
+      {title:'실제로 움직일 시기와 지금 할 행동'},
+    ],
+    handoff:'여기서부터는 네 사주 전체에서 이번 질문에 필요한 부분을 더 깊게 연결해서 봐야 해.',
+  };
+}
+
 async function installConsultationMock(page) {
+  await page.route('**/api/consultation-preview', async route => {
+    const req=route.request();
+    if(req.method()!=='POST') {
+      if (LOCAL) return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,service:'ci-preview-mock',configured:true,enabled:true,model:'gpt-6-sol'})});
+      return route.continue();
+    }
+    let body={}; try{body=req.postDataJSON()||{};}catch{}
+    const packet=body.evidencePacket||{};
+    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(mockConsultationPreview(packet?.question?.text,packet?.requestMode))});
+  });
   await page.route('**/api/consultation', async route => {
     const req=route.request();
     if(req.method()!=='POST') {
@@ -92,7 +135,7 @@ async function deployed(page) {
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.3' &&
         globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.7.0' &&
-        globalThis.__UNNI_CONSULTATION_V1__?.version === '1.0.0' &&
+        globalThis.__UNNI_CONSULTATION_V1__?.version === '1.1.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
         globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.2.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
@@ -122,33 +165,20 @@ async function checkRestartCta(page, mode) {
   await page.evaluate(()=>unlockFullReport(null,true));
   await page.locator('#reAnalyzeMainBtn').waitFor({state:'visible',timeout:5000});
   await page.locator('#reAnalyzeMainBtn').click();
-  await page.waitForSelector('#analysisSubmitButton',{state:'visible',timeout:5000});
-  const cta=await page.locator('#analysisSubmitButton').evaluate((el)=>({
-    mode:el.dataset.consultMode||'',
-    text:el.innerText||'',
-    className:el.className||'',
-    background:getComputedStyle(el).backgroundImage||'',
-    color:getComputedStyle(el).color||'',
-    disabled:el.disabled,
-  }));
-  assert(cta.mode===mode,'follow-up CTA lost F/T design hook '+JSON.stringify(cta));
-  assert(
-    mode==='F'
-      ? cta.text.includes('로아 언니한테 새 질문')
-      : cta.text.includes('서아 언니한테 새 질문'),
-    'follow-up CTA copy changed '+JSON.stringify(cta)
-  );
-  assert(cta.disabled,'new free-question CTA must wait for a question');
-  assert(!cta.className.includes('fee500')&&cta.background.includes('linear-gradient')&&cta.color==='rgb(255, 255, 255)',
-    'follow-up CTA still uses legacy Kakao-yellow styling '+JSON.stringify(cta));
+  await page.waitForSelector('#consultationQuestionContinueButton',{state:'visible',timeout:5000});
   const state=await page.evaluate(()=>({
     question:document.getElementById('consultationQuestion')?.value||'',
     key:document.getElementById('selectedConcernKey')?.value||'',
     situation:document.getElementById('selectedConcernSituation')?.value||'',
-    prompt:document.getElementById('concernPickerPrompt')?.innerText||'',
+    identityVisible:document.getElementById('sajuIdentityFields')?.offsetParent!==null,
+    continueText:document.getElementById('consultationQuestionContinueButton')?.innerText||'',
+    known:document.getElementById('sajuIdentityFields')?.dataset.knownSaju||'',
   }));
-  assert(state.question===''&&state.key==='consultation'&&state.situation==='free','follow-up did not reset to free question '+JSON.stringify(state));
-  assert(/그대로/.test(state.prompt),'follow-up prompt should ask for natural-language question '+JSON.stringify(state));
+  assert(state.question===''&&state.key==='consultation'&&state.situation==='free',
+    'follow-up did not reset to free question '+JSON.stringify(state));
+  assert(!state.identityVisible&&state.known==='1','revisit should ask only the new concern first '+JSON.stringify(state));
+  assert(mode==='F'?state.continueText.includes('이 얘기로'):state.continueText.includes('이 질문으로'),
+    'question-first revisit CTA lost F/T voice '+JSON.stringify(state));
 }
 
 async function enter(page, mode, concern, situation) {
@@ -157,10 +187,8 @@ async function enter(page, mode, concern, situation) {
     const hint=document.getElementById('splitContinuityHint');
     const roa=document.getElementById('panelRoa');
     const seoa=document.getElementById('panelSeoa');
-    const bodyText=document.getElementById('splitIntroSection')?.innerText||'';
     const boxes=[title,hint,roa,seoa].map(el=>el?.getBoundingClientRect()).filter(Boolean);
     return {
-      bodyText,
       visible:getComputedStyle(document.getElementById('splitIntroSection')).display!=='none',
       inViewport:boxes.every(b=>b.top>=-1&&b.left>=-1&&b.right<=innerWidth+1&&b.bottom<=innerHeight+1),
       titleHeight:title?.getBoundingClientRect().height||0,
@@ -170,32 +198,30 @@ async function enter(page, mode, concern, situation) {
   assert(intro.visible && intro.inViewport && intro.titleHeight<=82 && !intro.hintVisible,'first counselor-choice viewport broken '+JSON.stringify(intro));
   await page.locator(mode === 'F' ? '#panelRoa' : '#panelSeoa').click();
   await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
+  await page.waitForSelector('#consultationQuestionContinueButton',{state:'visible',timeout:5000});
 
   const firstState=await page.evaluate(()=>({
     question:document.getElementById('consultationQuestion')?.value||'',
     key:document.getElementById('selectedConcernKey')?.value||'',
     situation:document.getElementById('selectedConcernSituation')?.value||'',
-    oldGrid:!!document.getElementById('concernGrid'),
-    oldSituation:!!document.getElementById('concernSituationBox'),
-    submitDisabled:!!document.getElementById('analysisSubmitButton')?.disabled,
+    identityVisible:document.getElementById('sajuIdentityFields')?.offsetParent!==null,
     prompt:document.getElementById('concernPickerPrompt')?.innerText||'',
-    hint:document.getElementById('consultationQuestionHint')?.innerText||'',
     examples:document.querySelectorAll('#consultationQuestionExamples button').length,
     timeOptions:document.querySelectorAll('#birthTimeBranch option').length,
   }));
-  assert(firstState.question===''&&firstState.key==='consultation'&&firstState.situation==='free'&&firstState.submitDisabled,
-    'fresh input must start as a free question '+JSON.stringify(firstState));
-  assert(!firstState.oldGrid&&!firstState.oldSituation,'fixed concern/situation UI returned '+JSON.stringify(firstState));
-  assert(firstState.examples>=4&&firstState.prompt.includes('그대로')&&firstState.hint.includes('카테고리 고를 필요 없어'),
-    'free-question guidance missing '+JSON.stringify(firstState));
+  assert(firstState.question===''&&firstState.key==='consultation'&&firstState.situation==='free'&&!firstState.identityVisible,
+    'fresh consultation must ask the concern before birth data '+JSON.stringify(firstState));
+  assert(firstState.examples>=4&&firstState.prompt.includes('그대로'),'free-question guidance missing '+JSON.stringify(firstState));
   assert(firstState.timeOptions===13,'12-branch birth-time selector drift');
 
-  await page.fill('#nameInput','테스트');
   const question = mode==='F'
     ? '지금 만나는 사람이랑 계속 가도 될까? 관계에서 내가 꼭 봐야 할 기준도 알려줘.'
     : '지금 회사에 남는 게 나아, 옮기는 게 나아? 움직이기 좋은 시기도 같이 봐줘.';
   await page.fill('#consultationQuestion',question);
-  assert(!(await page.locator('#analysisSubmitButton').isDisabled()),'free-question submit should unlock after text input');
+  await page.locator('#consultationQuestionContinueButton').click();
+  await page.waitForSelector('#sajuIdentityFields',{state:'visible',timeout:5000});
+
+  await page.fill('#nameInput','테스트');
   await page.fill('#birthDateInput','19980221');
   assert(await page.locator('#birthTimeBranch option').count()===13,'birth-time selector should include unknown and 12 branches');
   if(mode==='F') {
@@ -206,26 +232,35 @@ async function enter(page, mode, concern, situation) {
     assert((await page.locator('#birthTimeInput').inputValue())==='09:42','exact HH:MM auto-format failed');
   }
 
-  await page.locator('#splitNextButton button').click();
+  await page.locator('#analysisSubmitButton').click();
   await page.waitForSelector('#resultSection',{state:'visible',timeout:90000});
-  await page.waitForFunction(()=>Array.isArray(currentResultData?.__consultationV1?.cards)&&currentResultData.__consultationV1.cards.length>=4,null,{timeout:90000});
+  await page.waitForFunction(()=>!!currentResultData?.__consultationPreviewV1?.directAnswer,null,{timeout:90000});
+  await page.waitForSelector('#freeConsultationFollowUp',{state:'visible',timeout:5000});
+
+  const beforeChoice=await page.evaluate(()=>({
+    deepCards:currentResultData?.__consultationV1?.cards?.length||0,
+    paywallVisible:document.getElementById('lockedOverlay')?.offsetParent!==null,
+  }));
+  assert(beforeChoice.deepCards===0&&!beforeChoice.paywallVisible,
+    'deep consultation or paywall appeared before the free follow-up '+JSON.stringify(beforeChoice));
+
+  await page.locator('#freeConsultationFollowUp button').first().click();
+  await page.waitForSelector('#lockedOverlay',{state:'visible',timeout:5000});
+
   const applied=await page.evaluate(()=>({
     concern:currentResultData?.concernKey,
     situation:currentResultData?.concernSituation,
     question:currentResultData?.userQuestion,
-    cards:currentResultData?.__consultationV1?.cards?.length||0,
-    plan:currentResultData?.__consultationV1?.questionPlan||null,
+    preview:!!currentResultData?.__consultationPreviewV1?.directAnswer,
+    selected:Number.isInteger(currentResultData?.__consultationPreviewV1?.selectedOption),
+    deepCards:currentResultData?.__consultationV1?.cards?.length||0,
     key:currentResultData?.userTimeKey||'',
     hourZhi:currentResultData?.pillars?.hour?.zhi||'',
   }));
-  assert(applied.concern==='consultation'&&applied.situation==='free'&&applied.question===question&&applied.cards>=4&&applied.cards<=9,
-    'free question did not propagate through consultation '+JSON.stringify(applied));
+  assert(applied.concern==='consultation'&&applied.situation==='free'&&applied.question===question&&applied.preview&&applied.selected&&applied.deepCards===0,
+    'free preview did not stay lightweight '+JSON.stringify(applied));
   if(mode==='F') assert(applied.key==='寅'&&applied.hourZhi==='寅','branch birth time did not propagate '+JSON.stringify(applied));
   else assert(applied.key==='09:42'&&applied.hourZhi==='巳','exact birth time did not propagate '+JSON.stringify(applied));
-
-  const sourceFreeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
-  if(sourceFreeLaunch) await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
-  else await page.waitForSelector('#lockedOverlay',{state:'visible',timeout:10000});
 }
 
 
@@ -366,53 +401,38 @@ function assertResultLayout(layout, label) {
 
 async function inspect(page, mode) {
   const r=await page.evaluate((mode)=>{
-    const consultation=currentResultData?.__consultationV1||{};
-    const cards=consultation.cards||[];
+    const preview=currentResultData?.__consultationPreviewV1||{};
     const visibleText=document.getElementById('notesListContainer')?.innerText||'';
-    const products=[...document.querySelectorAll('#unniProductLadder [data-unni-product]')];
     const details=[...document.querySelectorAll('#notesListContainer details.consultation-evidence')];
     return {
-      cardCount:cards.length,
-      badges:cards.map(x=>x.badge||''),
-      sectionTypes:cards.map(x=>x.__sectionType||''),
-      first:cards[0]?.desc||'',
-      second:cards[1]?.desc||'',
+      preview:!!preview.directAnswer,
+      selected:Number.isInteger(preview.selectedOption),
+      deepCardCount:currentResultData?.__consultationV1?.cards?.length||0,
       visibleText,
       question:currentResultData?.userQuestion||'',
       concern:currentResultData?.concernKey||'',
       situation:currentResultData?.concernSituation||'',
-      questionPlan:consultation.questionPlan||null,
-      thesis:consultation.centralThesis||null,
-      direct:consultation.directAnswer||null,
-      evidenceOk:cards.every(x=>Array.isArray(x.__evidenceRuleIds)&&x.__evidenceRuleIds.length>0),
-      counterOk:cards.every(x=>Array.isArray(x.__counterEvidenceIds)),
+      evidenceCount:Array.isArray(preview.directAnswer?.evidenceIds)?preview.directAnswer.evidenceIds.length:0,
       detailsCount:details.length,
       rawEvidenceIdsVisible:/CHART_|DITIAN|ZIPING|RULE[_:-]/.test(visibleText),
       oldSix:/핵심\s*\|\s*질문에 대한 답|1\/6|2\/6/.test(visibleText),
-      products:products.length,
-      visibleProducts:products.filter(x=>x.offsetParent!==null).length,
-      catalog:document.getElementById('unniProductLadder')?.innerText||'',
-      modeBadge:document.getElementById('resultModeBadge')?.innerText||'',
       sourceFreeLaunch:FREE_LAUNCH_MODE,
-      history:Array.isArray(currentResultData?.consultationHistory)?currentResultData.consultationHistory:[],
+      paywallVisible:document.getElementById('lockedOverlay')?.offsetParent!==null,
+      followUpVisible:document.getElementById('freeConsultationFollowUp')?.offsetParent!==null,
     };
   },mode);
   r.resultLayout=await resultLayoutSnapshot(page);
   assertResultLayout(r.resultLayout,mode+' primary result');
   assert(r.concern==='consultation'&&r.situation==='free','old fixed concern path rendered '+JSON.stringify(r));
-  assert(r.cardCount>=4&&r.cardCount<=9,'dynamic consultation card count must be 4-9 '+r.cardCount);
-  assert(r.badges[0]==='네 질문의 답'&&r.badges[1]==='언니가 먼저 본 것','direct answer / thesis ordering drift '+JSON.stringify(r.badges));
-  assert(r.evidenceOk&&r.counterOk,'consultation provenance missing');
-  assert(r.detailsCount>=2,'progressive why/evidence disclosure missing on the visible first answer '+JSON.stringify({details:r.detailsCount,cards:r.cardCount}));
-  assert(!r.rawEvidenceIdsVisible,'internal evidence ids leaked to user '+r.visibleText);
-  assert(!r.oldSix,'fixed NOTE 1-6 wording leaked into primary consultation '+r.visibleText);
-  assert(r.questionPlan?.directQuestions?.length>=1&&r.thesis&&r.direct,'question plan / central thesis / direct answer missing');
+  assert(r.preview&&r.selected&&r.deepCardCount===0,'free stage must contain preview only '+JSON.stringify(r));
+  assert(r.evidenceCount>0&&r.detailsCount>=1,'grounded preview evidence missing '+JSON.stringify(r));
+  assert(r.followUpVisible&&r.paywallVisible,'follow-up / paywall handoff missing '+JSON.stringify(r));
+  assert(!r.rawEvidenceIdsVisible&&!r.oldSix,'internal or fixed NOTE wording leaked '+r.visibleText);
   assert(!/[undefined|null|NaN]/.test(r.visibleText),'bad token leaked into consultation');
-  if(r.sourceFreeLaunch) assert(r.products===4&&r.visibleProducts===4,'premium catalog should expose four products '+JSON.stringify(r));
   return {
     ...r,
-    n1:String(r.first).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),
-    n2:String(r.second).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),
+    n1:r.visibleText,
+    n2:r.visibleText,
     n4:r.visibleText,
     n5:r.visibleText,
     n6:r.visibleText,
@@ -439,10 +459,13 @@ async function inspect(page, mode) {
     httpErrors.push({status:res.status(),url:res.url(),action});
   });
   const aiNoteRequests=[];
+  const previewRequests=[];
   const consultationRequests=[];
   page.on('request',req=>{
     if(req.url().includes('/api/ai-notes')) aiNoteRequests.push(req.method()+' '+req.url());
-    if(req.url().includes('/api/consultation')&&req.method()==='POST') consultationRequests.push(req.method()+' '+req.url());
+    const path=new URL(req.url()).pathname;
+    if(path.endsWith('/api/consultation-preview')&&req.method()==='POST') previewRequests.push(req.method()+' '+req.url());
+    if(path.endsWith('/api/consultation')&&req.method()==='POST') consultationRequests.push(req.method()+' '+req.url());
   });
   await deployed(page);
   await enter(page,'F','love','relationship');
@@ -485,25 +508,30 @@ async function inspect(page, mode) {
     cachedLegacyAi:!!currentResultData?.__aiNoteV4,
     precisionStatus:!!document.getElementById('aiNotePrecisionStatus'),
     consultationVersion:globalThis.__UNNI_CONSULTATION_V1__?.version||'',
+    preview:!!currentResultData?.__consultationPreviewV1?.directAnswer,
+    selected:Number.isInteger(currentResultData?.__consultationPreviewV1?.selectedOption),
     cards:currentResultData?.__consultationV1?.cards?.length||0,
     question:currentResultData?.userQuestion||'',
     visibleText:document.getElementById('notesListContainer')?.innerText||'',
   }));
   assert(
     aiNoteRequests.length===0 &&
-    consultationRequests.length===1 &&
+    previewRequests.length===1 &&
+    consultationRequests.length===0 &&
     !primaryConsultation.cachedLegacyAi &&
     !primaryConsultation.precisionStatus &&
-    primaryConsultation.consultationVersion==='1.0.0' &&
-    primaryConsultation.cards>=4 && primaryConsultation.cards<=9 &&
+    primaryConsultation.consultationVersion==='1.1.0' &&
+    primaryConsultation.preview &&
+    primaryConsultation.selected &&
+    primaryConsultation.cards===0 &&
     primaryConsultation.question.length>=4 &&
     !/작동 방식|압력군|과부하 후보/.test(primaryConsultation.visibleText),
-    'primary result must come from the grounded free-question consultation engine '+JSON.stringify({
-      aiNoteRequests,consultationRequests,...primaryConsultation,
+    'free stage must use one lightweight preview and zero deep consultations '+JSON.stringify({
+      aiNoteRequests,previewRequests,consultationRequests,...primaryConsultation,
       visibleText:primaryConsultation.visibleText.slice(0,300),
     })
   );
-  console.log('PRIMARY_FREE_QUESTION_CONSULTATION_PASS');
+  console.log('PRIMARY_LIGHTWEIGHT_PREVIEW_PASS');
 
   const f=await inspect(page,'F');
 
@@ -531,10 +559,17 @@ async function inspect(page, mode) {
   }
 
   if(!f.sourceFreeLaunch){
-    await page.evaluate(()=>unlockFullReport(null,true));
+    await page.evaluate(async()=>{
+      const key=getUserUniqueKey(currentResultData);
+      writeStore('tok_'+key,'ci-paid-token');
+      const ready=await ensurePaidConsultationReady(currentResultData);
+      if(!ready) throw new Error('mock paid consultation did not generate');
+      unlockFullReport(null,true);
+    });
     await page.waitForSelector('#resultShareActions',{state:'visible',timeout:5000});
-    assert(await page.locator('#resultFunExtras').isVisible(),'fun extras should return after 990 unlock');
-    assert(await page.locator('#resultShareActions').isVisible(),'share action should return after 990 unlock');
+    assert(await page.locator('#resultFunExtras').isVisible(),'fun extras should return after paid unlock');
+    assert(await page.locator('#resultShareActions').isVisible(),'share action should return after paid unlock');
+    assert(consultationRequests.length===1,'deep consultation must be generated exactly once after paid access '+JSON.stringify(consultationRequests));
   }
 
   assert((await page.locator('#mainShareBtnText').innerText()).includes('인스타 스토리'),'main CTA should keep the story action explicit after counseling');
