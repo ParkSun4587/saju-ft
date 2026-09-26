@@ -15,7 +15,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   await page.waitForFunction(()=>(
     globalThis.__CLASSICAL_REASONING_V1__?.version==='2.1.1' &&
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version==='6.7.0' &&
-    globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.1.0' &&
+    globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version==='1.2.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version==='2.3.1'
   ),null,{timeout:60000});
 
@@ -50,14 +50,30 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     const product=globalThis.__UNNI_PRODUCTS_V1__;
     const contracts=globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__.contracts;
 
-    const fullHtml=product.buildProductBody('full_saju',baseData,{});
-    const bundleExtra={
-      concerns:['career','love','mental'],
-      situations:{career:'current',love:'relationship',mental:'burnout'},
+    const consultCards=[
+      {badge:'네 질문의 답',title:'사업 선택에서 먼저 볼 기준',desc:'지금 질문에 대한 직접 답이야.'},
+      {badge:'왜 이런 답인지',title:'같은 능력도 오래 가는 구조가 달라',desc:'계절과 뿌리, 십신의 실제 힘을 함께 본 이유야.'},
+      {badge:'특히 조심할 것',title:'책임만 크고 결정권이 적으면 소모돼',desc:'감당력과 역할의 균형을 같이 봐야 해.'},
+      {badge:'지금 할 일',title:'작은 실행으로 먼저 검증해',desc:'큰 결정을 한 번에 확정하지 않는 기준이야.'},
+    ];
+    const consultData={
+      ...baseData,
+      concernKey:'consultation',
+      concernSituation:'free',
+      userQuestion:'사업하려는데 AI 앱이랑 음식점 중 뭐가 더 맞고 언제 시작하는 게 좋아?',
+      __consultationV1:{cards:consultCards},
     };
-    const bundleHtml=product.buildProductBody('concern_bundle3',baseData,bundleExtra);
-    const allExtra={situations:{money:'saving',career:'current',love:'relationship',path:'current',people:'friend',mental:'burnout'}};
-    const allHtml=product.buildProductBody('all_in_one',baseData,allExtra);
+    const fullHtml=product.buildProductBody('full_saju',consultData,{});
+    const bundleExtra={
+      questions:[
+        '지금 회사에 남는 게 나아, 옮기는 게 나아?',
+        '올해 새로운 인연은 언제쯤 들어와?',
+        '사업하면 어떤 방식이 나한테 맞아?',
+      ],
+    };
+    const bundleHtml=product.buildProductBody('concern_bundle3',consultData,bundleExtra);
+    const allHtml=product.buildProductBody('all_in_one',consultData,{});
+
     const compatBlocked=product.buildProductBody('compatibility',baseData,{});
     const compatExtra={partner:{n:'상대',b:'19990511',t:'12:00',g:'female',c:'solar',l:false}};
     const compatHtml=product.buildProductBody('compatibility',baseData,compatExtra);
@@ -118,6 +134,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
         bundle:{
           text:plain(bundleHtml),
           articles:bundleRoot.querySelectorAll('article').length,
+          questions:bundleRoot.querySelectorAll('[data-export-kind="question"]').length,
           exclusive:!!bundleRoot.querySelector('[data-product-exclusive="concern_bundle3"]'),
           fullSections:bundleRoot.querySelectorAll('[data-export-kind="full"]').length,
         },
@@ -125,6 +142,7 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
           text:plain(allHtml),
           articles:allRoot.querySelectorAll('article').length,
           fullSections:allRoot.querySelectorAll('[data-export-kind="full"]').length,
+          questionLink:!!allRoot.querySelector('[data-product-exclusive="all_in_one-question"]'),
           exclusive:!!allRoot.querySelector('[data-product-exclusive="all_in_one"]'),
           compatTiming:allRoot.querySelectorAll('[data-export-compat-timing]').length,
           compatExclusive:allRoot.querySelectorAll('[data-product-exclusive="compatibility"]').length,
@@ -159,14 +177,14 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
     };
   });
 
-  assert(r.versions.reasoning==='2.1.1'&&r.versions.note==='6.7.0'&&r.versions.products==='2.3.1'&&r.versions.policy==='1.1.0','runtime versions drift');
+  assert(r.versions.reasoning==='2.1.1'&&r.versions.note==='6.7.0'&&r.versions.products==='2.3.1'&&r.versions.policy==='1.2.0','runtime versions drift');
 
   const c=r.contracts;
-  assert(c.basic_concern.longTermDetail==='teaser-only'&&c.basic_concern.concernCount===1&&!c.basic_concern.compatibilityAllowed,'basic contract invalid');
-  assert(c.concern_bundle3.concernCount===3&&c.concern_bundle3.longTermDetail==='teaser-only','bundle contract invalid');
+  assert(c.basic_concern.longTermDetail==='teaser-only'&&c.basic_concern.questionCount===1&&!c.basic_concern.compatibilityAllowed,'basic free-question contract invalid');
+  assert(c.concern_bundle3.questionCount===3&&c.concern_bundle3.allowedDomains==='three-free-questions'&&c.concern_bundle3.longTermDetail==='teaser-only','question pack contract invalid');
   assert(c.full_saju.longTermDetail==='full-five-year'&&c.full_saju.secondPersonRequired===false,'full contract invalid');
   assert(c.compatibility.secondPersonRequired===true&&c.compatibility.compatibilityAllowed===true,'compat contract invalid');
-  assert(c.all_in_one.concernCount===6&&c.all_in_one.compatibilityAllowed===false,'all contract invalid');
+  assert(c.all_in_one.questionCount===1&&c.all_in_one.includesQuestionPack3===true&&c.all_in_one.compatibilityAllowed===false,'all-in-one free-question contract invalid');
 
   for(const run of r.runs){
     assert(run.nearCount>=17,'basic timing should retain ~18 months: '+run.id+' '+run.nearCount);
@@ -192,18 +210,20 @@ function yearTokens(v){ return [...new Set((String(v||'').match(/20\d{2}년/g)||
   const fullYears=[...new Set((r.products.full.text.match(/20\d{2}년/g)||[]))];
   assert(fullYears.length>=5,'full_saju must expose five annual flow rows, got '+JSON.stringify(fullYears));
 
-  assert(r.products.bundle.articles===18&&r.products.bundle.exclusive,'bundle3 must provide three full five-answer concern analyses + common synthesis');
-  assert(r.products.bundle.fullSections===0,'bundle3 leaked full_saju whole-chart chapters');
-  assert(!r.products.bundle.text.includes('앞으로 5년 큰 흐름'),'bundle3 leaked full five-year roadmap');
+  assert(r.products.bundle.questions===3&&r.products.bundle.exclusive,'question pack must render exactly three free-question slots');
+  assert(r.products.bundle.articles===0,'question pack must not prefill answers from the legacy fixed-concern engine');
+  assert(r.products.bundle.fullSections===0,'question pack leaked full_saju whole-chart chapters');
+  assert(!r.products.bundle.text.includes('앞으로 5년 큰 흐름'),'question pack leaked full five-year roadmap');
+  assert(r.products.bundle.text.includes('질문 1')&&r.products.bundle.text.includes('질문 2')&&r.products.bundle.text.includes('질문 3'),'question pack labels missing');
 
   assert(r.products.compatBlocked.blocked&&r.products.compatBlocked.sections===0,'compatibility generated without second-person chart');
   assert(r.products.compat.sections===16&&r.products.compat.pairTiming,'two-person compatibility unique overlay/timing missing');
   assert(r.products.compat.aFp&&r.products.compat.bFp&&r.products.compat.aFp!==r.products.compat.bFp&&r.products.compat.overlayFp,'compatibility does not prove two distinct charts + overlay');
   assert(!r.products.full.text.includes('둘이 같이 있을 때의 시기 흐름')&&!r.products.all.text.includes('둘이 같이 있을 때의 시기 흐름'),'one-person products leaked pair-specific result');
 
-  assert(r.products.all.articles===36&&r.products.all.fullSections===12&&r.products.all.exclusive,'all_in_one must include whole chart + six five-answer concerns + synthesis');
+  assert(r.products.all.articles===4&&r.products.all.fullSections===12&&r.products.all.questionLink&&r.products.all.exclusive,'all_in_one must include whole chart + current free-question link + synthesis');
   assert(r.products.all.compatTiming===0&&r.products.all.compatExclusive===0,'all_in_one swallowed compatibility');
-  assert(r.products.all.text.includes('두 사람 궁합은 포함하지 않아'),'all_in_one boundary not explicit');
+  assert(r.products.all.text.includes('두 사람 궁합은 이 상품에 포함하지 않아'),'all_in_one boundary not explicit');
 
   assert(r.baseIntegrity.beforeFp===r.baseIntegrity.afterFp,'rendering a product changed natal classical conclusion');
   assert(JSON.stringify(r.baseIntegrity.beforeClaims)===JSON.stringify(r.baseIntegrity.afterClaims),'rendering a product changed classical claim conclusions');
