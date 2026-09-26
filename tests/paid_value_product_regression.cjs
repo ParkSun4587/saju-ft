@@ -497,6 +497,8 @@ function mockConsultation(question, mode='F') {
 
     const lockedCatalog = document.getElementById('unniProductLadder');
     const followUpCard = document.getElementById('freeConsultationFollowUp');
+    const lockedFollowUpVisible = !!followUpCard && getComputedStyle(followUpCard).display !== 'none';
+    const lockedPaywallVisible = !!document.getElementById('lockedOverlay') && getComputedStyle(document.getElementById('lockedOverlay')).display !== 'none';
     const fPaywallText = document.getElementById('lockedOverlay')?.innerText || '';
     const fNextTeaser = document.getElementById('paywallNextTeaser')?.innerText || '';
     const fFeatureCount = document.querySelectorAll('#payBoxFeatures > div').length;
@@ -571,8 +573,8 @@ function mockConsultation(question, mode='F') {
     };
     return {
       sourceFreeLaunch:FREE_LAUNCH_MODE,
-      previewVisible:!!followUpCard && getComputedStyle(followUpCard).display !== 'none',
-      paywallVisible:!!document.getElementById('lockedOverlay') && getComputedStyle(document.getElementById('lockedOverlay')).display !== 'none',
+      previewVisible:lockedFollowUpVisible,
+      paywallVisible:lockedPaywallVisible,
       result:!!currentResultData,
       paymentRetryRecovery,
       definitivePaymentFailure,
