@@ -49,6 +49,41 @@ async function installConsultationMock(page) {
 }
 
 
+async function probeLivePaymentPrepare(page) {
+  if (LOCAL) return;
+  const url=new URL('/api/confirm-payment',BASE).href;
+  const question='결제 준비 상태를 확인하는 테스트 질문';
+  const payload={
+    action:'prepare',
+    data:{
+      n:'결제점검',
+      b:'20000101',
+      t:'unknown',
+      g:'female',
+      c:'solar',
+      k:'consultation',
+      q:question,
+      m:'F',
+      l:false
+    }
+  };
+  const res=await page.request.post(url,{
+    headers:{'content-type':'application/json'},
+    data:payload,
+    timeout:10000,
+  });
+  const body=await res.json().catch(()=>({}));
+  if(!res.ok()||!body?.ok){
+    throw new Error('payment prepare probe failed '+res.status()+' '+JSON.stringify(body));
+  }
+  if(body.amount!==100||body.productId!=='concern_single'||!body.orderId||!body.ticket){
+    throw new Error('payment prepare probe contract drift '+JSON.stringify(body));
+  }
+  if(!String(body.userKey||'').includes(question)){
+    throw new Error('payment prepare probe lost free-question scope '+JSON.stringify(body));
+  }
+}
+
 async function deployed(page) {
   await installConsultationMock(page);
   for (let i=0;i<36;i++) {
@@ -62,6 +97,7 @@ async function deployed(page) {
         globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.2.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       if (!LOCAL) {
+        await probeLivePaymentPrepare(page);
         const healthUrl=new URL('/api/consultation',BASE).href;
         const healthRes=await page.request.get(healthUrl,{timeout:8000});
         if(!healthRes.ok()) throw new Error('consultation health '+healthRes.status());
