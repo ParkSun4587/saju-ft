@@ -41,10 +41,10 @@
   const PRODUCTS = {
     concern_bundle3: {
       id: "concern_bundle3",
-      name: "고민 3개 더 깊게",
+      name: "질문 3개 더 이어서",
       price: 100,
-      badge: "다른 고민 3개 확장",
-      desc: "지금 고민은 그대로 두고, 다른 고민 3개를 각각 같은 깊이로 풀어. 세 고민에 반복되는 공통 구조도 마지막에 묶어봐.",
+      badge: "추가 자유질문 3개",
+      desc: "사주정보는 다시 적지 않고, 지금 궁금한 질문 3개를 네 말로 그대로 적어. 질문마다 사주 전체를 다시 엮어서 따로 답해.",
     },
     full_saju: {
       id: "full_saju",
@@ -65,7 +65,7 @@
       name: "내 사주 완전판",
       price: 100,
       badge: "나 한 사람 전체판",
-      desc: "전체 사주판과 6가지 고민, 고민 간 공통패턴, 5년 흐름과 영역 간 변곡점을 한 번에 열어. 두 사람 궁합은 포함하지 않아.",
+      desc: "내 사주 전체 구조와 5년 흐름, 지금 질문이 내 전체 사주에서 어디에 연결되는지까지 한 번에 열어. 두 사람 궁합은 포함하지 않아.",
     },
   };
 
@@ -576,7 +576,7 @@
     return `<div data-product-contract="full_saju" data-structure-fingerprint="${esc(fp)}" data-timing-fingerprint="${esc(tfp)}" data-export-intro="full" style="padding:14px 15px;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;font-size:12.5px;line-height:1.8;color:#7c2d12;margin-bottom:8px"><b>이 전체판에서 새로 열리는 것</b><br>${intro}<br><span style="font-size:10.5px;color:#9a3412">기본 고민에서는 가까운 시기를 중심으로 보고 · 이 전체판에서는 향후 5년의 큰 흐름까지 이어서 공개</span></div>${sections.map((row,index)=>`<section data-export-kind="full" data-full-saju-section="${row.claim?.section || index+1}" data-export-index="${index}" data-source-rules="${esc((row.claim?.sourceRuleIds || []).join(","))}" data-new-facts="${esc((row.claim?.newFacts || []).join("|"))}" data-section-conclusion="${esc(row.claim?.conclusion || "")}" style="padding:18px 0;border-bottom:1px solid #eef2f7"><h4 style="font-size:15px;font-weight:900;margin:0 0 8px">${row.title}</h4><div style="font-size:13px;line-height:1.85;color:#475569">${row.body}</div></section>`).join("")}`;
   }
 
-  function bundleHtml(data, mode, extra) {
+  function legacyBundleHtml(data, mode, extra) {
     const keys = Array.isArray(extra?.concerns) ? extra.concerns : [];
     const gate = policyGate("concern_bundle3", ["additional-concerns","monthly-detail"], { months:18, concernCount:keys.length });
     if (!gate.ok) return policyBlockedHtml("concern_bundle3", gate);
@@ -603,37 +603,76 @@
     return shared + body;
   }
 
+  function bundleHtml(data, mode, extra) {
+    if (!Array.isArray(extra?.questions)) return legacyBundleHtml(data, mode, extra);
+    const questions = extra.questions.map((q) => String(q || "").replace(/\s+/g," ").trim()).filter(Boolean).slice(0,3);
+    const gate = policyGate("concern_bundle3", ["additional-questions"], { questionCount:questions.length });
+    if (!gate.ok) return policyBlockedHtml("concern_bundle3", gate);
+    return `
+      <div data-product-exclusive="concern_bundle3" data-product-contract="concern_bundle3" style="padding:13px 0 14px;border-bottom:1px solid #ebe5df;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:900;color:#334155">같은 사주로 질문 3개를 각각 새로 볼게</div>
+        <div style="margin-top:5px;font-size:11px;line-height:1.65;color:#7b8491">한 질문의 답을 다른 질문에 복사하지 않고, 매번 사주 전체 근거에서 그 질문에 필요한 것만 다시 골라서 연결해.</div>
+      </div>
+      <div id="unniBundleQuestionReports">
+        ${questions.map((question,index)=>`
+          <section data-export-kind="question" data-question-index="${index}" style="margin:0 0 25px">
+            <div style="font-size:9.5px;font-weight:850;color:#c9365b">질문 ${index+1}</div>
+            <h3 style="font-size:17px;line-height:1.45;font-weight:900;margin:4px 0 10px;color:#1f2937">${esc(question)}</h3>
+            <div data-bundle-question-report="${index}" style="padding:13px 0;border-top:1px solid #eee8e2;font-size:11.5px;line-height:1.7;color:#7b8491">
+              언니가 이 질문에 필요한 사주 근거를 다시 엮는 중이야…
+            </div>
+          </section>`).join("")}
+      </div>`;
+  }
+
+  async function hydrateBundleQuestions(root, data, extra) {
+    const questions = Array.isArray(extra?.questions) ? extra.questions.slice(0,3) : [];
+    const runtime = global.__UNNI_CONSULTATION_V1__;
+    if (!questions.length || !runtime?.generate) return;
+    for (let index=0; index<questions.length; index++) {
+      const slot = root?.querySelector(`[data-bundle-question-report="${index}"]`);
+      if (!slot) continue;
+      const d = {
+        ...data,
+        concernKey:"consultation",
+        concernSituation:"free",
+        userQuestion:String(questions[index] || "").slice(0,500),
+      };
+      delete d.__consultationV1;
+      try {
+        const generated = await runtime.generate(d, getMode(data));
+        slot.innerHTML = noteCards(generated.cards || []);
+      } catch (error) {
+        slot.innerHTML = `<div style="padding:12px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412">이 질문 상담을 불러오지 못했어. 다시 결제할 필요는 없고, 창을 닫았다가 구매한 상품 다시보기를 눌러줘.</div>`;
+      }
+    }
+  }
+
+
   function allInOneHtml(data, mode, extra) {
-    const sanitized = productPolicyApi()?.sanitizeProductPayload?.("all_in_one", { extra }) || { extra };
-    extra = sanitized.extra || {};
-    const gate = policyGate("all_in_one", ["all-six-concerns","full-five-year","monthly-detail","cross-domain","daewoon-context"], { months:18, concernCount:Object.keys(CONCERNS).length });
+    const gate = policyGate("all_in_one", ["full-five-year","monthly-detail","cross-domain","daewoon-context"], { questionCount:1 });
     if (!gate.ok) return policyBlockedHtml("all_in_one", gate);
-    const baseReasoning = getReasoning(data);
-    const allRuns = Object.keys(CONCERNS).map((key) => {
-      const concernSituation = extra?.situations?.[key] || (key === data?.concernKey ? data?.concernSituation || "" : "");
-      const d = { ...data, concernKey:key, concernSituation };
-      const notes = typeof global.generateConcernNotes === "function" ? global.generateConcernNotes(d, mode) : [];
-      return { key, concernSituation, notes, reasoning:d.classicalReasoningV1 || getReasoning(d) };
-    });
-    const facts = chartFacts(data);
-    const commonPressure = facts?.top ? `<b>${esc(facts.top.god)}</b>, 곧 ${esc(facts.top.meaning)}` : "<b>여러 조건이 한꺼번에 들어오는 부담</b>";
-    const pivots = baseReasoning?.timing?.longTermPivots || [];
-    const pivotText = pivots.length ? pivots.map((x) => `${x.year}년`).join(" · ") : "강한 장기 변곡점 없음";
-    const firstAction = facts?.weakest ? `제일 약한 ${facts.weakest.groupMeaning} 쪽 한 칸부터 채워` : "지금 부담 하나를 줄이고 실제 반응을 확인해";
-    const secondAction = facts?.balance ? `너한텐 ${facts.groupMeaning(facts.balance.group)} 쪽인 ${facts.balance.name} 기운을 보태는 사람·환경·습관을 곁에 둬` : "확인된 선택만 다음 단계로 확정해";
-    const domains = Object.keys(CONCERNS).map((key) => CONCERNS[key]).join(" · ");
-
-    const crossDomain = `<div data-product-exclusive="all_in_one" data-product-contract="all_in_one" data-structure-fingerprint="${esc(baseReasoning?.structureFingerprint || "")}" style="padding:15px;border-radius:18px;background:#fff1f2;border:1px solid #fecdd3;margin:22px 0;font-size:12.5px;line-height:1.85;color:#881337"><b>6개 고민을 가로지르는 공통 구조</b><br>${domains}. 이 6개 고민은 서로 다른 문제처럼 보여도, 네 사주에서 가장 큰 ${commonPressure} 쪽 일이 몰릴 때 비슷한 모습이 반복돼. 완전판에서는 이 같은 모습이 각 고민에서 어떻게 다르게 나타나는지 나란히 비교해.<br><span style="font-size:10.5px;color:#be123c">이 완전판은 나 한 사람 전체 분석이야. 두 사람 궁합은 포함하지 않아.</span></div>`;
-
-    const simultaneous = `<div data-product-exclusive="all_in_one-timing" style="padding:15px;border-radius:18px;background:#f8fafc;border:1px solid #e2e8f0;margin:14px 0;font-size:12.5px;line-height:1.85;color:#334155"><b>여러 영역이 같이 움직이는 시점</b><br>${pivots.length ? `현재 5년 계산에서 공통으로 강하게 잡힌 변곡점은 <b>${esc(pivotText)}</b>이야. 같은 시기라도 돈은 조건 조정, 일은 역할 선택, 관계는 거리·약속 조정처럼 적용 방식이 달라져. 그래서 한 영역의 변화만 보고 인생 전체가 좋아지거나 나빠진다고 단정하지 않아.` : "5년 안에서 여러 영역을 동시에 크게 흔드는 강한 변곡점이 따로 잡히지 않아. 없는 변곡점을 만들지 않고 각 고민의 가까운 시기를 따로 쓰는 편이 맞아."}</div>`;
-
-    const strategy = `<div data-product-exclusive="all_in_one-strategy" style="padding:15px;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;margin:14px 0 22px;font-size:12.5px;line-height:1.85;color:#7c2d12"><b>마지막 종합 행동 전략</b><br><b>1.</b> 먼저 ${esc(firstAction)}.<br><b>2.</b> 그다음 ${esc(secondAction)}.<br><b>3.</b> 좋은 시기에도 6개 영역을 한꺼번에 바꾸지 말고 실제 반응이 먼저 오는 영역부터 확정해.<br>이건 새로운 판단을 덧붙인 게 아니라, 같은 사주 판단에서 나온 행동 순서를 6개 고민에 공통으로 적용한 거야.</div>`;
-
-    const all = allRuns.map(({key,concernSituation,notes}) => {
-      const situLabel = situationLabel(key, concernSituation);
-      return `<section data-export-kind="concern" data-concern="${esc(key)}" data-concern-situation="${esc(concernSituation)}" style="margin:26px 0"><h3 style="font-size:19px;font-weight:950;margin:0 0 5px">${esc(CONCERNS[key])}</h3>${situLabel ? `<div style="font-size:11px;font-weight:850;color:#f43f5e;margin-bottom:10px">지금 상황 · ${esc(situLabel)}</div>` : ""}${noteCards(notes, facts?.headline ? { headline:facts.headline, isT:mode === "T" } : null)}</section>`;
-    }).join("");
-    return `<h3 style="font-size:19px;font-weight:950;margin:0 0 10px">내 전체 사주판</h3>${fullSajuHtml(data, mode)}${crossDomain}${simultaneous}${strategy}<div style="height:8px"></div>${all}`;
+    const reasoning = getReasoning(data);
+    const consultationCards = global.__UNNI_CONSULTATION_V1__?.getCards?.(data,mode) || [];
+    const currentQuestion = String(data?.userQuestion || "").trim();
+    const currentLink = consultationCards.length
+      ? `<section data-product-exclusive="all_in_one-question" style="margin:24px 0 8px;padding-top:18px;border-top:1px solid #e8e2dc">
+          <div style="font-size:10px;font-weight:850;color:#c9365b">지금 질문과 전체 사주 연결</div>
+          <h3 style="font-size:18px;line-height:1.45;font-weight:920;margin:5px 0 11px;color:#1f2937">${esc(currentQuestion || "지금 질문")}</h3>
+          ${noteCards(consultationCards)}
+        </section>`
+      : "";
+    const pivots = reasoning?.timing?.longTermPivots || [];
+    const pivotLine = pivots.length
+      ? pivots.slice(0,3).map((x)=>`${x.year || ""}년`).filter((x)=>x!=="년").join(" · ")
+      : "";
+    const closing = `<div data-product-exclusive="all_in_one" data-product-contract="all_in_one" style="margin-top:20px;padding:14px 0 0;border-top:1px solid #e8e2dc;font-size:12px;line-height:1.75;color:#596273">
+      <b>완전판에서 마지막으로 연결한 것</b><br>
+      지금 질문 하나를 따로 떼어 본 게 아니라, 전체 구조와 장기 흐름 안에서 같은 원인이 어디서 반복되는지 연결했어.
+      ${pivotLine ? ` 장기 변곡점은 현재 계산에서 <b>${esc(pivotLine)}</b>이 특히 크게 잡혀 있어.` : " 억지로 장기 변곡점을 만들지는 않았어."}
+      <br><span style="font-size:10.5px;color:#969ba4">두 사람 궁합은 이 상품에 포함하지 않아.</span>
+    </div>`;
+    return `<h3 style="font-size:19px;font-weight:950;margin:0 0 10px">내 사주 완전판</h3>${fullSajuHtml(data, mode)}${currentLink}${closing}`;
   }
 
   function parseDate8(v) {
@@ -1354,33 +1393,23 @@
   function setupHtml(productId, data) {
     const isT = getMode(data) === "T";
     if (productId === "concern_bundle3") {
-      const defaults = new Set(defaultBundle(data));
-      const keys = Object.keys(CONCERNS).filter((k) => k !== data?.concernKey);
       return `
-        <div style="font-size:12px;font-weight:900;margin-bottom:5px">${isT ? "추가로 볼 고민 3개를 골라줘" : "이번엔 더 마음에 걸리는 고민 3개만 골라줘"}</div>
-        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">${isT ? "각 고민의 지금 상황도 하나씩 골라줘. 그 기준으로 정확히 나눠서 볼게." : "고른 고민마다 지금 상황도 하나씩 알려줘. 그래야 다른 경우 안 섞고 네 얘기로 같이 볼 수 있어."}</div>
-        <div id="unniBundleChecks" style="display:grid;gap:8px">
-          ${keys.map((k) => `
-            <div data-bundle-row="${k}" style="padding:11px;border:1px solid #e2e8f0;border-radius:14px;background:#fff">
-              <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:850;color:#334155">
-                <input type="checkbox" value="${k}" ${defaults.has(k) ? "checked" : ""}> ${CONCERNS[k]}
-              </label>
-              <select data-bundle-situation="${k}" style="width:100%;margin-top:8px;padding:9px 10px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc;font-size:11px;font-weight:750;color:#475569">
-                ${situationSelectOptions(k, "")}
-              </select>
-            </div>`).join("")}
+        <div style="font-size:12px;font-weight:900;margin-bottom:5px">${isT ? "추가로 궁금한 질문 3개를 적어줘" : "이번엔 궁금한 걸 세 가지 그대로 적어줘"}</div>
+        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">돈·연애·직장 같은 메뉴에 맞출 필요 없어. 비교하고 싶은 선택지나 시기도 질문 안에 같이 적어도 돼.</div>
+        <div id="unniBundleQuestions" style="display:grid;gap:8px">
+          ${[0,1,2].map((index)=>`
+            <label style="display:block;padding:10px 11px;border:1px solid #e2e8f0;border-radius:14px;background:#fff">
+              <span style="display:block;font-size:10px;font-weight:850;color:#64748b;margin-bottom:5px">질문 ${index+1}</span>
+              <textarea data-bundle-question="${index}" maxlength="500" rows="2" placeholder="${[
+                "예: 사업하면 어떤 방식이 나한테 맞고 언제 시작하는 게 좋아?",
+                "예: 지금 회사에 남는 게 나아, 옮기는 게 나아?",
+                "예: 올해 새로운 인연은 언제쯤 들어오고 어떤 기준으로 사람을 봐야 해?"
+              ][index]}" style="width:100%;box-sizing:border-box;resize:vertical;min-height:66px;padding:9px 10px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;font-size:16px;line-height:1.5;color:#334155"></textarea>
+            </label>`).join("")}
         </div>`;
     }
     if (productId === "all_in_one") {
-      return `
-        <div style="font-size:12px;font-weight:900;margin-bottom:5px">${isT ? "6가지 고민의 지금 상황을 맞춰줘" : "6가지 고민의 지금 상황만 하나씩 알려줘"}</div>
-        <div style="font-size:10.5px;line-height:1.6;color:#94a3b8;margin-bottom:10px">${isT ? "각 고민을 네 상황에 맞게 보려면 이것만 맞춰주면 돼." : "각 고민을 네 상황에 맞게 보려면 이것만 골라주면 돼."}</div>
-        <div id="unniAllInOneSituations" style="display:grid;gap:8px">
-          ${Object.keys(CONCERNS).map((k) => {
-            const selected = k === data?.concernKey ? data?.concernSituation || "" : "";
-            return `<label style="display:grid;grid-template-columns:92px 1fr;align-items:center;gap:8px;padding:9px 10px;border:1px solid #e2e8f0;border-radius:13px;background:#fff"><span style="font-size:11px;font-weight:900;color:#334155">${CONCERNS[k]}</span><select data-all-situation="${k}" style="width:100%;min-width:0;padding:9px 10px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc;font-size:10.5px;font-weight:750;color:#475569">${situationSelectOptions(k, selected)}</select></label>`;
-          }).join("")}
-        </div>`;
+      return `<div style="padding:11px 0;font-size:11px;line-height:1.7;color:#64748b">추가로 6개 고민을 고를 필요 없어. 전체 사주 구조와 5년 흐름에 지금 질문까지 자동으로 연결해서 볼게.</div>`;
     }
     if (productId === "compatibility") {
       const branchOpts = [
@@ -1428,39 +1457,23 @@
 
   function collectExtra(productId, data, root) {
     if (productId === "concern_bundle3") {
-      const picked = [...root.querySelectorAll('#unniBundleChecks input:checked')].map((x) => x.value);
-      if (picked.length !== 3)
+      const questions = [...root.querySelectorAll("[data-bundle-question]")]
+        .map((el) => String(el.value || "").replace(/\s+/g," ").trim());
+      if (questions.length !== 3 || questions.some((q)=>q.length < 4 || q.length > 500)) {
         throw new Error(productVoice(data, {
-          F: "더 보고 싶은 고민을 딱 3개만 골라줘. 그 세 개부터 같이 보자",
-          T: "추가로 볼 고민을 정확히 3개 골라줘.",
+          F:"질문 세 개를 각각 네 말로 조금만 더 적어줘. 짧아도 괜찮아.",
+          T:"질문 3개를 각각 4자 이상 적어줘.",
         }));
-      const situations = {};
-      for (const key of picked) {
-        const value = root.querySelector(`[data-bundle-situation="${key}"]`)?.value || "";
-        if (!situationRows(key).some(([s]) => s === value)) {
-          throw new Error(productVoice(data, {
-            F: `${CONCERNS[key]}의 지금 상황도 하나 알려줘. 그래야 네 경우로 맞춰 볼 수 있어.`,
-            T: `${CONCERNS[key]}의 지금 상황도 하나 골라줘.`,
-          }));
-        }
-        situations[key] = value;
       }
-      return { concerns: picked, situations };
-    }
-    if (productId === "all_in_one") {
-      const situations = {};
-      for (const key of Object.keys(CONCERNS)) {
-        const value = root.querySelector(`[data-all-situation="${key}"]`)?.value || "";
-        if (!situationRows(key).some(([s]) => s === value)) {
-          throw new Error(productVoice(data, {
-            F: `${CONCERNS[key]}의 지금 상황도 하나 알려줘.`,
-            T: `${CONCERNS[key]}의 지금 상황을 골라줘.`,
-          }));
-        }
-        situations[key] = value;
+      if (new Set(questions.map((q)=>q.toLowerCase())).size !== 3) {
+        throw new Error(productVoice(data, {
+          F:"같은 질문 말고 서로 궁금한 게 다른 질문 세 개로 적어줘.",
+          T:"서로 다른 질문 3개를 적어줘.",
+        }));
       }
-      return { situations };
+      return { questions };
     }
+    if (productId === "all_in_one") return {};
     if (productId === "compatibility") {
       const b = root.querySelector("#partnerBirth")?.value.replace(/\D/g, "") || "";
       if (!/^\d{8}$/.test(b))
@@ -1602,8 +1615,14 @@
     root.scrollTop = 0;
     document.body.style.overflow = "hidden";
 
-    // 사용자가 상담 기록을 읽는 동안 뒤에서 천천히 준비해 저장 버튼 대기를 줄인다.
-    prewarmPaidExport(root, productId);
+    // 추가 질문 3개는 구매한 질문 각각을 새 상담 엔진으로 생성한다.
+    if (productId === "concern_bundle3" && Array.isArray(extra?.questions)) {
+      hydrateBundleQuestions(root, data, extra)
+        .then(() => prewarmPaidExport(root, productId))
+        .catch(() => {});
+    } else {
+      prewarmPaidExport(root, productId);
+    }
   }
 
   async function ensurePremiumPaymentWidgetSDK() {
@@ -1964,10 +1983,10 @@
 
   const PRODUCT_UX = {
     concern_bundle3: {
-      eyebrow:"다른 고민 3개 확장",
-      value:"다른 고민 3개를 각각 NOTE 깊이로",
-      difference:"방금 본 고민은 빼고, 새로 고른 3개 고민을 각각 따로 풀어.",
-      cta:"고민 3개 더 깊게 보기",
+      eyebrow:"추가 자유질문 3개",
+      value:"같은 사주로 질문 3개를 각각 새로 해석",
+      difference:"카테고리를 고르는 게 아니라 궁금한 질문을 그대로 적고, 질문마다 사주 전체 근거를 다시 연결해.",
+      cta:"질문 3개 더 이어서 보기",
     },
     full_saju: {
       eyebrow:"내 사주 전체판",
@@ -1983,8 +2002,8 @@
     },
     all_in_one: {
       eyebrow:"나 한 사람 전체판",
-      value:"전체 사주판 + 6개 고민 + 종합 연결",
-      difference:"전체 사주판과 6개 고민을 따로 보지 않고, 나 한 사람의 흐름으로 한 번에 연결해.",
+      value:"전체 사주판 + 5년 흐름 + 현재 질문 연결",
+      difference:"고정된 6개 고민을 채우지 않고, 나 전체 구조와 장기 흐름 안에서 지금 질문이 어디에 연결되는지 한 번에 봐.",
       cta:"내 사주 완전판 보기",
     },
   };
@@ -2020,23 +2039,23 @@
     }
     if (productId === "full_saju") {
       return direct.includes("concern_bundle3")
-        ? "다른 고민 3개는 이미 깊게 봤으니까, 이제 새로 볼 건 네 전체 구조와 5년 흐름이야."
+        ? "추가 질문 3개는 이미 깊게 봤으니까, 이제 새로 볼 건 네 전체 구조와 5년 흐름이야."
         : isT
           ? "기본 NOTE에서 가까운 시기는 충분히 봤어. 다음엔 5년 전체 흐름과 여러 영역이 같이 바뀌는 이유를 보면 돼."
           : "지금 고민 하나의 가까운 시기는 이미 충분히 봤으니까, 다음에는 네 인생 전체 구조와 5년 큰 흐름을 이어서 보는 게 새 정보가 제일 많아.";
     }
     if (productId === "concern_bundle3") {
       return isT
-        ? "지금 고민은 여기서 닫고, 다른 고민 3개에 같은 사주 구조가 어떻게 다르게 나타나는지 보는 게 중복이 적어."
-        : "지금 고민 하나는 충분히 풀었으니까, 아직 마음에 남은 다른 고민 3개를 같은 깊이로 보는 게 새 정보가 많아.";
+        ? "지금 고민은 여기서 닫고, 새 질문 3개를 각각 사주 전체에서 다시 해석하는 게 중복이 적어."
+        : "지금 질문 하나는 충분히 풀었으니까, 아직 궁금한 질문 3개를 그대로 이어서 묻는 게 새 정보가 많아.";
     }
     const quote = entitlementApi()?.calculateUpgradeQuote?.({ targetProduct:"all_in_one", verifiedEntitlements:direct });
     if (quote?.creditAmount > 0) {
       return `이미 산 1인 상품 ${quote.creditedProducts.map((id)=>PRODUCTS[id]?.name || id).join(" + ")} 금액을 인정해서, 중복 결제 없이 완전판으로 합칠 수 있어.`;
     }
     return isT
-      ? "한 사람 기준으로 전체 구조·6개 고민·5년 흐름을 따로 열기 싫다면 한 번에 묶는 구성이 맞아."
-      : "내 전체 사주판도 보고 6가지 고민도 하나씩 다 풀고 싶다면, 나 한 사람에 대한 내용을 한 번에 여는 쪽이 제일 편해.";
+      ? "한 사람 기준으로 전체 구조·5년 흐름·현재 질문 연결을 한 번에 보고 싶다면 완전판이 맞아."
+      : "내 전체 사주판과 5년 흐름, 지금 질문이 어디서 이어지는지까지 한 번에 보고 싶다면 완전판이 제일 편해.";
   }
 
   function productButtonHtml(p, { recommended = false, secondary = false, reason = "", state = null } = {}) {
