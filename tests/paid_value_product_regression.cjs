@@ -1176,15 +1176,46 @@ function mockConsultation(question, mode='F') {
   assert(mobilePaidShareCount >= 2 && mobilePaidShareCount <= 3, `mobile dynamic full-saju should share its prepared consultation pages in one action, got ${mobilePaidShareCount}`);
   await page.locator('#unniProductClose').click();
 
+  await page.evaluate(() => {
+    FREE_LAUNCH_MODE = false;
+    const originalPaymentAPI = paymentAPI;
+    window.__retiredBundleOriginalPaymentAPI = originalPaymentAPI;
+    paymentAPI = async (body) => {
+      if (body?.action === 'entitlements') {
+        return {
+          ok:true,
+          verifiedPurchases:[],
+          effectiveEntitlements:[],
+          allInOneQuote:{targetProduct:'all_in_one',baseAmount:100,creditAmount:0,amount:100,alreadyOwned:false,creditedProducts:[]},
+        };
+      }
+      return originalPaymentAPI(body);
+    };
+    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
+    document.getElementById('unniProductLadder')?.remove();
+    isUnlocked = true;
+    renderUnniProductCatalog();
+  });
+  await page.waitForFunction(() =>
+    document.querySelector('#unniProductLadder')?.dataset.catalogMode === 'upsell' &&
+    !document.querySelector('#unniProductLadder [data-entitlement-status]'),
+    null,{timeout:10000}
+  );
   const retiredBundleSale = await page.evaluate(() => ({
+    ids:[...document.querySelectorAll('#unniProductLadder [data-unni-product]')].map(x=>x.dataset.unniProduct).sort(),
     catalogButton:document.querySelector('#unniProductLadder [data-unni-product="concern_bundle3"]')?.offsetParent !== null,
     contractExists:!!globalThis.__UNNI_PRODUCTS_V1__?.contracts?.concern_bundle3,
     productExists:!!globalThis.__UNNI_PRODUCTS_V1__?.products?.concern_bundle3,
   }));
-  assert(!retiredBundleSale.catalogButton,
+  assert(!retiredBundleSale.catalogButton && retiredBundleSale.ids.length===3,
     'retired question-pack must not be offered to new buyers '+JSON.stringify(retiredBundleSale));
   assert(retiredBundleSale.contractExists && retiredBundleSale.productExists,
     'retired question-pack metadata must remain for existing-purchase reaccess '+JSON.stringify(retiredBundleSale));
+  await page.evaluate(() => {
+    paymentAPI = window.__retiredBundleOriginalPaymentAPI;
+    delete window.__retiredBundleOriginalPaymentAPI;
+    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
+  });
 
   await page.evaluate(() => openUnniProduct('compatibility'));
   modal = await page.locator('#unniProductModal').innerText();
