@@ -4668,7 +4668,7 @@
             if (senderTitle) senderTitle.textContent = "로아 언니";
             if (sisterText) {
               sisterText.innerHTML =
-                "응, 편하게 적어줘.";
+                "무슨 일 있어? 지금 제일 신경 쓰이는 걸 그대로 말해봐.";
             }
           } else {
             if (concernPickerPrompt)
@@ -4682,7 +4682,7 @@
             if (senderTitle) senderTitle.textContent = "서아 언니";
             if (sisterText) {
               sisterText.innerHTML =
-                "좋아. 필요한 것만 적어줘.";
+                "뭐가 제일 궁금해? 상황부터 그대로 적어줘.";
             }
           }
 
@@ -4695,6 +4695,8 @@
                         </button>
                     `;
           }
+
+          prepareQuestionFirstInput(mode, false);
 
           const timeEl = document.getElementById("chatRealTime");
           if (timeEl) {
@@ -4909,6 +4911,100 @@
         renderConcernSituationPicker(key);
         refreshAnalysisSubmitState();
       }
+
+      function ensureQuestionFirstInputStructure() {
+        const form = document.getElementById("sajuForm");
+        const questionBlock = document.getElementById("consultationQuestionBlock");
+        if (!form || !questionBlock) return null;
+
+        let identity = document.getElementById("sajuIdentityFields");
+        if (!identity) {
+          identity = document.createElement("div");
+          identity.id = "sajuIdentityFields";
+          identity.className = "space-y-1.5";
+          form.insertBefore(questionBlock, form.firstElementChild);
+          form.insertBefore(identity, questionBlock.nextSibling);
+          [...form.children]
+            .filter((child) => child !== questionBlock && child !== identity)
+            .forEach((child) => identity.appendChild(child));
+        }
+
+        let continueButton = document.getElementById("consultationQuestionContinueButton");
+        if (!continueButton) {
+          continueButton = document.createElement("button");
+          continueButton.id = "consultationQuestionContinueButton";
+          continueButton.type = "button";
+          continueButton.className =
+            "mt-2 w-full py-3 rounded-2xl text-white text-[12px] font-black transition-all active:scale-[0.98]";
+          continueButton.onclick = continueConsultationQuestion;
+          questionBlock.appendChild(continueButton);
+        }
+        return { form, questionBlock, identity, continueButton };
+      }
+
+      function prepareQuestionFirstInput(mode = currentVoiceMode(), knownSaju = false) {
+        const parts = ensureQuestionFirstInputStructure();
+        if (!parts) return;
+        const isT = mode === "T";
+        parts.identity.style.display = "none";
+        parts.identity.dataset.knownSaju = knownSaju ? "1" : "0";
+        parts.continueButton.style.display = "block";
+        parts.continueButton.dataset.consultMode = mode;
+        parts.continueButton.textContent = isT ? "좋아, 이 질문으로 봐줘" : "응, 이 얘기로 봐줘";
+        parts.continueButton.style.background = isT ? "#0ea5e9" : "#f43f5e";
+        const textarea = document.getElementById("consultationQuestion");
+        if (textarea) textarea.readOnly = false;
+        document.getElementById("consultationQuestionExamples")?.style.removeProperty("display");
+        document.getElementById("consultationQuestionHint")?.style.removeProperty("display");
+      }
+
+      function continueConsultationQuestion() {
+        const question = String(document.getElementById("consultationQuestion")?.value || "")
+          .replace(/\s+/g, " ")
+          .trim();
+        const parts = ensureQuestionFirstInputStructure();
+        if (!parts) return;
+        const mode = parts.continueButton.dataset.consultMode || currentVoiceMode();
+        if (question.length < 4) {
+          showVoiceToast({
+            F: "무슨 일인지 조금만 더 말해줘. 짧아도 괜찮아.",
+            T: "질문을 조금만 더 구체적으로 적어줘.",
+          }, mode);
+          document.getElementById("consultationQuestion")?.focus();
+          return;
+        }
+
+        saveInputDraft();
+        parts.continueButton.style.display = "none";
+        document.getElementById("consultationQuestionExamples")?.style.setProperty("display", "none");
+        document.getElementById("consultationQuestionHint")?.style.setProperty("display", "none");
+
+        const welcome = document.getElementById("welcomeSisterText");
+        const knownSaju = parts.identity.dataset.knownSaju === "1";
+        if (knownSaju) {
+          if (welcome) {
+            welcome.textContent = mode === "T"
+              ? "질문 확인했어. 네 사주는 이미 있으니까 바로 같이 볼게."
+              : "응, 알겠어. 네 사주는 이미 알고 있으니까 이 질문이랑 바로 같이 볼게.";
+          }
+          startAnalysis(mode);
+          return;
+        }
+
+        if (welcome) {
+          welcome.textContent = mode === "T"
+            ? "질문 확인했어. 이제 네 사주랑 같이 볼게. 이름이랑 태어난 정보만 입력해줘."
+            : "응, 무슨 얘긴지 알겠어. 이건 네 사주까지 같이 봐야 정확해. 이름이랑 태어난 정보 알려줘.";
+        }
+        parts.identity.style.display = "block";
+        parts.identity.classList.remove("fade-in-up");
+        void parts.identity.offsetWidth;
+        parts.identity.classList.add("fade-in-up");
+        document.getElementById("nameInput")?.focus();
+        refreshAnalysisSubmitState();
+      }
+      window.prepareQuestionFirstInput = prepareQuestionFirstInput;
+      window.continueConsultationQuestion = continueConsultationQuestion;
 
       function refreshAnalysisSubmitState() {
         const question = String(document.getElementById("consultationQuestion")?.value || "")
@@ -9539,6 +9635,8 @@ currentResultData = {
             inputCard.nextElementSibling.remove();
           }
         }
+
+        prepareQuestionFirstInput(targetMode, true);
 
         const nameInput = document.getElementById("nameInput");
 
