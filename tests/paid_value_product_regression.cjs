@@ -766,6 +766,8 @@ function mockConsultation(question, mode='F') {
 
   // Lifetime re-access: premium purchases belong to the person, not to the currently unlocked 990-won concern.
   await page.evaluate(() => {
+    // 이후 새 자유질문 상품 회귀에서 원래 상담 결과를 다시 써야 하므로 보존한다.
+    window.__freeQuestionResultBeforeLegacyQa = currentResultData;
     FREE_LAUNCH_MODE = false;
     const d = calculateAccurateManse(1998,2,21,'03:10','female');
     d.__testNowYmd='2026-09-20';
@@ -1176,7 +1178,14 @@ function mockConsultation(question, mode='F') {
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'all-in-one full-report save missing');
   await page.locator('#unniProductClose').click();
 
-  await page.evaluate(() => { selectedSplitMode='F'; openUnniProduct('full_saju'); });
+  await page.evaluate(() => {
+    if (window.__freeQuestionResultBeforeLegacyQa) {
+      currentResultData = window.__freeQuestionResultBeforeLegacyQa;
+      selectedSplitMode = currentResultData.currentMode || 'F';
+      isUnlocked = true;
+    }
+    openUnniProduct('full_saju');
+  });
   await page.waitForSelector('#unniProductModal',{state:'visible'});
   const fullActionText=await page.locator('#unniProductAction').innerText();
   if(!fullActionText.includes('다시 보기') && !fullActionText.includes('포함됨')){
@@ -1291,8 +1300,10 @@ function mockConsultation(question, mode='F') {
     !html.includes('concernSituationAck') &&
     html.includes('응 봤어. 잠깐만') &&
     html.includes('확인했어. 잠깐만.') &&
-    html.includes('응, 이제 좀 잡혔어') &&
-    html.includes('됐어, 정리됐어.') &&
+    html.includes('사주 전체랑 네 질문을 같이 맞춰보는 중이야.') &&
+    html.includes('이제 네 사주 전체랑 아까 질문을 같이 엮어볼게.') &&
+    html.includes('정리 끝. 네 질문부터 바로 답할게.') &&
+    html.includes('응, 다 봤어. 네가 물어본 것부터 말해줄게.') &&
     html.includes('resultSisterHandoff') &&
     html.includes('이번엔 뭐가 마음에 걸려?') &&
     html.includes('좋아. 이번엔 뭐부터 볼까?') &&
@@ -1440,8 +1451,7 @@ function mockConsultation(question, mode='F') {
     assert(!html.includes(staleIntro), `stale first-screen copy remains: ${staleIntro}`);
   }
   assert(
-    html.includes('사주정보는 그대로 · 새 고민만 고르면 돼') &&
-    html.includes('사주정보는 그대로 · 새 고민만 고르면 돼') &&
+    html.includes('사주정보는 그대로 · 새 질문만 적으면 돼') &&
     html.includes('이번엔 다른 사람도 봐줄까?') &&
     html.includes('다른 사람 사주 새로 보기') &&
     html.includes('필요한 내용은 상담 기록으로 남겨둘 수 있어.') &&
