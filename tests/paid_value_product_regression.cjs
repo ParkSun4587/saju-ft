@@ -1225,8 +1225,9 @@ function mockConsultation(question, mode='F') {
   assert(
     html.includes('./consultation-engine-v1.js?v=1.0.0') &&
     html.includes('if (data?.concernKey === "consultation") return false;') &&
-    !html.includes('state.effectiveEntitlements.includes("all_concerns")'),
-    'free-question consultation or anti-unlimited-entitlement guard missing'
+    html.includes('data?.concernKey !== "consultation"') &&
+    html.includes('state.effectiveEntitlements.includes("all_concerns")'),
+    'free-question consultation must be excluded before legacy all-concerns entitlement can unlock'
   );
 
   const noteSource = fs.readFileSync('concern-note-engine-v2.js','utf8');
