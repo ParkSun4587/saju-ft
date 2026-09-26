@@ -15,6 +15,45 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Probe live payment prepare
+        run: |
+          node - <<'NODE'
+          (async()=>{
+            const question='결제 준비 상태를 확인하는 테스트 질문';
+            const res=await fetch('https://sajuft.com/api/confirm-payment',{
+              method:'POST',
+              headers:{'content-type':'application/json'},
+              body:JSON.stringify({
+                action:'prepare',
+                data:{
+                  n:'결제점검',
+                  b:'20000101',
+                  t:'unknown',
+                  g:'female',
+                  c:'solar',
+                  k:'consultation',
+                  q:question,
+                  m:'F',
+                  l:false
+                }
+              })
+            });
+            const body=await res.json().catch(()=>({}));
+            console.log(JSON.stringify({
+              status:res.status,
+              ok:body.ok,
+              amount:body.amount,
+              productId:body.productId,
+              hasOrderId:!!body.orderId,
+              hasTicket:!!body.ticket,
+              message:body.message||''
+            }));
+            if(!res.ok||!body.ok) throw new Error('PAYMENT_PREPARE_FAILED '+res.status+' '+(body.message||''));
+            if(body.amount!==100||body.productId!=='concern_single'||!body.orderId||!body.ticket){
+              throw new Error('PAYMENT_PREPARE_CONTRACT_DRIFT');
+            }
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
       - name: Install browser
         run: |
           npm init -y >/dev/null 2>&1
