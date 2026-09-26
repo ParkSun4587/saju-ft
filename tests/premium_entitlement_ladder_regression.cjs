@@ -31,7 +31,11 @@ function loadServer(){
   const base={n:'테스트',b:'19980221',t:'03:10',g:'female',c:'solar',k:'money',m:'F',l:false};
   const branchBase={...base,t:'寅',q:'saving'};
   const allSituations={money:'saving',career:'current',love:'relationship',path:'current',people:'friend',mental:'burnout'};
-  const bundleExtra={concerns:['career','love','mental'],situations:{career:'current',love:'relationship',mental:'burnout'}};
+  const bundleExtra={questions:[
+    '지금 회사에 남는 게 나아, 옮기는 게 나아?',
+    '올해 새로운 인연은 언제쯤 들어와?',
+    '사업하면 어떤 방식이 나한테 맞아?',
+  ]};
   const paymentRows={};
 
   sandbox.fetch=async(url,options={})=>{
@@ -62,7 +66,7 @@ function loadServer(){
   const full=await purchaseRecord('full_saju',100,'pay_full',{});
   const bundle=await purchaseRecord('concern_bundle3',100,'pay_bundle',bundleExtra);
   const compat=await purchaseRecord('compatibility',100,'pay_compat',{partner:{n:'상대',b:'19990511',t:'12:00',g:'female',c:'solar',l:false}});
-  const all=await purchaseRecord('all_in_one',100,'pay_all',{situations:allSituations});
+  const all=await purchaseRecord('all_in_one',100,'pay_all',{});
 
   const verifiedFull=await call({action:'verify',userKey:full.userKey,token:full.token,expectedProductId:'full_saju'});
   assert(verifiedFull.status===200&&verifiedFull.json.ok===true,'matching premium grant verification failed');
@@ -95,6 +99,13 @@ function loadServer(){
   const entitlementData={...base};
   const branchSnapshot=server.__test.snapshot(branchBase);
   assert(branchSnapshot.t==='寅'&&branchSnapshot.q==='saving','server must preserve selected 12-branch birth time and concern situation');
+  const questionA=server.__test.snapshot({...base,k:'consultation',q:'사업하면 AI 앱이랑 음식점 중 뭐가 더 맞아?',p:'concern_single',x:{}});
+  const questionB=server.__test.snapshot({...base,k:'consultation',q:'올해 새로운 인연은 언제 들어와?',p:'concern_single',x:{}});
+  const questionKeyA=server.__test.resultKey(questionA);
+  const questionKeyB=server.__test.resultKey(questionB);
+  assert(questionKeyA!==questionKeyB,'different free questions must never share a basic purchase key');
+  assert(server.__test.ownerKey(questionA)===server.__test.ownerKey(questionB),'same person free questions must still share the owner scope');
+
   const branchPrepare=await call({action:'prepare',data:branchBase,entitlementTokens:[]});
   assert(branchPrepare.status===200&&branchPrepare.json.ok&&branchPrepare.json.amount===100,'12-branch birth time must reach payment prepare');
   const branchResume=await call({action:'resume',ticket:branchPrepare.json.ticket});
@@ -133,7 +144,7 @@ function loadServer(){
   assert(compatState.allInOneQuote.amount===100&&!compatState.effectiveEntitlements.includes('full_saju'),'compatibility leaked into single-person credit');
 
   const allState=(await call({action:'entitlements',data:entitlementData,tokens:[all]})).json;
-  assert(allState.effectiveEntitlements.includes('full_saju')&&allState.effectiveEntitlements.includes('concern_bundle3')&&!allState.effectiveEntitlements.includes('compatibility'),'all_in_one entitlement graph invalid');
+  assert(allState.effectiveEntitlements.includes('full_saju')&&allState.effectiveEntitlements.includes('concern_bundle3')&&allState.effectiveEntitlements.includes('question_pack3')&&!allState.effectiveEntitlements.includes('compatibility'),'all_in_one entitlement graph invalid');
 
   const fake=(await call({action:'entitlements',data:entitlementData,tokens:[{userKey:full.userKey,token:'v3.fake.fake'}]})).json;
   assert(fake.allInOneQuote.amount===100&&fake.verifiedPurchases.length===0,'fake local grant produced credit');
@@ -144,7 +155,7 @@ function loadServer(){
   const expired=(await call({action:'entitlements',data:entitlementData,tokens:[{userKey:expiredGrant.userKey,token:expiredToken}]})).json;
   assert(expired.allInOneQuote.amount===100&&expired.verifiedPurchases.length===0,'expired entitlement produced credit');
 
-  const allData={...base,p:'all_in_one',x:{situations:allSituations}};
+  const allData={...base,p:'all_in_one',x:{}};
   const preparedFull=await call({action:'prepare',data:allData,entitlementTokens:[full]});
   assert(preparedFull.status===200&&preparedFull.json.amount===100&&preparedFull.json.baseAmount===100,'server prepare ignored full_saju credit');
   const preparedBundle=await call({action:'prepare',data:allData,entitlementTokens:[bundle]});
@@ -204,10 +215,21 @@ function loadServer(){
     d.__testNowYmd='2026-09-20';d.concernKey='money';d.concernSituation='saving';d.currentMode='F';
     const notes=generateConcernNotes(d,'F');
     const before={fp:d.classicalReasoningV1.structureFingerprint,claims:d.classicalReasoningV1.claims.map(x=>x.conclusion),timingAnswer:plain(notes[4]?.desc)};
-    const sections=product.buildFullSajuSections(d,'F');
-    const full=product.buildProductBody('full_saju',d,{});
-    const allExtra={situations:{money:'saving',career:'current',love:'relationship',path:'current',people:'friend',mental:'burnout'}};
-    const allHtml=product.buildProductBody('all_in_one',d,allExtra);
+    const consultationData={
+      ...d,
+      concernKey:'consultation',
+      concernSituation:'free',
+      userQuestion:'사업하면 어떤 방식이 맞고 언제 시작하는 게 좋아?',
+      __consultationV1:{cards:[
+        {badge:'네 질문의 답',title:'사업 선택의 기준',desc:'직접 답'},
+        {badge:'왜 이런 답인지',title:'왜 이런 구조인지',desc:'근거'},
+        {badge:'특히 조심할 것',title:'어디서 소모되는지',desc:'주의'},
+        {badge:'지금 할 일',title:'무엇부터 검증할지',desc:'행동'},
+      ]},
+    };
+    const sections=product.buildFullSajuSections(consultationData,'F');
+    const full=product.buildProductBody('full_saju',consultationData,{});
+    const allHtml=product.buildProductBody('all_in_one',consultationData,{});
     const root=document.createElement('div');root.innerHTML=full;
     const allRoot=document.createElement('div');allRoot.innerHTML=allHtml;
     const annualYears=(d.classicalReasoningV1.timing.fullSajuTimeline?.years||[]).filter(y=>y.year>Number(d.classicalReasoningV1.timing.today.slice(0,4))).slice(0,5).map(y=>y.year);
@@ -226,6 +248,7 @@ function loadServer(){
         fullSections:allRoot.querySelectorAll('[data-full-saju-section]').length,
         notes:allRoot.querySelectorAll('article').length,
         common:allRoot.querySelectorAll('[data-product-exclusive="all_in_one"]').length,
+        questionLink:allRoot.querySelectorAll('[data-product-exclusive="all_in_one-question"]').length,
         timing:allRoot.querySelectorAll('[data-product-exclusive="all_in_one-timing"]').length,
         strategy:allRoot.querySelectorAll('[data-product-exclusive="all_in_one-strategy"]').length,
         compat:allRoot.querySelectorAll('[data-export-compat-timing],[data-product-exclusive="compatibility"]').length,
@@ -266,14 +289,14 @@ function loadServer(){
   assert(report.annualYears.length===5&&report.annualYears.every(y=>report.section11.includes(String(y))),'full_saju five-year section not sourced from classical timing '+JSON.stringify(report.annualYears));
   assert(!report.section10.includes(report.before.timingAnswer)&&report.section10!==report.before.timingAnswer,'full_saju near-term copied the basic timing answer verbatim');
   assert(report.before.fp===report.after.fp&&JSON.stringify(report.before.claims)===JSON.stringify(report.after.claims),'premium rendering changed classical reasoning');
-  assert(report.all.fullSections===12&&report.all.notes===36&&report.all.common===1&&report.all.timing===1&&report.all.strategy===1,'all_in_one is not full_saju + six six-answer concerns + synthesis '+JSON.stringify(report.all));
+  assert(report.all.fullSections===12&&report.all.notes===4&&report.all.common===1&&report.all.questionLink===1&&report.all.timing===0&&report.all.strategy===0,'all_in_one is not full_saju + current free-question link + synthesis '+JSON.stringify(report.all));
   assert(report.all.compat===0,'all_in_one contains compatibility data');
   assert(report.graph.allFull&&report.graph.allBundle&&!report.graph.allCompat,'client entitlement graph invalid');
   assert(JSON.stringify([report.graph.none,report.graph.full,report.graph.bundle,report.graph.both,report.graph.compat])===JSON.stringify([100,100,100,100,100]),'client upgrade quotes drift '+JSON.stringify(report.graph));
   assert(report.graph.states.fullOwned.kind==='purchased'&&report.graph.states.fullIncluded.kind==='included','purchased/included states drift');
   assert(report.graph.states.upgradeFull.kind==='unpurchased'&&report.graph.states.upgradeFull.amount===100&&report.graph.states.upgradeBoth.kind==='unpurchased'&&report.graph.states.upgradeBoth.amount===100,'upgrade UI states drift');
   assert(report.graph.recs.none==='full_saju','no-premium default recommendation must be full_saju');
-  assert(report.graph.recs.full==='all_in_one'&&report.graph.recs.bundle==='full_saju'&&report.graph.recs.both==='all_in_one'&&report.graph.recs.all==='compatibility'&&report.graph.recs.compat==='full_saju','entitlement-aware recommendations drift '+JSON.stringify(report.graph.recs));
+  assert(report.graph.recs.full==='concern_bundle3'&&report.graph.recs.bundle==='full_saju'&&report.graph.recs.both==='all_in_one'&&report.graph.recs.all==='compatibility'&&report.graph.recs.compat==='full_saju','entitlement-aware recommendations drift '+JSON.stringify(report.graph.recs));
 
   const freeGrant=await page.evaluate(async()=>{
     for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith('unni_product_grant_v1_'))localStorage.removeItem(k);}
