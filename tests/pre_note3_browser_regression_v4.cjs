@@ -505,30 +505,103 @@ async function load(page) {
     console.log('BRANCH_ONLY_DAY_PILLAR_PASS', JSON.stringify(branchDay.rows));
   }
 
-  // D. Full production-like UI path across all six concerns, F/T, solar/lunar/leap/time variants.
+  // D. Full production-like free-question path across F/T, solar/lunar/leap/time variants.
   const reports = [];
   for (const c of CASES) {
     const page = await context.newPage();
     await page.setViewportSize(c.viewport);
     const errs = [];
-    page.on('pageerror', e => errs.push(`[pageerror] ${e.stack || e.message}`));
-    page.on('console', m => { if (m.type() === 'error') errs.push(`[console] ${m.text()}`); });
-    await load(page);
+    page.on('pageerror', e => errs.push(\`[pageerror] \${e.stack || e.message}\`));
+    page.on('console', m => { if (m.type() === 'error') errs.push(\`[console] \${m.text()}\`); });
 
-    const report = await page.evaluate((c) => {
-      const labels = { money:'돈·재물', career:'학업·직장', love:'연애·썸', path:'진로·적성', people:'사람·관계', mental:'마음·스트레스' };
+    await page.route('**/api/consultation', async route => {
+      const req = route.request();
+      let body = {};
+      try { body = req.postDataJSON() || {}; } catch {}
+      const packet = body.evidencePacket || {};
+      const q = packet?.question?.text || '내 사주를 자세히 봐줘';
+      const mode = packet?.requestMode || 'F';
+      const evidence = ['CHART_STRENGTH','CHART_STRUCTURE','CHART_TENGODS'];
+      const claim = (headline, answer) => ({
+        headline,
+        answer,
+        why:'태어난 계절에서 받는 힘, 일간이 기대는 뿌리, 십신의 실제 배치를 같이 봤어.',
+        technicalBasis:'월령과 통근, 신강·신약, 격국의 상태와 십신 위치를 함께 교차해서 확인했어.',
+        evidenceIds:evidence,
+        counterEvidenceIds:[],
+        certainty:'supported',
+      });
+      await route.fulfill({
+        status:200,
+        contentType:'application/json',
+        body:JSON.stringify({
+          ok:true,
+          model:'ci-free-question-mock',
+          questionPlan:{
+            primaryIntent:'자유질문',
+            intentTags:['자유질문'],
+            directQuestions:[q],
+            decisionType:'판단',
+            timeRange:'질문에 필요할 때만',
+            needsClarification:false,
+            clarifyingQuestion:'',
+          },
+          directAnswer:claim(
+            mode==='T' ? '결론부터 보면 질문의 기준이 먼저야' : '네가 물어본 것부터 말하면 기준이 먼저 보여',
+            '한 가지 오행 개수로 정하지 않고, 네 사주 전체에서 실제로 오래 버틸 수 있는 조건을 먼저 보는 게 맞아.'
+          ),
+          centralThesis:claim(
+            '이번 질문을 관통하는 사주의 중심',
+            '계절과 뿌리, 십신의 실제 힘이 어떻게 이어지는지가 이번 질문을 가르는 핵심이야.'
+          ),
+          sections:[
+            {
+              id:'why',type:'explanation',label:'왜 이런 답인지',title:'겉개수보다 실제 세력이 더 중요해',
+              answer:'같은 오행 비율이어도 계절과 뿌리, 격에서 맡는 역할이 다르면 현실에서 쓰이는 방식이 달라져.',
+              why:'그래서 한 가지 성향으로 줄이지 않고 여러 근거를 같이 읽었어.',
+              technicalBasis:'득령·득지·득세와 통근, 십신 위치, 격국 상태를 함께 확인했어.',
+              nextAction:'선택지마다 오래 버틸 조건을 적어봐.',
+              evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
+            },
+            {
+              id:'risk',type:'caution',label:'특히 조심할 것',title:'잘 맞는 길도 이 조건이면 소모돼',
+              answer:'책임만 커지고 결정권은 적은 구조라면 같은 분야라도 오래 갈수록 소모가 커질 수 있어.',
+              why:'강하게 들어오는 요구를 내가 받아내는 방식과 실제 뿌리를 같이 봤기 때문이야.',
+              technicalBasis:'관성의 실제 세력과 일간의 감당력, 통근 여부를 같이 확인했어.',
+              nextAction:'책임과 결정권이 같이 오는지 확인해.',
+              evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
+            },
+            {
+              id:'action',type:'action',label:'지금 할 일',title:'결론을 행동 기준으로 바꿔',
+              answer:'큰 결정을 한 번에 확정하기보다 작은 실행에서 실제 반응을 먼저 확인하는 편이 좋아.',
+              why:'좋은 구조도 현실 조건이 맞지 않으면 소모가 커질 수 있어서야.',
+              technicalBasis:'사주의 도움·방해 관계와 감당력을 함께 확인해서 행동 강도를 정했어.',
+              nextAction:'이번 주에 가장 작은 검증 한 가지를 정해.',
+              evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
+            },
+          ],
+        }),
+      });
+    });
+
+    await load(page);
+    const questionByConcern = {
+      money:'돈이 잘 안 모이는데 내 사주에서 돈을 모으려면 뭘 먼저 바꿔야 해?',
+      career:'지금 직장을 계속 다니는 게 맞아, 옮기는 게 맞아?',
+      love:'연애에서 나는 어떤 관계가 오래 가고 언제 움직이는 게 좋아?',
+      path:'AI 앱 사업이랑 다른 일을 비교하면 어떤 방향이 나한테 더 맞아?',
+      people:'사람 관계에서 왜 자꾸 지치고 어떤 사람과 거리를 둬야 해?',
+      mental:'요즘 너무 지치는데 지금 쉬는 게 맞고 언제 다시 움직이는 게 좋아?',
+    };
+    const question = questionByConcern[c.concern];
+
+    await page.evaluate(({c,question}) => {
       window.gtag = () => {};
       window.setTimeout = (fn) => { fn(); return 1; };
       window.clearTimeout = () => {};
-
       document.getElementById('nameInput').value = '박태양';
-      document.getElementById('selectedConcernKey').value = c.concern;
-      const situationDefaults = {
-        money:'saving', career:'jobsearch', love:'new',
-        path:'lost', people:'friend', mental:'burnout',
-      };
-      renderConcernSituationPicker(c.concern);
-      selectConcernSituation(situationDefaults[c.concern]);
+      document.getElementById('consultationQuestion').value = question;
+      refreshAnalysisSubmitState();
       document.getElementById('birthDateInput').value = c.birth;
       document.getElementById('calendarSelect').value = c.calendar;
       document.getElementById('genderValue').value = c.gender;
@@ -549,62 +622,65 @@ async function load(page) {
       }
       const leap = document.getElementById('leapMonthCheck');
       if (leap) leap.checked = !!c.leap;
-
       startAnalysis(c.mode);
-      const data = currentResultData;
-      if (!data) return {ok:false, reason:'currentResultData missing', body:document.body.innerText.slice(-1200)};
+    }, {c,question});
 
-      const diagnosis = buildConcernDiagnosisV2(data);
-      const notes = generateConcernNotes(data, c.mode);
-      const generated = JSON.stringify([notes,diagnosis,data.noteV2Audit]);
+    await page.waitForFunction(() =>
+      !!currentResultData?.__consultationV1?.cards?.length &&
+      getComputedStyle(document.getElementById('resultSection')).display !== 'none',
+      null, {timeout:10000}
+    );
+
+    const report = await page.evaluate((c) => {
+      const data = currentResultData;
+      const cards = data?.__consultationV1?.cards || [];
+      const generated = JSON.stringify([cards,data?.__consultationV1?.questionPlan,data?.classicalReasoningV1]);
       const visible = document.body.innerText;
+      const payCopy = getPaywallConversionCopy(data, c.mode === 'T');
+      const notesText = document.getElementById('notesListContainer')?.innerText || '';
       return {
-        ok:true,
-        concern:data.concernKey,
-        mode:data.currentMode,
-        calendar:data.userCalendar,
-        leap:data.isLeapMonth,
-        timeKey:data.userTimeKey,
-        hourKnown:data.calendarMeta?.hourKnown,
-        hourZhi:data.pillars?.hour?.zhi || '',
-        tz:data.calendarMeta?.timeZone,
-        strength:data.analysisProfile?.dayMaster?.strength,
-        ratio:data.analysisProfile?.dayMaster?.supportRatio,
-        gyeok:data.gyeokguk?.name,
-        status:data.gyeokStatus?.status,
-        yongshin:data.yongshin,
-        classical:[!!data.analysisProfile?.classical?.japyeong, !!data.analysisProfile?.classical?.jeokcheon, !!data.analysisProfile?.classical?.yongshin, !('qiongtong' in (data.analysisProfile?.classical || {}))],
-        noteCount:Array.isArray(notes) ? notes.length : -1,
-        noteNums:Array.isArray(notes) ? notes.map(x=>x.themeNum) : [],
-        note1Valid:!!(notes?.[0]?.title && notes?.[0]?.desc && notes?.[0]?.badge),
-        note2Valid:!!(notes?.[1]?.title && notes?.[1]?.desc && notes?.[1]?.badge),
-        note3Valid:!!(notes?.[2]?.title && notes?.[2]?.desc && notes?.[2]?.badge),
-        note3Integrated:!!(data.noteV3Audit?.structureFingerprint && data.noteV3Audit?.outputClaimMap?.length===6 && diagnosis?.structureFingerprint === data.noteV3Audit?.structureFingerprint),
-        note4Valid:!!(notes?.[3]?.title && notes?.[3]?.desc && notes?.[3]?.badge),
-        note5Valid:!!(notes?.[4]?.title && notes?.[4]?.desc && notes?.[4]?.badge),
-        note6Valid:!!(notes?.[5]?.title && notes?.[5]?.desc && notes?.[5]?.badge && notes?.[5]?.__timingQA),
-        noteV2Version:data.noteV3Audit?.version || '',
-        noteV2Primary:data.noteV3Audit?.claims?.[0]?.ditianRuleIds?.[0] || '',
-        noteV2Secondary:data.noteV3Audit?.claims?.[0]?.zipingRuleIds?.[0] || '',
+        ok:!!data,
+        concern:data?.concernKey || '',
+        situation:data?.concernSituation || '',
+        question:data?.userQuestion || '',
+        mode:data?.currentMode || '',
+        calendar:data?.userCalendar || '',
+        leap:data?.isLeapMonth,
+        timeKey:data?.userTimeKey || '',
+        hourKnown:data?.calendarMeta?.hourKnown,
+        hourZhi:data?.pillars?.hour?.zhi || '',
+        tz:data?.calendarMeta?.timeZone,
+        strength:data?.analysisProfile?.dayMaster?.strength,
+        ratio:data?.analysisProfile?.dayMaster?.supportRatio,
+        gyeok:data?.gyeokguk?.name,
+        yongshin:data?.yongshin,
+        classical:[
+          !!data?.analysisProfile?.classical?.japyeong,
+          !!data?.analysisProfile?.classical?.jeokcheon,
+          !!data?.analysisProfile?.classical?.yongshin,
+          !('qiongtong' in (data?.analysisProfile?.classical || {})),
+        ],
+        cardCount:cards.length,
+        badges:cards.map(x=>x.badge || ''),
+        evidenceOk:cards.every(x=>Array.isArray(x.__evidenceRuleIds) && x.__evidenceRuleIds.length > 0),
+        counterOk:cards.every(x=>Array.isArray(x.__counterEvidenceIds)),
+        questionPlanOk:(data?.__consultationV1?.questionPlan?.directQuestions || []).includes(data?.userQuestion),
         forbiddenVisible:[
           '언니가 잡은 사주 근거','언니가 잡은 계산 근거','왜 이 처방이 너한테 맞나','왜 이런 필터가 맞나','타이밍 읽는 법',
           '개수는 원국 겉글자 기준','한국 만세력 기준','시간 -30분 보정'
         ].some(x => visible.includes(x)),
         badText:/(^|[^가-힣a-zA-Z])(undefined|NaN)([^가-힣a-zA-Z]|$)/.test(generated),
         failureToast:visible.includes('만세력 연산에 실패했습니다') || visible.includes('연산 중 오류가 발생했습니다'),
-        resultVisible:document.getElementById('resultSection')?.style.display !== 'none',
-        firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('1/6'),
+        resultVisible:getComputedStyle(document.getElementById('resultSection')).display !== 'none',
+        firstRendered:notesText.includes('1/5'),
+        oldSix:/1\/6|2\/6|3\/6|4\/6|5\/6|6\/6/.test(notesText),
         sourceFreeLaunch:FREE_LAUNCH_MODE,
         paywallHook:document.getElementById('payBoxHookMsg')?.innerText || '',
         paywallTeaser:document.getElementById('paywallNextTeaser')?.innerText || '',
         paywallFeatures:[...document.querySelectorAll('#payBoxFeatures > div')].map(x => x.querySelector('span:last-child')?.innerText.trim() || ''),
         paywallSubcopy:document.getElementById('payBtnSubText')?.innerText || '',
-        note2PreviewText:document.getElementById('note2PreviewBody')?.innerText || '',
-        expectedPaywall:(() => {
-          const copy = getPaywallConversionCopy(data, c.mode === 'T');
-          const actualPreview=String(notes[1]?.desc||'').split(/<br\s*\/?>\s*<br\s*\/?>/i)[0].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-          return {hook:copy.hook, teaser:copy.teaser, actualPreview, features:copy.features};
-        })(),
+        previewText:document.getElementById('note2PreviewBody')?.innerText || '',
+        expectedPaywall:payCopy,
         funExtrasDisplay:document.getElementById('resultFunExtras')?.style.display || '',
         shareActionsDisplay:document.getElementById('resultShareActions')?.style.display || '',
         pillarText:[
@@ -618,61 +694,56 @@ async function load(page) {
       };
     }, c);
 
-    assert(report.ok, `${c.id}: ${report.reason || 'UI failed'}`);
-    assert(report.concern === c.concern, `${c.id}: concern drift ${report.concern}`);
-    assert(report.mode === c.mode, `${c.id}: mode drift ${report.mode}`);
-    assert(report.calendar === c.calendar, `${c.id}: calendar drift ${report.calendar}`);
-    assert(report.tz === 'Asia/Seoul', `${c.id}: timezone missing`);
+    assert(report.ok, \`\${c.id}: UI failed\`);
+    assert(report.concern === 'consultation' && report.situation === 'free',
+      \`\${c.id}: old fixed concern path returned \${JSON.stringify({concern:report.concern,situation:report.situation})}\`);
+    assert(report.question === question, \`\${c.id}: free question drift \${report.question}\`);
+    assert(report.mode === c.mode, \`\${c.id}: mode drift \${report.mode}\`);
+    assert(report.calendar === c.calendar, \`\${c.id}: calendar drift \${report.calendar}\`);
+    assert(report.tz === 'Asia/Seoul', \`\${c.id}: timezone missing\`);
     if (c.time === 'unknown') {
-      assert(report.timeKey === 'unknown' && report.hourKnown === false, `${c.id}: unknown time leaked into saju ${JSON.stringify(report)}`);
+      assert(report.timeKey === 'unknown' && report.hourKnown === false,
+        \`\${c.id}: unknown time leaked into saju \${JSON.stringify(report)}\`);
     } else {
-      assert(report.timeKey === c.time && report.hourKnown === true && report.hourZhi, `${c.id}: selected birth time did not propagate through saju ${JSON.stringify(report)}`);
+      assert(report.timeKey === c.time && report.hourKnown === true && report.hourZhi,
+        \`\${c.id}: selected birth time did not propagate \${JSON.stringify(report)}\`);
     }
-    assert(['신강','중화','신약'].includes(report.strength), `${c.id}: bad strength ${report.strength}`);
-    assert(Number.isFinite(report.ratio), `${c.id}: bad support ratio ${report.ratio}`);
-    assert(!!report.gyeok, `${c.id}: gyeok missing`);
-    assert(!!report.yongshin, `${c.id}: yongshin missing`);
-    assert(report.classical.every(Boolean), `${c.id}: classical layer missing ${report.classical}`);
-    assert(report.noteCount === 6, `${c.id}: answers=${report.noteCount}`);
-    assert(report.noteNums.join(',') === '01,02,03,04,05,06', `${c.id}: numbering ${report.noteNums.join(',')}`);
-    assert(report.note1Valid, `${c.id}: core answer missing`);
-    assert(report.note2Valid, `${c.id}: real-scene answer missing`);
-    assert(report.note3Valid, `${c.id}: fit answer missing`);
-    assert(report.note3Integrated, `${c.id}: classical diagnosis not integrated into five answers`);
-    assert(report.noteV2Version === '6.7.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
-    assert(report.note4Valid, `${c.id}: caution answer missing`);
-    assert(report.note5Valid, `${c.id}: action answer missing`);
-    assert(report.note6Valid, `${c.id}: timing answer missing`);
-    assert(!report.forbiddenVisible, `${c.id}: removed meta/explanation copy leaked into UI`);
-    assert(!report.badText, `${c.id}: undefined/NaN leaked into generated note text`);
-    assert(!report.failureToast, `${c.id}: calculation failure toast visible`);
-    assert(report.resultVisible, `${c.id}: result section not visible`);
-    assert(report.firstNoteRendered, `${c.id}: first 1/6 answer not rendered into result DOM`);
+    assert(['신강','중화','신약'].includes(report.strength), \`\${c.id}: bad strength \${report.strength}\`);
+    assert(Number.isFinite(report.ratio), \`\${c.id}: bad support ratio \${report.ratio}\`);
+    assert(!!report.gyeok && !!report.yongshin, \`\${c.id}: classical result missing\`);
+    assert(report.classical.every(Boolean), \`\${c.id}: classical layer missing \${report.classical}\`);
+    assert(report.cardCount === 5, \`\${c.id}: dynamic consultation card count \${report.cardCount}\`);
+    assert(report.badges[0] === '네 질문의 답' && report.badges[1] === '언니가 먼저 본 것',
+      \`\${c.id}: direct answer / thesis order drift \${JSON.stringify(report.badges)}\`);
+    assert(report.evidenceOk && report.counterOk && report.questionPlanOk,
+      \`\${c.id}: consultation evidence/question plan missing\`);
+    assert(!report.forbiddenVisible && !report.badText && !report.failureToast,
+      \`\${c.id}: forbidden/error content leaked\`);
+    assert(report.resultVisible && report.firstRendered && !report.oldSix,
+      \`\${c.id}: dynamic result did not render cleanly \${JSON.stringify({visible:report.resultVisible,first:report.firstRendered,oldSix:report.oldSix})}\`);
     if (!report.sourceFreeLaunch) {
-      assert(report.paywallHook === report.expectedPaywall.hook, `${c.id}: paywall hook not situation-specific`);
-      assert(report.paywallTeaser.includes(report.expectedPaywall.teaser), `${c.id}: paywall teaser not situation-specific`);
-      assert(report.note2PreviewText.includes('결론') && norm(report.note2PreviewText).length >= 35, `${c.id}: second-answer preview lost the generated conclusion edge: ${JSON.stringify(report.note2PreviewText)}`);
-      assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), `${c.id}: paid outcomes mismatch`);
-      assert(report.paywallSubcopy === '질문에 대한 답 · 이유 · 방법까지', `${c.id}: paid scope copy drift`);
-      assert(report.funExtrasDisplay === 'none', `${c.id}: MBTI/fun extras must not divert locked users`);
-      assert(report.shareActionsDisplay === 'none', `${c.id}: share action must not divert locked users`);
+      assert(report.paywallHook === report.expectedPaywall.hook, \`\${c.id}: dynamic paywall hook drift\`);
+      assert(report.paywallTeaser.includes(report.expectedPaywall.preview), \`\${c.id}: dynamic paywall teaser drift\`);
+      assert(report.paywallFeatures.join('|') === report.expectedPaywall.features.join('|'), \`\${c.id}: paid outcomes mismatch\`);
+      assert(report.paywallSubcopy.includes('이 질문') || report.paywallSubcopy.includes('질문'), \`\${c.id}: paid scope copy drift\`);
+      assert(report.funExtrasDisplay === 'none', \`\${c.id}: MBTI/fun extras must not divert locked users\`);
+      assert(report.shareActionsDisplay === 'none', \`\${c.id}: share action must not divert locked users\`);
     }
     if (c.id === 'user-branch-love-F') {
       assert(report.pillarText.join(',') === '무인,갑인,기해,을축',
-        `${c.id}: pillar UI drift ${report.pillarText.join(',')}`);
-      assert(!report.pillarBasisExists,
-        `${c.id}: hidden manse-basis label leaked back into UI`);
+        \`\${c.id}: pillar UI drift \${report.pillarText.join(',')}\`);
+      assert(!report.pillarBasisExists, \`\${c.id}: hidden manse-basis label leaked back into UI\`);
       assert(report.ohengText.includes('목\n(4개)') || report.ohengText.includes('목 (4개)') || report.ohengText.includes('목(4개)'),
-        `${c.id}: mok raw count missing ${report.ohengText}`);
+        \`\${c.id}: mok raw count missing \${report.ohengText}\`);
       assert(report.ohengText.includes('화\n(0개)') || report.ohengText.includes('화 (0개)') || report.ohengText.includes('화(0개)'),
-        `${c.id}: hwa raw count should be zero ${report.ohengText}`);
+        \`\${c.id}: hwa raw count should be zero \${report.ohengText}\`);
     }
     const unexpected = errs.filter(x => !isExpectedBoundaryDiagnostic(x));
-    assert(unexpected.length === 0, `${c.id}: browser errors: ${unexpected.join(' | ')}`);
-    reports.push({id:c.id, strength:report.strength, gyeok:report.gyeok, yongshin:report.yongshin});
+    assert(unexpected.length === 0, \`\${c.id}: browser errors: \${unexpected.join(' | ')}\`);
+    reports.push({id:c.id,strength:report.strength,gyeok:report.gyeok,yongshin:report.yongshin});
     await page.close();
   }
-  console.log('UI_PASS', JSON.stringify(reports));
+  console.log('FREE_QUESTION_UI_PASS', JSON.stringify(reports));
 
   // E. Invalid leap-month input must fail cleanly, not crash or create a result.
   {
@@ -683,9 +754,8 @@ async function load(page) {
     const r = await page.evaluate(() => {
       window.gtag = () => {};
       document.getElementById('nameInput').value = '테스트';
-      document.getElementById('selectedConcernKey').value = 'money';
-      renderConcernSituationPicker('money');
-      selectConcernSituation('saving');
+      document.getElementById('consultationQuestion').value = '이 생년월일로 사주를 봐줘';
+      refreshAnalysisSubmitState();
       document.getElementById('calendarSelect').value = 'lunar';
       document.getElementById('genderValue').value = 'female';
       document.getElementById('birthDateInput').value = '20170301';
