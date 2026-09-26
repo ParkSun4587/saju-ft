@@ -12,18 +12,90 @@ function norm(v) {
     .replace(/[\s.,!?·‘’'"“”()\[\]]/g, '');
 }
 
+function mockConsultation(question, mode='F') {
+  const q=String(question||'').trim();
+  const isT=mode==='T';
+  const evidence=['CHART_STRENGTH','CHART_STRUCTURE','CHART_TENGODS'];
+  const claim=(headline,answer)=>({
+    headline,
+    answer,
+    why:'계절에서 받는 힘, 일간이 기대는 뿌리, 십신의 배치와 격의 상태를 같이 봤어. 오행 개수 하나로 정한 답이 아니야.',
+    technicalBasis:'월령과 통근, 신강·신약, 정관과 식상의 실제 세력, 격국에서 도움과 방해가 되는 관계를 함께 교차해서 봤어.',
+    evidenceIds:evidence,
+    counterEvidenceIds:[],
+    certainty:'supported',
+  });
+  return {
+    ok:true,
+    model:'ci-mock',
+    questionPlan:{
+      primaryIntent:'자유질문',
+      intentTags:['자유질문'],
+      directQuestions:[q],
+      decisionType:'판단',
+      timeRange:'질문에 필요할 때만',
+      needsClarification:false,
+      clarifyingQuestion:'',
+    },
+    directAnswer:claim(
+      isT?'결론부터 보면, 선택 기준을 먼저 봐야 해':'네가 물어본 것부터 말하면, 선택 기준이 먼저 보여',
+      isT?'남들이 좋다는 답보다 네 사주가 오래 버틸 수 있는 구조를 고르는 쪽이 맞아.':'남들이 좋다는 답보다 네 사주가 오래 힘을 쓸 수 있는 구조를 고르는 게 더 중요해.'
+    ),
+    centralThesis:claim(
+      '이번 질문을 관통하는 사주의 중심',
+      '겉으로 드러난 오행 개수보다 계절과 뿌리, 십신의 실제 힘이 서로 어떻게 이어지는지가 이번 선택을 가르는 핵심이야.'
+    ),
+    sections:[
+      {
+        id:'why',type:'explanation',label:'왜 이런 답인지',title:'겉개수보다 실제 세력이 더 중요해',
+        answer:'같은 오행 비율이어도 계절과 뿌리, 격에서 맡는 역할이 다르면 현실에서 쓰이는 방식이 달라져.',
+        why:'그래서 다섯 큰 성향 중 하나로 줄이지 않고 여러 근거를 같이 읽었어.',
+        technicalBasis:'득령·득지·득세와 통근, 십신 위치, 격국 상태를 함께 확인했어.',
+        nextAction:'선택지마다 내가 통제할 수 있는 범위와 오래 버틸 조건을 적어봐.',
+        evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
+      },
+      {
+        id:'risk',type:'caution',label:'특히 조심할 것',title:'잘 맞는 길도 이 조건이면 소모돼',
+        answer:'책임만 커지고 결정권은 적은 구조라면 같은 분야라도 오래 갈수록 소모가 커질 수 있어.',
+        why:'사주에서 강하게 들어오는 요구를 내가 받아내는 방식과 실제 뿌리를 같이 봤기 때문이야.',
+        technicalBasis:'관성의 실제 세력과 일간의 감당력, 통근 여부를 같이 확인했어.',
+        nextAction:'선택 전에 책임과 결정권이 같이 오는지 확인해.',
+        evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
+      },
+      {
+        id:'timing',type:'timing',label:'언제 움직일지',title:'시기는 원국과 실제 흐름이 겹칠 때만 봐',
+        answer:'가까운 흐름은 한 신호만으로 사건을 만들지 않고, 원국에서 필요한 조건과 실제 시기 근거가 같이 겹치는 달만 참고하는 게 맞아.',
+        why:'이번 질문은 방향만큼 타이밍도 중요하지만, 연락·합격·수익 같은 사건을 단정할 근거는 아니기 때문이야.',
+        technicalBasis:'원국의 용신·기신 관계와 대운·세운·월운의 실제 겹침을 함께 확인해.',
+        nextAction:'좋은 달이라도 작은 실행 반응을 먼저 확인하고 큰 결정을 확정해.',
+        evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
+      },
+    ],
+  };
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const errors = [];
   page.on('pageerror', e => errors.push(`[pageerror] ${e.stack || e.message}`));
   page.on('console', m => { if (m.type() === 'error') errors.push(`[console] ${m.text()}`); });
+  await page.route('**/api/consultation', async route => {
+    const req=route.request();
+    let body={}; try { body=req.postDataJSON()||{}; } catch {}
+    const packet=body.evidencePacket||{};
+    await route.fulfill({
+      status:200,
+      contentType:'application/json',
+      body:JSON.stringify(mockConsultation(packet?.question?.text,packet?.requestMode)),
+    });
+  });
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.3' &&
     globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.7.0' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
-    globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.1.0' &&
+    globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.2.0' &&
     typeof generateConcernNotes === 'function' &&
     typeof auditPaidValueNotes === 'function', null, { timeout: 60000 });
 
@@ -35,36 +107,51 @@ function norm(v) {
     'AI NOTE test client must not load on ordinary production-like pages '+JSON.stringify(aiOff));
 
   const concernUx = await page.evaluate(() => {
-    const initial = {
-      box:getComputedStyle(document.getElementById('concernSituationBox')).display,
-      summary:getComputedStyle(document.getElementById('concernSituationSummary')).display,
-      concern:document.getElementById('selectedConcernKey').value,
-      selectedCount:document.querySelectorAll('#concernGrid .concern-chip.selected').length,
+    const question=document.getElementById('consultationQuestion');
+    const examples=document.querySelectorAll('#consultationQuestionExamples button');
+    const submit=document.getElementById('analysisSubmitButton');
+    const initial={
+      question:question?.value||'',
+      key:document.getElementById('selectedConcernKey')?.value||'',
+      situation:document.getElementById('selectedConcernSituation')?.value||'',
+      oldGrid:!!document.getElementById('concernGrid'),
+      oldSituation:!!document.getElementById('concernSituationBox'),
+      examples:examples.length,
+      disabled:!!submit?.disabled,
+      prompt:document.getElementById('concernPickerPrompt')?.innerText||'',
+      hint:document.getElementById('consultationQuestionHint')?.innerText||'',
     };
-    renderConcernSituationPicker('love');
-    const opened = {
-      box:getComputedStyle(document.getElementById('concernSituationBox')).display,
-      count:document.querySelectorAll('#concernSituationGrid [data-concern-situation]').length,
+    setConsultationQuestionExample('사업하면 AI 앱이랑 음식점 중 뭐가 더 맞아?');
+    const after={
+      question:question?.value||'',
+      disabled:!!submit?.disabled,
+      key:document.getElementById('selectedConcernKey')?.value||'',
+      situation:document.getElementById('selectedConcernSituation')?.value||'',
     };
-    document.getElementById('selectedConcernKey').value = 'love';
-    selectConcernSituation('relationship');
-    const collapsed = {
-      box:getComputedStyle(document.getElementById('concernSituationBox')).display,
-      summary:getComputedStyle(document.getElementById('concernSituationSummary')).display,
-      text:document.getElementById('concernSituationSummaryText').innerText,
-    };
-    editConcernSituation();
-    const edited = getComputedStyle(document.getElementById('concernSituationBox')).display;
-    document.getElementById('concernSituationBox').style.display = 'none';
-    document.getElementById('concernSituationSummary').style.display = 'none';
-    document.getElementById('selectedConcernKey').value = 'money';
-    document.getElementById('selectedConcernSituation').value = '';
-    return { initial, opened, collapsed, edited };
+    clearConcernSelection();
+    const cleared={question:question?.value||'',disabled:!!submit?.disabled};
+    return {initial,after,cleared};
   });
-  assert(concernUx.initial.box === 'none' && concernUx.initial.summary === 'none' && concernUx.initial.concern === '' && concernUx.initial.selectedCount === 0, `mobile concern must start with no default choice: ${JSON.stringify(concernUx)}`);
-  assert(concernUx.opened.box !== 'none' && concernUx.opened.count === 4, 'selected concern must reveal four situation choices');
-  assert(concernUx.collapsed.box === 'none' && concernUx.collapsed.summary !== 'none' && concernUx.collapsed.text.includes('지금 연애 중'), `selected situation should collapse into summary: ${JSON.stringify(concernUx.collapsed)}`);
-  assert(concernUx.edited !== 'none', 'situation edit must reopen choices');
+  assert(
+    concernUx.initial.question==='' &&
+    concernUx.initial.key==='consultation' &&
+    concernUx.initial.situation==='free' &&
+    !concernUx.initial.oldGrid &&
+    !concernUx.initial.oldSituation &&
+    concernUx.initial.examples===4 &&
+    concernUx.initial.disabled &&
+    /그대로/.test(concernUx.initial.prompt) &&
+    concernUx.initial.hint.includes('카테고리 고를 필요 없어'),
+    'free-question input must replace the old fixed concern picker '+JSON.stringify(concernUx)
+  );
+  assert(
+    concernUx.after.question.includes('AI 앱이랑 음식점') &&
+    !concernUx.after.disabled &&
+    concernUx.after.key==='consultation' &&
+    concernUx.after.situation==='free',
+    'question example must populate and unlock the consultation CTA '+JSON.stringify(concernUx.after)
+  );
+  assert(concernUx.cleared.question===''&&concernUx.cleared.disabled,'clearing a question must relock the CTA '+JSON.stringify(concernUx.cleared));
 
   const qa = await page.evaluate(() => {
     window.gtag = () => {};
@@ -149,21 +236,21 @@ function norm(v) {
 
   assert(qa.paidVersion.version === '1.5.3', 'paid value layer missing');
   assert(qa.noteVersion.version === '6.7.0', 'NOTE v3 engine missing');
-  assert(qa.productVersion.version === '2.3.1' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
+  assert(qa.productVersion.version === '2.3.1' && qa.policyVersion === '1.2.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
   const expectedPrices = { concern_bundle3:100, full_saju:100, compatibility:100, all_in_one:100 };
   for (const [id, price] of Object.entries(expectedPrices)) assert(qa.products[id]?.price === price, `${id} price drift`);
-  assert(qa.products.concern_bundle3.badge === '다른 고민 3개 확장' && qa.products.concern_bundle3.desc.includes('공통 구조'), 'bundle3 unique-value copy missing');
+  assert(qa.products.concern_bundle3.badge === '추가 자유질문 3개' && qa.products.concern_bundle3.desc.includes('질문 3개'), 'question-pack unique-value copy missing');
   assert(qa.products.full_saju.badge === '전체 구조 + 5년 흐름' && qa.products.full_saju.desc.includes('향후 5년'), 'full-saju long-horizon value copy missing');
   assert(qa.products.compatibility.badge === '두 사람 사주 교차' && qa.products.compatibility.desc.includes('상대 사주'), 'compatibility two-person value copy missing');
   assert(qa.products.all_in_one.name === '내 사주 완전판' && qa.products.all_in_one.badge === '나 한 사람 전체판' && qa.products.all_in_one.desc.includes('두 사람 궁합은 포함하지 않아'), 'all-in-one single-person boundary copy drift');
   for (const p of Object.values(qa.products)) assert(!/챕터|NOTE \d+/.test(`${p.badge} ${p.desc}`), 'technical product-volume wording remains');
-  assert(qa.contracts.basic_concern?.timelineDepth === 'near-term-plus-long-pivot-teaser' && qa.contracts.basic_concern?.longTermDetail === 'teaser-only', 'basic concern disclosure contract missing');
-  assert(qa.contracts.concern_bundle3?.concernCount === 3 && qa.contracts.concern_bundle3?.longTermDetail === 'teaser-only', 'bundle3 contract drift');
+  assert(qa.contracts.basic_concern?.questionCount === 1 && qa.contracts.basic_concern?.longTermDetail === 'teaser-only', 'basic free-question disclosure contract missing');
+  assert(qa.contracts.concern_bundle3?.questionCount === 3 && qa.contracts.concern_bundle3?.allowedDomains === 'three-free-questions' && qa.contracts.concern_bundle3?.longTermDetail === 'teaser-only', 'question-pack contract drift');
   assert(qa.contracts.full_saju?.longTermDetail === 'full-five-year' && qa.contracts.full_saju?.secondPersonRequired === false, 'full_saju contract drift');
   assert(qa.contracts.compatibility?.secondPersonRequired === true && qa.contracts.compatibility?.compatibilityAllowed === true, 'compatibility contract drift');
-  assert(qa.contracts.all_in_one?.concernCount === 6 && qa.contracts.all_in_one?.compatibilityAllowed === false, 'all-in-one contract drift');
+  assert(qa.contracts.all_in_one?.questionCount === 1 && qa.contracts.all_in_one?.includesQuestionPack3 === true && qa.contracts.all_in_one?.compatibilityAllowed === false, 'all-in-one contract drift');
 
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
@@ -316,14 +403,17 @@ function norm(v) {
     window.setTimeout = (fn) => { fn(); return 1; };
     window.clearTimeout = () => {};
     document.getElementById('nameInput').value = '박태양';
-    document.getElementById('selectedConcernKey').value = 'mental';
-    renderConcernSituationPicker('mental');
-    selectConcernSituation('burnout');
+    document.getElementById('consultationQuestion').value = '요즘 너무 지치는데 지금 쉬는 게 맞고, 언제 다시 움직이는 게 좋아?';
+    refreshAnalysisSubmitState();
     document.getElementById('birthDateInput').value = '19980221';
     document.getElementById('calendarSelect').value = 'solar';
     document.getElementById('genderValue').value = 'female';
     document.getElementById('birthTimeBranch').value = '丑';
     startAnalysis('F');
+    for (let i=0; i<120 && !currentResultData?.__consultationV1?.cards?.length; i++) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    if (!currentResultData?.__consultationV1?.cards?.length) throw new Error('CONSULTATION_MOCK_DID_NOT_RENDER');
 
     history.replaceState({},'',location.pathname+'?payment=fail&state=fake');
     preparePaymentFailureRetry(currentResultData,'F');
@@ -353,8 +443,8 @@ function norm(v) {
     removeStore('unni_payment_retry_after_refresh',true);
 
     renderUnniProductCatalog();
-    const notes = generateConcernNotes(currentResultData, 'F');
-    const timingAnswer = notes[5];
+    const notes = currentResultData?.__consultationV1?.cards || [];
+    const timingAnswer = notes.find((n) => n.__sectionType === 'timing') || notes.at(-1);
 
     const lockedCatalog = document.getElementById('unniProductLadder');
     const note2Preview = document.getElementById('note2PreviewCard');
@@ -502,21 +592,21 @@ function norm(v) {
     assert(!ui.previewVisible && !ui.paywallVisible, 'free-launch mode must keep the basic lock UI hidden');
   } else {
     assert(!ui.lockedCatalog, 'premium upsells must not appear before the basic unlock');
-    assert(ui.previewPlain && ui.previewPlain.includes('2/6'), 'second-answer teaser missing before paywall');
+    assert(ui.previewPlain && ui.previewPlain.includes('2/5'), 'second dynamic consultation teaser missing before paywall');
     assert(ui.previewBodyPlain.length >= 30 && ui.previewBodyPlain.length < ui.fullNote2Plain.length,
       `second-answer teaser must show only a meaningful first slice: ${JSON.stringify({preview:ui.previewBodyPlain.length,full:ui.fullNote2Plain.length})}`);
-    assert(ui.fPaywallText.includes('로아 언니 · 이제 너한테 맞는 쪽을 보자') && ui.fPaywallText.includes('질문에 대한 답') && ui.fPaywallText.includes('100원'),
-      `F conversion handoff missing: ${ui.fPaywallText}`);
-    assert(ui.tPaywallText.includes('서아 언니 · 이제 구체적인 답만 보면 돼') && ui.tPaywallText.includes('이유') && ui.tPaywallText.includes('100원'),
-      `T conversion handoff missing: ${ui.tPaywallText}`);
+    assert(ui.fPaywallText.includes('네가 물어본 답은 잡혔어') && ui.fPaywallText.includes('이번 질문') && ui.fPaywallText.includes('100원'),
+      `F free-question conversion handoff missing: ${ui.fPaywallText}`);
+    assert(ui.tPaywallText.includes('핵심 답은 잡았어') && ui.tPaywallText.includes('이번 질문') && ui.tPaywallText.includes('100원'),
+      `T free-question conversion handoff missing: ${ui.tPaywallText}`);
     assert(ui.fFeatureCount === 3 && ui.tFeatureCount === 3, `paywall should stay compact with three concrete benefits: ${JSON.stringify({f:ui.fFeatureCount,t:ui.tFeatureCount})}`);
-    assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser !== ui.tNextTeaser,
-      `locked-content teaser should be mode-specific: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
-    assert(ui.fPaywallText.includes('질문에 대한 답 · 이유 · 방법까지') && ui.tPaywallText.includes('질문에 대한 답 · 이유 · 방법까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText),
-      'basic unlock scope or stale sale copy drift');
+    assert(ui.fNextTeaser.length >= 12 && ui.tNextTeaser.length >= 12 && ui.fNextTeaser === ui.tNextTeaser,
+      `locked-content teaser must keep the same factual next section across F/T: ${JSON.stringify({f:ui.fNextTeaser,t:ui.tNextTeaser})}`);
+    assert(ui.fPaywallText.includes('이 질문 끝까지') && ui.tPaywallText.includes('이 질문 끝까지') && !/오픈 체험가/.test(ui.fPaywallText + ui.tPaywallText),
+      'free-question unlock scope or stale sale copy drift');
   }
-  assert(ui.unlockedNoteCards === 6 && !ui.previewAfterUnlock,
-    `unlock must replace teaser with all six full answers: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
+  assert(ui.unlockedNoteCards === 5 && !ui.previewAfterUnlock,
+    `unlock must replace teaser with all dynamic consultation sections: ${JSON.stringify({cards:ui.unlockedNoteCards,preview:ui.previewAfterUnlock})}`);
   assert(ui.catalog, 'product catalog should render after the 990 won report unlock');
   assert(ui.buttons === 4, `product catalog buttons ${ui.buttons}`);
   assert(ui.visibleProducts === 4 && ui.secondaryProducts === 3 && !ui.otherToggle && ui.otherVisible, `premium catalog should show all four products immediately: ${JSON.stringify({visible:ui.visibleProducts,secondary:ui.secondaryProducts,otherToggle:ui.otherToggle,otherVisible:ui.otherVisible})}`);
@@ -689,7 +779,7 @@ function norm(v) {
             {productId:'compatibility',userKey:'owned_compat'},
             {productId:'all_in_one',userKey:'owned_all'},
           ],
-          effectiveEntitlements:['concern_bundle3','full_saju','compatibility','all_in_one','all_concerns'],
+          effectiveEntitlements:['concern_bundle3','full_saju','compatibility','all_in_one','question_pack3'],
           allInOneQuote:{targetProduct:'all_in_one',baseAmount:100,creditAmount:100,amount:0,alreadyOwned:true,creditedProducts:['all_in_one']},
         };
       }
@@ -714,7 +804,7 @@ function norm(v) {
     lockedOwnedCatalog.mode==='owned-reaccess' &&
     JSON.stringify(lockedOwnedCatalog.ids)===JSON.stringify(['all_in_one','compatibility','concern_bundle3','full_saju']) &&
     lockedOwnedCatalog.states.every(x=>x==='purchased') &&
-    lockedOwnedCatalog.text.includes('새 고민 결제와 상관없이'),
+    lockedOwnedCatalog.text.includes('새 질문 결제와 상관없이'),
     'purchased premium products disappeared behind a new concern paywall '+JSON.stringify(lockedOwnedCatalog)
   );
   await page.evaluate(() => {
@@ -743,55 +833,31 @@ function norm(v) {
     document.getElementById('unniProductLadder')?.remove();
   });
 
-  // All-in-one includes all six concerns: a new concern must not ask for another basic NOTE payment.
-  await page.evaluate(() => {
-    const d = calculateAccurateManse(1998,2,21,'03:10','female');
-    d.__testNowYmd='2026-09-20';
-    d.concernKey='people';
-    d.concernSituation='friend';
-    d.currentMode='F';
-    generateConcernNotes(d,'F');
-    currentResultData=d;
-    selectedSplitMode='F';
-    isUnlocked=false;
-    removeStore('tok_'+getUserUniqueKey(d));
-    localStorage.setItem(
-      'unni_product_grant_v1_all_in_one_test_basic_unlock',
-      JSON.stringify({userKey:'owned_all',token:'seed'})
-    );
-    window.__allConcernsOriginalPaymentAPI = paymentAPI;
+  // A complete report must not silently unlock arbitrary future free questions.
+  const allQuestionGuard = await page.evaluate(async () => {
+    const originalPaymentAPI = paymentAPI;
     paymentAPI = async (body) => {
       if (body?.action === 'entitlements') {
         return {
           ok:true,
           verifiedPurchases:[{productId:'all_in_one',userKey:'owned_all'}],
-          effectiveEntitlements:['all_in_one','full_saju','concern_bundle3','all_concerns'],
+          effectiveEntitlements:['all_in_one','full_saju','concern_bundle3','question_pack3'],
           allInOneQuote:{targetProduct:'all_in_one',baseAmount:100,creditAmount:100,amount:0,alreadyOwned:true,creditedProducts:['all_in_one']},
         };
       }
-      return window.__allConcernsOriginalPaymentAPI(body);
+      return originalPaymentAPI(body);
     };
-    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
-    renderResultView(d,{resumeApproval:false});
+    try {
+      isUnlocked=false;
+      const d={...currentResultData,concernKey:'consultation',concernSituation:'free',userQuestion:'완전판을 샀는데 이 새 질문도 자동으로 열리면 안 돼'};
+      const granted=await checkAllConcernsEntitlement(d);
+      return {granted,unlocked:isUnlocked};
+    } finally {
+      paymentAPI=originalPaymentAPI;
+    }
   });
-  await page.waitForFunction(() => isUnlocked === true, null, {timeout:10000});
-  const allConcernsBasicAccess = await page.evaluate(() => ({
-    unlocked:isUnlocked,
-    paywall:getComputedStyle(document.getElementById('lockedOverlay')).display,
-    basicToken:!!savedAccess(currentResultData),
-  }));
-  assert(
-    allConcernsBasicAccess.unlocked &&
-    allConcernsBasicAccess.paywall==='none' &&
-    !allConcernsBasicAccess.basicToken,
-    'all-in-one owner was asked to repurchase a new concern NOTE '+JSON.stringify(allConcernsBasicAccess)
-  );
-  await page.evaluate(() => {
-    paymentAPI = window.__allConcernsOriginalPaymentAPI;
-    delete window.__allConcernsOriginalPaymentAPI;
-    localStorage.removeItem('unni_product_grant_v1_all_in_one_test_basic_unlock');
-    window.__UNNI_PRODUCTS_V1__.invalidateEntitlementCache();
-  });
+  assert(!allQuestionGuard.granted&&!allQuestionGuard.unlocked,
+    'all-in-one incorrectly unlocked an arbitrary future free question '+JSON.stringify(allQuestionGuard));
 
   // Final copy freeze: render the exact same chart + concern + situation once in F and once in T.
   const ftScreen = await page.evaluate(() => {
@@ -1124,13 +1190,13 @@ function norm(v) {
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.3'), 'paid value script include missing');
   assert(html.includes('./concern-note-engine-v2.js?v=6.7.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'six-answer NOTE / saju signal script include missing');
   assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.1'), 'full-evidence reasoning script include missing');
-  assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
+  assert(html.includes('./product-content-policy-v1.js?v=1.2.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.1'), 'entitlement/product script include missing');
   assert(
-    html.includes('function hasStoredAllInOneGrant()') &&
-    html.includes('checkAllConcernsEntitlement(data, version)') &&
-    html.includes('state.effectiveEntitlements.includes("all_concerns")'),
-    'all-in-one to basic concern entitlement bridge missing'
+    html.includes('./consultation-engine-v1.js?v=1.0.0') &&
+    html.includes('if (data?.concernKey === "consultation") return false;') &&
+    !html.includes('state.effectiveEntitlements.includes("all_concerns")'),
+    'free-question consultation or anti-unlimited-entitlement guard missing'
   );
 
   const noteSource = fs.readFileSync('concern-note-engine-v2.js','utf8');
@@ -1172,8 +1238,8 @@ function norm(v) {
   );
   assert(!premium.includes('unniShowOtherProducts') && premium.includes('unniOtherProducts') && premium.includes('display:grid;gap:14px;margin-top:10px'), 'premium alternatives should stay fully open under the recommendation');
   assert(!premium.includes('unniProductSavePdf') && !premium.includes('printPaidReport') && !premium.includes('unniPaidPrintHost') && !premium.includes('PDF로 한 파일 보관하기'), 'PDF save code must be fully removed');
-  assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="concern"'), 'semantic paid-report grouping missing');
-  assert(premium.includes('나를 이해하는 법') && premium.includes('대화하고 싸우고 화해하는 법') && premium.includes('어떻게 움직일지'), 'human-readable export group titles missing');
+  assert(premium.includes('buildPaidExportGroups') && premium.includes('data-export-kind="full"') && premium.includes('data-export-kind="compat"') && premium.includes('data-export-kind="question"'), 'semantic paid-report grouping missing');
+  assert(premium.includes('나를 이해하는 법') && premium.includes('대화하고 싸우고 화해하는 법') && premium.includes('현재 질문과 전체 사주 연결'), 'human-readable export group titles missing');
   assert(html.includes('showImagePagesFallback'), 'multi-image mobile fallback missing');
   assert(!html.includes('id="storyShareBtn"') && !html.includes('인스타에 올릴 사진 열기'), 'duplicate Instagram save/share UI remains');
   assert(html.includes('isKakaoInApp') && html.includes('showImageSaveFallback'), 'Kakao in-app save fallback missing');
@@ -1392,10 +1458,10 @@ function norm(v) {
   assert(premium.includes('<option value="solar">양력</option><option value="lunar">음력</option>') && !premium.includes('양력 생일') && !premium.includes('음력 생일'), 'compatibility calendar labels should be simple');
   assert(!premium.includes('예: 오후 3시 20분이면'), 'compatibility birth-time helper should be removed');
   assert(
-    contentPolicySource.includes('다른 고민 3개도 같은 사주로 각각 깊게 풀어보기') &&
+    contentPolicySource.includes('사주정보 그대로, 궁금한 질문 3개를 각각 새로 풀어보기') &&
     contentPolicySource.includes('내 사주 전체 구조와 앞으로 5년의 큰 흐름 보기') &&
     contentPolicySource.includes('두 사람 사주를 겹쳐 관계의 이유와 시기 보기') &&
-    contentPolicySource.includes('나 한 사람의 전체 사주판과 6개 고민을 한 번에 열기') &&
+    contentPolicySource.includes('나 한 사람의 전체 사주판과 현재 질문, 5년 흐름을 한 번에 연결') &&
     premium.includes('data-recommendation-reason="1"') &&
     premium.includes('data-product-catalog-copy') &&
     premium.includes('productButtonHtml(recommended,{recommended:true,reason,state:states[recommended.id]})') &&
