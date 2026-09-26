@@ -2226,6 +2226,17 @@
     });
     invalidateEntitlementCache();
     try { sessionStorage.removeItem("unni_pending_approval"); } catch (_) {}
+
+    // 프리미엄도 Toss 승인/권한 저장이 끝난 뒤에만 AI 상담 복원을 시도한다.
+    if (
+      restored?.concernKey === "consultation" &&
+      !Array.isArray(restored?.__consultationV1?.cards) &&
+      global.__UNNI_CONSULTATION_V1__?.generate
+    ) {
+      try {
+        await global.__UNNI_CONSULTATION_V1__.generate(restored, getMode(restored));
+      } catch (_) {}
+    }
     showReport(productId, restored, resume.data?.x || {});
     productToast(restored, {
       F: "응, 확인됐어. 그럼 여기서 계속 보자",
