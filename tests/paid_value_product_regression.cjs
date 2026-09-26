@@ -1104,7 +1104,14 @@ function mockConsultation(question, mode='F') {
   );
 
   // The rest of this regression inspects the unlocked report without opening a real checkout.
-  await page.evaluate(() => { FREE_LAUNCH_MODE = true; });
+  await page.evaluate(() => {
+    FREE_LAUNCH_MODE = true;
+    const base=getUserUniqueKey(currentResultData);
+    localStorage.setItem(
+      'unni_product_grant_v1_full_saju_'+base,
+      JSON.stringify({productId:'full_saju',userKey:'ci-full-saju',token:'ci-paid-token',savedAt:Date.now()})
+    );
+  });
   await page.locator('#unniProductClose').click();
   await page.evaluate(() => openUnniProduct('full_saju'));
   await page.waitForSelector('#unniProductModal', { state:'visible' });
