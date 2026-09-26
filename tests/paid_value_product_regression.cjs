@@ -935,8 +935,14 @@ function mockConsultation(question, mode='F') {
     'final rendered F relationship screen lost neutral current-relationship framing or leaked concern-only behavior');
 
   await page.evaluate(() => {
-    selectedSplitMode='F';
-    if (currentResultData) currentResultData.currentMode='F';
+    if (window.__freeQuestionResultBeforeLegacyQa) {
+      currentResultData = window.__freeQuestionResultBeforeLegacyQa;
+      selectedSplitMode = currentResultData.currentMode || 'F';
+      isUnlocked = true;
+    } else {
+      selectedSplitMode='F';
+      if (currentResultData) currentResultData.currentMode='F';
+    }
     openUnniProduct('full_saju');
   });
   await page.waitForSelector('#unniProductModal', { state:'visible' });
