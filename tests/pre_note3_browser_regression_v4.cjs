@@ -661,7 +661,7 @@ async function load(page) {
         failureToast:visible.includes('만세력 연산에 실패했습니다') || visible.includes('연산 중 오류가 발생했습니다'),
         resultVisible:getComputedStyle(document.getElementById('resultSection')).display !== 'none',
         firstRendered:document.querySelectorAll('#notesListContainer .note-editorial').length >= 1,
-        oldSix:/1\\/6|2\\/6|3\\/6|4\\/6|5\\/6|6\\/6/.test(notesText),
+        oldSix:/1\/6|2\/6|3\/6|4\/6|5\/6|6\/6/.test(notesText),
         paywallVisible:document.getElementById('lockedOverlay')?.offsetParent !== null,
         paywallHook:document.getElementById('payBoxHookMsg')?.innerText || '',
         paywallTeaser:document.getElementById('paywallNextTeaser')?.innerText || '',
