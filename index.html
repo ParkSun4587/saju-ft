@@ -6383,7 +6383,7 @@ function generateConcernNotes(data, mode) {
       // [무료/유료 전환 스위치] true = 무료 이벤트 / false = 실제 유료결제
       // 앞으로 아래 한 줄의 true/false만 바꾸면 됩니다.
       // ============================================================
-      let FREE_LAUNCH_MODE = true;
+      let FREE_LAUNCH_MODE = false;
 
       let isUnlocked = false;
 
@@ -6920,19 +6920,21 @@ currentResultData = {
                     );
                     try {
                       const consultation = globalThis.__UNNI_CONSULTATION_V1__;
-                      if (!consultation?.generate) {
-                        const missing = new Error("CONSULTATION_ENGINE_MISSING");
-                        missing.code = "CONSULTATION_ENGINE_MISSING";
+                      if (!consultation?.generatePreview) {
+                        const missing = new Error("CONSULTATION_PREVIEW_ENGINE_MISSING");
+                        missing.code = "CONSULTATION_PREVIEW_ENGINE_MISSING";
                         throw missing;
                       }
-                      await consultation.generate(currentResultData, mode);
+                      await consultation.generatePreview(currentResultData, mode);
                       appendSisterMsg(
-                        isT ? "정리 끝. 네 질문부터 바로 답할게." : "응, 다 봤어. 네가 물어본 것부터 말해줄게.",
+                        isT
+                          ? "첫 판단 잡았어. 네 질문부터 바로 말할게."
+                          : "응, 첫 판단은 잡았어. 네가 물어본 것부터 말해줄게.",
                         true,
                       );
                       renderResultView(currentResultData);
                     } catch (consultError) {
-                      console.error("새 상담 생성 실패:", consultError);
+                      console.error("무료 첫 판단 생성 실패:", consultError);
                       clearAllTimeouts();
                       isAnalyzing = false;
                       changeViewState("input");
@@ -6949,8 +6951,8 @@ currentResultData = {
                         questionInput?.focus();
                       } else {
                         showVoiceToast({
-                          F: "사주 계산은 끝났는데 상담을 엮는 중에 잠깐 끊겼어. 질문은 그대로 뒀으니 한 번만 다시 눌러줘.",
-                          T: "사주 계산은 끝났고 상담 생성만 실패했어. 질문은 유지됐어. 다시 실행해줘.",
+                          F: "사주 계산은 끝났는데 첫 판단을 정리하다 잠깐 끊겼어. 질문은 그대로 뒀으니 한 번만 다시 눌러줘.",
+                          T: "사주 계산은 끝났고 첫 판단 생성만 실패했어. 질문은 유지됐어. 다시 실행해줘.",
                         }, mode);
                       }
                     }
@@ -7017,37 +7019,124 @@ currentResultData = {
       
 
       function getPaywallConversionCopy(data, isT) {
-        const consultation = data?.__consultationV1 || {};
-        const cards = Array.isArray(consultation.cards) ? consultation.cards : [];
-        const remaining = cards.slice(1);
-        const featureTitles = remaining
-          .slice(0, 3)
-          .map((card) => String(card?.title || card?.badge || "").replace(/<[^>]+>/g, "").trim())
-          .filter(Boolean);
-        while (featureTitles.length < 3) {
-          featureTitles.push(
+        const preview =
+          globalThis.__UNNI_CONSULTATION_V1__?.getPreview?.(data, data?.currentMode || (isT ? "T" : "F")) ||
+          data?.__consultationPreviewV1 ||
+          {};
+        const scopes = Array.isArray(preview.paidScope)
+          ? preview.paidScope.map((x) => String(x?.title || "").trim()).filter(Boolean).slice(0, 3)
+          : [];
+        while (scopes.length < 3) {
+          scopes.push(
             [
-              "왜 이런 답이 나오는지 사주 근거",
-              "이 선택에서 특히 조심할 조건",
-              "지금부터 실제로 확인할 행동",
-            ][featureTitles.length],
+              "이 판단이 달라지는 조건",
+              "너한테 맞는 선택과 소모되는 조건",
+              "실제로 움직일 시기와 지금 할 행동",
+            ][scopes.length],
           );
         }
-        const nextTitle = String(remaining[0]?.title || "왜 이런 답이 나오는지").replace(/<[^>]+>/g, "").trim();
+        const selected = String(preview.selectedResponse || "").trim();
+        const focus = String(preview.selectedFocus || "").trim();
         return {
           label: "이번 질문",
-          hook: isT
-            ? "핵심 답은 잡았어. 이제 그 답이 나오는 이유와 조건을 끝까지 보면 돼."
-            : "네가 물어본 답은 잡혔어. 이제 왜 그런지랑 너한테 중요한 조건까지 이어서 보자.",
-          sub: isT
-            ? "같은 사주라도 이번 질문에 직접 필요한 근거만 골라서 이어갈게."
-            : "사주 전체를 다 늘어놓지 않고, 아까 네 질문에 진짜 필요한 얘기만 이어서 볼게.",
-          preview: nextTitle,
-          teaser: nextTitle + "부터 이어서 볼게…",
-          features: featureTitles,
-          priceTitle: isT ? "이 질문 끝까지 정리하기" : "언니랑 이 질문 끝까지 보기",
+          hook: selected
+            ? selected
+            : isT
+              ? "첫 판단은 잡았어. 여기서부터는 네 선택에 필요한 조건을 끝까지 연결해서 봐야 해."
+              : "첫 판단은 잡혔어. 여기서부터는 너한테 중요한 조건이랑 시기까지 같이 연결해서 봐야 해.",
+          sub: focus
+            ? (isT ? focus + "까지 포함해서 깊게 정리할게." : focus + "까지 같이 보면 네가 어떻게 움직일지 훨씬 선명해져.")
+            : (isT
+                ? "결제 후에야 네 사주 전체에서 이번 질문에 필요한 부분을 깊게 생성해."
+                : "결제가 끝난 뒤부터 네 사주 전체에서 이번 질문에 필요한 부분을 제대로 깊게 볼게."),
+          teaser: scopes[0],
+          features: scopes,
+          priceTitle: isT ? "서아랑 이 질문 끝까지 보기" : "로아랑 이 질문 끝까지 보기",
         };
       }
+
+      function buildFreeConsultationPreviewCard(data, mode) {
+        const preview =
+          globalThis.__UNNI_CONSULTATION_V1__?.getPreview?.(data, mode) ||
+          data?.__consultationPreviewV1 ||
+          {};
+        const claim = preview.directAnswer || {};
+        const answer = escapeHTML(String(claim.answer || "")).replace(/\n/g, "<br>");
+        const why = escapeHTML(String(claim.why || "")).replace(/\n/g, "<br>");
+        const technical = escapeHTML(String(claim.technicalBasis || "")).replace(/\n/g, "<br>");
+        const whyBlock = why
+          ? `<details class="note-detail consultation-evidence"><summary>왜 그렇게 봤어?</summary><div class="note-detail-body consultation-evidence-copy">${why}${technical ? `<details class="note-detail consultation-evidence"><summary>명리 근거까지 보기</summary><div class="note-detail-body consultation-evidence-copy">${technical}</div></details>` : ""}</div></details>`
+          : "";
+        return {
+          badge: "네 질문의 첫 판단",
+          themeNum: "01",
+          title: escapeHTML(String(claim.headline || "네 질문부터 답할게")),
+          desc: [answer, whyBlock].filter(Boolean).join("<br><br>"),
+          checklist: "",
+          __consultationPreviewV1: true,
+        };
+      }
+
+      function buildFreeFollowUpHTML(data, mode) {
+        const isT = mode === "T";
+        const preview = data?.__consultationPreviewV1 || {};
+        const followUp = preview.followUp || {};
+        const options = Array.isArray(followUp.options) ? followUp.options : [];
+        if (!followUp.question || !options.length) return "";
+        const selectedIndex = Number.isInteger(preview.selectedOption) ? preview.selectedOption : -1;
+        const optionButtons = options.map((option, index) => {
+          const selected = selectedIndex === index;
+          return `
+            <button
+              type="button"
+              onclick="chooseFreeConsultationFollowUp(${index})"
+              class="w-full text-left px-3.5 py-2.5 rounded-2xl border text-[11.5px] font-bold leading-snug transition-all active:scale-[0.99] ${selected
+                ? (isT ? "border-sky-400 bg-sky-50 text-sky-900" : "border-rose-400 bg-rose-50 text-rose-900")
+                : "border-slate-200 bg-white text-slate-700"}"
+              ${selectedIndex >= 0 ? "disabled" : ""}
+            >${escapeHTML(String(option.label || ""))}</button>`;
+        }).join("");
+        const response = selectedIndex >= 0
+          ? `<div class="mt-3 flex items-start gap-2">
+              <img src="${isT ? "./서아.webp" : "./로아.webp"}" class="w-8 h-8 rounded-full object-cover shrink-0">
+              <div class="rounded-2xl rounded-tl-none border ${isT ? "border-sky-100 bg-sky-50/70" : "border-rose-100 bg-rose-50/70"} px-3.5 py-3 text-[11.5px] font-semibold leading-relaxed text-slate-800">
+                ${escapeHTML(String(preview.selectedResponse || ""))}
+              </div>
+            </div>`
+          : "";
+        return `
+          <div id="freeConsultationFollowUp" class="mt-4 rounded-[22px] border border-slate-200 bg-slate-50/70 p-3.5 text-left">
+            <div class="flex items-center gap-2 mb-2.5">
+              <img src="${isT ? "./서아.webp" : "./로아.webp"}" class="w-8 h-8 rounded-full object-cover shrink-0">
+              <div>
+                <div class="text-[10px] font-black ${isT ? "text-sky-600" : "text-rose-600"}">${isT ? "서아 언니" : "로아 언니"} · 하나만 더 물어볼게</div>
+                <div class="mt-0.5 text-[12px] font-black leading-snug text-slate-900">${escapeHTML(String(followUp.question || ""))}</div>
+              </div>
+            </div>
+            <div class="grid gap-1.5">${optionButtons}</div>
+            ${response}
+          </div>`;
+      }
+
+      function chooseFreeConsultationFollowUp(index) {
+        if (!currentResultData || isUnlocked) return;
+        const api = globalThis.__UNNI_CONSULTATION_V1__;
+        const chosen = api?.selectPreviewOption?.(currentResultData, index);
+        if (!chosen) return;
+        saveCurrentResult();
+        updateResultContentByMode(currentResultData.currentMode || "F");
+        if (typeof gtag === "function") {
+          gtag("event", "consultation_preview_followup", {
+            mode_type: currentResultData.currentMode || "F",
+            option_index: Number(index) + 1,
+          });
+        }
+        runSafeTimeout(() => {
+          const target = document.getElementById("paywallCard");
+          if (target) scrollResultTo(target, true);
+        }, 120);
+      }
+      window.chooseFreeConsultationFollowUp = chooseFreeConsultationFollowUp;
 
       function updateResultContentByMode(mode) {
         const isT = mode === "T";
@@ -7466,11 +7555,15 @@ currentResultData = {
             : "text-[34px] sm:text-[40px] font-black tracking-widest font-mono text-rose-500 drop-shadow-sm leading-none pt-2 pb-1";
         }
 
-        // 자유질문 상담: 질문에 따라 4~9개 섹션을 동적으로 구성한다.
-        // 장애 시에만 기존 엔진을 안전망으로 사용하며 정상 경로에서는 새 상담 결과가 항상 우선한다.
-        const notesData =
-          globalThis.__UNNI_CONSULTATION_V1__?.getCards?.(data, mode) ||
-          generateConcernNotes(data, mode);
+        // 무료에서는 짧은 첫 판단만 보여주고, 결제 확인 뒤에만 4~9개 심층상담을 생성한다.
+        const paidNotesData = globalThis.__UNNI_CONSULTATION_V1__?.getCards?.(data, mode) || null;
+        const previewData =
+          globalThis.__UNNI_CONSULTATION_V1__?.getPreview?.(data, mode) ||
+          data?.__consultationPreviewV1 ||
+          null;
+        const notesData = isUnlocked && Array.isArray(paidNotesData) && paidNotesData.length
+          ? paidNotesData
+          : [buildFreeConsultationPreviewCard(data, mode)];
 
         const noteRoleMeta = {
           "01": { className:"note-role-diagnosis" },
@@ -7569,45 +7662,25 @@ currentResultData = {
             .join("");
         };
 
+
         const notesContainer = document.getElementById("notesListContainer");
+        const lockedOverlay = document.getElementById("lockedOverlay");
 
         if (notesContainer) {
-          if (isUnlocked) {
-            notesContainer.innerHTML = buildNotesHTML(notesData);
+          if (isUnlocked && Array.isArray(paidNotesData) && paidNotesData.length) {
+            notesContainer.innerHTML = buildNotesHTML(paidNotesData);
+            if (lockedOverlay) lockedOverlay.style.display = "none";
           } else {
-            notesContainer.innerHTML = buildNotesHTML(notesData.slice(0, 1));
+            notesContainer.innerHTML =
+              buildNotesHTML(notesData.slice(0, 1)) +
+              buildFreeFollowUpHTML(data, mode);
 
-            if (notesData[1]) {
-              const nextNote = notesData[1];
+            const selected = Number.isInteger(previewData?.selectedOption);
+            if (lockedOverlay) lockedOverlay.style.display = selected ? "block" : "none";
+            const paywallNextTeaser = document.getElementById("paywallNextTeaser");
+            if (paywallNextTeaser) {
               const paywallCopy = getPaywallConversionCopy(data, isT);
-              const firstPreviewPart = splitNoteParagraphs(nextNote.desc)[0] || paywallCopy.preview;
-              const previewDesc = decorateSajuTerms(firstPreviewPart);
-              const paywallNextTeaser = document.getElementById("paywallNextTeaser");
-              if (paywallNextTeaser) {
-                paywallNextTeaser.textContent = "“" + paywallCopy.teaser + "”";
-              }
-
-              notesContainer.insertAdjacentHTML(
-                "beforeend",
-                `
-                  <div id="note2PreviewCard" class="note-editorial note-role-pattern ${isT ? "note-tone-t" : "note-tone-f"} relative overflow-hidden text-left">
-                      <div class="note-editorial-head">
-                          <span class="note-number">2/${noteTotal}</span>
-                          <h4 class="note-editorial-title">${decorateSajuTerms(nextNote.title)}</h4>
-                      </div>
-                      <div id="note2PreviewBody" class="note-body note-body-reading">
-                        ${renderReadableNotePart(previewDesc, 0, nextNote)}
-                      </div>
-                      <div class="note-preview-continuation">
-                          <p>
-                              ${isT
-                                ? "여기서부터 답의 나머지와 근거·조건·다음 판단 기준이 이어져."
-                                : "여기서부터 답의 나머지랑 왜 그런지, 조심할 조건, 다음에 볼 기준까지 이어서 볼게."}
-                          </p>
-                      </div>
-                  </div>
-              `,
-              );
+              paywallNextTeaser.textContent = "“" + paywallCopy.teaser + "”";
             }
           }
         }
