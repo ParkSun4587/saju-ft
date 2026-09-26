@@ -2995,6 +2995,7 @@
       genericClusterDependency:false,
       genericSituationDependency:false,
       behaviorTemplateDependency:true,
+      behaviorTemplateEvidenceDependency:false,
       behaviorTemplateRole:"claim-bounded-domain-translation",
       behaviorTemplateFieldsUsed:["SIDE_OPTION","SIDE_ITEMS","INCOME_OPTION","JOB_OPTION","PATH_OPTION","SAVE_STYLE"],
       structureFingerprint:r.structureFingerprint,
