@@ -1111,6 +1111,10 @@ function mockConsultation(question, mode='F') {
       'unni_product_grant_v1_full_saju_'+base,
       JSON.stringify({productId:'full_saju',userKey:'ci-full-saju',token:'ci-paid-token',savedAt:Date.now()})
     );
+    localStorage.setItem(
+      'unni_product_grant_v1_all_in_one_'+base,
+      JSON.stringify({productId:'all_in_one',userKey:'ci-all-in-one',token:'ci-paid-token',savedAt:Date.now()})
+    );
   });
   await page.locator('#unniProductClose').click();
   await page.evaluate(() => openUnniProduct('full_saju'));
@@ -1270,9 +1274,9 @@ function mockConsultation(question, mode='F') {
   assert(html.includes('./concern-note-engine-v2.js?v=6.7.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'six-answer NOTE / saju signal script include missing');
   assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.1'), 'full-evidence reasoning script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.2.1'),'product content policy script include missing');
-  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.2'), 'entitlement/product script include missing');
+  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.3'), 'entitlement/product script include missing');
   assert(
-    html.includes('./consultation-engine-v1.js?v=1.0.0') &&
+    html.includes('./consultation-engine-v1.js?v=1.1.0') &&
     html.includes('if (data?.concernKey === "consultation") return false;') &&
     html.includes('data?.concernKey !== "consultation"') &&
     html.includes('state.effectiveEntitlements.includes("all_concerns")'),
