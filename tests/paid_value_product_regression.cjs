@@ -1259,7 +1259,7 @@ function mockConsultation(question, mode='F') {
   assert(!html.includes('정확한 만세력 조회를 위해 적어줘') && !html.includes('출생기록에 적힌 시각을 입력하면 더 정확해'), 'old birth-time helper copy remains');
   assert(!html.includes('🥺') && !html.includes('💕') && !html.includes('💌') && !html.includes('ㅠㅠ'), 'excessive F emoticon copy remains in the main journey');
   assert(!html.includes('id="sisterSwitchCard"') && !html.includes('switchSisterMode()'), 'bottom F/T mode-switch CTA code remains');
-  assert(html.includes('눈에 보이는 오행 분포') && html.includes('계절·뿌리·위치') && html.includes('지금 네 고민에 필요한 얘기만 짧게') && html.includes('지금 네 고민에 맞는 말로만 짧게') && !/비밀\s*메모/.test(html), 'five-element bridge copy missing or secret-memo wording returned');
+  assert(html.includes('눈에 보이는 오행 분포') && html.includes('계절·뿌리·위치') && html.includes('이번 질문에 필요한 얘기만 짧게') && html.includes('이번 질문에 필요한 말로만 짧게') && !/비밀\s*메모/.test(html), 'five-element bridge copy missing or secret-memo wording returned');
   for (const oldOheng of ['목(나무)','화(불)','토(흙)','금(쇠)','수(물)']) assert(!html.includes(oldOheng), `old parenthetical five-element label remains: ${oldOheng}`);
   for (const oldStoryOheng of ['목 · 나무','화 · 불','토 · 흙','금 · 쇠','수 · 물']) assert(!html.includes(oldStoryOheng), `story card five-element label should stay simple: ${oldStoryOheng}`);
   assert(!html.includes('사주 데이터로 까본 내 진짜 MBTI'), 'MBTI is still framed as a true diagnostic result');
@@ -1271,8 +1271,8 @@ function mockConsultation(question, mode='F') {
     html.includes('응, 편하게 적어줘.') &&
     html.includes('좋아. 필요한 것만 적어줘.') &&
     html.includes('id="concernPickerPrompt"') &&
-    html.includes('요즘 제일 마음에 걸리는 건?') &&
-    html.includes('지금 딱 궁금한 건 뭐야?') &&
+    html.includes('언니한테 지금 제일 궁금한 걸 그대로 말해줘') &&
+    html.includes('카테고리 고를 필요 없어') &&
     html.includes('응, 이대로 봐줘') &&
     html.includes('좋아, 바로 봐줘') &&
     !html.includes('서아 언니, 핵심만 봐줘') &&
@@ -1312,13 +1312,13 @@ function mockConsultation(question, mode='F') {
     html.includes('function recoveryActionButtonStyle('),
     'counseling continuation or payment recovery CTA still uses legacy Kakao-yellow styling'
   );
-  assert(/(?:const|let) FREE_LAUNCH_MODE\s*=\s*(?:true|false)/.test(html), 'FREE_LAUNCH_MODE declaration missing');
+  assert(/(?:const|let) FREE_LAUNCH_MODE\s*=\s*false/.test(html), 'FREE_LAUNCH_MODE must stay false for paid launch');
   assert(
-    html.includes('어떤 고민인지 하나만 골라줄래? 그거부터 언니가 볼게') &&
-    html.includes('지금 제일 궁금한 고민 하나만 골라줘. 그거부터 볼게.') &&
+    html.includes('궁금한 걸 네 말로 조금만 더 적어줘. 짧아도 괜찮아.') &&
+    html.includes('질문을 조금만 더 구체적으로 적어줘.') &&
     html.includes('이름도 같이 적어줘. 그래야 언니가 편하게 불러주지') &&
     html.includes('이름도 입력해줘. 빠진 것만 채우면 돼.'),
-    'F/T validation voice handoff missing'
+    'F/T free-question validation voice handoff missing'
   );
   assert(
     html.includes('응, 확인됐어. 그럼 아까 얘기부터 계속 볼게') &&
