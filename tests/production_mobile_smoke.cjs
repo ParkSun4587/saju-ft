@@ -10,14 +10,13 @@ async function deployed(page) {
       await page.goto(BASE + '?smoke=v21-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() =>
         globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.3' &&
-        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.5.0' &&
+        globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.6.0' &&
         globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
-        globalThis.__UNNI_AI_NOTE_V4__?.version === '2.2.0' &&
         typeof selectSplitMode === 'function', null, {timeout:8000});
       return;
     } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach six-answer NOTE 6.5.0 / paid 1.5.3 / products 2.3.1');
+  throw new Error('production did not reach six-answer NOTE 6.6.0 / paid 1.5.3 / products 2.3.1');
 }
 
 async function clickCatalogProduct(page, productId) {
@@ -445,7 +444,7 @@ async function inspect(page, mode) {
   },mode);
   r.resultLayout=await resultLayoutSnapshot(page);
   assertResultLayout(r.resultLayout,mode+' primary result');
-  assert(r.noteV2Audit?.version==='6.5.0'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
+  assert(r.noteV2Audit?.version==='6.6.0'&&r.noteV2Audit?.engine==='classical-causal-full-evidence'&&r.noteV2Audit?.structureFingerprint&&r.noteV2Audit?.synthesisFingerprint,mode+' full-evidence audit missing');
   assert(r.noteV2Audit?.genericClusterDependency===false,mode+' generic cluster dependency returned');
   assert(r.noteV2Audit?.evidenceCoverage?.coverageRate===1&&r.noteV2Audit?.evidenceCoverage?.missingRuleIds?.length===0,mode+' supported classical evidence dropped '+JSON.stringify(r.noteV2Audit?.evidenceCoverage));
   assert(Array.isArray(r.noteV2Audit?.claims)&&r.noteV2Audit.claims.length===6,mode+' six internal causal claims missing');
@@ -453,7 +452,12 @@ async function inspect(page, mode) {
   for(const link of r.noteV2Audit.outputClaimMap){
     assert(link.claimId&&link.source&&['high','supported','guarded'].includes(link.confidence),mode+' claim-first NOTE provenance missing '+JSON.stringify(link));
   }
-  assert(r.noteV2Audit?.behaviorTemplateRole==='expression-only',mode+' behavior template role drift');
+  assert(
+    r.noteV2Audit?.behaviorTemplateDependency===true &&
+    r.noteV2Audit?.behaviorTemplateEvidenceDependency===false &&
+    r.noteV2Audit?.behaviorTemplateRole==='claim-bounded-domain-translation',
+    mode+' behavior template audit drift'
+  );
   assert(r.noteV2Audit?.interpretationPlan?.primaryGroup,mode+' cross-validated concern interpretation missing');
   for(const [label,text] of [['core',r.n1],['scene',r.n2],['filter',r.n4],['timing',r.n5]]){
     assert(text.length>=110&&text.length<=1600,mode+' '+label+' answer length drift '+text.length);
@@ -588,55 +592,34 @@ async function inspect(page, mode) {
   await deployed(page);
   await enter(page,'F','love','relationship');
 
-  const packetBuild = await page.evaluate(() => {
-    try {
-      const packet = globalThis.__UNNI_AI_NOTE_V4__?.buildEvidencePacket?.(
-        currentResultData,
-        currentResultData?.currentMode || 'F'
-      );
-      return {
-        ok:!!packet,
-        schemaVersion:packet?.schemaVersion||'',
-        planRoles:Object.keys(packet?.notePlan||{}),
-        coverageCount:(packet?.requiredEvidenceCoverageIds||[]).length,
-        weightedRankIsArray:Array.isArray(packet?.chartFacts?.fiveElements?.weightedRank),
-      };
-    } catch (error) {
-      return {ok:false,error:String(error?.stack||error?.message||error)};
-    }
-  });
-  assert(
-    packetBuild.ok &&
-    packetBuild.schemaVersion==='2.2.0' &&
-    packetBuild.planRoles.join('|')==='foundation|mechanism|fit|caution|timing' &&
-    packetBuild.coverageCount>=2 &&
-    packetBuild.weightedRankIsArray,
-    'AI NOTE evidence packet must build before any network call '+JSON.stringify(packetBuild)
-  );
+  const aiRuntimeOff = await page.evaluate(() => ({
+    runtime:typeof globalThis.__UNNI_AI_NOTE_V4__,
+    scripts:[...document.scripts].filter(x => (x.getAttribute('src')||'').includes('ai-note-test-v1.js')).length,
+  }));
+  assert(aiRuntimeOff.runtime==='undefined' && aiRuntimeOff.scripts===0,
+    'ordinary production page must not load AI NOTE test client '+JSON.stringify(aiRuntimeOff));
 
-  // 실시간 AI NOTE는 비용 때문에 자동 호출하지 않는다. 결과 화면 NOTE는 명리 엔진 문장이어야 한다.
+  // 일반 결과 화면에서는 AI 호출 없이 엔진 NOTE만 렌더링되어야 한다.
   await sleep(2500);
   const engineNotes = await page.evaluate(()=>({
     cachedAi:!!currentResultData?.__aiNoteV4,
     precisionStatus:!!document.getElementById('aiNotePrecisionStatus'),
-    autoAi:globalThis.__UNNI_AI_NOTE_V4__?.autoProductionEnabled?.(),
     visibleText:document.getElementById('notesListContainer')?.innerText||'',
   }));
   assert(
     aiNoteRequests.length===0 &&
     !engineNotes.cachedAi &&
     !engineNotes.precisionStatus &&
-    engineNotes.autoAi===false &&
     engineNotes.visibleText.includes('결론') &&
     /[가-힣]{2}일주|일주 [가-힣]{2}/.test(engineNotes.visibleText) &&
     !/작동 방식|압력군|과부하 후보/.test(engineNotes.visibleText),
-    'result NOTE must come from the saju engine without an automatic AI NOTE call '+JSON.stringify({
+    'result NOTE must come from the saju engine without loading or calling AI NOTE '+JSON.stringify({
       aiNoteRequests,
       ...engineNotes,
       visibleText:engineNotes.visibleText.slice(0,300),
     })
   );
-  console.log('ENGINE_NOTE_NO_AUTO_AI_PASS');
+  console.log('ENGINE_NOTE_NO_AI_CLIENT_PASS');
 
   const f=await inspect(page,'F');
 
