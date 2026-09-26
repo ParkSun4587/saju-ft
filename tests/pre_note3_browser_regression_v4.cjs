@@ -46,7 +46,7 @@ async function load(page) {
     typeof renderConcernNotesV2 === 'function' &&
     globalThis.generateConcernNotes?.__classicalCausal === true &&
     typeof buildConcernDiagnosisV2 === 'function' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.5.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.6.0' &&
     typeof analyzeDayMasterStrengthV2 === 'function' &&
     globalThis.__MANSE_KOREA_V2__?.version === '2.2.0',
     null, {timeout:60000}
@@ -155,6 +155,8 @@ async function load(page) {
             evidenceCoverage:data.noteV3Audit?.evidenceCoverage||null,
             semanticCoverage:data.noteV3Audit?.semanticCoverage||null,
             behaviorTemplateDependency:data.noteV3Audit?.behaviorTemplateDependency,
+            behaviorTemplateEvidenceDependency:data.noteV3Audit?.behaviorTemplateEvidenceDependency,
+            behaviorTemplateRole:data.noteV3Audit?.behaviorTemplateRole,
             genericSituationDependency:data.noteV3Audit?.genericSituationDependency,
           });
         }
@@ -225,8 +227,13 @@ async function load(page) {
         `supported evidence dropped ${set.key}/${set.mode}: ${JSON.stringify(set.evidenceCoverage)}`);
       assert(set.semanticCoverage?.coverageRate===1 && set.semanticCoverage?.noteCountWithFacts===6,
         `semantic personalization facts missing ${set.key}/${set.mode}: ${JSON.stringify(set.semanticCoverage)}`);
-      assert(set.behaviorTemplateDependency===false && set.genericSituationDependency===false,
-        `concern choice is still creating behavior in ${set.key}/${set.mode}`);
+      assert(
+        set.behaviorTemplateDependency===true &&
+        set.behaviorTemplateEvidenceDependency===false &&
+        set.behaviorTemplateRole==='claim-bounded-domain-translation' &&
+        set.genericSituationDependency===false,
+        `concern translation is being misreported as engine evidence in ${set.key}/${set.mode}`
+      );
       assert(!/(비밀\s*메모|실전 룰|반복 패턴)/.test(full), `old answer wording ${set.key}/${set.mode}`);
       if (set.mode === 'F') fText += ' ' + full; else tText += ' ' + full;
       summary.push({key:set.key, mode:set.mode, titles:set.notes.map(n=>n.title)});
@@ -593,7 +600,7 @@ async function load(page) {
     assert(report.note2Valid, `${c.id}: real-scene answer missing`);
     assert(report.note3Valid, `${c.id}: fit answer missing`);
     assert(report.note3Integrated, `${c.id}: classical diagnosis not integrated into five answers`);
-    assert(report.noteV2Version === '6.5.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
+    assert(report.noteV2Version === '6.6.0' && report.noteV2Primary && report.noteV2Secondary, `${c.id}: five-answer rule provenance audit missing`);
     assert(report.note4Valid, `${c.id}: filter answer missing`);
     assert(report.note5Valid, `${c.id}: timing/action answer missing`);
     assert(!report.forbiddenVisible, `${c.id}: removed meta/explanation copy leaked into UI`);
