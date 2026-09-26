@@ -1172,30 +1172,15 @@ function mockConsultation(question, mode='F') {
   assert(mobilePaidShareCount >= 2 && mobilePaidShareCount <= 3, `mobile dynamic full-saju should share its prepared consultation pages in one action, got ${mobilePaidShareCount}`);
   await page.locator('#unniProductClose').click();
 
-  await page.evaluate(() => openUnniProduct('concern_bundle3'));
-  const bundleQuestions = [
-    '사업하면 AI 앱이랑 콘텐츠 서비스 중 어떤 방식이 더 맞아?',
-    '지금 회사에 남는 게 나아, 옮기는 게 나아?',
-    '올해 새로운 인연은 언제쯤 들어오고 어떤 기준으로 사람을 봐야 해?',
-  ];
-  for (let i=0;i<bundleQuestions.length;i++) {
-    await page.fill(`[data-bundle-question="${i}"]`, bundleQuestions[i]);
-  }
-  await page.locator('#unniProductAction').click();
-  await page.waitForFunction(() =>
-    [...document.querySelectorAll('[data-bundle-question-report]')].length === 3 &&
-    [...document.querySelectorAll('[data-bundle-question-report]')].every((el) => el.querySelectorAll('article').length >= 4),
-    null,{timeout:10000}
-  );
-  modal = await page.locator('#unniProductModal').innerText();
-  const bundleArticles = await page.locator('#unniProductBody article').count();
-  assert(bundleArticles === 15, `bundle3 dynamic consultation card count ${bundleArticles}`);
-  assert(await page.locator('#unniProductBody [data-product-exclusive="concern_bundle3"]').count()===1,'bundle3 free-question exclusive block missing');
-  assert(await page.locator('#unniProductBody [data-export-kind="question"]').count()===3,'bundle3 must render three independent free-question reports');
-  assert(await page.locator('#unniProductBody [data-export-kind="full"]').count()===0,'bundle3 leaked full_saju chapters');
-  assert(bundleQuestions.every((q)=>modal.includes(q)), 'bundle3 did not preserve the three user questions');
-  assert(await page.locator('#unniProductSaveAll').isVisible(), 'bundle3 full-report save missing');
-  await page.locator('#unniProductClose').click();
+  const retiredBundleSale = await page.evaluate(() => ({
+    catalogButton:document.querySelector('#unniProductLadder [data-unni-product="concern_bundle3"]')?.offsetParent !== null,
+    contractExists:!!globalThis.__UNNI_PRODUCTS_V1__?.contracts?.concern_bundle3,
+    productExists:!!globalThis.__UNNI_PRODUCTS_V1__?.products?.concern_bundle3,
+  }));
+  assert(!retiredBundleSale.catalogButton,
+    'retired question-pack must not be offered to new buyers '+JSON.stringify(retiredBundleSale));
+  assert(retiredBundleSale.contractExists && retiredBundleSale.productExists,
+    'retired question-pack metadata must remain for existing-purchase reaccess '+JSON.stringify(retiredBundleSale));
 
   await page.evaluate(() => openUnniProduct('compatibility'));
   modal = await page.locator('#unniProductModal').innerText();
