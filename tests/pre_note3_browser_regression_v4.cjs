@@ -190,7 +190,7 @@ async function load(page) {
         maxLength:Number(input?.getAttribute('maxlength')||0),
       };
     });
-    assert(consultationUi.runtimeVersion==='1.0.0','free-question consultation runtime missing '+JSON.stringify(consultationUi));
+    assert(consultationUi.runtimeVersion==='1.1.0','free-question consultation runtime missing '+JSON.stringify(consultationUi));
     assert(consultationUi.hasInput&&consultationUi.key==='consultation'&&consultationUi.situation==='free',
       'free-question input contract missing '+JSON.stringify(consultationUi));
     assert(consultationUi.prompt.includes('그대로')&&consultationUi.hint.includes('카테고리 고를 필요 없어')&&consultationUi.examples>=4,
