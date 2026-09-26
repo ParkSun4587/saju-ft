@@ -449,7 +449,7 @@ async function load(page) {
           hourPillar:data?.pillars?.hour ? ((data.pillars.hour.gan || '') + (data.pillars.hour.zhi || '')) : '',
           visibleHour:document.getElementById('pillarHour')?.innerText || '',
           resultVisible:getComputedStyle(document.getElementById('resultSection')).display !== 'none',
-          firstNoteRendered:document.querySelectorAll('#notesListContainer .note-editorial').length >= 4,
+          firstNoteRendered:document.querySelectorAll('#notesListContainer .note-editorial').length >= 1,
           analysisReady:!!data?.analysisProfile && !!data?.gyeokguk && !!data?.yongshin,
         };
       }, timeKey);
