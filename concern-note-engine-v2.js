@@ -1436,6 +1436,20 @@
       print:"잠·식사·혼자 정리할 시간처럼 받쳐주는 시간이 부족하면 회복이 더뎌질 수 있어.",
     },
   };
+  const SAVING_ANSWER_EDGE={
+    self:"먼저 손볼 건 사람과 돈이 섞일 때 내 몫을 따로 남기는 거야.",
+    output:"먼저 손볼 건 더 아끼는 게 아니라, 번 돈을 실제로 남기는 단계야.",
+    wealth:"먼저 손볼 건 돈이 들어오자마자 쓸 곳부터 늘리지 않는 거야.",
+    officer:"먼저 손볼 건 의지로 버티는 게 아니라, 자동으로 지켜지는 지출 규칙을 만드는 거야.",
+    print:"먼저 손볼 건 더 알아보는 게 아니라, 저축 결정을 미루지 않는 거야.",
+  };
+  const SAVING_SECOND_EDGE={
+    self:"사람과 함께 쓰는 돈은 처음부터 각자 몫을 나눠두는 게 좋아.",
+    output:"수입이 생기면 쓰기 전에 남길 금액부터 먼저 떼어두는 게 좋아.",
+    wealth:"새 지출이나 새 기회는 한꺼번에 늘리지 말고 하나씩 확인하는 게 좋아.",
+    officer:"예산·자동이체·한도처럼 네가 고민하지 않아도 지켜지는 기준이 필요해.",
+    print:"충분히 알아봤다면 더 비교하기보다 정한 금액부터 바로 묶어두는 게 좋아.",
+  };
   const VERIFIED_LIFE_SCENE={
     money:{
       self:"사람이 끼는 돈 문제에서 나중에 ‘내가 왜 여기까지 냈지?’ 싶었던 적이 있었을 가능성이 높아.",
@@ -2559,9 +2573,11 @@
     } else if(k==="money/saving"){
       const p=grounding?.selectedInterpretations?.[0]||null;
       const q=grounding?.selectedInterpretations?.[1]||null;
-      out.push(lead(isT)+(p?"<b>"+humanConcernReading(s,p)+"</b>":"특정 소비 습관을 찍기보다, 돈이 남지 않는 지점부터 보는 게 맞아."));
-      if(q) out.push("<b>같이 봐야 할 두 번째 이유</b> — "+humanConcernReading(s,q)+" 왜 그런지는 바로 다음에서 사주 근거로 풀어볼게.");
-      out.push("<b>저축 방식으로 옮기면 — "+SAVE_STYLE[N]+"</b>. 이건 소비 원인을 맞혔다는 뜻이 아니라, 돈을 남기는 기준을 생활 안에 만들어두는 방법이야.");
+      const pg=p?.group||G1;
+      const qg=q?.group||N;
+      out.push(lead(isT)+"<b>"+(SAVING_ANSWER_EDGE[pg]||"먼저 손볼 건 돈이 어디서 새는지보다, 들어온 돈을 남기는 기준을 만드는 거야.")+"</b>");
+      if(q) out.push("<b>그다음</b> — "+(SAVING_SECOND_EDGE[qg]||"두 번째 기준도 생활 안에서 자동으로 지켜지게 만들어.")+" 왜 이 순서인지 바로 다음에서 사주 근거로 풀어볼게.");
+      out.push("<b>저축 방식으로 옮기면 — "+SAVE_STYLE[N]+"</b>. 돈을 남기는 기준을 생활 안에 만들어두는 방법이야.");
       out.push(savingCapacityLine(reasoning));
       out.push(...T("저축을 시작하기 좋은 달","돈 결정을 한 번 더 확인할 달").lines);
     } else if(k==="money/flow"){
