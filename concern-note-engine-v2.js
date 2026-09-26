@@ -1,7 +1,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "6.5.0";
+  const VERSION = "6.6.0";
   const CONCERNS = ["money","career","love","path","people","mental"];
 
   function hasBatchim(value) {
@@ -1733,18 +1733,19 @@
   function noteFixV6(reasoning,s,sig,isT){
     const N=needGroupOf(reasoning);
     const el=prescriptionElement(reasoning);
-    const need=NEED_LINE[s.concern]?.[N]||"";
+    const domain=DOMAIN[s.concern]||{name:"이 고민",help:{}};
+    const group=groupText(N);
     const support=supportRows(reasoning,s)[0];
     const raw=el?Number(reasoning?.profile?.elements?.raw?.[el]||0):null;
-    const needPlain=(["career","path"].includes(s.concern)?NEED_POWER_WORK[N]:NEED_POWER[N])||"";
+    const domainCondition=domain.help?.[N]||group.action;
     const whyPlain=el
       ? (raw===0
-        ? "네 사주에서 보완 우선순위가 "+EL_PLAIN[el]+" 쪽으로 잡혀 있어. 그래서 "+withJosa(needPlain,"을","를")+" 현실에서 확인할 수 있는 행동으로 보태는 게 맞아."
-        : "네 사주에서 "+EL_PLAIN[el]+" 쪽이 보완 후보로 잡혀 있어. 그래서 "+withJosa(needPlain,"을","를")+" 실제 행동으로 시험해보는 게 맞아.")
+        ? "네 사주에서 보완 우선순위가 "+EL_PLAIN[el]+" 쪽으로 잡혀 있어. 그래서 "+withJosa(group.noun,"을","를")+" 현실에서 확인할 수 있는 조건으로 보태는 게 맞아."
+        : "네 사주에서 "+EL_PLAIN[el]+" 쪽이 보완 후보로 잡혀 있어. 그래서 "+withJosa(group.noun,"을","를")+" 실제 조건으로 시험해보는 게 맞아.")
       : "네 사주에서 부족한 쪽을 보완하는 방향이라서야.";
     const lines=[
-      lead(isT)+"<b>먼저 바꿀 기준</b> — "+need,
-      "<b>구체적으로 확인할 것</b> — "+plainSentence(s.move),
+      lead(isT)+"<b>먼저 바꿀 기준</b> — "+domainCondition,
+      "<b>실제로 확인할 행동</b> — "+group.action+". 이걸 한 번에 정답으로 믿지 말고, "+domain.name+"에서 실제 반응이 나아지는지 1~2주 확인해봐.",
       whyLabel(isT)+whyPlain,
       detailsBlock([
         el?withJosa(elementName(el),"은","는")+" 보완 후보이고, 겉 글자로는 "+raw+"개야.":"",
@@ -1780,12 +1781,7 @@
     return el?"<b>너한테 맞는 회복법</b> — "+RECOVER_FIT[el]:"";
   }
   function noteHowV7(reasoning,s,sig,data,isT){
-    const base=noteFixV6(reasoning,s,sig,isT);
-    const fit=ANSWER_COVERS_FIT.has(s.concern+"/"+s.key)?"":fitMainLine(reasoning,s,sig,data);
-    if(!fit) return base;
-    const parts=base.split("<br><br>");
-    parts.splice(1,0,fit);
-    return parts.join("<br><br>");
+    return noteFixV6(reasoning,s,sig,isT);
   }
 
   // 6. 조심할 것
@@ -1826,13 +1822,12 @@
   };
   function noteCautionV6(reasoning,s,sig,isT,data,grounding){
     const B=burdenGroupOf(reasoning);
-    const main=CAUTION[s.concern]?.[B]||"";
+    const domain=DOMAIN[s.concern]||{harm:{}};
+    const main=domain.harm?.[B]||"한쪽 부담이 과해지는 조건";
     const relevantPos={love:["day"],people:["year","month","day","hour"],career:["year","month"],money:["year","month","day"]}[s.concern]||[];
     const relKey=x=>x?x.type+":"+[x.aPos,x.bPos].sort().join("-"):"";
-    // NOTE2·NOTE3에서 이미 짚은 관계는 여기서 다시 쓰지 않는다.
     const used=new Set([peopleAnswerRelation(reasoning,sig,s),...(grounding?.selectedInterpretations||concernInterpretations(reasoning,s,sig,data||{}).slice(0,2)).map(x=>x.rel)].filter(Boolean).map(relKey));
     const rows=relationRows(reasoning,sig).filter(x=>!used.has(relKey(x)));
-    // 썸·새 인연에서는 아랫사람 자리(시주)와의 관계는 연애와 거리가 멀어서 짚지 않는다.
     const skipHour=s.concern==="love"&&["crush","new"].includes(s.key);
     const rel=rows.find(x=>(relevantPos.includes(x.aPos)||relevantPos.includes(x.bPos))&&!(skipHour&&(x.aPos==="hour"||x.bPos==="hour")))||null;
     const bad=(sig?.sinsal||[]).find(x=>SINSAL_CAUTION[x.name]);
@@ -1842,19 +1837,18 @@
     const harmPresent=(synthesisFor(reasoning).mechanisms?.structure?.harmfulGods||[]).some(g=>present.has(g));
     const top=godRows(reasoning)[0];
     const strongTop=!harmPresent&&verdictOf(reasoning)==="신강"&&top;
-    // 조심할 것의 이유는 고른 고민 안에서 설명한다. 고전 명리식 "사주 중심을 흔드는 글자" 설명은 접힌 근거로만 둔다.
     const bGod=godRows(reasoning).find(r=>r.group===B)?.god||"";
     const word=CONCERN_WORD[s.concern]||"이 고민";
     const whyText=strongTop
-      ? "너 자신이 강한 편인데 제일 큰 힘인 "+GROUP_PLAIN[top.group]+" 쪽이 이미 사주 기운의 "+groupShare(reasoning,top.group)+"%야. 여기서 더 세지면 장점이 고집이나 과함으로 바뀌기 쉬워."
-      : harmPresent&&bGod&&CAUTION_WHY[B]
-        ? CAUTION_WHY[B].replace("{god}",withJosa(bGod,"이","가")).replace("{word}",word)
+      ? "너 자신이 강한 편인데 제일 큰 힘인 "+GROUP_PLAIN[top.group]+" 쪽이 이미 사주 기운의 "+groupShare(reasoning,top.group)+"%야. 여기서 더 세지면 장점이 과해질 수 있어."
+      : harmPresent&&bGod
+        ? withJosa(bGod,"이","가")+" 방해 쪽으로 잡혀 있어서 "+word+"에서는 "+main+"을 특히 피하는 게 좋아."
         : (harm?.plain||harm?.evidence||"");
     const lines=[
-      lead(isT)+main+" "+(CAUTION_CHECK[s.concern]||""),
-      rel?"<b>특히 조심할 관계</b> — "+relationPlain(rel):"",
-      bad?"<b>이것도 기억해</b> — "+SINSAL_CAUTION[bad.name]:"",
-      gm?"<b>기대를 낮출 쪽</b> — "+POS_PERSON[gm]+" 쪽 도움은 크게 기대하지 않는 게 마음 편해. 사주에서 그 자리가 비어 있는 공망 배치라, 그쪽 일은 스스로 준비해두는 게 나아.":"",
+      lead(isT)+"<b>조심할 조건</b> — "+main,
+      rel?"<b>특히 확인할 관계 신호</b> — "+relationPlain(rel):"",
+      bad?"<b>보조 신호</b> — "+SINSAL_CAUTION[bad.name]:"",
+      gm?"<b>기대를 낮출 자리</b> — "+POS_PERSON[gm]+" 쪽은 도움을 당연하게 기대하기보다 실제 반응을 확인해.":"",
       whyLabel(isT)+whyText,
       detailsBlock([
         harm?.god&&harm?.evidence?"명리 근거: "+harm.evidence:"",
@@ -2188,32 +2182,45 @@
   }
   function interpretationEvidence(reasoning,s,row){
     const evidenceIds=[],counterEvidenceIds=[];
+    const evidenceAxes=new Set();
+    const addEvidence=(id,axis)=>{
+      if(id&&!evidenceIds.includes(id)) evidenceIds.push(id);
+      if(axis) evidenceAxes.add(axis);
+    };
     const group=row?.group||null;
     const share=group?groupShare(reasoning,group):null;
-    if(group){
-      evidenceIds.push("GROUP:"+group+":"+share);
-      if(share>=30||share<10) evidenceIds.push("GROUP_EXTREME:"+group+":"+share);
-    }
-    if(row?.rel) evidenceIds.push("REL:"+row.rel.type+":"+[row.rel.aPos,row.rel.bPos].sort().join("-"));
+    const extreme=group&&(share>=30||share<10);
+
+    // 같은 세력값에서 나온 "비중"과 "극단값"은 독립 근거 두 개로 세지 않는다.
+    if(group) addEvidence("GROUP:"+group+":"+share,"group-force:"+group);
+    if(row?.rel) addEvidence("REL:"+row.rel.type+":"+[row.rel.aPos,row.rel.bPos].sort().join("-"),"relation:"+row.rel.type+":"+[row.rel.aPos,row.rel.bPos].sort().join("-"));
+
     const st=synthesisFor(reasoning).mechanisms?.structure||{};
     const supportGroups=groupsFromGods([...(st.helpfulGods||[]),...(st.rescueGods||[]),...(st.structuralSupportGods||[]),...(st.structuralRescueGods||[])]);
     const harmGroups=groupsFromGods([...(st.harmfulGods||[]),...(st.structuralHarmGods||[])]);
-    if(group&&supportGroups.has(group)) evidenceIds.push("STRUCT_SUPPORT:"+group);
-    if(group&&harmGroups.has(group)) evidenceIds.push("STRUCT_HARM:"+group);
+    if(group&&supportGroups.has(group)) addEvidence("STRUCT_SUPPORT:"+group,"structure:"+group);
+    if(group&&harmGroups.has(group)) addEvidence("STRUCT_HARM:"+group,"structure:"+group);
+
     const pressure=synthesisFor(reasoning).mechanisms?.drive?.pressureGroup||reasoning?.integrated?.pressureGroup||"";
-    if(group&&group===pressure) evidenceIds.push("PRESSURE:"+group);
+    if(group&&group===pressure) addEvidence("PRESSURE:"+group,"pressure:"+group);
     const need=needGroupOf(reasoning);
-    if(group&&group===need) evidenceIds.push("PRESCRIPTION:"+group);
+    if(group&&group===need) addEvidence("PRESCRIPTION:"+group,"prescription:"+group);
+
     if(group&&supportGroups.has(group)&&harmGroups.has(group)) counterEvidenceIds.push("STRUCT_MIXED:"+group);
     const flags=synthesisFor(reasoning).contradictionFlags||[];
     if(flags.includes("body-vs-structure")) counterEvidenceIds.push("BODY_VS_STRUCTURE");
     if(flags.includes("visible-vs-actual-force")&&group) counterEvidenceIds.push("VISIBLE_VS_ACTUAL");
-    const independent=[...new Set(evidenceIds)];
-    const score=independent.length*2-counterEvidenceIds.length*1.5+(row?.rel?1:0);
-    const confidence=independent.length>=4&&counterEvidenceIds.length===0?"high":independent.length>=2?"supported":"guarded";
-    const safeTitle=row?.rel?"관계 자리 사이의 "+(REL_TYPE_NAME[row.rel.type]||"관계")+" 신호":(CONCERN_GROUP_SAFE_TITLE[s.concern]?.[group]||row?.title||"확인할 부분");
-    const safeReading=row?.rel?"두 자리 사이에 실제 관계 신호가 있어. 다만 이 신호 하나만으로 특정 사건이나 상대 행동을 확정하지 않아.":(CONCERN_GROUP_SAFE_READING[s.concern]?.[group]||"이 힘이 현재 고민에서 어떻게 쓰이는지 다른 근거와 함께 봐야 해.");
-    return {...row,evidenceIds:independent,counterEvidenceIds,score,confidence,safeTitle,safeReading};
+
+    const independentEvidenceCount=evidenceAxes.size;
+    const score=independentEvidenceCount*2+(extreme?0.5:0)-counterEvidenceIds.length*1.5;
+    const confidence=independentEvidenceCount>=3&&counterEvidenceIds.length===0?"high":independentEvidenceCount>=2?"supported":"guarded";
+    const safeTitle=row?.rel
+      ?"관계 자리 사이의 "+(REL_TYPE_NAME[row.rel.type]||"관계")+" 신호"
+      :(CONCERN_GROUP_SAFE_TITLE[s.concern]?.[group]||row?.title||"확인할 부분");
+    const safeReading=row?.rel
+      ?"두 자리 사이에 실제 관계 신호가 있어. 다만 이 신호 하나만으로 특정 사건이나 상대 행동을 확정하지 않아."
+      :(CONCERN_GROUP_SAFE_READING[s.concern]?.[group]||"이 힘이 현재 고민에서 어떻게 쓰이는지 다른 근거와 함께 봐야 해.");
+    return {...row,evidenceIds,counterEvidenceIds,evidenceAxes:[...evidenceAxes],independentEvidenceCount,score,confidence,safeTitle,safeReading};
   }
   function concernInterpretations(reasoning,s,sig,data){
     const rows=concernDiagnoses(reasoning,s,sig,data).map(row=>interpretationEvidence(reasoning,s,row));
@@ -3219,95 +3226,56 @@
   function concernDiagnoses(reasoning,s,sig,data){
     const sh=g=>groupShare(reasoning,g);
     const gs=god=>godShare(reasoning,god);
-    const v=verdictOf(reasoning), weak=v==="신약", strong=v==="신강";
-    const male=data?.gender==="male";
-    const k=s.key, c=s.concern;
+    const v=verdictOf(reasoning), weak=v==="신약";
+    const c=s.concern, k=s.key;
     const out=[];
-    const pick=map=>typeof map==="string"?map:(map[k]||map.default||"");
-    // 0%는 "0%로 적어" 대신 "거의 없어"로 쓴다.
-    // 퍼센트는 "사주 기운의 몇 %"로 풀어서 쓴다. 0%는 "거의 없어"로 쓴다.
-    const zero=w=>String(w||"")
-      .replace(/이 0%로 (아주 |가장 )?적어$/,"이 사주에 거의 없어").replace(/이 0%로 적고/,"이 거의 없고")
-      .replace(/이 (\d+)%로 (아주 |가장 )?적어$/,"이 사주 기운의 $1%밖에 안 돼")
-      .replace(/이 (\d+)%로 적고/,"이 사주 기운의 $1%밖에 안 되고")
-      .replace(/이 (\d+)%로 커$/,"이 사주 기운의 $1%나 돼")
-      .replace(/이 (\d+)%로 커서/,"이 사주 기운의 $1%나 돼서")
-      .replace(/이 (\d+)%로 (재성|관성|인성|식상|비겁|연인)/,"이 사주 기운의 $1%로 $2")
-      .replace(/이 (\d+)%나 되는데/,"이 사주 기운의 $1%나 되는데")
-      .replace(/이 (\d+)%인데/,"이 사주 기운의 $1%인데")
-      .replace(/은 (\d+)%인데/,"은 사주 기운의 $1%인데");
-    const add=(title,why,scene,group,rel)=>{ const t=pick(title); if(t&&scene) out.push({title:t,why:zero(why),scene,group:group||null,rel:rel||null}); };
-    const dayClash=relationRows(reasoning,sig).find(x=>(x.aPos==="day"||x.bPos==="day")&&x.type==="clash");
-    const dayGong=(sig?.gongmang?.positions||[]).includes("day");
+    const add=(title,why,group,rel,kind)=>{
+      if(!title||!why) return;
+      out.push({title,why,group:group||null,rel:rel||null,kind:kind||"structural"});
+    };
+
+    // 고민에 직접 닿는 자리 관계만 후보로 올린다. 관계 신호 자체가 사건 결과를 뜻하진 않는다.
     if(c==="love"){
-      const star=male?"wealth":"officer", starName=male?"재성":"관성";
-      const st=sh(star);
-      if(st>=35&&weak) add("연인 기운은 많은데, 그걸 감당할 네 힘이 약해","연인을 뜻하는 "+withJosa(starName,"이","가")+" "+st+"%나 되는데, 너 자신은 약한 편이야",pick({new:"그래서 만날 기회는 적지 않은데, 조건을 따지거나 결정을 미루다가 흐지부지되기 쉬워.",crush:"좋아하는 마음은 큰데 먼저 움직일 힘이 안 나서 타이밍을 놓치기 쉬워.",relationship:"상대에게 맞추느라 네 에너지가 먼저 바닥나기 쉬워.",breakup:"마음은 남아 있는데, 다시 시작할 힘이 없다고 느끼기 쉬워."}),star);
-      if(st<8) add("연인을 뜻하는 기운이 사주에 거의 없어",withJosa(starName,"이","가")+" "+st+"%로 아주 적어",pick({new:"그래서 인연이 저절로 굴러오는 사주가 아니야. 가만히 있으면 몇 년이 그냥 지나가고, 네가 직접 만남의 자리를 만들어야 인연이 생겨.",crush:"그래서 연애 신호를 읽는 게 서툴러서, 상대의 호감을 놓치기 쉬워.",relationship:"연애를 해도 연애가 삶의 중심이 되진 않아서, 상대가 서운해하기 쉬워.",breakup:"그래서 먼저 움직이지 않으면 인연이 다시 닿을 계기가 잘 안 생겨."}),star);
-      if(male&&sh("self")>=30&&sh("self")>st) add("연인 기운보다 경쟁·친구 기운이 더 커","친구·동료처럼 나와 나란히 서는 힘인 비겁이 "+sh("self")+"%로 연인을 뜻하는 재성 "+st+"%보다 커",pick({new:"그래서 좋은 사람을 만나도 친구로 끝나거나, 다른 사람에게 먼저 뺏기기 쉬워.",crush:"그래서 썸이 친구 같은 사이로 흘러가기 쉬워.",relationship:"연애에서도 누가 이기나 자존심 싸움이 붙기 쉬워.",breakup:"자존심 때문에 먼저 연락하는 게 제일 어려워."}),"self");
-      if(!male&&sh("self")>=35) add("네 기준이 강해서 상대에게 맞추기가 어려워","친구·동료처럼 나와 나란히 서는 힘인 비겁이 "+sh("self")+"%로 커",pick({new:"그래서 괜찮은 사람이 와도 ‘굳이?’ 하는 마음이 먼저 들어.",crush:"그래서 먼저 다가가는 게 자존심 상하는 일처럼 느껴져.",relationship:"연애에서도 내 방식을 지키려다 부딪히기 쉬워.",breakup:"자존심 때문에 먼저 연락하는 게 제일 어려워."}),"self");
-      if(male&&sh("officer")>=35) add("일과 책임이 먼저라, 연애에 쓸 힘이 남지 않아","책임과 평가를 뜻하는 관성이 "+sh("officer")+"%로 커",pick({new:"퇴근하고 나면 사람 만날 힘이 없고, 주말엔 쉬고 싶지? 그래서 연애가 늘 다음 순서로 밀려.",crush:"좋아하는 마음이 있어도 일이 먼저라, 연락이 뜸해지기 쉬워.",relationship:"일이 바쁠 때 연인을 뒤로 미루게 돼서, 상대가 서운해하기 쉬워.",breakup:"헤어진 이유가 결국 네가 바빴던 거라면, 그게 그대로면 다시 만나도 같아."}),"officer");
-      if(!male&&gs("정관")>=8&&gs("편관")>=8) add("끌리는 사람이 두 부류로 갈려","안정적인 연인을 뜻하는 정관과 강하게 끌리는 인연을 뜻하는 편관이 둘 다 있어",pick({new:"편한 사람은 설렘이 없고, 설레는 사람은 불안해서 한 사람으로 정하기가 어려워.",crush:"지금 상대가 편한 쪽인지 설레는 쪽인지에 따라 네 마음이 계속 흔들려.",relationship:"안정적인데 심심하다는 마음과 설레는데 불안하다는 마음이 번갈아 와.",breakup:"헤어진 사람이 편한 쪽이었는지 설레는 쪽이었는지에 따라 미련의 크기가 달라."}),"officer");
-      if(!male&&sh("output")>=30) add("상대를 보는 기준이 높고, 말이 먼저 나가","표현을 뜻하는 식상이 "+sh("output")+"%로 커서, 연인 기운인 관성을 누르는 배치야",pick({new:"마음에 안 드는 점이 먼저 보이고, 그걸 말하다 보면 상대가 물러서기 쉬워.",crush:"좋아도 장난이나 지적으로 표현해서, 상대가 헷갈리기 쉬워.",relationship:"서운한 걸 말할 때 말이 세게 나가서, 싸움이 커지기 쉬워.",breakup:"헤어질 때 했던 말이 상대 마음에 오래 남아 있을 수 있어."}),"output");
-      if(sh("print")>=35) add("마음이 확실해질 때까지 너무 오래 생각해","생각과 신중함을 뜻하는 인성이 "+sh("print")+"%로 커",pick({new:"좋은 사람이다 싶어도 확신이 올 때까지 기다리다가, 상대가 먼저 지쳐서 떠나기 쉬워.",crush:"상대 말 한마디를 며칠씩 해석하느라, 정작 답장은 늦어져.",relationship:"서운한 걸 말하기 전에 혼자 결론을 내려버리기 쉬워.",breakup:"헤어진 이유를 혼자 계속 곱씹으면서 시간이 흘러가."}),"print");
-      if(dayClash){
-        const other=dayClash.aPos==="day"?dayClash.bPos:dayClash.aPos;
-        const INTRUDE={year:"집안 어른이나 윗사람 일",month:"부모님이나 직장 일",hour:"아랫사람 일이나 나중 계획"};
-        add({new:"만나도 오래 붙잡아두기 어려운 배치야",crush:"가까워질 만하면 엇갈리는 배치야",relationship:"한번 싸우면 크게 번지는 배치야",breakup:"다시 만나도 같은 데서 부딪히기 쉬운 배치야"},
-          "배우자 자리와 "+POS_PERSON[other]+" 자리가 정면으로 부딪히는 충이 있어서, "+(INTRUDE[other]||"다른 일")+"이 연애에 자주 끼어들어",
-          pick({new:"그래서 인연이 아예 없는 게 아니라, 시작해도 생활 문제로 금방 흔들려서 ‘나는 인연이 없나’ 싶어지는 거야.",crush:"그래서 가까워질 만하면 꼭 한 번씩 엇갈려.",relationship:"좋을 땐 좋다가, 한번 싸우면 크게 번지기 쉬워.",breakup:"그래서 다시 만나도 같은 지점에서 부딪히기 쉬워."}),null,dayClash);
-      }
-      if(dayGong) add("배우자 자리가 비어 있는 공망 배치야","배우자 자리가 공망, 곧 비어 있는 자리에 걸려 있어",pick({new:"누굴 만나도 뭔가 채워지지 않는 느낌이 들어서, 이상형이 자꾸 높아지기 쉬워.",default:"상대가 곁에 있어도 가끔 허전한 마음이 드는 편이야."}));
-      if(sh("output")<8) add("좋아해도 티를 잘 안 내","표현을 뜻하는 식상이 "+sh("output")+"%로 적어",pick({new:"속으로는 호감이 있는데 상대는 네 마음을 몰라서, 그냥 아는 사이로 지나가기 쉬워.",crush:"네 마음을 상대가 몰라서, 썸이 제자리걸음이야.",relationship:"사랑한다는 말이나 표현이 부족해서, 상대가 불안해하기 쉬워.",breakup:"헤어질 때도 네 진짜 마음을 제대로 못 전했을 가능성이 커."}),"output");
-    } else if(c==="money"){
-      if(sh("wealth")>=35&&weak) add({saving:"돈 기운은 큰데, 붙잡아둘 네 힘이 약해",income:"기회는 많은데, 다 잡을 힘이 부족해",side:"벌이는 건 빠른데, 끝까지 키울 힘이 약해",flow:"돈은 크게 도는데, 관리할 힘이 약해"},"돈을 뜻하는 재성이 "+sh("wealth")+"%인데 너 자신은 약한 편이야",pick({saving:"돈은 잘 돌아오는데 들어오는 만큼 여기저기 나가서, 통장에 남는 게 없지?",income:"벌 기회는 많은데 다 잡으려다 지쳐서, 결국 제대로 키운 게 없기 쉬워.",side:"이것저것 벌이다가 하나도 끝까지 못 키우기 쉬워.",flow:"큰돈이 들어올 때도 있지만, 관리가 안 되면 그대로 빠져나가."}),"wealth");
-      if(sh("self")>=25&&sh("wealth")>0&&sh("self")>sh("wealth")) add("돈이 사람 사이에서 나눠지는 배치야","친구·동료처럼 나와 나란히 서는 힘인 비겁이 "+sh("self")+"%로 돈을 뜻하는 재성 "+sh("wealth")+"%보다 커",pick({saving:"모임비, 빌려준 돈, 대신 내준 밥값으로 돈이 흩어지지? 사람 좋다는 말은 듣는데 돈은 안 남아.",income:"같이 일하면 네 몫이 줄어들기 쉬워서, 공은 나눠지고 보상은 적어.",side:"동업이나 같이 하는 부업은 돈 문제로 끝나기 쉬워.",flow:"돈이 들어와도 사람 일로 나가는 게 커서, 흐름이 자꾸 끊겨."}),"self");
-      if(sh("wealth")<8) add("돈이 저절로 따라오는 사주는 아니야","돈을 뜻하는 재성이 "+sh("wealth")+"%로 적어",pick({saving:"그래서 크게 한 번 모이기보다, 조금씩 꾸준히 쌓아야 모여.",income:"운 좋게 돈이 굴러오길 기다리면 안 와. 대신 기술이나 자리로 돈을 불러오면 꾸준히 들어와.",side:"아무 부업이나 하면 시간만 쓰고 끝나. 네 기술이 들어가는 일이어야 돈이 돼.",flow:"그래서 돈 흐름이 크게 출렁이진 않지만, 크게 불어나지도 않아."}),"wealth");
-      if(sh("output")>=20&&sh("wealth")<12) add("재주는 있는데 돈으로 바꾸는 단계가 약해","만들어내는 힘인 식상은 "+sh("output")+"%인데 돈을 뜻하는 재성은 "+sh("wealth")+"%야",pick({default:"잘한다는 말은 많이 듣는데, 가격을 붙이거나 돈 얘기를 꺼내는 건 어색하지? 그래서 실력에 비해 버는 게 적어."}),"output");
-      if(sh("officer")>=35) add({saving:"책임과 체면에 나가는 돈이 커",income:"책임은 큰데, 보상 얘기를 못 꺼내",side:"본업 책임이 무거워서 부업에 쓸 힘이 없어",flow:"들어온 돈이 의무 지출로 먼저 빠져"},"책임과 체면을 뜻하는 관성이 "+sh("officer")+"%로 커",pick({saving:"경조사, 선물, 회비처럼 안 내면 불편한 돈이 계속 나가.",income:"책임은 계속 느는데 보상 얘기는 못 꺼내서, 일한 만큼 못 받아.",side:"본업 책임이 무거워서 부업에 쓸 힘이 잘 안 남아.",flow:"들어온 돈이 의무 지출로 먼저 빠져서, 남는 게 적어."}),"officer");
-      if(sh("print")>=35) add({saving:"준비와 자기계발에 돈이 새",default:"준비에 돈을 쓰고, 돈 버는 실행은 늦어"},"공부와 준비를 뜻하는 인성이 "+sh("print")+"%로 커",pick({default:"강의·책·자격증엔 돈을 쓰는데, 그걸로 돈을 버는 단계까지는 잘 안 가."}),"print");
-    } else if(c==="career"){
-      if(sh("officer")>=35&&weak) add({exam:"시험 부담이 네 힘보다 커",jobsearch:"붙어야 한다는 부담이 네 힘보다 커",default:"맡은 책임이 네 힘보다 커"},"책임과 평가를 뜻하는 관성이 "+sh("officer")+"%인데 너 자신은 약한 편이야",pick({exam:"시험에 대한 부담이 실력보다 커서, 시험장에서 긴장이 점수를 깎기 쉬워.",jobsearch:"그래서 면접장에서 긴장이 먼저 올라와서, 준비한 네 모습이 다 안 나와.",move:"일이 계속 늘어나는데 쉴 틈이 없어서, 떠나고 싶은 마음이 커진 거야.",current:"일은 계속 늘어나는데, 잘하고 있어도 늘 버거운 느낌이지?"}),"officer");
-      if(gs("상관")>=12&&sh("officer")>=10) add({exam:"정해진 답보다 네 답이 먼저 나와",jobsearch:"솔직함이 불만처럼 들리기 쉬워",default:"윗사람과 부딪히기 쉬운 배치야"},"바꾸려는 힘인 상관이 "+gs("상관")+"%, 윗사람과 평가를 뜻하는 관성이 "+sh("officer")+"%라 서로 부딪혀",pick({exam:"정해진 방식이 답답해서, 출제자가 원하는 답보다 내 답을 쓰기 쉬워.",jobsearch:"면접에서 솔직한 말이 불만처럼 들리기 쉬워.",move:"불합리한 걸 참다가 쌓인 게 이직 생각으로 이어진 거야.",current:"불합리한 걸 보면 말하고 싶은데, 말하면 찍히고 참으면 속이 터지지?"}),"output");
-      if(sh("officer")<8) add({exam:"남이 짠 계획으로는 힘이 안 나",jobsearch:"큰 조직의 틀에 맞추면 힘이 안 나",move:"지금 조직의 틀이 너한테 안 맞아",current:"조직이 알아서 챙겨주는 사주가 아니야"},"자리와 평가를 뜻하는 관성이 "+sh("officer")+"%로 적어",pick({exam:"누가 정해준 계획보다 네 방식대로 할 때 성적이 나오는데, 틀에 맞추려다 흐트러지기 쉬워.",jobsearch:"큰 조직의 틀에 맞추려고 하면 힘이 안 나. 네 역할이 분명한 곳에서 붙어.",move:"지금 조직의 틀 자체가 너한테 안 맞는 걸 수 있어.",current:"조직이 알아서 챙겨주길 기다리면 계속 밀려. 네가 먼저 드러내야 보여."}),"officer");
-      if(k==="exam"&&sh("wealth")>=25&&sh("print")<=15) add("공부에 집중할 힘을 딴 일이 흩트려","돈과 현실 일을 뜻하는 재성이 "+sh("wealth")+"%인데, 공부를 뜻하는 인성은 "+sh("print")+"%야",pick({default:"공부하려고 앉아도 돈, 약속, 할 일이 계속 떠올라서 집중이 끊기지?"}),"wealth");
-      if(sh("print")>=35) add({exam:"준비는 충분한데 실전 감각이 부족해",jobsearch:"준비만 길고 지원이 늦어",move:"옮길 준비만 하다 타이밍을 놓쳐",current:"완벽해질 때까지 붙잡고 있다가 늦어"},"준비와 공부를 뜻하는 인성이 "+sh("print")+"%로 커",pick({exam:"공부한 양은 많은데 시험장에선 생각만큼 안 나오지? 정리만 하다 문제 풀 시간이 모자랐던 거야.",jobsearch:"준비만 길어지고 지원은 늦어서, 좋은 자리를 먼저 놓치기 쉬워.",move:"옮길 준비만 계속하다가 타이밍을 놓치기 쉬워.",current:"완벽해질 때까지 붙잡고 있다가 보고 타이밍을 놓치기 쉬워."}),"print");
-      if(sh("self")>=35) add("조직의 지시보다 네 방식이 앞서","친구·동료처럼 나와 나란히 서는 힘인 비겁이 "+sh("self")+"%로 커",pick({exam:"남들 따라 하는 공부법이 안 맞아서, 네 방식을 찾기 전까지 헤매.",jobsearch:"시키는 대로 하는 자리에선 오래 못 버틸 것 같은 느낌이 먼저 들어.",move:"간섭이 많아질수록 떠나고 싶은 마음이 커져.",current:"시키는 대로 하는 게 답답해서, 조직 안에서 네 몫이 안 보이기 쉬워."}),"self");
-    } else if(c==="path"){
-      if(sh("output")<8) add("재능을 밖으로 꺼내는 힘이 약해","표현과 결과물을 뜻하는 식상이 "+sh("output")+"%로 적어",pick({lost:"뭘 잘하는지 몰라서가 아니라, 해보기 전에 멈춰서 네 재능이 드러날 기회가 없었던 거야.",current:"지금 길에서도 네가 잘하는 걸 보여줄 기회를 스스로 안 만들어서, 제자리처럼 느껴지는 거야.",switch:"지금 분야가 싫다기보다, 네 재능을 써볼 기회가 없어서 답답한 걸 수 있어.",strength:"강점이 없어서가 아니라, 밖으로 보여준 적이 적어서 스스로도 잘 몰라."}),"output");
-      if(sh("print")>=35) add("생각이 행동보다 앞서","생각과 준비를 뜻하는 인성이 "+sh("print")+"%로 커",pick({lost:"알아보고 고민하는 시간은 긴데, 직접 해본 경험이 적어서 확신이 안 생겨.",current:"지금 길이 맞는지 계속 생각만 하다가, 확인해볼 행동은 미뤄.",switch:"옮길 분야를 계속 알아보기만 하고, 실제로 발을 담가본 적은 없어서 결정이 안 나.",strength:"생각은 깊은데 결과로 보여준 게 적어서, 강점이 잘 안 드러나."}),"print");
-      if(sh("officer")<8&&k!=="strength") add("방향을 정해줄 기준이 약해","자리와 기준을 뜻하는 관성이 "+sh("officer")+"%로 적어",pick({lost:"하고 싶은 건 많은데 하나로 정하는 게 제일 어렵지? 기준이 없으니 매번 처음부터 고민하게 돼.",current:"잘하고 있는지 판단할 기준이 없어서, 남의 말 한마디에 흔들려.",switch:"옮기고 싶은 이유가 분명하지 않아서, 옮겨도 또 흔들릴 수 있어."}),"officer");
-      if(godRows(reasoning)[0]&&gs(godRows(reasoning)[0].god)<25) add("힘이 여러 곳에 고르게 나뉘어 있어","가장 큰 힘도 "+gs(godRows(reasoning)[0].god)+"%라, 한쪽으로 크게 쏠리지 않았어",pick({lost:"이것도 되고 저것도 돼서, 오히려 하나로 못 정하는 거야.",current:"여러 방향이 다 조금씩 맞아서, 지금 길만 고집할 이유가 약하게 느껴져.",switch:"다른 길도 될 것 같아서 자꾸 눈이 가는 거야.",strength:"강점이 한 가지로 튀지 않아서, 스스로 뭘 잘하는지 헷갈려."}));
-      if(sh("self")>=35) add("남이 정한 길이 안 맞는 사주야","친구·동료처럼 나와 나란히 서는 힘인 비겁이 "+sh("self")+"%로 커",pick({lost:"누가 좋다는 길을 가면 금방 흥미를 잃지? 네가 납득한 길이어야 오래 가.",current:"지금 길이 네가 고른 게 아니라면, 계속 답답할 수밖에 없어.",switch:"남이 정한 틀에서 벗어나고 싶은 마음이 전환 생각의 진짜 이유일 수 있어.",strength:"혼자 해낸 것들이 강점인데, 남 기준으로 보면 안 보여."}),"self");
+      const rel=relationRows(reasoning,sig).find(x=>x.aPos==="day"||x.bPos==="day");
+      if(rel) add("관계 자리에 "+(REL_TYPE_NAME[rel.type]||"관계")+" 신호가 있어",relationCore(reasoning,rel),null,rel,"relation");
     } else if(c==="people"){
       const pos={friend:["day"],work:["month"],family:["year","month"],distance:["year","month","day","hour"]}[k]||[];
       const rel=relationRows(reasoning,sig).find(x=>pos.includes(x.aPos)||pos.includes(x.bPos));
-      if(rel) add("애초에 부딪히기 쉬운 자리 배치가 있어",relationCore(reasoning,rel),pick({friend:"그래서 가까운 사이일수록 작은 말에 서운함이 쌓이기 쉬워.",work:"그래서 일하는 자리에서 특정 사람과 자꾸 엇갈려.",family:"그래서 가족 사이에서 같은 문제로 되풀이해서 부딪혀.",distance:"그래서 이 관계는 노력해도 완전히 편해지긴 어려운 쪽이야."}),null,rel);
-      if(sh("officer")>=35) add("거절을 못 해서 관계가 버거워져","책임과 도리를 뜻하는 관성이 "+sh("officer")+"%로 커",pick({default:"부탁을 받으면 일단 들어주고, 나중에 혼자 지치지? 그래서 관계가 점점 의무처럼 느껴져."}),"officer");
-      if(sh("self")>=30) add("대등함이 깨지면 참기가 힘들어","친구·동료처럼 나와 나란히 서는 힘인 비겁이 "+sh("self")+"%로 커",pick({default:"한쪽만 맞춰주는 관계가 되면 속으로 계속 불편해져. 누가 위냐가 은근히 신경 쓰이는 편이야."}),"self");
-      if(sh("output")>=30) add("말이 먼저 나가서 오해가 생겨","표현을 뜻하는 식상이 "+sh("output")+"%로 커",pick({default:"솔직하게 말한 건데 상대는 공격으로 받아들여서, 의도와 다르게 멀어지기 쉬워."}),"output");
-      if(sh("print")>=35) add("혼자 이해하고 참다가 지쳐","생각과 배려를 뜻하는 인성이 "+sh("print")+"%로 커",pick({default:"상대 입장을 먼저 이해해주다 보니, 네 서운함은 말할 타이밍을 계속 놓쳐."}),"print");
-      if(sh("wealth")>=35) add("주고받는 게 기울면 계산이 시작돼","현실 감각을 뜻하는 재성이 "+sh("wealth")+"%로 커",pick({default:"내가 더 많이 한다는 느낌이 들면, 겉으론 웃어도 속으론 거리를 두기 시작해."}),"wealth");
-    } else {
-      // 마음 고민은 고른 상황(번아웃·생각 과다·무기력·회복)에 맞는 이유부터 쓴다.
-      const thinker=gs("편인")>=15||sh("print")>=35;
-      if(k==="overthink"&&thinker) add("생각이 한번 시작되면 멈추지 않는 사주야","깊게 곱씹는 힘인 인성이 "+sh("print")+"%로 커","누우면 오늘 있었던 말들이 다시 떠오르지? 한번 시작된 생각이 끝까지 파고들어서, 몸보다 머리가 먼저 지쳐.","print");
-      if(k==="overthink"&&sh("wealth")>=35) add("경우의 수를 끝까지 계산하느라 생각이 안 끝나","현실 계산을 뜻하는 재성이 "+sh("wealth")+"%로 커","손해 볼 가능성을 하나씩 다 따지다 보니, 결론 대신 생각만 늘어나지?","wealth");
-      if(weak&&sh("print")<15) add({overthink:"머리를 쉬게 하는 스위치가 약해",low:"기운을 다시 채우는 힘이 약해",default:"충전하는 힘이 원래 약한 사주야"},"회복을 뜻하는 인성이 "+sh("print")+"%로 적고, 너 자신도 약한 편이야",pick({overthink:"몸은 누워 있어도 머리는 계속 돌아가지? 생각을 끄고 푹 쉬는 힘이 약해서, 한번 시작된 생각이 멈출 곳이 없어.",low:"쉬어도 기운이 안 차오르니까, 뭘 시작할 힘 자체가 안 나는 거야.",default:"쉬어도 개운하지 않고, 주말이 지나도 피곤이 그대로지? 그냥 쉬는 걸로는 부족하고, 제대로 채우는 방법이 따로 필요해."}),"print");
-      if(sh("officer")>=35) add({overthink:"잘못될까 봐 미리 걱정하는 쪽으로 생각이 돌아",default:"해야 할 일의 무게가 계속 쌓여"},"책임을 뜻하는 관성이 "+sh("officer")+"%로 커",pick({overthink:"해야 할 일과 잘못될 경우를 미리 다 떠올리다 보니, 생각이 걱정으로 번지지?",low:"해야 할 일이 너무 무거워서, 아예 손을 놓고 싶어지는 거야.",default:"쉬는 날에도 해야 할 일이 머릿속에서 안 떠나지? 몸은 쉬어도 마음은 계속 일하고 있어."}),"officer");
-      if(k!=="overthink"&&thinker) add("생각이 멈추지 않는 사주야","깊게 곱씹는 힘인 인성이 "+sh("print")+"%로 커","누우면 오늘 있었던 말들이 다시 떠오르지? 생각이 쉬질 않아서 몸보다 머리가 먼저 지쳐.","print");
-      if(sh("output")<8) add("쌓인 감정을 밖으로 빼는 통로가 좁아","감정을 밖으로 풀어내는 식상이 "+sh("output")+"%로 적어",pick({overthink:"생각을 말이나 행동으로 빼지 않으니까, 머릿속에서만 같은 생각이 계속 돌아.",default:"힘든 걸 말로 안 해서, 속에서만 계속 쌓여."}),"output");
-      if(sh("output")>=30&&weak) add("에너지를 밖으로 너무 많이 써","밖으로 쓰는 힘인 식상이 "+sh("output")+"%인데 너 자신은 약한 편이야",pick({default:"남들 챙기고 할 말 하고 나면, 정작 너한테 쓸 힘이 안 남아."}),"output");
-      if(sh("self")>=35) add("힘든 걸 혼자 다 떠안아","친구·동료처럼 나와 나란히 서는 힘인 비겁이 "+sh("self")+"%로 커",pick({overthink:"누구한테 털어놓지 않고 혼자 결론을 내려다 보니, 생각이 혼자 안에서만 돌아.",default:"도와달라는 말을 잘 안 해서, 힘든 게 너한테만 쌓여."}),"self");
+      if(rel) add("관계 자리 사이에 "+(REL_TYPE_NAME[rel.type]||"관계")+" 신호가 있어",relationCore(reasoning,rel),null,rel,"relation");
+    } else if(c==="career"){
+      const rel=relationRows(reasoning,sig).find(x=>["year","month"].includes(x.aPos)||["year","month"].includes(x.bPos));
+      if(rel) add("일·조직 자리 쪽에 "+(REL_TYPE_NAME[rel.type]||"관계")+" 신호가 있어",relationCore(reasoning,rel),null,rel,"relation");
     }
-    // 모든 고민 공통: 가장 약한 힘이 10% 아래면, 그 빈자리가 이 고민에서 어떻게 드러나는지도 이유로 쓴다.
-    const used=new Set(out.map(x=>x.group).filter(Boolean));
-    const weakest=weakestGroupOf(reasoning);
-    const WEAK_TITLE={output:"생각을 밖으로 꺼내는 힘이 약해",wealth:"애쓴 만큼 챙겨 받는 힘이 약해",officer:"스스로 기준과 기한을 세우는 힘이 약해",print:"쉬고 채우는 힘이 약해",self:"내 기준을 지키는 힘이 약해"};
-    const WEAK_MEAN={output:"표현과 결과물을 뜻하는 식상",wealth:"돈과 보상을 뜻하는 재성",officer:"기준과 책임을 뜻하는 관성",print:"회복과 배움을 뜻하는 인성",self:"나 자신을 지키는 힘인 비겁"};
-    const w={money:"돈 문제",career:"일",love:"연애",path:"진로",people:"관계",mental:"마음"}[c]||"이 고민";
-    const WEAK_SCENE={output:"그래서 "+w+"에서 생각은 많은데 말이나 행동으로 꺼내는 게 늦어져.",wealth:"그래서 "+w+"에서 애쓴 만큼 챙겨 받는 건 늘 뒤로 밀려.",officer:"그래서 "+w+"에서 정해진 기한이 없으면 끝까지 가기 어려워.",print:"그래서 "+w+"에서 지쳐도 제대로 쉬지 못하고 계속 버텨.",self:"그래서 "+w+"에서 남 맞추다 내 기준이 흐려지기 쉬워."};
-    if(weakest&&weakest.v<10&&!used.has(weakest.g)) add(WEAK_TITLE[weakest.g],WEAK_MEAN[weakest.g]+"이 "+weakest.v+"%로 가장 적어",WEAK_SCENE[weakest.g],weakest.g);
+
+    // 고민별로 의미가 있는 '관계식'만 추가한다. 생활 장면은 저장하지 않는다.
+    if(c==="money"){
+      if(sh("output")>=20&&sh("wealth")<12) add("결과를 만드는 힘에 비해 보상으로 연결하는 힘이 약해","표현·결과를 만드는 힘은 "+sh("output")+"%인데 돈·보상을 다루는 힘은 "+sh("wealth")+"%야","output",null,"cross-group");
+      if(sh("self")>=25&&sh("wealth")>0&&sh("self")>sh("wealth")) add("내 몫을 지키는 힘이 돈을 다루는 힘보다 커","내 기준과 경쟁을 뜻하는 힘은 "+sh("self")+"%, 돈·보상을 다루는 힘은 "+sh("wealth")+"%야","self",null,"cross-group");
+      if(sh("wealth")>=35&&weak) add("돈·기회를 다루는 힘이 내 감당력보다 커질 수 있어","돈·보상을 다루는 힘은 "+sh("wealth")+"%이고, 너 자신은 약한 편이야","wealth",null,"capacity");
+    } else if(c==="career"){
+      if(sh("officer")>=35&&weak) add("책임·평가의 압력이 내 감당력보다 커질 수 있어","책임·평가를 뜻하는 힘은 "+sh("officer")+"%이고, 너 자신은 약한 편이야","officer",null,"capacity");
+      if(gs("상관")>=12&&sh("officer")>=10) add("바꾸고 표현하는 힘과 조직 기준이 함께 강해","바꾸고 표현하는 상관은 "+gs("상관")+"%, 책임·평가를 뜻하는 힘은 "+sh("officer")+"%야","output",null,"cross-group");
+    } else if(c==="love"){
+      const spouseGroup=data?.gender==="male"?"wealth":data?.gender==="female"?"officer":null;
+      const spouseShare=spouseGroup?sh(spouseGroup):0;
+      if(spouseGroup&&spouseShare>=35&&weak) add("연인 관련 힘이 내 감당력보다 크게 작동할 수 있어","연인을 뜻하는 힘은 "+spouseShare+"%이고, 너 자신은 약한 편이야",spouseGroup,null,"capacity");
+      if(spouseGroup&&spouseShare<8) add("연인 관련 힘의 비중이 작아","연인을 뜻하는 힘이 전체의 "+spouseShare+"%야",spouseGroup,null,"group-low");
+    }
+
+    // 한쪽으로 크거나 작은 힘은 '후보'로만 올린다. 이후 독립 근거와 반대 근거가 확신도를 결정한다.
+    for(const group of ["self","output","wealth","officer","print"]){
+      const share=sh(group);
+      if(share>=30){
+        add(CONCERN_GROUP_SAFE_TITLE[c]?.[group]||GROUP_NAME[group]+"의 비중이 커",
+          (GROUP_NAME[group]||group)+" 쪽 힘이 전체의 "+share+"%로 크게 잡혀 있어",
+          group,null,"group-high");
+      } else if(share<10){
+        add(CONCERN_GROUP_SAFE_TITLE[c]?.[group]||GROUP_NAME[group]+"의 비중이 작아",
+          (GROUP_NAME[group]||group)+" 쪽 힘이 전체의 "+share+"%로 작게 잡혀 있어",
+          group,null,"group-low");
+      }
+    }
+
     return out;
   }
 
@@ -3324,7 +3292,7 @@
     const modifier=causeModifier(reasoning,s,sig);
     const weakest=weakestGroupOf(reasoning);
     const weakUsed=list.some(x=>x.group===weakest?.g);
-    const details=detailsBlock([d1?"교차검증 근거 "+d1.evidenceIds.length+"개 · 반대 근거 "+d1.counterEvidenceIds.length+"개":"",top?"사주에서 가장 크게 잡힌 힘은 "+top.god+"이고, 전체 힘의 "+godShare(reasoning,top.god)+"%야.":"",bondSentence(reasoning),weakUsed?"":weakLinkSentence(reasoning).replace(/<[^>]+>/g,"")]);
+    const details=detailsBlock([d1?"독립 근거 "+d1.independentEvidenceCount+"개 · 반대 근거 "+d1.counterEvidenceIds.length+"개":"",top?"사주에서 가장 크게 잡힌 힘은 "+top.god+"이고, 전체 힘의 "+godShare(reasoning,top.god)+"%야.":"",bondSentence(reasoning),weakUsed?"":weakLinkSentence(reasoning).replace(/<[^>]+>/g,"")]);
     return [lead1,why,second,guarded,list.length?"":modifier,details].filter(Boolean).join("<br><br>");
   }
 
@@ -3695,8 +3663,8 @@
       fingerprint:r.structureFingerprint+"|"+s.concern+"|"+s.key,
       genericClusterDependency:false,
       genericSituationDependency:false,
-      behaviorTemplateDependency:false,
-      behaviorTemplateRole:"expression-only",
+      behaviorTemplateDependency:true,
+      behaviorTemplateRole:"claim-bounded-domain-translation",
       behaviorTemplateFieldsUsed:["SIDE_OPTION","SIDE_ITEMS","INCOME_OPTION","JOB_OPTION","PATH_OPTION","SAVE_STYLE"],
       structureFingerprint:r.structureFingerprint,
       timingFingerprint:r.timingFingerprint,
@@ -3710,7 +3678,7 @@
         primaryGroup:grounding.primaryGroup,
         secondaryGroup:grounding.secondaryGroup,
         groupShares:grounding.groupShares,
-        selected:grounding.selectedInterpretations.map(x=>({title:x.safeTitle,group:x.group||null,confidence:x.confidence,evidenceIds:x.evidenceIds,counterEvidenceIds:x.counterEvidenceIds})),
+        selected:grounding.selectedInterpretations.map(x=>({title:x.safeTitle,group:x.group||null,confidence:x.confidence,independentEvidenceCount:x.independentEvidenceCount,evidenceIds:x.evidenceIds,evidenceAxes:x.evidenceAxes,counterEvidenceIds:x.counterEvidenceIds})),
       },
       semanticCoverage:{
         noteCountWithFacts:semanticCovered,
