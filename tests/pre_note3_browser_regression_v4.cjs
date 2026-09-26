@@ -202,6 +202,13 @@ async function load(page) {
       '개수는 원국 겉글자 기준',
       '한국 만세력 기준',
       '시간 -30분 보정',
+      '지원 신호',
+      '보완 후보',
+      '두 번째 축',
+      '현실의 규칙',
+      '중요하게 작동',
+      '시기 신호',
+      '준비 신호',
     ];
     const jargon = ['십신','격국','용신','신강','신약','월령','지장간','상신','기신','세운'];
     const fMarkers = ['언니','마음','같이','보자','해보자','덜','편','괜찮'];
@@ -235,6 +242,8 @@ async function load(page) {
         `concern translation is being misreported as engine evidence in ${set.key}/${set.mode}`
       );
       assert(!/(비밀\s*메모|실전 룰|반복 패턴)/.test(full), `old answer wording ${set.key}/${set.mode}`);
+      assert(!/(쪽 힘|힘의 비중|사주에서 먼저 시험해볼|사주에서 먼저 비교할)/.test(full),
+        `engine-like abstraction leaked into user copy ${set.key}/${set.mode}: ${full}`);
       if (set.mode === 'F') fText += ' ' + full; else tText += ' ' + full;
       summary.push({key:set.key, mode:set.mode, titles:set.notes.map(n=>n.title)});
     }
