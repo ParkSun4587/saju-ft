@@ -93,8 +93,26 @@ function norm(v) {
     };
     const cfA=forceGroup(cfGroups[0]);
     const cfB=forceGroup(cfGroups[1]);
-    const planA=globalThis.__CONCERN_NOTE_ENGINE_V2__._testGrounding(cfA,cfDiag.situation,cfData);
-    const planB=globalThis.__CONCERN_NOTE_ENGINE_V2__._testGrounding(cfB,cfDiag.situation,cfData);
+
+    // 처방처럼 NOTE4를 직접 결정하는 엔진 입력은 바뀌면 실제 NOTE4 문장도 바뀌어야 한다.
+    const forcePrescription=(element)=>{
+      const cloned=JSON.parse(JSON.stringify(cfDiag.reasoning));
+      cloned.synthesis=cloned.synthesis||{};
+      cloned.synthesis.mechanisms=cloned.synthesis.mechanisms||{};
+      cloned.synthesis.mechanisms.adjustment=cloned.synthesis.mechanisms.adjustment||{};
+      cloned.synthesis.mechanisms.adjustment.prescription={
+        ...(cloned.synthesis.mechanisms.adjustment.prescription||{}),
+        sequence:[{element}],
+        overlapElements:[element],
+      };
+      return cloned;
+    };
+    const prA=forcePrescription('hwa');
+    const prB=forcePrescription('su');
+    const planPrA=globalThis.__CONCERN_NOTE_ENGINE_V2__._testGrounding(prA,cfDiag.situation,cfData);
+    const planPrB=globalThis.__CONCERN_NOTE_ENGINE_V2__._testGrounding(prB,cfDiag.situation,cfData);
+    const note4A=globalThis.__CONCERN_NOTE_ENGINE_V2__._testNoteFix(prA,cfDiag.situation,cfData,'F');
+    const note4B=globalThis.__CONCERN_NOTE_ENGINE_V2__._testNoteFix(prB,cfDiag.situation,cfData,'F');
 
     return {
       engine:globalThis.__CONCERN_NOTE_ENGINE_V2__,
@@ -120,10 +138,10 @@ function norm(v) {
         groups:cfGroups,
         topA:globalThis.__CONCERN_NOTE_ENGINE_V2__._testTopGroup(cfA),
         topB:globalThis.__CONCERN_NOTE_ENGINE_V2__._testTopGroup(cfB),
-        primaryA:planA.primaryGroup,
-        primaryB:planB.primaryGroup,
-        selectedA:planA.selectedInterpretations.map(x=>x.safeTitle),
-        selectedB:planB.selectedInterpretations.map(x=>x.safeTitle),
+        prescriptionA:planPrA.needGroup,
+        prescriptionB:planPrB.needGroup,
+        note4A:localNorm(note4A),
+        note4B:localNorm(note4B),
       },
     };
   });
@@ -226,9 +244,9 @@ function norm(v) {
   assert(result.counterfactual.groups.length===2 && result.counterfactual.topA===result.counterfactual.groups[0] && result.counterfactual.topB===result.counterfactual.groups[1],
     'aggregate group counterfactual did not change topGroup '+JSON.stringify(result.counterfactual));
   assert(
-    result.counterfactual.primaryA!==result.counterfactual.primaryB ||
-    JSON.stringify(result.counterfactual.selectedA)!==JSON.stringify(result.counterfactual.selectedB),
-    'changing engine ten-god forces did not change the concern interpretation '+JSON.stringify(result.counterfactual)
+    result.counterfactual.prescriptionA!==result.counterfactual.prescriptionB &&
+    result.counterfactual.note4A!==result.counterfactual.note4B,
+    'changing the engine prescription did not change NOTE4 '+JSON.stringify(result.counterfactual)
   );
   assert(errors.length === 0, 'browser errors: '+errors.join(' | '));
 
