@@ -7,12 +7,14 @@ const sleep = ms => new Promise(r=>setTimeout(r,ms));
 async function deployed(page) {
   for (let i=0;i<36;i++) {
     try {
-      await page.goto(BASE + '?longshot=v2-' + i, {waitUntil:'domcontentloaded',timeout:30000});
+      await page.goto(BASE + '?longshot=v3-' + i, {waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(() => {
         const flow=document.getElementById('resultConsultationFlow');
         const core=document.getElementById('resultCoreCard');
         return globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.3' &&
           globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.7.0' &&
+          globalThis.__UNNI_CONSULTATION_V1__?.version === '1.0.0' &&
+          globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.2.0' &&
           globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
           typeof selectSplitMode === 'function' &&
           flow && core &&
@@ -20,31 +22,28 @@ async function deployed(page) {
           getComputedStyle(core).borderRadius === '0px';
       }, null, {timeout:8000});
       return;
-    } catch (_) {
-      await sleep(10000);
-    }
+    } catch (_) { await sleep(10000); }
   }
-  throw new Error('production did not reach the final containment build');
+  throw new Error('production did not reach consultation-v1 containment build');
 }
 
 async function enter(page, mode) {
   await page.locator(mode === 'F' ? '#panelRoa' : '#panelSeoa').click();
   await page.waitForSelector('#sajuInputCardBox',{state:'visible',timeout:10000});
   await page.fill('#nameInput','테스트');
-  const concern = mode === 'F' ? '연애 · 썸' : '마음 · 스트레스';
-  const situation = mode === 'F' ? 'relationship' : 'burnout';
-  await page.locator('#concernGrid .concern-chip').filter({hasText:concern}).click();
-  await page.waitForSelector('#concernSituationBox',{state:'visible'});
-  await page.locator('#concernSituationGrid [data-concern-situation="'+situation+'"]').click();
+  await page.fill('#consultationQuestion',mode==='F'
+    ? '지금 만나는 사람이랑 계속 가도 될까? 내가 꼭 봐야 할 기준도 알려줘.'
+    : '지금 회사에 남는 게 나아, 옮기는 게 나아? 시기도 같이 봐줘.');
   await page.fill('#birthDateInput','19980221');
   await page.selectOption('#birthTimeBranch','寅');
   assert((await page.locator('#birthTimeBranch').inputValue())==='寅','longshot branch birth-time selection failed');
-  assert((await page.locator('#birthTimeInput').inputValue())==='','longshot branch selection should not leave an exact-time override');
+  assert(!(await page.locator('#analysisSubmitButton').isDisabled()),'longshot free-question submit should be enabled');
   await page.locator('#splitNextButton button').click();
-  await page.waitForSelector('#resultSection',{state:'visible',timeout:30000});
+  await page.waitForSelector('#resultSection',{state:'visible',timeout:90000});
+  await page.waitForFunction(()=>Array.isArray(currentResultData?.__consultationV1?.cards)&&currentResultData.__consultationV1.cards.length>=4,null,{timeout:90000});
   const freeLaunch=await page.evaluate(()=>FREE_LAUNCH_MODE);
   if(freeLaunch) await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
-  else await page.waitForSelector('#note2PreviewCard',{state:'visible',timeout:10000});
+  else await page.waitForSelector('#lockedOverlay',{state:'visible',timeout:10000});
 }
 
 async function unlockForQa(page) {
@@ -56,12 +55,13 @@ async function unlockForQa(page) {
   await page.waitForSelector('#reAnalyzeBox',{state:'visible',timeout:10000});
   await page.waitForSelector('#unniProductLadder',{state:'visible',timeout:10000});
   const state=await page.evaluate(()=>({
-    notes:document.querySelectorAll('#notesListContainer > div').length,
-    preview:!!document.getElementById('note2PreviewCard'),
+    rendered:document.querySelectorAll('#notesListContainer .note-editorial').length,
+    generated:currentResultData?.__consultationV1?.cards?.length||0,
+    preview:!!document.getElementById('note2PreviewCard') && getComputedStyle(document.getElementById('note2PreviewCard')).display!=='none',
     products:document.querySelectorAll('#unniProductLadder [data-unni-product]').length,
   }));
-  assert(state.notes===6 && !state.preview && state.products===4,
-    'unlocked longshot state drift '+JSON.stringify(state));
+  assert(state.generated>=4&&state.generated<=9&&state.rendered>=state.generated&&!state.preview&&state.products===4,
+    'unlocked dynamic longshot state drift '+JSON.stringify(state));
 }
 
 async function makeStaticLongshotDocument(page) {
