@@ -174,25 +174,29 @@ async function load(page) {
 
     assert(copyAudit.out.length === 12, `copy audit set count ${copyAudit.out.length}`);
 
-    const situationUi = await page.evaluate(() => {
-      const out = {};
-      for (const key of ['money','career','love','path','people','mental']) {
-        renderConcernSituationPicker(key);
-        out[key] = {
-          prompt:document.getElementById('concernSituationPrompt').innerText,
-          count:document.querySelectorAll('#concernSituationGrid [data-concern-situation]').length,
-          labels:[...document.querySelectorAll('#concernSituationGrid [data-concern-situation]')].map((el) => el.innerText),
-        };
-      }
-      return out;
+    const consultationUi = await page.evaluate(() => {
+      const input=document.getElementById('consultationQuestion');
+      const runtime=globalThis.__UNNI_CONSULTATION_V1__;
+      return {
+        runtimeVersion:runtime?.version||'',
+        hasInput:!!input,
+        key:document.getElementById('selectedConcernKey')?.value||'',
+        situation:document.getElementById('selectedConcernSituation')?.value||'',
+        prompt:document.getElementById('concernPickerPrompt')?.innerText||'',
+        hint:document.getElementById('consultationQuestionHint')?.innerText||'',
+        examples:document.querySelectorAll('#consultationQuestionExamples button').length,
+        oldConcernGrid:!!document.getElementById('concernGrid'),
+        oldSituationBox:!!document.getElementById('concernSituationBox'),
+        maxLength:Number(input?.getAttribute('maxlength')||0),
+      };
     });
-    for (const [key, row] of Object.entries(situationUi)) {
-      assert(row.count === 4, `${key} must expose 4 situations, got ${row.count}`);
-      assert(row.prompt.length > 5, `${key} situation prompt missing`);
-    }
-    assert(situationUi.love.labels.some((x) => x.includes('지금 연애 중이야')), 'love relationship situation missing');
-    assert(situationUi.love.labels.some((x) => x.includes('헤어진 사람이 있어')), 'love breakup situation missing');
-    assert(situationUi.love.labels.some((x) => x.includes('새로운 인연을 만나고 싶어')), 'love new-person situation missing');
+    assert(consultationUi.runtimeVersion==='1.0.0','free-question consultation runtime missing '+JSON.stringify(consultationUi));
+    assert(consultationUi.hasInput&&consultationUi.key==='consultation'&&consultationUi.situation==='free',
+      'free-question input contract missing '+JSON.stringify(consultationUi));
+    assert(consultationUi.prompt.includes('그대로')&&consultationUi.hint.includes('카테고리 고를 필요 없어')&&consultationUi.examples>=4,
+      'natural-language question guidance missing '+JSON.stringify(consultationUi));
+    assert(!consultationUi.oldConcernGrid&&!consultationUi.oldSituationBox&&consultationUi.maxLength===500,
+      'fixed six-concern / four-situation UI returned '+JSON.stringify(consultationUi));
     const banned = [
       '언니가 잡은 사주 근거',
       '언니가 잡은 계산 근거',
