@@ -327,7 +327,7 @@ async function load(page) {
     await page.close();
   }
 
-  // B2. Every concern/situation must have a concrete conversion bridge in both voices.
+  // B2. Dynamic free-question paywall must be built from this question's consultation sections.
   {
     const page = await context.newPage();
     const errs = [];
@@ -335,49 +335,48 @@ async function load(page) {
     page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
     await load(page);
     const coverage = await page.evaluate(() => {
-      const situations = {
-        money:['saving','income','side','flow'],
-        career:['exam','jobsearch','move','current'],
-        love:['crush','relationship','breakup','new'],
-        path:['lost','current','switch','strength'],
-        people:['friend','work','family','distance'],
-        mental:['burnout','overthink','low','recover'],
-      };
-      const rows = [];
-      for (const [concernKey, keys] of Object.entries(situations)) {
-        for (const concernSituation of keys) {
-          for (const isT of [false, true]) {
-            const copy = getPaywallConversionCopy({concernKey, concernSituation}, isT);
-            rows.push({
-              id: concernKey + '/' + concernSituation + '/' + (isT ? 'T' : 'F'),
-              hook:copy?.hook || '',
-              sub:copy?.sub || '',
-              preview:copy?.preview || '',
-              teaser:copy?.teaser || '',
-              priceTitle:copy?.priceTitle || '',
-              features:Array.isArray(copy?.features) ? copy.features : [],
-            });
-          }
-        }
+      const sampleCards = [
+        {title:'내가 지금 선택에서 먼저 봐야 할 기준',badge:'네 질문의 답'},
+        {title:'왜 같은 선택도 오래 버티는 정도가 다른지',badge:'왜 이런 답인지'},
+        {title:'잘 맞는 길도 이 조건이면 소모되는 이유',badge:'특히 조심할 것'},
+        {title:'결정 전에 실제로 확인해야 할 한 가지',badge:'지금 할 일'},
+      ];
+      const rows=[];
+      for (const isT of [false,true]) {
+        const copy=getPaywallConversionCopy({
+          concernKey:'consultation',
+          concernSituation:'free',
+          userQuestion:'사업하려는데 AI 앱이랑 음식점 중 뭐가 더 맞고 언제 시작하는 게 좋아?',
+          __consultationV1:{cards:sampleCards},
+        },isT);
+        rows.push({
+          mode:isT?'T':'F',
+          hook:copy?.hook||'',
+          sub:copy?.sub||'',
+          preview:copy?.preview||'',
+          teaser:copy?.teaser||'',
+          priceTitle:copy?.priceTitle||'',
+          features:Array.isArray(copy?.features)?copy.features:[],
+        });
       }
       return rows;
     });
-    assert(coverage.length === 48, `paywall coverage rows=${coverage.length}`);
-    for (const row of coverage) {
-      assert(row.hook.length >= 18, `${row.id}: hook too weak/missing`);
-      assert(row.sub.length >= 14, `${row.id}: sub missing`);
-      assert(row.preview.length >= 18, `${row.id}: preview missing`);
-      assert(row.teaser.length >= 14 && row.teaser.includes('…'), `${row.id}: cliffhanger missing`);
-      assert(row.priceTitle.length >= 8, `${row.id}: price title missing`);
-      assert(row.features.length === 3 && row.features.every(Boolean), `${row.id}: paid outcomes must be exactly 3`);
+    assert(coverage.length===2,'dynamic paywall must support both F/T');
+    for(const row of coverage){
+      assert(row.hook.length>=18,row.mode+': hook too weak/missing');
+      assert(row.sub.length>=14,row.mode+': sub missing');
+      assert(row.preview.includes('왜 같은 선택도 오래 버티는 정도가 다른지'),row.mode+': preview must come from this consultation '+row.preview);
+      assert(row.teaser.includes(row.preview)&&row.teaser.includes('…'),row.mode+': dynamic cliffhanger missing '+row.teaser);
+      assert(row.priceTitle.length>=8,row.mode+': price title missing');
+      assert(row.features.length===3&&row.features.every(Boolean),row.mode+': paid outcomes must be exactly 3');
+      assert(row.features[0].includes('왜 같은 선택도 오래 버티는 정도가 다른지'),row.mode+': feature 1 did not follow dynamic section');
+      assert(row.features[1].includes('잘 맞는 길도 이 조건이면 소모되는 이유'),row.mode+': feature 2 did not follow dynamic section');
+      assert(row.features[2].includes('결정 전에 실제로 확인해야 할 한 가지'),row.mode+': feature 3 did not follow dynamic section');
     }
-    assert(new Set(coverage.filter(x => x.id.endsWith('/F')).map(x => x.teaser)).size === 24,
-      'F cliffhangers are not situation-specific across all 24 paths');
-    assert(new Set(coverage.filter(x => x.id.endsWith('/T')).map(x => x.teaser)).size === 24,
-      'T cliffhangers are not situation-specific across all 24 paths');
-    assert(errs.length === 0, `paywall coverage browser errors: ${errs.join(' | ')}`);
+    assert(coverage[0].hook!==coverage[1].hook,'F/T paywall voice must differ while facts stay aligned');
+    assert(errs.length===0,`dynamic paywall browser errors: ${errs.join(' | ')}`);
     await page.close();
-    console.log('PAYWALL_CONVERSION_COVERAGE_PASS');
+    console.log('DYNAMIC_PAYWALL_CONVERSION_PASS');
   }
   // C. Every birth-time choice must reach the calculated result and the visible hour pillar.
   {
