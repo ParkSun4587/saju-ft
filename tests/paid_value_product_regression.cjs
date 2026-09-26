@@ -1062,7 +1062,7 @@ function mockConsultation(question, mode='F') {
   const fullSections = await page.locator('#unniProductBody section').count();
   assert(fullSections === 12, `full_saju section count ${fullSections}`);
   assert(modal.includes('내 사주 전체 핵심') && modal.includes('큰 흐름 전환 + 평생 사용법'), 'full_saju preview content missing');
-  assert((modal.includes('방금 본 고민 하나를 길게 반복하는 결과가 아니야') || modal.includes('지금 고민 하나를 또 풀어쓰는 결과가 아니야')) && modal.includes('앞으로 5년 큰 흐름'), 'full_saju differentiation/long-term content missing');
+  assert((modal.includes('방금 본 질문 하나를 길게 반복하는 결과가 아니야') || modal.includes('지금 질문 하나를 또 풀어쓰는 결과가 아니야')) && modal.includes('앞으로 5년 큰 흐름'), 'full_saju differentiation/long-term content missing');
   assert(await page.locator('#unniProductBody [data-product-contract="full_saju"]').count()===1,'full_saju contract marker missing');
   assert(await page.locator('#unniProductBody [data-structure-fingerprint]').getAttribute('data-structure-fingerprint'),'full_saju reasoning fingerprint missing');
   assert(await page.locator('#unniProductSaveAll').isVisible(), 'full_saju full-report save button missing');
