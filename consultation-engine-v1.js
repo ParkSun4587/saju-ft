@@ -1,8 +1,9 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.0.0";
+  const VERSION = "1.1.0";
   const ENDPOINT = "/api/consultation";
+  const PREVIEW_ENDPOINT = "/api/consultation-preview";
   const MIN_QUESTION = 4;
   const MAX_QUESTION = 500;
 
@@ -343,12 +344,49 @@
     ].join("|");
   }
 
-  async function requestConsultation(data, mode) {
+  function consultationAccess(data) {
+    const userKey = typeof global.getUserUniqueKey === "function" ? global.getUserUniqueKey(data) : "";
+    let token = "";
+    try {
+      if (userKey && typeof global.readStore === "function") token = global.readStore("tok_" + userKey) || "";
+      if (!token && userKey) token = global.localStorage?.getItem?.("tok_" + userKey) || "";
+    } catch {}
+    return { userKey, token };
+  }
+
+  async function requestPreview(data, mode) {
     const packet = buildEvidencePacket(data, mode);
-    const response = await fetch(ENDPOINT, {
+    const response = await fetch(PREVIEW_ENDPOINT, {
       method:"POST",
       headers:{"Content-Type":"application/json",Accept:"application/json"},
       body:JSON.stringify({ evidencePacket:packet }),
+      cache:"no-store",
+      credentials:"same-origin",
+      referrerPolicy:"strict-origin-when-cross-origin",
+    });
+    const raw = await response.text();
+    let payload = null;
+    try { payload = raw ? JSON.parse(raw) : null; } catch {}
+    if (!response.ok || !payload?.ok) {
+      const error = new Error(payload?.message || "첫 판단 생성에 실패했어.");
+      error.code = payload?.code || "CONSULTATION_PREVIEW_HTTP_" + response.status;
+      throw error;
+    }
+    return { ...payload, evidencePacket:packet };
+  }
+
+  async function requestConsultation(data, mode) {
+    const packet = buildEvidencePacket(data, mode);
+    const access = consultationAccess(data);
+    if (!access.userKey || !access.token) {
+      const error = new Error("PAID_ACCESS_REQUIRED");
+      error.code = "PAID_ACCESS_REQUIRED";
+      throw error;
+    }
+    const response = await fetch(ENDPOINT, {
+      method:"POST",
+      headers:{"Content-Type":"application/json",Accept:"application/json"},
+      body:JSON.stringify({ evidencePacket:packet, access }),
       cache:"no-store",
       credentials:"same-origin",
       referrerPolicy:"strict-origin-when-cross-origin",
@@ -428,6 +466,60 @@
   }
 
   const inflight = new Map();
+  const previewInflight = new Map();
+
+  function previewKey(packet, mode) {
+    return "preview|" + runtimeKey(packet, mode);
+  }
+
+  async function generatePreview(data, mode) {
+    const normalizedMode = mode === "T" ? "T" : "F";
+    const packet = buildEvidencePacket(data, normalizedMode);
+    const key = previewKey(packet, normalizedMode);
+    if (data?.__consultationPreviewV1?.key === key && data.__consultationPreviewV1?.directAnswer) {
+      return data.__consultationPreviewV1;
+    }
+    if (previewInflight.has(key)) return previewInflight.get(key);
+    const promise = requestPreview(data, normalizedMode)
+      .then((result) => {
+        const stored = {
+          key,
+          version:VERSION,
+          generatedAt:new Date().toISOString(),
+          model:result?.model || "",
+          directAnswer:cloneJson(result?.directAnswer || {}, {}),
+          followUp:cloneJson(result?.followUp || {}, {}),
+          paidScope:cloneJson(result?.paidScope || [], []),
+          handoff:String(result?.handoff || ""),
+          usageBreakdown:cloneJson(result?.usageBreakdown || null, null),
+        };
+        data.__consultationPreviewV1 = stored;
+        return stored;
+      })
+      .finally(() => previewInflight.delete(key));
+    previewInflight.set(key,promise);
+    return promise;
+  }
+
+  function getPreview(data, mode) {
+    try {
+      const packet=buildEvidencePacket(data, mode);
+      const key=previewKey(packet, mode);
+      return data?.__consultationPreviewV1?.key===key ? data.__consultationPreviewV1 : null;
+    } catch { return null; }
+  }
+
+  function selectPreviewOption(data, index) {
+    const preview=data?.__consultationPreviewV1;
+    const options=Array.isArray(preview?.followUp?.options)?preview.followUp.options:[];
+    const chosen=options[Number(index)];
+    if (!chosen) return null;
+    preview.selectedOption = Number(index);
+    preview.selectedLabel = chosen.label || "";
+    preview.selectedResponse = chosen.response || "";
+    preview.selectedFocus = chosen.focus || "";
+    return chosen;
+  }
 
   async function generate(data, mode) {
     const normalizedMode = mode === "T" ? "T" : "F";
@@ -497,7 +589,11 @@
     maxQuestionLength:MAX_QUESTION,
     normalizeQuestion,
     buildEvidencePacket,
+    requestPreview,
     requestConsultation,
+    generatePreview,
+    getPreview,
+    selectPreviewOption,
     mapToCards,
     generate,
     getCards,
