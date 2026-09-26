@@ -590,7 +590,7 @@ async function load(page) {
       const exactToggle = document.getElementById('birthTimeExactToggle');
       const exactWrap = document.getElementById('birthTimeExactWrap');
       const exactInput = document.getElementById('birthTimeInput');
-      if (/^([01]\\d|2[0-3]):[0-5]\\d$/.test(c.time)) {
+      if (/^([01]\d|2[0-3]):[0-5]\d$/.test(c.time)) {
         exactToggle.checked = true;
         exactWrap.classList.remove('hidden');
         exactInput.value = c.time;
