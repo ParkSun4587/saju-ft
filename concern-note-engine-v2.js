@@ -1722,7 +1722,12 @@
     if(!info.length) return [];
     return info.map(x=>{
       const head="<b>"+x.when+" "+x.name+"</b> — ";
-      if(!x.pos.length&&!x.neg.length) return head+word+"에서 큰 변화가 두드러지는 해는 아니야. 해 전체를 기다리기보다 좋은 달을 골라 움직이는 게 나아.";
+      if(!x.pos.length&&!x.neg.length){
+        const tail=x.when==="올해"
+          ?"올해 전체를 기다리기보다, 아래에서 좋은 달을 골라 움직이는 게 나아."
+          :"내년 전체가 확 바뀌는 해는 아니라서, 실제로 좋은 달이 올 때 움직이는 게 나아.";
+        return head+word+"에서 큰 변화가 두드러지는 해는 아니야. "+tail;
+      }
       const p=x.pos[0], n=x.neg[0];
       if(p&&(!n||x.score>=0)){
         const pe=eOf(p);
@@ -2242,12 +2247,13 @@
     const first=p[0], second=p[1];
     const prev=posSigs(prevItem);
     if(!first) return "이 고민에서는 평소보다 움직여보기 괜찮은 달이야.";
-    const repeat=prev[0]&&first.n===prev[0].n
-      ?"앞달과 같은 좋은 흐름이 이어져."
-      :"이 고민에서 움직이기 좋은 쪽으로 계산돼.";
+    const same=prev[0]&&first.n===prev[0].n;
+    const lead=same
+      ?"앞달에 이어 "+withJosa(first.n,"이","가")+" 다시 들어와."
+      :withJosa(first.n,"이","가")+" 들어오는 달이야.";
     const effect=first.e?" "+first.e+".":"";
     const extra=second?.e&&second.e!==first.e?" 여기에 "+second.e+"도 같이 보여.":"";
-    return repeat+effect+extra;
+    return lead+effect+extra;
   }
   function badMonthText(item){
     const n=negSigs(item)[0];
