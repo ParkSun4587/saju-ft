@@ -987,39 +987,39 @@
       }
     }
 
-    if (productId === "concern_bundle3" || productId === "all_in_one") {
-      const concernSections = [...body.querySelectorAll('[data-export-kind="concern"]')];
-      const synthesis = productId === "concern_bundle3"
-        ? body.querySelector('[data-product-exclusive="concern_bundle3"]')
-        : body.querySelector('[data-product-exclusive="all_in_one"]');
-      concernSections.forEach((section, concernIndex) => {
-        const key = section.getAttribute("data-concern") || "";
-        const label = CONCERNS[key] || section.querySelector("h3")?.textContent?.trim() || "고민";
-        const articles = [...section.querySelectorAll("article")];
-        const halves = [
-          {
-            title: `${label} · 나를 이해하기`,
-            subtitle: "핵심 성향 · 반복 패턴 · 내가 잘못 짚는 부분",
-            nodes: concernIndex === 0 && synthesis ? [synthesis, ...articles.slice(0, 3)] : articles.slice(0, 3),
-            suffix: "01_나를_이해하기",
-          },
-          {
-            title: `${label} · 어떻게 움직일지`,
-            subtitle: "실제 처방 · 맞는 사람/환경 · 움직일 시기",
-            nodes: articles.slice(3, 6),
-            suffix: "02_어떻게_움직일지",
-          },
-        ];
-        halves.forEach((half) => {
-          if (!half.nodes.length) return;
+    if (productId === "concern_bundle3") {
+      const questionSections = [...body.querySelectorAll('[data-export-kind="question"]')];
+      if (questionSections.length) {
+        questionSections.forEach((section,index) => {
+          const title = section.querySelector("h3")?.textContent?.trim() || `질문 ${index+1}`;
           groups.push(exportGroup(
-            half.title,
-            half.subtitle,
-            half.nodes,
-            `${String(concernIndex + 1).padStart(2, "0")}_${key || "concern"}_${half.suffix}`,
+            `질문 ${index+1} · ${title}`,
+            "네 질문의 답 · 왜 그렇게 보는지 · 필요한 행동",
+            [section],
+            `${String(index+1).padStart(2,"0")}_질문`,
           ));
         });
-      });
+      } else {
+        // 이미 구매한 구형 3고민 리포트 재열람만 지원한다.
+        const concernSections = [...body.querySelectorAll('[data-export-kind="concern"]')];
+        concernSections.forEach((section,index) => {
+          const label = section.querySelector("h3")?.textContent?.trim() || `기존 상담 ${index+1}`;
+          groups.push(exportGroup(label,"기존 구매 상담 기록",[section],`${String(index+1).padStart(2,"0")}_기존상담`));
+        });
+      }
+    }
+
+    if (productId === "all_in_one") {
+      const current = body.querySelector('[data-product-exclusive="all_in_one-question"]');
+      const closing = body.querySelector('[data-product-exclusive="all_in_one"]');
+      if (current || closing) {
+        groups.push(exportGroup(
+          "현재 질문과 전체 사주 연결",
+          "지금 질문이 내 전체 구조와 어디서 이어지는지",
+          [current,closing].filter(Boolean),
+          "05_현재질문_연결",
+        ));
+      }
     }
 
     if (!groups.length) {
