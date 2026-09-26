@@ -188,6 +188,15 @@ function norm(v) {
       );
       assert(audit.interpretationPlan?.primaryGroup && audit.interpretationPlan?.groupShares,
         row.concern+'/'+row.situation+'/'+mode+': cross-validated interpretation plan missing');
+      const strongSceneVisible=notes.some(n=>/가능성이 높아/.test(plain(n.desc)));
+      if(strongSceneVisible){
+        assert((audit.interpretationPlan.selected||[]).some(x =>
+          x.confidence==='high' &&
+          Number(x.independentEvidenceCount||0)>=3 &&
+          Array.isArray(x.counterEvidenceIds) &&
+          x.counterEvidenceIds.length===0
+        ), row.concern+'/'+row.situation+'/'+mode+': strong lived-scene copy escaped without high-confidence support');
+      }
       for (const item of audit.interpretationPlan.selected || []) {
         assert(item.independentEvidenceCount === new Set(item.evidenceAxes || []).size,
           row.concern+'/'+row.situation+'/'+mode+': independent evidence axes are double-counted '+JSON.stringify(item));
