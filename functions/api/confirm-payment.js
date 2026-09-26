@@ -205,7 +205,7 @@ function effectiveEntitlements(verifiedPurchases) {
   if (direct.has("all_in_one")) {
     out.add("full_saju");
     out.add("concern_bundle3");
-    out.add("all_concerns");
+    out.add("question_pack3");
   }
   return [...out];
 }
