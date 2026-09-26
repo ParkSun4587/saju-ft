@@ -1570,7 +1570,10 @@
     const scene=verifiedLifeScene(s,selected,isT);
     const conclusion=(isT?"<b>결론</b> — ":"<b>결론</b> — 언니가 먼저 보면, ")+"너는 <b>"+withJosa(tag,"이야","야")+"</b>.";
     const body=[main,contrast,scene].filter(Boolean).map(x=>x.startsWith("<b>")?x:"· "+x).join("<br>");
-    const why=whyLabel(isT)+"사주에서는 "+(CORE_GROUP_LABEL[G]||"네가 원래 잘하는 방식")+"이 가장 크게 나오고, "+(CORE_GROUP_LABEL[weakest?.g]||"반대쪽")+"은 가장 작게 나와. 그래서 잘할 때와 흔들릴 때의 차이가 이렇게 보여.";
+    const dayName=String(sig?.ilju?.name||"").replace(/일주$/,"");
+    const dayWhy=dayName?"일주 "+dayName+"의 윗글자 "+withJosa(dayMasterName(reasoning),"이","가")+" 너 자신을 뜻해. ":"";
+    const topWhy=top?(top.god+", 쉽게 말하면 "+(GOD_MEANING[top.god]||"이 성향")+" 쪽이 가장 크게 잡혀 있어. "):"";
+    const why=whyLabel(isT)+dayWhy+topWhy+"그래서 "+(CORE_GROUP_LABEL[G]||"네가 원래 잘하는 방식")+"은 잘 드러나고, "+(CORE_GROUP_LABEL[weakest?.g]||"반대쪽")+"은 상대적으로 약해. 잘할 때와 흔들릴 때의 차이가 여기서 나와.";
     const tie=isT
       ?"이 성향이 ‘"+s.label+"’에서 어떻게 이어지는지 바로 볼게."
       :"이제 이 성향이 ‘"+s.label+"’ 고민에서 어떻게 나타나는지 바로 볼게.";
