@@ -7121,9 +7121,12 @@ currentResultData = {
           globalThis.__UNNI_CONSULTATION_V1__?.getPreview?.(data, data?.currentMode || (isT ? "T" : "F")) ||
           data?.__consultationPreviewV1 ||
           {};
-        const scopes = Array.isArray(preview.paidScope)
-          ? preview.paidScope.map((x) => String(x?.title || "").trim()).filter(Boolean).slice(0, 3)
+        const legacyCards = Array.isArray(data?.__consultationV1?.cards)
+          ? data.__consultationV1.cards.slice(1)
           : [];
+        const scopes = Array.isArray(preview.paidScope) && preview.paidScope.length
+          ? preview.paidScope.map((x) => String(x?.title || "").trim()).filter(Boolean).slice(0, 3)
+          : legacyCards.map((x) => String(x?.title || x?.badge || "").replace(/<[^>]+>/g, "").trim()).filter(Boolean).slice(0, 3);
         while (scopes.length < 3) {
           scopes.push(
             [
@@ -7147,6 +7150,7 @@ currentResultData = {
             : (isT
                 ? "결제 후에야 네 사주 전체에서 이번 질문에 필요한 부분을 깊게 생성해."
                 : "결제가 끝난 뒤부터 네 사주 전체에서 이번 질문에 필요한 부분을 제대로 깊게 볼게."),
+          preview: scopes[0],
           teaser: scopes[0],
           features: scopes,
           priceTitle: isT ? "서아랑 이 질문 끝까지 보기" : "로아랑 이 질문 끝까지 보기",
