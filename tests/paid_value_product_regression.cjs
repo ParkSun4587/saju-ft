@@ -1305,7 +1305,7 @@ function mockConsultation(question, mode='F') {
   assert(html.includes('./concern-note-engine-v2.js?v=6.7.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'six-answer NOTE / saju signal script include missing');
   assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.1'), 'full-evidence reasoning script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.2.1'),'product content policy script include missing');
-  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.3'), 'entitlement/product script include missing');
+  assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.4'), 'entitlement/product script include missing');
   assert(
     html.includes('./consultation-engine-v1.js?v=1.1.0') &&
     html.includes('if (data?.concernKey === "consultation") return false;') &&
@@ -1349,7 +1349,8 @@ function mockConsultation(question, mode='F') {
     premium.includes('["purchased","included"].includes(allStates[p.id]?.kind)') &&
     premium.includes('owned-reaccess') &&
     premium.includes('data-secondary-product') &&
-    premium.includes('p.id !== "concern_bundle3" || direct.includes("concern_bundle3")'),
+    premium.includes('p.id !== "concern_bundle3" || direct.includes("concern_bundle3")') &&
+    premium.includes('catalogSignature'),
     'premium purchased-product reaccess/new-sale catalog policy missing'
   );
   assert(!premium.includes('unniShowOtherProducts') && premium.includes('unniOtherProducts') && premium.includes('display:grid;gap:14px;margin-top:10px'), 'premium alternatives should stay fully open under the recommendation');
