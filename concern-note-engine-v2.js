@@ -1525,9 +1525,12 @@
       .replace(/전환을 검토할 지원 신호가 있어/g,"지금은 바꿔볼 준비를 해도 되는 쪽이야")
       .replace(/지금은 바로 바꾸기보다 준비 신호가 더 커/g,"지금은 바로 바꾸기보다 준비하는 쪽이 나아")
       .replace(/네 사주에서 제일 필요한/g,"지금 네게 더 필요한")
+      .replace(/네 사주에서 필요한/g,"지금 네게 필요한")
       .replace(/네 사주에 제일 필요한/g,"지금 네게 더 필요한")
       .replace(/네 사주에 필요한/g,"지금 네게 필요한")
       .replace(/네 사주에서 제일 큰 힘이/g,"네가 원래 가장 잘 쓰는 성향이")
+      .replace(/네 사주에서 강한 힘/g,"네가 원래 잘 쓰는 성향")
+      .replace(/가장 큰 힘은/g,"가장 크게 잡힌 성향은")
       .replace(/네 사주에서 제일 큰 /g,"네가 원래 가장 잘 쓰는 ")
       .replace(/기운이 도는 분야/g,"성향을 쓰기 좋은 분야")
       .replace(/기운을 채우는 방법/g,"부족한 부분을 생활에서 메우는 방법")
@@ -1599,11 +1602,11 @@
     const domainCondition=domain.help?.[N]||group.action;
     const whyPlain=el
       ? (raw===0
-        ? "겉으로 드러난 "+elementName(el)+"가 하나도 없고, 계절·뿌리까지 같이 봐도 이쪽을 더 써주는 게 우선이야."
-        : "겉으로는 "+elementName(el)+"가 "+raw+"개 있지만, 개수만이 아니라 계절·뿌리까지 합쳐보면 이쪽을 더 써주는 게 좋아.")
+        ? "겉으로 드러난 "+withJosa(elementName(el),"이","가")+" 하나도 없고, 계절·뿌리까지 같이 봐도 이쪽을 더 써주는 게 우선이야."
+        : "겉으로는 "+withJosa(elementName(el),"이","가")+" "+raw+"개 있지만, 개수만이 아니라 계절·뿌리까지 합쳐보면 이쪽을 더 써주는 게 좋아.")
       : "한쪽을 더 밀어붙이기보다 부족한 부분을 실제 생활에서 보태는 게 맞아.";
     const lines=[
-      lead(isT)+"<b>너한테 필요한 건</b> "+domainCondition+".",
+      lead(isT)+"너한테 필요한 건 <b>"+withJosa(domainCondition,"이야","야")+"</b>.",
       "<b>이번엔 이렇게 해봐</b> — "+group.action+". 한 번에 정답이라고 믿기보다, "+domain.name+"에서 실제로 덜 힘들어지는지 1~2주만 확인해봐.",
       whyLabel(isT)+whyPlain,
       detailsBlock([
@@ -1632,17 +1635,17 @@
   const REL_TYPE_NAME={clash:"충",wonjin:"원진",punishment:"형",harm:"해",break:"파"};
   function relationPlain(row){
     const a=row.aPos==="day"?row.bPos:row.aPos, b=row.aPos==="day"?"day":row.bPos;
-    const A=REL_SIDE[a]||"", B=REL_SIDE[b]||"";
+    const A=(REL_SIDE[a]||"").replace(/ 쪽$/,"");
+    const B=(REL_SIDE[b]||"").replace(/ 쪽$/,"");
     const pair=b==="day"?withJosa(A,"과","와")+" 너 사이":withJosa(A,"과","와")+" "+B+" 사이";
-    const who=b==="day"?A.replace(/ 쪽$/,"")+" 일과 네 일":A.replace(/ 쪽$/,"")+" 일과 "+B.replace(/ 쪽$/,"")+" 일";
     const effect={
-      clash:who+"이 한꺼번에 몰리면 한쪽이 크게 흔들려. 둘 중 무엇이 먼저인지 미리 정해둬.",
-      wonjin:"가까울수록 사소한 말에 서운함이 쌓여. 서운한 건 작을 때 바로 풀어야 해.",
-      punishment:"좋을 땐 좋다가도 한번 틀어지면 말이 날카로워져. 감정이 올라온 날엔 결론을 미뤄.",
-      harm:"대놓고 싸우진 않는데 은근히 서로 일을 꼬이게 해. 역할을 미리 나눠두면 덜 부딪혀.",
-      break:"크게 싸우진 않는데 계획이 자꾸 어긋나. 중요한 건 말로 한 번 더 확인해.",
-    }[row.type]||"";
-    return withJosa(pair,"이","가")+" "+REL_KIND[row.type]+" 배치야. "+effect;
+      clash:"큰 일이 겹치면 둘 다 챙기려다가 한쪽이 크게 흔들리기 쉬워. 무엇을 먼저 할지 미리 정해두는 게 좋아.",
+      wonjin:"큰 싸움보다 사소한 말에서 서운함이 쌓이기 쉬워. 작을 때 바로 풀어야 오래 안 가.",
+      punishment:"감정이 올라온 날엔 말이 날카로워지기 쉬워. 그날 바로 결론 내리지만 않으면 돼.",
+      harm:"대놓고 싸우기보다 서로의 일을 은근히 꼬이게 만들 수 있어. 역할을 미리 나눠두는 게 좋아.",
+      break:"크게 싸우진 않아도 약속이나 계획이 자꾸 어긋나기 쉬워. 중요한 건 말로 한 번 더 확인해.",
+    }[row.type]||"같은 문제가 반복되는지 실제 경험을 먼저 확인해.";
+    return pair+"에서는 "+effect;
   }
   function relationWhere(reasoning,row){
     const x=relationPair(reasoning,row);
@@ -1652,7 +1655,7 @@
     const B=burdenGroupOf(reasoning);
     const domain=DOMAIN[s.concern]||{harm:{}};
     const main=domain.harm?.[B]||"한쪽으로 너무 버티게 만드는 상황";
-    const relevantPos={love:["day"],people:["year","month","day","hour"],career:["year","month"],money:["year","month","day"]}[s.concern]||[];
+    const relevantPos={love:["day"],people:["year","month","day","hour"],career:["year","month"],money:[]}[s.concern]||[];
     const relKey=x=>x?x.type+":"+[x.aPos,x.bPos].sort().join("-"):"";
     const used=new Set([peopleAnswerRelation(reasoning,sig,s),...(grounding?.selectedInterpretations||concernInterpretations(reasoning,s,sig,data||{}).slice(0,2)).map(x=>x.rel)].filter(Boolean).map(relKey));
     const rows=relationRows(reasoning,sig).filter(x=>!used.has(relKey(x)));
@@ -2556,9 +2559,9 @@
     } else if(k==="money/saving"){
       const p=grounding?.selectedInterpretations?.[0]||null;
       const q=grounding?.selectedInterpretations?.[1]||null;
-      out.push(lead(isT)+(p?"돈이 안 모이는 고민은 <b>"+p.safeTitle+"</b> 쪽부터 보는 게 맞아.":"특정 소비 습관을 사주만으로 찍기보다, 돈을 다루는 힘의 균형부터 보는 게 맞아."));
-      if(q) out.push("<b>같이 확인할 두 번째 축</b> — "+q.safeTitle+". 두 축이 같은 방향으로 겹치는지 NOTE3에서 근거를 풀어볼게.");
-      out.push("<b>저축 방식으로 옮기면 — "+SAVE_STYLE[N]+"</b>. 이건 소비 원인을 맞혔다는 뜻이 아니라, 네 사주에서 필요한 "+withJosa(GROUP_NAME[N],"을","를")+" 현실의 규칙으로 고정하는 방법이야.");
+      out.push(lead(isT)+(p?"<b>"+humanConcernReading(s,p)+"</b>":"특정 소비 습관을 찍기보다, 돈이 남지 않는 지점부터 보는 게 맞아."));
+      if(q) out.push("<b>같이 봐야 할 두 번째 이유</b> — "+humanConcernReading(s,q)+" 왜 그런지는 바로 다음에서 사주 근거로 풀어볼게.");
+      out.push("<b>저축 방식으로 옮기면 — "+SAVE_STYLE[N]+"</b>. 이건 소비 원인을 맞혔다는 뜻이 아니라, 돈을 남기는 기준을 생활 안에 만들어두는 방법이야.");
       out.push(savingCapacityLine(reasoning));
       out.push(...T("저축을 시작하기 좋은 달","돈 결정을 한 번 더 확인할 달").lines);
     } else if(k==="money/flow"){
@@ -2720,8 +2723,8 @@
       out.push(...T(s.key==="recover"?"회복이 붙는 달":"나아지기 시작하는 달","더 지치기 쉬운 달").lines);
     }
     out.push(detailsBlock([
-      "순위 기준: 네 사주에 제일 필요한 기운은 "+(el?elementName(el)+" 쪽 ":"")+GROUP_NAME[N]+", 가장 큰 힘은 "+(top?top.god:"고르게 나뉜 힘")+", 너 자신은 "+strengthPlain(reasoning)+"이야.",
-      "날짜 기준: 이 고민에서 명리가 보는 기운이 들어오는 달을 좋은 달로, 이 고민에서 약한 곳을 건드리는 달을 피할 달로 골랐어.",
+      "판단 기준: 지금 더 써야 하는 쪽은 "+(el?elementName(el)+"·":"")+GROUP_NAME[N]+"이고, 가장 크게 잡힌 성향은 "+(top?top.god:"고르게 나뉜 편")+"이야. 너 자신은 "+strengthPlain(reasoning)+"이야.",
+      "날짜 기준: 이 고민이 풀리기 쉬운 달과 부담이 커지는 달을 따로 계산해서 골랐어.",
     ]));
     return out.filter(Boolean).map(humanizeAnswerCopy).join("<br><br>");
   }
@@ -2799,8 +2802,10 @@
         :"";
     const details=detailsBlock([
       d1?"독립 근거 "+d1.independentEvidenceCount+"개 · 반대 근거 "+d1.counterEvidenceIds.length+"개":"",
-      d1?.why||"",
-      d2?.why||"",
+      d1?.group?"첫 번째 계산값: "+GROUP_NAME[d1.group]+" "+groupShare(reasoning,d1.group)+"%.":"",
+      d2?.group?"두 번째 계산값: "+GROUP_NAME[d2.group]+" "+groupShare(reasoning,d2.group)+"%.":"",
+      d1?.rel?"첫 번째 관계 근거: "+relationWhere(reasoning,d1.rel)+".":"",
+      d2?.rel?"두 번째 관계 근거: "+relationWhere(reasoning,d2.rel)+".":"",
       bondSentence(reasoning),
       weakLinkSentence(reasoning).replace(/<[^>]+>/g,""),
     ]);
