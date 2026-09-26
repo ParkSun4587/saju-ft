@@ -389,17 +389,35 @@ async function load(page) {
       const errs = [];
       page.on('pageerror', e => errs.push(`[pageerror] ${e.stack || e.message}`));
       page.on('console', m => { if (m.type() === 'error') errs.push(`[console] ${m.text()}`); });
+      await page.route('**/api/consultation', async route => {
+        const req=route.request();
+        let body={}; try { body=req.postDataJSON()||{}; } catch {}
+        const q=body?.evidencePacket?.question?.text || '출생시간 검증 질문';
+        const evidence=['CHART_STRENGTH','CHART_STRUCTURE','CHART_TENGODS'];
+        const claim=(headline,answer)=>({
+          headline,answer,
+          why:'계절과 뿌리, 십신 배치를 같이 확인했어.',
+          technicalBasis:'월령과 통근, 신강·신약, 격국 상태를 함께 확인했어.',
+          evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported',
+        });
+        await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+          ok:true,model:'ci-time-mock',
+          questionPlan:{primaryIntent:'검증',intentTags:['검증'],directQuestions:[q],decisionType:'확인',timeRange:'',needsClarification:false,clarifyingQuestion:''},
+          directAnswer:claim('출생시간을 반영한 직접 답','선택한 출생시간을 포함한 사주 계산 결과를 기준으로 답했어.'),
+          centralThesis:claim('이번 질문의 중심','사주의 계절과 뿌리, 십신 배치를 함께 보는 게 핵심이야.'),
+          sections:[
+            {id:'why',type:'explanation',label:'왜 그런지',title:'시간주까지 같이 확인했어',answer:'태어난 시간이 있으면 시주까지 포함해서 전체 구조를 다시 봐.',why:'시간에 따라 시주가 달라질 수 있기 때문이야.',technicalBasis:'시주와 일간의 관계를 원국 전체와 같이 확인했어.',nextAction:'',evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported'},
+            {id:'action',type:'action',label:'확인할 것',title:'입력한 시간이 결과까지 이어져야 해',answer:'입력한 시간값이 계산과 화면에 같은 값으로 이어지는지 확인하면 돼.',why:'입력값과 최종 사주가 어긋나면 상담 근거도 달라지기 때문이야.',technicalBasis:'입력 시진과 최종 시주를 대조했어.',nextAction:'',evidenceIds:evidence,counterEvidenceIds:[],certainty:'supported'},
+          ],
+        })});
+      });
       await load(page);
 
-      const row = await page.evaluate((timeKey) => {
+      await page.evaluate((timeKey) => {
         window.gtag = () => {};
-        window.setTimeout = (fn) => { fn(); return 1; };
-        window.clearTimeout = () => {};
-
         document.getElementById('nameInput').value = '시간검증';
-        document.getElementById('selectedConcernKey').value = 'money';
-        renderConcernSituationPicker('money');
-        selectConcernSituation('saving');
+        document.getElementById('consultationQuestion').value = '내 출생시간까지 반영해서 사주를 봐줘';
+        refreshAnalysisSubmitState();
         document.getElementById('birthDateInput').value = '19980221';
         document.getElementById('calendarSelect').value = 'solar';
         document.getElementById('genderValue').value = 'female';
@@ -412,9 +430,17 @@ async function load(page) {
         if (wrap) wrap.classList.add('hidden');
         if (exact) exact.value = '';
         branch.value = timeKey;
-
         startAnalysis('F');
-        const data = currentResultData;
+      }, timeKey);
+
+      await page.waitForFunction(() =>
+        !!currentResultData?.__consultationV1?.cards?.length &&
+        getComputedStyle(document.getElementById('resultSection')).display !== 'none',
+        null,{timeout:10000}
+      );
+
+      const row = await page.evaluate((timeKey) => {
+        const data=currentResultData;
         return {
           timeKey,
           resultTimeKey:data?.userTimeKey || '',
@@ -422,8 +448,8 @@ async function load(page) {
           hourZhi:data?.pillars?.hour?.zhi || '',
           hourPillar:data?.pillars?.hour ? ((data.pillars.hour.gan || '') + (data.pillars.hour.zhi || '')) : '',
           visibleHour:document.getElementById('pillarHour')?.innerText || '',
-          resultVisible:document.getElementById('resultSection')?.style.display !== 'none',
-          firstNoteRendered:(document.getElementById('notesListContainer')?.innerText || '').includes('1/6'),
+          resultVisible:getComputedStyle(document.getElementById('resultSection')).display !== 'none',
+          firstNoteRendered:document.querySelectorAll('#notesListContainer .note-editorial').length >= 4,
           analysisReady:!!data?.analysisProfile && !!data?.gyeokguk && !!data?.yongshin,
         };
       }, timeKey);
