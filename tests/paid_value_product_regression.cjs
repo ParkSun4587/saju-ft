@@ -21,7 +21,7 @@ function norm(v) {
   await page.goto('http://127.0.0.1:4173/index.html', { waitUntil: 'load', timeout: 60000 });
   await page.waitForFunction(() =>
     globalThis.__PAID_VALUE_LAYER_V1__?.version === '1.5.3' &&
-    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.6.0' &&
+    globalThis.__CONCERN_NOTE_ENGINE_V2__?.version === '6.6.1' &&
     globalThis.__UNNI_PRODUCTS_V1__?.version === '2.3.1' &&
     globalThis.__UNNI_PRODUCT_CONTENT_POLICY_V1__?.version === '1.1.0' &&
     typeof generateConcernNotes === 'function' &&
@@ -148,7 +148,7 @@ function norm(v) {
   });
 
   assert(qa.paidVersion.version === '1.5.3', 'paid value layer missing');
-  assert(qa.noteVersion.version === '6.6.0', 'NOTE v3 engine missing');
+  assert(qa.noteVersion.version === '6.6.1', 'NOTE v3 engine missing');
   assert(qa.productVersion.version === '2.3.1' && qa.policyVersion === '1.1.0', 'product/content policy layer missing');
   assert(qa.wrappers.noteV2 && qa.wrappers.causal, 'NOTE v3 causal wrapper missing');
 
@@ -168,9 +168,9 @@ function norm(v) {
   assert(qa.situationRows.length === 48, `expected 48 situation/mode rows, got ${qa.situationRows.length}`);
   for (const row of qa.situationRows) {
     assert(row.notes.length === 6, `${row.concern}/${row.situation}/${row.mode}: answer count ${row.notes.length}`);
-    assert(row.notes.map(n=>n.badge).join('|') === '핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것',
+    assert(row.notes.map(n=>n.badge).join('|') === '핵심|질문에 대한 답|왜 그런지|조심할 것|어떻게 할지|가까운 흐름',
       `${row.concern}/${row.situation}/${row.mode}: six-answer roles drift ${JSON.stringify(row.notes.map(n=>n.badge))}`);
-    assert(row.noteAudit?.version === '6.6.0' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
+    assert(row.noteAudit?.version === '6.6.1' && row.noteAudit?.engine === 'classical-causal-full-evidence' && row.noteAudit?.structureFingerprint && row.noteAudit?.synthesisFingerprint,
       `${row.concern}/${row.situation}/${row.mode}: full-evidence audit missing`);
     assert(row.noteAudit?.genericClusterDependency === false, `${row.concern}/${row.situation}/${row.mode}: generic cluster dependency returned`);
     assert(row.noteAudit?.genericSituationDependency === false &&
@@ -209,7 +209,7 @@ function norm(v) {
     assert(n2.includes('결론') && /(왜 그러냐면|근거)/.test(n2) &&
       n2Facts.causeGroup && row.noteAudit?.interpretationPlan?.selected?.length,
       `${row.concern}/${row.situation}/${row.mode}: cross-validated pattern explanation missing`);
-    const timing=row.notes[4]?.timing;
+    const timing=row.notes[5]?.timing;
     assert(timing?.concernSituation === row.situation, `${row.concern}/${row.situation}/${row.mode}: timing metadata missing`);
     const firstTiming=norm(timing?.firstBody);
     const secondTiming=norm(timing?.secondBody);
@@ -354,7 +354,7 @@ function norm(v) {
 
     renderUnniProductCatalog();
     const notes = generateConcernNotes(currentResultData, 'F');
-    const timingAnswer = notes[4];
+    const timingAnswer = notes[5];
 
     const lockedCatalog = document.getElementById('unniProductLadder');
     const note2Preview = document.getElementById('note2PreviewCard');
@@ -543,7 +543,7 @@ function norm(v) {
   assert(ui.fOheng.includes('겉으로 가장 많이 보여') && ui.fOheng.includes('눈에 보이는 오행 분포') && ui.fOheng.includes('계절·뿌리·위치') && ui.fOheng.includes('지금 네 고민에 필요한 얘기만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.fOheng) && !/\d+%/.test(ui.fOheng) && ui.fOheng.length <= 260, `F five-element bridge wording drift: ${ui.fOheng}`);
   assert(ui.tOheng.includes('비중이 가장 커') && ui.tOheng.includes('계절·뿌리·위치') && ui.tOheng.includes('지금 네 고민에 맞는 말로만 짧게') && !/비밀\s*메모|제일 강해|약한 편/.test(ui.tOheng) && !/\d+%/.test(ui.tOheng) && ui.tOheng.length <= 235, `T five-element bridge wording drift: ${ui.tOheng}`);
   assert(await page.locator('#sisterSwitchCard').count() === 0, 'bottom F/T mode-switch CTA must be removed');
-  assert(ui.noteBadges.join('|')==='핵심|질문에 대한 답|왜 그런지|어떻게 할지|가까운 흐름|조심할 것',
+  assert(ui.noteBadges.join('|')==='핵심|질문에 대한 답|왜 그런지|조심할 것|어떻게 할지|가까운 흐름',
     `five-answer badges drift: ${JSON.stringify(ui.noteBadges)}`);
   assert(ui.noteRoleLabelCount===0 && ui.noteTitles.length===6 && ui.noteTitles.every(Boolean),
     `dynamic NOTE titles must replace tiny role labels: ${JSON.stringify(ui.noteTitles)}`);
@@ -1122,7 +1122,7 @@ function norm(v) {
     'AI NOTE client must be conditionally loaded only for ?ai_notes_test=1'
   );
   assert(html.includes('./paid-value-layer-v1.js?v=1.5.3'), 'paid value script include missing');
-  assert(html.includes('./concern-note-engine-v2.js?v=6.6.0') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'six-answer NOTE / saju signal script include missing');
+  assert(html.includes('./concern-note-engine-v2.js?v=6.6.1') && html.includes('./saju-signals-v1.js?v=1.0.0') && html.indexOf('saju-signals-v1.js') < html.indexOf('concern-note-engine-v2.js'), 'six-answer NOTE / saju signal script include missing');
   assert(html.includes('./classical-reasoning-engine-v1.js?v=2.1.1'), 'full-evidence reasoning script include missing');
   assert(html.includes('./product-content-policy-v1.js?v=1.1.0'),'product content policy script include missing');
   assert(html.includes('./product-entitlements-v1.js?v=1.0.1') && html.includes('./premium-products-v1.js?v=2.3.1'), 'entitlement/product script include missing');
