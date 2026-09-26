@@ -191,6 +191,30 @@
     return unique(ids);
   }
 
+  function consultationHistory(data) {
+    const prior = Array.isArray(data?.consultationHistory) ? data.consultationHistory.slice(-3) : [];
+    const current = data?.__consultationV1;
+    if (current?.directAnswer || current?.centralThesis) {
+      prior.push({
+        question: normalizeQuestion(data?.userQuestion || ""),
+        directAnswer: String(current?.directAnswer?.answer || "").replace(/\s+/g," ").trim().slice(0,500),
+        centralThesis: String(current?.centralThesis?.answer || current?.centralThesis?.summary || "").replace(/\s+/g," ").trim().slice(0,500),
+      });
+    }
+    const seen=new Set();
+    return prior
+      .map((row)=>({
+        question:normalizeQuestion(row?.question || ""),
+        directAnswer:String(row?.directAnswer || "").replace(/\s+/g," ").trim().slice(0,500),
+        centralThesis:String(row?.centralThesis || "").replace(/\s+/g," ").trim().slice(0,500),
+      }))
+      .filter((row)=>{
+        if(!row.question || seen.has(row.question)) return false;
+        seen.add(row.question); return true;
+      })
+      .slice(-4);
+  }
+
   function buildEvidencePacket(data, mode) {
     const question = normalizeQuestion(data?.userQuestion || data?.question || "");
     if (question.length < MIN_QUESTION) {
@@ -250,6 +274,11 @@
         text: question,
         instruction:
           "사용자의 말을 기존 고민 카테고리에 억지로 넣지 말고, 실제로 답해야 할 하위질문을 먼저 분해한다.",
+      },
+      conversationContext: {
+        previousConsultations: consultationHistory(data),
+        instruction:
+          "앞선 상담은 대화 연속성을 위한 맥락일 뿐 새로운 명리 근거가 아니다. 새 질문의 결론은 반드시 이번 evidence에서 다시 검증한다.",
       },
       structureFingerprint: reasoning.structureFingerprint || "",
       timingFingerprint: reasoning.timingFingerprint || "",
@@ -473,5 +502,6 @@
     generate,
     getCards,
     describeTerm:getTermContext,
+    historyFrom:consultationHistory,
   };
 })(globalThis);
